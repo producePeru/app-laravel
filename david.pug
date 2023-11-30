@@ -1,0 +1,66 @@
+php artisan make:model Customer --all
+php artisan make:model Invoice --all
+
+php artisan migrate 
+
+
+php artisan make:resource CustomerCollection
+php artisan make:resource InvoiceCollection
+
+php artisan make:resource CustomerResource
+php artisan make:resource InvoiceResource
+
+// FILTERS
+filters 
+//- http://127.0.0.1:8000/api/v1/customers?postalCode[eq]=123&includeInvoices=true
+
+
+
+//auth
+php artisan make:controller AuthController
+
+
+//io
+php artisan make:model Exponent --all
+php artisan make:resource ExponentCollection
+php artisan make:resource ExponentResource
+php artisan make:controller UserController
+php artisan make:model Mype --all
+php artisan make:resource MypeCollection
+php artisan make:resource MypeResource
+
+****************************************************************
+php artisan make:model WorkshopDetails --all
+php artisan make:resource TestoutCollection
+php artisan make:resource TestoutResource
+
+
+//tables
+php artisan make:migration create_document_types_table
+php artisan make:migration create_countries_table
+php artisan make:migration create_sedes_table
+php artisan make:migration create_workshops_table
+
+
+php artisan make:model Country
+php artisan make:model Sede
+
+
+
+
+php artisan migrate
+
+
+php artisan route:list  
+php artisan migrate:reset
+
+
+
+ 
+
+php artisan make:model Testin --all
+
+php artisan migrate 
+
+php artisan make:resource TestinCollection
+php artisan make:resource TestinResource
