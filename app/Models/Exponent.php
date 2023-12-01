@@ -21,7 +21,9 @@ class Exponent extends Model
         'phone_number',
         'specialty',
         'profession',
-        'cv_link'
+        'cv_link',
+
+        'user_id'
     ];
 
     public function workshop()

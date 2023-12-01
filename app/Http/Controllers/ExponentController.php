@@ -65,6 +65,7 @@ class ExponentController extends Controller
     public function update(UpdateExponentRequest $request, Exponent $exponent)
     {
         $exponent->update($request->all());
+        return response()->json(['message' => 'Exponente actualizado correctamente']);
     }
 
     /**

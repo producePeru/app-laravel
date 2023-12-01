@@ -22,6 +22,7 @@ class ExponentResource extends JsonResource
             'lastName' => $this->last_name,
             'middleName' => $this->middle_name,
             'email' => $this->email,
+            'gender' => $this->gender,
             'rucNumber' => $this->ruc_number,
             'phoneNumber' => $this->phone_number,
             'specialty' => $this->specialty,

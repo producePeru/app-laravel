@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('profession')->nullable();
             $table->string('cv_link')->nullable();
 
+            $table->integer('user_id');
+
             $table->timestamps();
         });
     }
