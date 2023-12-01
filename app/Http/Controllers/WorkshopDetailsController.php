@@ -85,6 +85,37 @@ class WorkshopDetailsController extends Controller
         return response()->json(['message' => 'Los promedios han sido actualizados para todas las filas.']);
     }
 
+    public function acceptInvitationWorkshopDetails(Request $request)
+    {
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            'workshop_id' => 'required|integer',
+            'ruc_mype' => 'required|string',
+            'dni_mype' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $workshopDetail = WorkshopDetails::where('workshop_id', $data['workshop_id'])
+        ->where('ruc_mype', $data['ruc_mype'])
+        ->where('dni_mype', $data['dni_mype'])
+        ->first();
+
+        if ($workshopDetail) {
+            $workshopDetail->update($data);
+            $message = 'Registro actualizado correctamente';
+        } else {
+            $workshopDetail = WorkshopDetails::create($data);
+            $message = 'Registro creado correctamente';
+        }
+
+        return response()->json(['message' => $message, 'workshop_detail' => $workshopDetail], 200);
+
+    }
+
     public function insertOrUpdateWorkshopDetails(Request $request)
     {
         $data = $request->all();
