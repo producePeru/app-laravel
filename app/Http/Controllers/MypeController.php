@@ -18,7 +18,7 @@ class MypeController extends Controller
      */
     public function index(Request $request)
     {
-        $mype = Mype::paginate();
+        $mype = Mype::paginate(50);
         return new MypeCollection($mype);
     }
 

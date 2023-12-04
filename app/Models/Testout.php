@@ -39,6 +39,10 @@ class Testout extends Model
         'comments',
         'is_comments',
 
+        'satistaction1',
+        'satistaction2',
+        'satistaction3',
+
         'workshop_id',
         'user_id'
     ];

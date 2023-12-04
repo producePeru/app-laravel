@@ -61,8 +61,10 @@ class TestoutController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Testout $testout)
+    public function show($id)
     {
+        $testout = Testout::find($id);
+        
         try {
             return response()->json(['data' => $testout], 200);
         } catch (\Throwable $th) {

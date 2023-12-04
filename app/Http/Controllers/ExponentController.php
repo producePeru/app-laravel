@@ -16,8 +16,13 @@ class ExponentController extends Controller
      */
     public function index()
     {
-        $exponents = Exponent::paginate();
+        $exponents = Exponent::paginate(20);
         return new ExponentCollection($exponents);
+    }
+
+    public function allExponents()
+    {
+       
     }
 
     /**

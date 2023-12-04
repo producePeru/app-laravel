@@ -61,9 +61,15 @@ class InvitationController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Invitation $invitation)
+    public function show($id)
     {
-        //
+        $invitation = Invitation::find($id);
+        
+        try {
+            return response()->json(['data' => $invitation], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => 'Invitacion no encontrada'], 404);
+        } 
     }
 
     /**
@@ -79,7 +85,14 @@ class InvitationController extends Controller
      */
     public function update(UpdateInvitationRequest $request, Invitation $invitation)
     {
-        //
+        try {
+            $invitation->update($request->all());
+            return response()->json(['message' => 'La invitación se actualizó correctamente']);    
+        } catch (QueryException $e) {
+            return response()->json(['error' => 'Error al actualizar esta invitación.'], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error desconocido al actualizar este test de entrada.', $e], 500);
+        }
     }
 
     /**

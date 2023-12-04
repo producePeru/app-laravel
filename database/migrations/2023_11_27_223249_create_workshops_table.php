@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug')->unique();
             $table->integer('exponent_id');
-            $table->date('workshop_date');
+            $table->string('workshop_date');
             $table->integer('type_intervention');
             $table->string('link')->nullable();
             $table->integer('user_id');

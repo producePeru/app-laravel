@@ -11,7 +11,7 @@ class UpdateInvitationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,8 @@ class UpdateInvitationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'text1' => ['required'],
+            'text2' => ['required'],
         ];
     }
 }

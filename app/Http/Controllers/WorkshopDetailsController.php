@@ -112,6 +112,11 @@ class WorkshopDetailsController extends Controller
             $message = 'Registro creado correctamente';
         }
 
+
+        // Aqui deberia despues de hacer el registro o la actualización enviar el correo
+        // ****************************************************************
+        // ****************************************************************
+
         return response()->json(['message' => $message, 'workshop_detail' => $workshopDetail], 200);
 
     }

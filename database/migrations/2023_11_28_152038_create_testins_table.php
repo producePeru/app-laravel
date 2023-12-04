@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('testins', function (Blueprint $table) {
             $table->id();
 
-            $table->datetime('date_end');
+            $table->string('date_end');
 
             $table->string('question1'); 
             $table->string('question1_opt1'); 

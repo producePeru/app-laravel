@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('testouts', function (Blueprint $table) {
             $table->id();
 
-            $table->datetime('date_end');
+            $table->string('date_end');
 
             $table->string('question1'); 
             $table->string('question1_opt1'); 
@@ -45,6 +45,10 @@ return new class extends Migration
             $table->string('question5_opt2'); 
             $table->string('question5_opt3'); 
             $table->integer('question5_resp'); 
+
+            $table->string('satistaction1'); 
+            $table->string('satistaction2'); 
+            $table->string('satistaction3'); 
 
             $table->string('comments')->nullable();; 
             $table->boolean('is_comments')->default(false);

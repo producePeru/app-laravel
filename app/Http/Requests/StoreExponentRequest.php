@@ -34,7 +34,8 @@ class StoreExponentRequest extends FormRequest
             'phoneNumber' => [],
             'specialty' => [],
             'profession' => [],
-            'cvLink' => []
+            'cvLink' => [],
+            'user_id' => ['required'],
         ];
     }
 

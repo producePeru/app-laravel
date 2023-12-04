@@ -15,7 +15,7 @@ class TestinController extends Controller
      */
     public function index()
     {
-       
+       return "hi";
     }
 
     /**
@@ -63,14 +63,15 @@ class TestinController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Testin $testin)
+    public function show($id)
     {
+        $testin = Testin::find($id);
+        
         try {
-            return response()->json(['testin' => $testin], 200);
+            return response()->json(['data' => $testin], 200);
         } catch (\Throwable $th) {
-            return response()->json(['message' => 'Testin no encontrado'], 404);
+            return response()->json(['message' => 'Test de entrada no encontrado'], 404);
         } 
-
     }
 
     /**
@@ -99,8 +100,8 @@ class TestinController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Testin $testin)
+    public function destroy(Testin $testin, $id)
     {
-        //
+        return "HHHH";
     }
 }

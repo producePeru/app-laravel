@@ -18,6 +18,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
 
     //prod
     Route::apiResource('exponents', ExponentController::class);
+    Route::get('all-exponents', ['uses' => 'ExponentController@allExponents']);
+
     Route::apiResource('users', UserController::class);
     Route::apiResource('mype', MypeController::class);
     Route::apiResource('workshops', WorkshopController::class);

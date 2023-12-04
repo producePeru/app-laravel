@@ -34,7 +34,7 @@ class WorkshopController extends Controller
             'rrss',
             'sms',
             'correo'
-        )->orderBy('created_at', 'desc')->paginate($perPage);
+        )->orderBy('workshop_date', 'desc')->paginate($perPage);
 
         return response()->json(['workshop' => $workshop]);
     }
