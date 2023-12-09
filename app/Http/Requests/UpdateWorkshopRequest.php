@@ -28,8 +28,19 @@ class UpdateWorkshopRequest extends FormRequest
                 'title' => ['required'],
                 'slug' => ['required'],
                 'exponentId' => ['required'],
-                'workshopDate' => ['required'],
-                'typeIntervention' => ['required']
+                'workshopDate'=> ['required'],
+                'typeIntervention'=> ['required'], 
+                'userId' => ['required'],
+                'link' => [],
+                
+                'testinId'=> [],
+                'testoutId'=> [],
+                'invitationId'=> [],
+                'status'=> [],
+                'registered'=> [],
+                'rrss'=> [],
+                'sms'=> [],
+                'correo'=> [],
             ];
         } else {
             return [

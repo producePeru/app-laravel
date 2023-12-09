@@ -30,6 +30,7 @@ return new class extends Migration
             $table->integer('rrss')->nullable();
             $table->integer('sms')->nullable();
             $table->integer('correo')->nullable();
+            $table->integer('otro')->nullable();
 
             $table->string('comment_canceled')->nullable();
 

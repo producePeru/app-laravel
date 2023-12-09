@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Workshop;
+use App\Models\Testin;
+use App\Models\Testout;
+use App\Models\WorkshopDetails;
 use App\Http\Requests\StoreWorkshopRequest;
 use App\Http\Requests\UpdateWorkshopRequest;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class WorkshopController extends Controller
 {
@@ -13,9 +18,9 @@ class WorkshopController extends Controller
      */
     public function index()
     {
-        $perPage = 10;
+        $perPage = 20;
 
-        $workshop = Workshop::with([
+        $workshops = Workshop::with([
             'exponent' => function ($query) { $query->select('id', 'first_name', 'last_name', 'middle_name'); },
             
         ])->select(
@@ -36,11 +41,21 @@ class WorkshopController extends Controller
             'correo'
         )->orderBy('workshop_date', 'desc')->paginate($perPage);
 
-        return response()->json(['workshop' => $workshop]);
+        $now = Carbon::now()->timestamp;
+        
+        foreach ($workshops as $workshop) {
+            $workshopDate = Carbon::createFromFormat('d-m-Y H:i A', $workshop->workshop_date)->timestamp;
+
+            $workshop->status = ($now < $workshopDate) ? 'en curso' : 'finalizado';
+
+            $workshop->registered_count = WorkshopDetails::where('workshop_id', $workshop->id)->count();
+        }
+
+        return response()->json(['workshop' => $workshops]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for creating a new resource.   21-12-2023 23:50 PM
      */
     public function create()
     {
@@ -67,15 +82,39 @@ class WorkshopController extends Controller
      */
     public function show(Workshop $workshop)
     {
-        //
+        
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Workshop $workshop)
+    public function getBySlug(Request $request, $slug)
     {
-        //
+        $workshop = Workshop::where('slug', $slug)->with('exponent')->first();
+
+        if (!$workshop) {
+            return response()->json(['message' => 'Workshop not found'], 404);
+        }
+
+        $test_in = Testin::find($workshop->testin_id);
+        $test_out = Testout::find($workshop->testout_id);
+
+        $response = [
+            'id' => $workshop->id,
+            'id_in' => $workshop->testin_id,
+            'id_out' => $workshop->testout_id,
+            'title' => $workshop->title,
+            'workshop_date' => $workshop->workshop_date,
+            'exponent_k' => $workshop->exponent->id,
+            'exponent_name' => $workshop->exponent->first_name . ' ' . $workshop->exponent->last_name. ' ' . $workshop->exponent->middle_name,
+            'test_in_date' => $test_in ? $test_in->date_end : null,
+            'test_out_date' => $test_out ? $test_out->date_end : null,
+            'link' => $workshop->link,
+            'slug' => $workshop->slug,
+            'type_intervention' => $workshop->type_intervention
+        ];
+
+        return response()->json(['workshop' => $response]);
     }
 
     /**

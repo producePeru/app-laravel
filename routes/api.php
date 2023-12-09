@@ -21,8 +21,15 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
     Route::get('all-exponents', ['uses' => 'ExponentController@allExponents']);
 
     Route::apiResource('users', UserController::class);
+    
     Route::apiResource('mype', MypeController::class);
+    Route::get('data-mype/{ruc}', ['uses' => 'MypeController@dataMypeRuc']);
+    Route::get('api-data-mype/{ruc}', ['uses' => 'MypeController@getDataFromExternalApi']);
+    
+    
     Route::apiResource('workshops', WorkshopController::class);
+    Route::get('get-workshop-slug/{workshopSlug}', ['uses' => 'WorkshopController@getBySlug']);
+
     // Route::apiResource('invitations', InvitationController::class);
 
 
@@ -41,8 +48,21 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
     Route::post('sending-test-answers/{workshopId}', ['uses' => 'WorkshopDetailsController@insertOrUpdateWorkshopDetails']);
     Route::put('workshop/details/average', ['uses' => 'WorkshopDetailsController@averageWorkshopDetails']);
     Route::get('workshop/bydate', ['uses' => 'WorkshopDetailsController@getWorkshopsGroupedByDate']);
+    Route::get('test-all-questions/{workshopId}', ['uses' => 'WorkshopDetailsController@testAllQuestions']);
+    Route::put('addPoint/{workshopId}/{type}', ['uses' => 'WorkshopDetailsController@addPointToWorkshop']);
+
+
+
+
+
+
 
     Route::post('accept-invitation/{workshopId}', ['uses' => 'WorkshopDetailsController@acceptInvitationWorkshopDetails']);
+
+
+    Route::get('departaments', ['uses' => 'StaticController@getDataDepartaments']);
+    Route::get('province/{idDepartament}', ['uses' => 'StaticController@getDataProvinces']);
+    Route::get('district/{idProvince}', ['uses' => 'StaticController@getDataDistricts']);
 
 
 

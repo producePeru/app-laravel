@@ -10,6 +10,7 @@ use App\Http\Resources\MypeCollection;
 use App\Http\Resources\MypeResource;
 use App\Filters\MypeFilter;
 use Illuminate\Database\QueryException;
+use GuzzleHttp\Client;
 
 class MypeController extends Controller
 {
@@ -37,9 +38,9 @@ class MypeController extends Controller
     {
         try {
             $mype = Mype::create($request->all());
-            return response()->json(['message' => 'Mype creada correctamente'], 201);
+            return response()->json(['message' => 'Mype creada correctamente', 'data' => $mype], 201);
         } catch (QueryException $e) {
-            return response()->json(['error' => 'Error al crear la Mype. Por favor, inténtalo de nuevo.'], 500);
+            return response()->json(['error' => 'Error al crear la Mype. Por favor, inténtalo de nuevo.', $e], 500);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error desconocido al crear la Mype.'], 500);
         }
@@ -51,6 +52,39 @@ class MypeController extends Controller
     public function show(Mype $mype)
     {
         //
+    }
+
+    public function dataMypeRuc($ruc)
+    {
+        $mype = Mype::where('ruc', $ruc)->first();
+
+        if (!$mype) {
+            return response()->json(['message' => 'not found', 'status' => 404], 404);
+        }
+
+        return response()->json(['data' => $mype]);
+    }
+
+    public function getDataFromExternalApi(Request $request, $ruc)
+    {
+        $apiUrl = "https://api.apis.net.pe/v2/sunat/ruc?numero={$ruc}";
+
+        try {
+            $client = new Client();
+            $response = $client->request('GET', $apiUrl, [
+                'headers' => [
+                    'Authorization' => 'Bearer apis-token-6688.nekxM8GmGEHYD9qosrnbDWNxQlNOzaT5', 
+                    'Accept' => 'application/json',
+                ],
+                
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+
+            return response()->json(['data' => $data]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**

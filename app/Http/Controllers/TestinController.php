@@ -63,9 +63,11 @@ class TestinController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show($workshopId)
     {
-        $testin = Testin::find($id);
+        $workshop = Workshop::find($workshopId);
+        
+        $testin = Testin::find($workshop->testin_id);
         
         try {
             return response()->json(['data' => $testin], 200);

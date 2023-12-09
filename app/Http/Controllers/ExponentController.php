@@ -51,9 +51,15 @@ class ExponentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Exponent $exponent)
+    public function show($idExponent)
     {
-        //
+        $exponent = Exponent::find($idExponent);
+
+        try {
+            return response()->json(['data' => $exponent], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => 'Exponente no encontrado'], 404);
+        }
     }
 
     /**

@@ -82,7 +82,7 @@ class WorkshopDetailsController extends Controller
             
             $workshopDetail->save();
         }
-        return response()->json(['message' => 'Los promedios han sido actualizados para todas las filas.']);
+        return response()->json(['message' => 'Los promedios han sido actualizados.']);
     }
 
     public function acceptInvitationWorkshopDetails(Request $request)
@@ -174,22 +174,55 @@ class WorkshopDetailsController extends Controller
         return response()->json(['message' => $message, 'workshop_detail' => $workshopDetail], 200);
     }
 
-    
-
     /**
      * Display the specified resource.
      */
-    public function show(WorkshopDetails $workshopDetails)
+    public function testAllQuestions($workshopId)
     {
-        //
+        $workshop = Workshop::find($workshopId);
+
+        $id_testIn = $workshop->testin_id;
+        $id_testOut = $workshop->testout_id;
+        
+        $testin = Testin::find($id_testIn);
+        $testout = Testout::find($id_testOut);
+
+        if (!$testin && !$testout) {
+            return response()->json(['error' => 'not found'], 404);
+        }
+
+        $data = [
+            'q_testin_1' => $testin->question1 ?? null,
+            'q_testin_2' => $testin->question2 ?? null,
+            'q_testin_3' => $testin->question3 ?? null,
+            'q_testin_4' => $testin->question4 ?? null,
+            'q_testin_5' => $testin->question5 ?? null,
+
+            'q_testout_1' => $testout->question1 ?? null,
+            'q_testout_2' => $testout->question2 ?? null,
+            'q_testout_3' => $testout->question3 ?? null,
+            'q_testout_4' => $testout->question4 ?? null,
+            'q_testout_5' => $testout->question5 ?? null,
+        ];
+
+        return $data;
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(WorkshopDetails $workshopDetails)
+    public function addPointToWorkshop($workshopId, $type)
     {
-        //
+        $value = Workshop::find($workshopId);
+
+        if(empty($value->$type)) {
+            $value->$type = 0;
+            $value->save();
+        }
+
+        Workshop::where('id', $workshopId)->increment($type);
+
+        $workshop = Workshop::find($workshopId);
     }
 
     /**
