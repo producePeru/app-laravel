@@ -28,6 +28,7 @@ class WorkshopDetails extends Model
         'c3',
         'average_satisfaction',
         'suggestions',
+        // 'email',
         
         'ruc_mype',
         'dni_mype',

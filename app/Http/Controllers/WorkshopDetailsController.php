@@ -9,8 +9,12 @@ use Illuminate\Http\Request;
 use App\Models\Testin;
 use App\Models\Testout;
 use App\Models\Workshop;
+use App\Models\Mype;
 use Validator;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\AcceptInvitationWorkshopJob;
+use Carbon\Carbon;
+
 
 class WorkshopDetailsController extends Controller
 {
@@ -44,13 +48,33 @@ class WorkshopDetailsController extends Controller
         $groupedWorkshops = [];
 
         foreach ($workshops as $workshop) {
-            $workshopDate = date('Y-m-d', strtotime($workshop->workshop_date));
-
+            $fechaCarbonString = $workshop->workshop_date;
+            $fechaString = substr($fechaCarbonString, 0, 10);
+            $fechaCarbon = Carbon::createFromFormat('d-m-Y', $fechaString);
+            $workshopDate = $fechaCarbon->format('Y-m-d');
+            
             if (!isset($groupedWorkshops[$workshopDate])) {
                 $groupedWorkshops[$workshopDate] = [];
             }
 
-            $groupedWorkshops[$workshopDate][] = ['content' => $workshop->title, 'type' => $workshop->status];
+            $statusType = '';
+
+            switch ($workshop->status) {
+                case 0:
+                    $statusType = 'error';
+                    break;
+                case 1:
+                    $statusType = 'success';
+                    break;
+                case 2:
+                    $statusType = 'warning';
+                    break;
+                default:
+                    $statusType = 'unknown';
+                    break;
+            }
+
+            $groupedWorkshops[$workshopDate][] = ['content' => $workshop->title, 'type' => $statusType];
         }
 
         return response()->json($groupedWorkshops);
@@ -93,6 +117,7 @@ class WorkshopDetailsController extends Controller
             'workshop_id' => 'required|integer',
             'ruc_mype' => 'required|string',
             'dni_mype' => 'required|string',
+            'email' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -112,13 +137,13 @@ class WorkshopDetailsController extends Controller
             $message = 'Registro creado correctamente';
         }
 
+        $email = $data['email'];
+        $workshop = Workshop::find($data['workshop_id']);
+        $mype = Mype::where('ruc', $data['ruc_mype'])->first();
 
-        // Aqui deberia despues de hacer el registro o la actualización enviar el correo
-        // ****************************************************************
-        // ****************************************************************
-
-        return response()->json(['message' => $message, 'workshop_detail' => $workshopDetail], 200);
-
+        if($data['is_participant'] == 'si') {
+            AcceptInvitationWorkshopJob::dispatch($workshopDetail, $email, $workshop, $mype); 
+        }
     }
 
     public function insertOrUpdateWorkshopDetails(Request $request)

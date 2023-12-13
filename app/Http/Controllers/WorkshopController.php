@@ -41,15 +41,12 @@ class WorkshopController extends Controller
             'correo'
         )->orderBy('workshop_date', 'desc')->paginate($perPage);
 
-        $now = Carbon::now()->timestamp;
-        
-        foreach ($workshops as $workshop) {
-            $workshopDate = Carbon::createFromFormat('d-m-Y H:i A', $workshop->workshop_date)->timestamp;
-
-            $workshop->status = ($now < $workshopDate) ? 'en curso' : 'finalizado';
-
-            $workshop->registered_count = WorkshopDetails::where('workshop_id', $workshop->id)->count();
-        }
+        // $now = Carbon::now()->timestamp;
+        // foreach ($workshops as $workshop) {
+        //     $workshopDate = Carbon::createFromFormat('d-m-Y H:i A', $workshop->workshop_date)->timestamp;
+        //     $workshop->status = ($now < $workshopDate) ? 'en curso' : 'finalizado';
+        //     $workshop->registered_count = WorkshopDetails::where('workshop_id', $workshop->id)->count();
+        // }
 
         return response()->json(['workshop' => $workshops]);
     }
@@ -103,6 +100,7 @@ class WorkshopController extends Controller
             'id' => $workshop->id,
             'id_in' => $workshop->testin_id,
             'id_out' => $workshop->testout_id,
+            'id_invitation' => $workshop->invitation_id,
             'title' => $workshop->title,
             'workshop_date' => $workshop->workshop_date,
             'exponent_k' => $workshop->exponent->id,

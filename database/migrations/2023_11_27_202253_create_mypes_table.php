@@ -14,17 +14,17 @@ return new class extends Migration
         Schema::create('mypes', function (Blueprint $table) {
             $table->id();
 
-            $table->string('ruc', 20)->unique();
-            $table->string('social_reason');
-            $table->string('category');
-            $table->string('type', 100);
-            $table->string('department', 100);
-            $table->string('district', 100);
-            $table->string('name_complete');
-            $table->string('dni_number', 8);
-            $table->string('sex', 12);
-            $table->string('phone', 12);
-            $table->string('email', 100);
+            $table->string('ruc', 20)->nullable();
+            $table->string('social_reason')->nullable();
+            $table->string('category')->nullable();
+            $table->string('type')->nullable();
+            $table->string('department')->nullable();
+            $table->string('district')->nullable();
+            $table->string('name_complete')->nullable();
+            $table->string('dni_number')->nullable();
+            $table->string('sex')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
 
             $table->timestamps();
         });

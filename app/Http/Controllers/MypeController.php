@@ -11,6 +11,9 @@ use App\Http\Resources\MypeResource;
 use App\Filters\MypeFilter;
 use Illuminate\Database\QueryException;
 use GuzzleHttp\Client;
+use App\Imports\QueuedImport;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\MypesExport;
 
 class MypeController extends Controller
 {
@@ -86,6 +89,41 @@ class MypeController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function uploadExcel(Request $request)
+    {
+
+        // Excel::import(new MypesImport, $request->file('file')->store('temp'));
+        // Excel::queueImport(new MypesImport, $request->file('file')->store('temp'));
+
+        try {
+            // Excel::import(
+            //     new QueuedImport,
+            //     $request->file('file')->store('temp')
+            // );
+            (new QueuedImport)->import($request->file('file')->store('temp'), null, \Maatwebsite\Excel\Excel::XLSX);
+
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                $failure->row(); // row that went wrong
+                $failure->attribute(); // either heading key (if using heading row concern) or column index
+                $failure->errors(); // Actual error messages from Laravel validator
+                $failure->values(); // The values of the row that has failed.
+            }
+       }
+    }
+
+    public function downloadExcel(Request $request)
+    {
+        try {
+            return Excel::download(new MypesExport, 'mypes.xlsx');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+        }
+    }
+    
 
     /**
      * Show the form for editing the specified resource.

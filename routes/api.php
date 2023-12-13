@@ -22,9 +22,16 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
 
     Route::apiResource('users', UserController::class);
     
+
+    // MYPE
     Route::apiResource('mype', MypeController::class);
     Route::get('data-mype/{ruc}', ['uses' => 'MypeController@dataMypeRuc']);
     Route::get('api-data-mype/{ruc}', ['uses' => 'MypeController@getDataFromExternalApi']);
+
+    //excel
+    Route::post('import-excel', ['uses' => 'MypeController@uploadExcel']);
+    Route::get('export-excel', ['uses' => 'MypeController@downloadExcel']);
+
     
     
     Route::apiResource('workshops', WorkshopController::class);
@@ -52,12 +59,9 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
     Route::put('addPoint/{workshopId}/{type}', ['uses' => 'WorkshopDetailsController@addPointToWorkshop']);
 
 
+    Route::post('accept-invitation/{workshopId}', ['uses' => 'WorkshopDetailsController@acceptInvitationWorkshopDetails']);             //mype acepta la invitacion
 
 
-
-
-
-    Route::post('accept-invitation/{workshopId}', ['uses' => 'WorkshopDetailsController@acceptInvitationWorkshopDetails']);
 
 
     Route::get('departaments', ['uses' => 'StaticController@getDataDepartaments']);
@@ -66,7 +70,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
 
 
 
-
+    
 
 
 
