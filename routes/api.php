@@ -9,14 +9,17 @@ use App\Http\Controllers\AuthController;
 
 Route::post('login', [AuthController::class, 'login']);
 
+Route::post('register', [AuthController::class, 'register']);
 
 
-Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function(){
+
+
+Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
     Route::apiResource('customers', CustomerController::class);
     Route::apiResource('invoices', InvoiceController::class);
 
 
-    //prod
+    //exponentes
     Route::apiResource('exponents', ExponentController::class);
     Route::get('all-exponents', ['uses' => 'ExponentController@allExponents']);
 
@@ -70,13 +73,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
 
 
 
-    
-
-
-
-    
     Route::post('register', [AuthController::class, 'register']);
-
+    
 
 
     Route::post('invoices/bulk', ['uses' => 'InvoiceController@bulkStore']);
