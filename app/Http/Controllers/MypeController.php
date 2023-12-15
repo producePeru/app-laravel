@@ -103,6 +103,8 @@ class MypeController extends Controller
             // );
             (new QueuedImport)->import($request->file('file')->store('temp'), null, \Maatwebsite\Excel\Excel::XLSX);
 
+            return response()->json(['message' => 'Subida exitosa']);
+
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failures = $e->failures();
 
@@ -112,6 +114,8 @@ class MypeController extends Controller
                 $failure->errors(); // Actual error messages from Laravel validator
                 $failure->values(); // The values of the row that has failed.
             }
+
+            return response()->json(['message' => 'Error en la subida', 'failures' => $failures], 400);
        }
     }
 

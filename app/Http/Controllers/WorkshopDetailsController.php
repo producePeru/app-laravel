@@ -74,7 +74,7 @@ class WorkshopDetailsController extends Controller
                     break;
             }
 
-            $groupedWorkshops[$workshopDate][] = ['content' => $workshop->title, 'type' => $statusType];
+            $groupedWorkshops[$workshopDate][] = ['content' => $workshop->title, 'type' => $statusType, 'slug' => $workshop->slug];
         }
 
         return response()->json($groupedWorkshops);
