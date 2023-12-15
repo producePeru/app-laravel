@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Country;
 use App\Models\Departament;
 use App\Models\Province;
 use App\Models\District;
@@ -9,6 +10,19 @@ use Illuminate\Http\Request;
 
 class StaticController extends Controller
 {
+    public function getDataCountries()
+    {
+        $countries = Country::all();
+        $formattedCountries = $countries->map(function ($country) {
+            return [
+                'id' => $country->id,
+                'label' => $country->name,
+                'value' => $country->id,
+            ];
+        });
+        return response()->json(['data' => $formattedCountries]);
+    }
+
     public function getDataDepartaments()
     {
         $departaments = Departament::all();

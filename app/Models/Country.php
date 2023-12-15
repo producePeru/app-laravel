@@ -11,7 +11,7 @@ class Country extends Model
 
     // protected $table = 'users';
 
-    protected $fillable = ['name', 'code_iso'];
+    protected $fillable = ['iso', 'name', 'status'];
 
     //1 to 1
     public function user()

@@ -63,7 +63,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
 
 
 
-
+    Route::get('countries', ['uses' => 'StaticController@getDataCountries']);
     Route::get('departaments', ['uses' => 'StaticController@getDataDepartaments']);
     Route::get('province/{idDepartament}', ['uses' => 'StaticController@getDataProvinces']);
     Route::get('district/{idProvince}', ['uses' => 'StaticController@getDataDistricts']);
