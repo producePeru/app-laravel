@@ -3,13 +3,37 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\StaticController;
+use App\Http\Controllers\WorkshopController;
+use App\Http\Controllers\TestinController;
+use App\Http\Controllers\MypeController;
+use App\Http\Controllers\WorkshopDetailsController;
 
 
 
 
 Route::post('login', [AuthController::class, 'login']);
 
-// Route::post('register', [AuthController::class, 'register']);
+//RutaDigital Test
+Route::get('countries',                         [StaticController::class,           'getDataCountries']);
+Route::get('departaments',                      [StaticController::class,           'getDataDepartaments']);
+Route::get('province/{idDepartament}',          [StaticController::class,           'getDataProvinces']);
+Route::get('district/{idProvince}',             [StaticController::class,           'getDataDistricts']);
+Route::get('get-workshop-slug/{workshopSlug}',  [WorkshopController::class,         'getBySlug']);
+Route::get('testin-questions/{workshopId}',     [TestinController::class,           'getQuestions']);
+Route::get('data-mype/{ruc}',                   [MypeController::class,             'dataMypeRuc']);
+Route::get('api-data-mype/{ruc}',               [MypeController::class,             'getDataFromExternalApi']);
+Route::post('register-mype',                    [MypeController::class,             'registerMype']);
+Route::post('sending-test-answers/{wsId}',      [WorkshopDetailsController::class,  'insertOrUpdateWorkshopDetails']);
+Route::put('addPoint/{workshopId}/{type}',      [WorkshopDetailsController::class,  'addPointToWorkshop']);
+
+
+
+
+
+
+
+Route::post('register', [AuthController::class, 'register']);
 
 
 
@@ -28,7 +52,9 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
     // MYPE
     Route::apiResource('mype', MypeController::class);
+    
     Route::get('data-mype/{ruc}', ['uses' => 'MypeController@dataMypeRuc']);
+
     Route::get('api-data-mype/{ruc}', ['uses' => 'MypeController@getDataFromExternalApi']);
 
     //excel
@@ -38,7 +64,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     
     
     Route::apiResource('workshops', WorkshopController::class);
-    Route::get('get-workshop-slug/{workshopSlug}', ['uses' => 'WorkshopController@getBySlug']);
+    
 
     // Route::apiResource('invitations', InvitationController::class);
 
@@ -55,21 +81,16 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
     // Route::apiResource('invitations', InvitationController::class);
     Route::get('workshop/details/{workshopId}', ['uses' => 'WorkshopDetailsController@workshopDetails']);
-    Route::post('sending-test-answers/{workshopId}', ['uses' => 'WorkshopDetailsController@insertOrUpdateWorkshopDetails']);
     Route::put('workshop/details/average', ['uses' => 'WorkshopDetailsController@averageWorkshopDetails']);
     Route::get('workshop/bydate', ['uses' => 'WorkshopDetailsController@getWorkshopsGroupedByDate']);
     Route::get('test-all-questions/{workshopId}', ['uses' => 'WorkshopDetailsController@testAllQuestions']);
-    Route::put('addPoint/{workshopId}/{type}', ['uses' => 'WorkshopDetailsController@addPointToWorkshop']);
 
 
     Route::post('accept-invitation/{workshopId}', ['uses' => 'WorkshopDetailsController@acceptInvitationWorkshopDetails']);             //mype acepta la invitacion
 
 
 
-    Route::get('countries', ['uses' => 'StaticController@getDataCountries']);
-    Route::get('departaments', ['uses' => 'StaticController@getDataDepartaments']);
-    Route::get('province/{idDepartament}', ['uses' => 'StaticController@getDataProvinces']);
-    Route::get('district/{idProvince}', ['uses' => 'StaticController@getDataDistricts']);
+    
 
 
 

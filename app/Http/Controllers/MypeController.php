@@ -49,6 +49,18 @@ class MypeController extends Controller
         }
     }
 
+    public function registerMype(StoreMypeRequest $request)
+    {
+        try {
+            $mype = Mype::create($request->all());
+            return response()->json(['message' => 'Mype creada correctamente', 'data' => $mype], 201);
+        } catch (QueryException $e) {
+            return response()->json(['error' => 'Error al crear la Mype. Por favor, inténtalo de nuevo.', $e], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error desconocido al crear la Mype.'], 500);
+        }
+    }
+
     /**
      * Display the specified resource.
      */

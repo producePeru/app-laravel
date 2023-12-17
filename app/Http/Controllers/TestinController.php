@@ -76,6 +76,41 @@ class TestinController extends Controller
         } 
     }
 
+    public function getQuestions($workshopId)
+    {
+        $workshop = Workshop::find($workshopId);
+        
+        $testin = Testin::find($workshop->testin_id);
+
+        $data = [
+            'question1' => $testin->question1,
+            'question1_opt1' => $testin->question1_opt1,
+            'question1_opt2' => $testin->question1_opt2,
+            'question1_opt3' => $testin->question1_opt2,
+            'question2' => $testin->question2,
+            'question2_opt1' => $testin->question2_opt1,
+            'question2_opt2' => $testin->question2_opt2,
+            'question2_opt3' => $testin->question2_opt3,
+            'question3' => $testin->question3,
+            'question3_opt1' => $testin->question3_opt1,
+            'question3_opt2' => $testin->question3_opt2,
+            'question3_opt3' => $testin->question3_opt3,
+            'question4' => $testin->question4,
+            'question4_opt1' => $testin->question4_opt1,
+            'question4_opt2' => $testin->question4_opt2,
+            'question4_opt3' => $testin->question4_opt3,
+            'question5' => $testin->question5,
+            'question5_opt1' => $testin->question5_opt1,
+            'question5_opt2' => $testin->question5_opt2,
+            'question5_opt3' => $testin->question5_opt3
+        ];
+        try {
+            return response()->json(['data' => $data], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => 'Test de entrada no encontrado'], 404);
+        } 
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
