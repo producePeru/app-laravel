@@ -33,24 +33,20 @@ Route::get('invitations/{workshopId}',          [InvitationController::class,   
 
 
 
-
-
-
-
-
 Route::post('register', [AuthController::class, 'register']);
 
 
 
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
-    Route::apiResource('customers', CustomerController::class);
-    Route::apiResource('invoices', InvoiceController::class);
+    
 
+    Route::apiResource('exponents',                     ExponentController::class);
+    Route::get('enableds-exponents',                    ['uses' => 'ExponentController@allExponents']);
+    Route::put('enabled-disabled/{exponentId}',         ['uses' => 'ExponentController@isEnabledDisabled']);
 
-    //exponentes
-    Route::apiResource('exponents', ExponentController::class);
-    Route::get('all-exponents', ['uses' => 'ExponentController@allExponents']);
+    
+
 
     Route::apiResource('users', UserController::class);
     
@@ -107,4 +103,9 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
 
     Route::post('logout', [AuthController::class, 'logout']);
+
+
+
+    Route::apiResource('customers', CustomerController::class);
+    Route::apiResource('invoices', InvoiceController::class);
 });

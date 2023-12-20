@@ -27,7 +27,10 @@ class ExponentResource extends JsonResource
             'phoneNumber' => $this->phone_number,
             'specialty' => $this->specialty,
             'profession' => $this->profession,
-            'cvLink' => $this->cv_link
+            'cvLink' => $this->cv_link,
+
+            'user_id' => $this->user_id,
+            'enabled' => $this->enabled
         ];
     }
 }

@@ -23,7 +23,8 @@ class Exponent extends Model
         'profession',
         'cv_link',
 
-        'user_id'
+        'user_id',
+        'enabled',
     ];
 
     public function workshop()

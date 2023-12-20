@@ -22,15 +22,36 @@ class ExponentController extends Controller
 
     public function allExponents()
     {
-       
+        $enabledExponents = Exponent::where('enabled', 1)->get();
+
+        $formattedExponents = $enabledExponents->map(function ($exponent) {
+            $label = $exponent->first_name . ' ' . $exponent->last_name . ' ' . $exponent->middle_name;
+            return [
+                'label' => $label,
+                'value' => $exponent->id
+            ];
+        });
+
+        try {
+            return response()->json(['data' => $formattedExponents], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error desconocido.'], 500);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function isEnabledDisabled($idExponent)
     {
-        //
+        $exponent = Exponent::find($idExponent);
+        
+        if ($exponent) {
+            $exponent->enabled = $exponent->enabled ? 0 : 1;
+            $exponent->save();
+            if($exponent->enabled == 1) {
+                return response()->json(['message' => 'Exponente ha sido habilitado'], 201);
+            } else {
+                return response()->json(['message' => 'Exponente fue deshabilitado'], 201);
+            }
+        }
     }
 
     /**
@@ -44,7 +65,7 @@ class ExponentController extends Controller
         } catch (QueryException $e) {
             return response()->json(['error' => 'Error al crear el Exponnente. Por favor, inténtalo de nuevo.'], 500);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error desconocido al crear el exponente.', $e], 500);
+            return response()->json(['error' => 'Error desconocido al crear el exponente.'], 500);
         }
     }
 

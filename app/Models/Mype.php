@@ -20,6 +20,7 @@ class Mype extends Model
         'dni_number',
         'sex',
         'phone',
-        'email'
+        'email',
+        'added'
     ];
 }
