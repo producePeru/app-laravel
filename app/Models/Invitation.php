@@ -10,6 +10,6 @@ class Invitation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'text1', 'text2', 'workshop_id'
+        'content', 'workshop_id'
     ];
 }

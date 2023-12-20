@@ -5,11 +5,7 @@
 # /public/storage
 # /storage/*.key
 # /vendor
-.env
-.env.test
-.env.example
-.env.backup
-.env.production
+.env.local
 .htaccessx
 david.pug
 # .phpunit.result.cache

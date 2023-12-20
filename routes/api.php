@@ -6,8 +6,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StaticController;
 use App\Http\Controllers\WorkshopController;
 use App\Http\Controllers\TestinController;
+use App\Http\Controllers\TestoutController;
 use App\Http\Controllers\MypeController;
 use App\Http\Controllers\WorkshopDetailsController;
+use App\Http\Controllers\InvitationController;
 
 
 
@@ -21,11 +23,14 @@ Route::get('province/{idDepartament}',          [StaticController::class,       
 Route::get('district/{idProvince}',             [StaticController::class,           'getDataDistricts']);
 Route::get('get-workshop-slug/{workshopSlug}',  [WorkshopController::class,         'getBySlug']);
 Route::get('testin-questions/{workshopId}',     [TestinController::class,           'getQuestions']);
+Route::get('testout-questions/{workshopId}',    [TestoutController::class,          'getQuestions']);
 Route::get('data-mype/{ruc}',                   [MypeController::class,             'dataMypeRuc']);
 Route::get('api-data-mype/{ruc}',               [MypeController::class,             'getDataFromExternalApi']);
 Route::post('register-mype',                    [MypeController::class,             'registerMype']);
 Route::post('sending-test-answers/{wsId}',      [WorkshopDetailsController::class,  'insertOrUpdateWorkshopDetails']);
 Route::put('addPoint/{workshopId}/{type}',      [WorkshopDetailsController::class,  'addPointToWorkshop']);
+Route::get('invitations/{workshopId}',          [InvitationController::class,       'invitationContent']);
+
 
 
 

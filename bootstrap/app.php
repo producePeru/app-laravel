@@ -11,6 +11,10 @@
 |
 */
 
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../', '.env.local'); 
+// $dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../', '.env'); // Para entorno de producción
+$dotenv->load();
+
 $app = new Illuminate\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );

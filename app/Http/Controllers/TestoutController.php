@@ -72,6 +72,48 @@ class TestoutController extends Controller
         } 
     }
 
+    public function getQuestions($workshopId)
+    {
+        $workshop = Workshop::find($workshopId);
+  
+        $testout = Testout::find($workshop->testout_id);
+
+        $data = [
+            'question1' => $testout->question1,
+            'question1_opt1' => $testout->question1_opt1,
+            'question1_opt2' => $testout->question1_opt2,
+            'question1_opt3' => $testout->question1_opt2,
+            'question2' => $testout->question2,
+            'question2_opt1' => $testout->question2_opt1,
+            'question2_opt2' => $testout->question2_opt2,
+            'question2_opt3' => $testout->question2_opt3,
+            'question3' => $testout->question3,
+            'question3_opt1' => $testout->question3_opt1,
+            'question3_opt2' => $testout->question3_opt2,
+            'question3_opt3' => $testout->question3_opt3,
+            'question4' => $testout->question4,
+            'question4_opt1' => $testout->question4_opt1,
+            'question4_opt2' => $testout->question4_opt2,
+            'question4_opt3' => $testout->question4_opt3,
+            'question5' => $testout->question5,
+            'question5_opt1' => $testout->question5_opt1,
+            'question5_opt2' => $testout->question5_opt2,
+            'question5_opt3' => $testout->question5_opt3,
+
+            'satistaction1' => $testout->satistaction1,
+            'satistaction2' => $testout->satistaction2,
+            'satistaction3' => $testout->satistaction3,
+
+            'is_comments' => $testout->is_comments,
+            'comments' => $testout->comments
+        ];
+        try {
+            return response()->json(['data' => $data], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => 'Test de entrada no encontrado'], 404);
+        } 
+    }
+
     /**
      * Show the form for editing the specified resource.
      */

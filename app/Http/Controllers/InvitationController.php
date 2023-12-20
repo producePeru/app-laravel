@@ -36,6 +36,7 @@ class InvitationController extends Controller
 
     public function createInvitation(Request $request, $workshopId)
     {
+
         $workshop = Workshop::find($workshopId);
 
         if (!$workshop) {
@@ -46,15 +47,20 @@ class InvitationController extends Controller
             return response()->json(['message' => 'La invitación ya está asociado a este Taller'], 422);
         }
 
+        $quillContent = $request->input('content');
+        $idWorkshop = $request->input('workshop_id');
+
         try {
-            $invitation = Invitation::create($request->all());
+            // $invitation = Invitation::create($request->all());
+            $invitation = Invitation::create(['content' => $quillContent, 'workshop_id' => $idWorkshop]);
+            
             $workshop->update(['invitation_id' => $invitation->id]);
             
             return response()->json(['message' => 'Invitación creada correctamente'], 201);
         } catch (QueryException $e) {
-            return response()->json(['error' => 'Error al crear la invitación. Por favor, inténtalo de nuevo.'], 500);
+            return response()->json(['error' => 'Error al crear la invitación. Por favor, inténtalo de nuevo.'. $e], 500);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error desconocido al crear esta invitación.', $e], 500);
+            return response()->json(['error' => 'Error desconocido al crear esta invitación.'. $e], 500);
         }
     }
 
@@ -67,6 +73,21 @@ class InvitationController extends Controller
         
         try {
             return response()->json(['data' => $invitation], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => 'Invitacion no encontrada'], 404);
+        } 
+    }
+
+    public function invitationContent($idInvitation)
+    {
+        $invitation = Invitation::find($idInvitation);
+
+        $data = [
+            'content' => $invitation->content
+        ];
+
+        try {
+            return response()->json(['data' => $data], 200);
         } catch (\Throwable $th) {
             return response()->json(['message' => 'Invitacion no encontrada'], 404);
         } 
@@ -89,7 +110,7 @@ class InvitationController extends Controller
             $invitation->update($request->all());
             return response()->json(['message' => 'La invitación se actualizó correctamente']);    
         } catch (QueryException $e) {
-            return response()->json(['error' => 'Error al actualizar esta invitación.'], 500);
+            return response()->json(['error' => 'Error al actualizar esta invitación.', $e], 500);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error desconocido al actualizar este test de entrada.', $e], 500);
         }

@@ -22,8 +22,7 @@ class UpdateInvitationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'text1' => ['required'],
-            'text2' => ['required'],
+            'content' => ['required'],
         ];
     }
 }
