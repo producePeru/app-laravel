@@ -28,7 +28,7 @@ Route::get('data-mype/{ruc}',                   [MypeController::class,         
 Route::get('api-data-mype/{ruc}',               [MypeController::class,             'getDataFromExternalApi']);
 Route::post('register-mype',                    [MypeController::class,             'registerMype']);
 Route::post('sending-test-answers/{wsId}',      [WorkshopDetailsController::class,  'insertOrUpdateWorkshopDetails']);
-Route::put('addPoint/{workshopId}/{type}',      [WorkshopDetailsController::class,  'addPointToWorkshop']);
+Route::put('add-point/{workshopId}/{type}',      [WorkshopDetailsController::class,  'addPointToWorkshop']);
 Route::get('invitations/{workshopId}',          [InvitationController::class,       'invitationContent']);
 
 

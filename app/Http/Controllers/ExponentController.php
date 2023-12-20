@@ -47,9 +47,9 @@ class ExponentController extends Controller
             $exponent->enabled = $exponent->enabled ? 0 : 1;
             $exponent->save();
             if($exponent->enabled == 1) {
-                return response()->json(['message' => 'Exponente ha sido habilitado'], 201);
+                return response()->json(['message' => 'El exponente ha sido habilitado'], 201);
             } else {
-                return response()->json(['message' => 'Exponente fue deshabilitado'], 201);
+                return response()->json(['message' => 'El exponente ha sido deshabilitado'], 201);
             }
         }
     }
