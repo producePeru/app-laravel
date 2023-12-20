@@ -49,27 +49,28 @@ class AuthController extends Controller
     public function login(Request $request)
     {
 
-        if(!Auth::attempt($request->only('email', 'password')))
-        {
-            return response()->json(['message' => 'Unauthorized'], 401);
+        $credentials = $request->only('email', 'password');
+    
+        $nickCredentials = ['nick_name' => $request->input('email'), 'password' => $request->input('password')];
+
+        if (!Auth::attempt($credentials) && !Auth::attempt($nickCredentials)) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        $user = User::where('email', $request['email'])->firstOrFail();
+        $user = Auth::user();
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(
-            [
-                'message' => 'Hi '.$user->name,
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-                'user' => [
-                    'name' => $user->name,
-                    'nick' => $user->nick_name,
-                    'email' => $user->email
-                ]
+        return response()->json([
+            'message' => 'Hi ' . $user->name,
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => [
+                'name' => $user->name,
+                'nick' => $user->nick_name,
+                'email' => $user->email
             ]
-        );
+        ]);
     }
 
     public function logout()

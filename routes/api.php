@@ -14,7 +14,7 @@ use App\Http\Controllers\InvitationController;
 
 
 
-Route::post('login', [AuthController::class, 'login']);
+Route::post('login',                            [AuthController::class,             'login']);
 
 //RutaDigital Test
 Route::get('countries',                         [StaticController::class,           'getDataCountries']);
