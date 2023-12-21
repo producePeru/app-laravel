@@ -10,7 +10,7 @@ use App\Http\Controllers\TestoutController;
 use App\Http\Controllers\MypeController;
 use App\Http\Controllers\WorkshopDetailsController;
 use App\Http\Controllers\InvitationController;
-
+use App\Http\Controllers\ReportsController;
 
 
 
@@ -28,7 +28,7 @@ Route::get('data-mype/{ruc}',                   [MypeController::class,         
 Route::get('api-data-mype/{ruc}',               [MypeController::class,             'getDataFromExternalApi']);
 Route::post('register-mype',                    [MypeController::class,             'registerMype']);
 Route::post('sending-test-answers/{wsId}',      [WorkshopDetailsController::class,  'insertOrUpdateWorkshopDetails']);
-Route::put('add-point/{workshopId}/{type}',      [WorkshopDetailsController::class,  'addPointToWorkshop']);
+Route::put('add-point/{workshopId}/{type}',     [WorkshopDetailsController::class,  'addPointToWorkshop']);
 Route::get('invitations/{workshopId}',          [InvitationController::class,       'invitationContent']);
 
 
@@ -41,9 +41,12 @@ Route::post('register', [AuthController::class, 'register']);
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
     
 
-    Route::apiResource('exponents',                     ExponentController::class);
-    Route::get('enableds-exponents',                    ['uses' => 'ExponentController@allExponents']);
-    Route::put('enabled-disabled/{exponentId}',         ['uses' => 'ExponentController@isEnabledDisabled']);
+    Route::apiResource('exponents',                 ExponentController::class);
+    Route::get('enableds-exponents',                ['uses' => 'ExponentController@allExponents']);
+    Route::put('enabled-disabled/{exponentId}',     ['uses' => 'ExponentController@isEnabledDisabled']);
+
+    Route::get('mype-registered',                   [ReportsController::class,  'TotalMype']);
+    Route::get('mype-anual-progress',               [ReportsController::class,  'AnualProgress']);
 
     
 
