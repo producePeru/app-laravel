@@ -21,6 +21,9 @@ class Mype extends Model
         'sex',
         'phone',
         'email',
+
+        'registration_date',
+
         'added'
     ];
 }

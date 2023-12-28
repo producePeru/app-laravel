@@ -33,7 +33,9 @@ class StoreMypeRequest extends FormRequest
             'sex' => [],
             'phone' => [],
             'email' => [],
-            'added' => []
+            'added' => [],
+
+            'registration_date' => []
         ];
     }
 

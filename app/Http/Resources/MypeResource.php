@@ -26,7 +26,8 @@ class MypeResource extends JsonResource
             'dniNumber' => $this->dni_number,
             'sex' => $this->sex,
             'phone' => $this->phone,
-            'email' => $this->email
+            'email' => $this->email,
+            'registrationDate' => $this->registration_date
         ];
     }
 }

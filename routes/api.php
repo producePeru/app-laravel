@@ -47,6 +47,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
     Route::get('mype-registered',                   [ReportsController::class,  'TotalMype']);
     Route::get('mype-anual-progress',               [ReportsController::class,  'AnualProgress']);
+    Route::get('mype-month-progress',               [ReportsController::class,  'MonthProgress']);
 
     
 

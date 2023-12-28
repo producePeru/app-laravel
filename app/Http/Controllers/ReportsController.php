@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Models\Mype;
-
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class ReportsController extends Controller
 {
@@ -39,9 +39,82 @@ class ReportsController extends Controller
     public function AnualProgress()
     {
         $mypes = Mype::all();
+    
+        $countByYear = [];
+    
+        foreach ($mypes as $mype) {
+            try {
+                $registrationDate = Carbon::createFromFormat('d/m/Y H:i', $mype->registration_date);
+            } catch (\Exception $e) {
+                continue;
+            }
+    
+            if (!$registrationDate) {
+                continue;
+            }
+    
+            $year = $registrationDate->year;
+    
+            if (array_key_exists($year, $countByYear)) {
+                $countByYear[$year]++;
+            } else {
+                $countByYear[$year] = 1;
+            }
+        }
+    
+        $categories = array_keys($countByYear);
+        $data = array_values($countByYear);
+    
+        $response = [
+            'categories' => $categories,
+            'data' => $data,
+        ];
+    
+        return response()->json($response);
+    }
 
-        return $mypes;
+    public function MonthProgress()
+    {
+        $mypes = Mype::all();
+
+        $countByYear = [];
+
+        foreach ($mypes as $mype) {
+            try {
+                $registrationDate = Carbon::createFromFormat('d/m/Y H:i', $mype->registration_date);
+            } catch (\Exception $e) {
+                continue;
+            }
+
+            if (!$registrationDate) {
+                continue;
+            }
+
+            $year = $registrationDate->year;
+            $month = $registrationDate->month;
+
+            if (!array_key_exists($year, $countByYear)) {
+                $countByYear[$year] = array_fill(1, 12, 0);
+            }
+
+            $countByYear[$year][$month]++; 
+        }
+
+        $formattedData = [];
+
+        foreach ($countByYear as $year => $monthlyCounts) {
+            $formattedData[$year] = [
+                'categories' => [
+                    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+                ],
+                'data' => array_values($monthlyCounts), 
+            ];
+        }
+
+        return response()->json($formattedData);
     }
 }
+
+
 
 

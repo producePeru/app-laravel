@@ -34,7 +34,8 @@ class QueuedImport implements ToModel, WithHeadingRow, WithChunkReading, WithBat
             'dni_number' => $row['dni'],
             'sex' => $row['sexo'],
             'phone' => $row['telefono'],
-            'email' => $row['email']
+            'email' => $row['email'],
+            'registration_date' => $row['fecha_registro']
         ]);
 
         $mype->save();
