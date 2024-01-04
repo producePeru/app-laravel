@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class StoreAuthRequest extends FormRequest
 {
@@ -12,8 +13,10 @@ class StoreAuthRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $user = Auth::user();
+        return $user != null && $user->tokenCan('super');
     }
+
 
     /**
      * Get the validation rules that apply to the request.
@@ -31,14 +34,14 @@ class StoreAuthRequest extends FormRequest
             'middleName' => 'required',
             'name' => 'required',
             'countryCode' => '',
-            'birthdate' => '',
-            'gender' => '',
-            'isDisabled' => 'required',
             'email' => 'string|max:255|email',
-            'phoneNumber' => '',
             'officeCode' => 'required',
             'sedeCode' => 'required',
-            'role' => 'required'
+            'role' => 'required',
+            'birthdate' => '',
+            'gender' => '',
+            'isDisabled' => '',
+            'phoneNumber' => '',
         ];
     }
 

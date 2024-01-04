@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Sede extends Model
+class Permission extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'macro', 'address', 'status'];
+    protected $primaryKey = '_id';
 
+    protected $fillable = ['created', '_id', 'views', 'exclusions'];
 }

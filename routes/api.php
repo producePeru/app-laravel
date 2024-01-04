@@ -33,7 +33,7 @@ Route::get('invitations/{workshopId}',          [InvitationController::class,   
 
 
 
-Route::post('register', [AuthController::class, 'register']);
+// Route::post('register', [AuthController::class, 'register']);
 
 
 
@@ -45,10 +45,13 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     Route::get('enableds-exponents',                ['uses' => 'ExponentController@allExponents']);
     Route::put('enabled-disabled/{exponentId}',     ['uses' => 'ExponentController@isEnabledDisabled']);
 
-    Route::get('mype-registered',                   [ReportsController::class,  'TotalMype']);
-    Route::get('mype-anual-progress',               [ReportsController::class,  'AnualProgress']);
-    Route::get('mype-month-progress',               [ReportsController::class,  'MonthProgress']);
+    Route::get('mype-registered',                   [ReportsController::class,      'TotalMype']);
+    Route::get('mype-anual-progress',               [ReportsController::class,      'AnualProgress']);
+    Route::get('mype-month-progress',               [ReportsController::class,      'MonthProgress']);
 
+    Route::get('sedes',                             [StaticController::class,       'getDataSedes']);
+    Route::post('register',                         [AuthController::class,         'register']);
+    Route::apiResource('permission',                PermissionController::class);
     
 
 
@@ -99,11 +102,11 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
 
 
-    Route::post('register', [AuthController::class, 'register']);
+   
     
 
 
-    Route::post('invoices/bulk', ['uses' => 'InvoiceController@bulkStore']);
+    // Route::post('invoices/bulk', ['uses' => 'InvoiceController@bulkStore']);
 
 
     Route::post('logout', [AuthController::class, 'logout']);

@@ -6,6 +6,7 @@ use App\Models\Country;
 use App\Models\Departament;
 use App\Models\Province;
 use App\Models\District;
+use App\Models\Sede;
 use Illuminate\Http\Request;
 
 class StaticController extends Controller
@@ -69,6 +70,20 @@ class StaticController extends Controller
 
         return response()->json(['data' => $formattedDistricts]);
     }
+
+    public function getDataSedes()
+    {
+        $sedes = Sede::all();
+        $formattedSedes = $sedes->map(function ($sede) {
+            return [
+                'label' => $sede->name,
+                'value' => $sede->id,
+            ];
+        });
+        return response()->json(['data' => $formattedSedes]);
+    }
+
+
 
 }
 
