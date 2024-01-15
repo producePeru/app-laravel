@@ -23,30 +23,20 @@ class AcceptInvitationWorkshopDetails extends Mailable
     }
 
     /**
-     * Get the message envelope.
+     * Build the message.
+     *
+     * @return $this
      */
-    public function envelope(): Envelope
+    public function build()
     {
-        return new Envelope(
-            subject: 'Bienvenido al taller'
-        );
+        return $this->from(env('MAIL_FROM_ADDRESS', 'digitalizacion.pnte@gmail.com'), 'Taller de Ruta Digital')
+                    ->subject('Bienvenido al taller')
+                    ->view('email.accept_invitation_workshop')
+                    ->with([
+                        'workshop' => $this->workshop,
+                        'mype' => $this->mype,
+                    ]);
     }
-
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'email.accept_invitation_workshop',
-             with: [
-                'workshop' => $this->workshop,
-                'mype' => $this->mype,
-            ]
-        );
-    }
-
- 
 
     /**
      * Get the attachments for the message.

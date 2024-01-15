@@ -11,6 +11,7 @@ use App\Http\Controllers\MypeController;
 use App\Http\Controllers\WorkshopDetailsController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\AgreementsController;
 
 
 
@@ -53,8 +54,17 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     Route::post('register',                         [AuthController::class,         'register']);
     Route::apiResource('permission',                PermissionController::class);
     
+    //convenios
+    Route::post('agreements/new-agreement',         [AgreementsController::class,   'newAgreement']);
+    Route::post('agreements/upload-pdf',            [AgreementsController::class,   'uploadPdf']);
+    Route::post('agreements/commitments',           [AgreementsController::class,   'newCommitments']);
+    
+    Route::get('agreements/commitments/{id}',       [AgreementsController::class,   'commitments']);
 
 
+    Route::get('agreements/get-uploaded-files',     [AgreementsController::class,   'getUploadedFiles']);
+
+    //usuarios
     Route::apiResource('users', UserController::class);
     
 
