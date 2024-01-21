@@ -22,7 +22,10 @@ class MypeController extends Controller
      */
     public function index(Request $request)
     {
-        $mype = Mype::paginate(50);
+        // $mype = Mype::paginate(50);
+        $mype = Mype::where('added', 1)->paginate(50);
+
+        // return $mype;
         return new MypeCollection($mype);
     }
 
@@ -104,15 +107,8 @@ class MypeController extends Controller
 
     public function uploadExcel(Request $request)
     {
-
-        // Excel::import(new MypesImport, $request->file('file')->store('temp'));
-        // Excel::queueImport(new MypesImport, $request->file('file')->store('temp'));
-
         try {
-            // Excel::import(
-            //     new QueuedImport,
-            //     $request->file('file')->store('temp')
-            // );
+       
             (new QueuedImport)->import($request->file('file')->store('temp'), null, \Maatwebsite\Excel\Excel::XLSX);
 
             return response()->json(['message' => 'Subida exitosa']);
@@ -121,10 +117,10 @@ class MypeController extends Controller
             $failures = $e->failures();
 
             foreach ($failures as $failure) {
-                $failure->row(); // row that went wrong
-                $failure->attribute(); // either heading key (if using heading row concern) or column index
-                $failure->errors(); // Actual error messages from Laravel validator
-                $failure->values(); // The values of the row that has failed.
+                $failure->row(); 
+                $failure->attribute(); 
+                $failure->errors(); 
+                $failure->values(); 
             }
 
             return response()->json(['message' => 'Error en la subida', 'failures' => $failures], 400);

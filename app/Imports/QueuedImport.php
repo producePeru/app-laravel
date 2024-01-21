@@ -23,6 +23,13 @@ class QueuedImport implements ToModel, WithHeadingRow, WithChunkReading, WithBat
     public function model(array $row)
     {
 
+         // Check if a record with the same combination of 'ruc' and 'dni' already exists
+        $existingRecord = Mype::where('ruc', $row['ruc'])->where('dni_number', $row['dni'])->first();
+
+        // If the record already exists, you can skip adding it
+        if ($existingRecord) {
+            return null;
+        }
         $mype = new Mype([
             'ruc' => $row['ruc'],
             'social_reason' => $row['razon_social'],
@@ -35,7 +42,8 @@ class QueuedImport implements ToModel, WithHeadingRow, WithChunkReading, WithBat
             'sex' => $row['sexo'],
             'phone' => $row['telefono'],
             'email' => $row['email'],
-            'registration_date' => $row['fecha_registro']
+            'registration_date' => $row['fecha_registro'],
+            'added' => 1
         ]);
 
         $mype->save();
