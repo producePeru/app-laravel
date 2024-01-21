@@ -58,26 +58,35 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     Route::post('agreements/new-agreement',         [AgreementsController::class,   'newAgreement']);
     Route::post('agreements/upload-pdf',            [AgreementsController::class,   'uploadPdf']);
     Route::post('agreements/commitments',           [AgreementsController::class,   'newCommitments']);
+    Route::delete('delete/agreements/{id}',         [AgreementsController::class,   'deleteCommitments']);
     
     Route::get('agreements/commitments/{id}',       [AgreementsController::class,   'commitments']);
 
-
     Route::get('agreements/get-uploaded-files',     [AgreementsController::class,   'getUploadedFiles']);
+    
+
+    //MYPE
+    Route::apiResource('mype',                      MypeController::class);
+    Route::post('import-excel',                     ['uses' => 'MypeController@uploadExcel']);
+    Route::get('export-excel',                      ['uses' => 'MypeController@downloadExcel']);
+    Route::get('data-mype/{ruc}',                   ['uses' => 'MypeController@dataMypeRuc']);
+    Route::get('api-data-mype/{ruc}',               ['uses' => 'MypeController@getDataFromExternalApi']);
+
+    //patrimonios
+    // Route::post('import-excel',                     []);
+
+
 
     //usuarios
     Route::apiResource('users', UserController::class);
     
 
-    // MYPE
-    Route::apiResource('mype', MypeController::class);
     
-    Route::get('data-mype/{ruc}', ['uses' => 'MypeController@dataMypeRuc']);
-
-    Route::get('api-data-mype/{ruc}', ['uses' => 'MypeController@getDataFromExternalApi']);
+    
+    
 
     //excel
-    Route::post('import-excel', ['uses' => 'MypeController@uploadExcel']);
-    Route::get('export-excel', ['uses' => 'MypeController@downloadExcel']);
+    
 
     
     

@@ -39,7 +39,7 @@ class AgreementsController extends Controller
 
         try {
             $agreement = Agreement::create($data);
-            return response()->json(['message' => 'Convenio creado correctamente'], 200);
+            return response()->json(['message' => 'Convenio creado correctamente', 'data' => $agreement->id], 200);
         } catch (QueryException $e) {
             return response()->json(['error' => 'Error al crear el Convenio. ' . $e->getMessage()], 500);
         } catch (\Exception $e) {
@@ -105,5 +105,16 @@ class AgreementsController extends Controller
         });
 
         return response()->json(['data' => $groupedCommitments->values()], 200);
+    }
+
+    public function deleteCommitments($idCommitment)
+    {
+        $commitment = Commitment::find($idCommitment);
+
+        if ($commitment) {
+            $commitment->status = 'Inactive';
+            $commitment->save();
+            return response()->json(['message' => 'Se ha eliminado con éxito'], 200);
+        }
     }
 }

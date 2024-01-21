@@ -139,29 +139,4 @@ class MypeController extends Controller
             $failures = $e->failures();
         }
     }
-    
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Mype $mype)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateMypeRequest $request, Mype $mype)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Mype $mype)
-    {
-        //
-    }
 }
