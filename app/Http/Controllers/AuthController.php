@@ -15,48 +15,36 @@ use \stdClass;
 
 class AuthController extends Controller
 {
-    public function register(StoreAuthRequest $request)
+    public function registerUser(StoreAuthRequest $request)
     {
-        $country = Country::find($request->countryCode);
-
-        if (!$country) {
-            return response()->json(['error' => 'El país no existe'], 404);
-        }
-
-        $user = User::where('_id', $request['_id'])->first();
-        $role = $user->role;
-
-        $lastInsertedId = User::max('id') + 1;
-        $hashedId = hash('sha256', $lastInsertedId);
-
-        if($role == 100) {
+        try {
             $newUser = User::create([
-                '_id' => $hashedId,
-                'nick_name' => $request->nickName,
+                'nick_name' => $request->nick_name,
                 'password' => Hash::make($request->password),
-                'document_type' => $request->documentType,
-                'document_number' => $request->documentNumber,
-                'last_name' => $request->lastName,
-                'middle_name' => $request->middleName,
+                'document_type' => $request->document_type,
+                'document_number' => $request->document_number,
+                'last_name' => $request->last_name,
+                'middle_name' => $request->middle_name,
                 'name' => $request->name,
-                'country_code' => $country->id,
+                'country_code' => $request->country_code,
                 'birthdate' => $request->birthdate,
                 'gender' => $request->gender,
-                'is_disabled' => $request->isDisabled,
+                'is_disabled' => $request->is_disabled,
                 'email' => $request->email,
-                'phone_number' => $request->phoneNumber,
-                'office_code' => $request->officeCode,
-                'sede_code' => $request->sedeCode,
+                'phone_number' => $request->phone_number,
+                'office_code' => $request->office_code,
+                'sede_code' => $request->sede_code,
                 'role' => $request->role,
-                'created' => $user->id
+                'created_by' => $request->created_by
             ]);
-    
-            $token = $newUser->createToken('auth_token')->plainTextToken;
-    
-            return response()->json(['message' =>'Registro completado', 'data' => hash('sha256', $newUser->id)], 200);    
-        } else {
-            return response()->json(['message' =>'No tienes permiso']);    
-        }
+        
+            return response()->json(['message' => 'Usuario creado correctamente'], 200);
+        
+        } catch (QueryException $e) {
+            return response()->json(['error' => 'Error al crear. Por favor, inténtalo de nuevo.'], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error desconocido al crear.'.$e->getMessage()], 500);
+        }   
     }
 
     public function login(Request $request)
@@ -72,6 +60,8 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        // $crypt = Crypt::encryptString($user->id);
+        // return $decrypted = Crypt::decryptString($as);
 
         if($user->role === 100) {                             
             $token = $user->createToken('admin-token', ['super']);  //administrador
@@ -93,7 +83,7 @@ class AuthController extends Controller
         return response()->json([
             'data' => [
                 'access_token' => $token->plainTextToken,
-                'id' =>     $user->_id,
+                'id' =>     Crypt::encryptString($user->id),
                 'role' =>   $role,
                 'name'  =>  $user->name,
                 'nick'  =>  $user->nick_name,

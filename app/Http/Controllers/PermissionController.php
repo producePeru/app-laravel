@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Permission;
 use App\Http\Requests\StorePermissionRequest;
+use Illuminate\Support\Facades\Crypt;
 
 use Illuminate\Http\Request;
 
 class PermissionController extends Controller
 {   
-    public function show($id)
+    public function show($idUser)
     {
+        $id = Crypt::decryptString($idUser);
+
         $permissions = Permission::find($id);
 
         $data = [

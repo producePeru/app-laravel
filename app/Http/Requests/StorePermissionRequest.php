@@ -16,10 +16,12 @@ class StorePermissionRequest extends FormRequest
     public function authorize(Request $request): bool
     {
    
-        $createdBy = $request->input('created');
-        $user = User::where('_id', $createdBy)->first();
+        // $createdBy = $request->input('created');
+        // $user = User::where('_id', $createdBy)->first();
 
-        return $user !== null && $user->role === 100;
+        // return $user !== null && $user->role === 100;
+
+        return true;
     }
 
     /**

@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Ramsey\Uuid\Uuid;
 
 class User extends Authenticatable
 {
@@ -18,7 +19,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        '_id',
+        // 'id',
         'nick_name',
         'password',
         'document_type',
@@ -35,7 +36,7 @@ class User extends Authenticatable
         'office_code',
         'sede_code',
         'role',
-        'created'
+        'created_by'
     ];
 
     /**
@@ -55,13 +56,14 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'password' => 'hashed'
     ];
 
     public function country()
     {
         return $this->belongsTo(Country::class, 'country_code');
     }
+
     public function sede()
     {
         return $this->belongsTo(Sede::class, 'sede_code');

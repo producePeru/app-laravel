@@ -34,8 +34,9 @@ Route::get('invitations/{workshopId}',          [InvitationController::class,   
 
 
 
-// Route::post('register', [AuthController::class, 'register']);
 
+
+Route::post('register-user',  [AuthController::class,  'registerUser']);
 
 
 
@@ -51,7 +52,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     Route::get('mype-month-progress',               [ReportsController::class,      'MonthProgress']);
 
     Route::get('sedes',                             [StaticController::class,       'getDataSedes']);
-    Route::post('register',                         [AuthController::class,         'register']);
+    // Route::post('register',                         [AuthController::class,         'registerUser']);
     Route::apiResource('permission',                PermissionController::class);
     
     //convenios
@@ -80,13 +81,35 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     //usuarios
     Route::apiResource('users', UserController::class);
     
+    // personas_master *******************************************************************************
+    Route::get('person/{type}/{num}',                  ['uses' => 'PeopleController@dniSearch']);          //api busvar dni RENIEC
+    Route::post('new-person',                       ['uses' => 'PeopleController@personCreate']);
+    Route::get('person/{idPost}',                   ['uses' => 'PeopleController@index']);
+    Route::get('person-by-dni/{dni}',               ['uses' => 'PeopleController@show']);
+    Route::put('person-dni/{dni}/{rol}',            ['uses' => 'PeopleController@deleteUser']); 
+    // personas_master *******************************************************************************
+    
+    // notarias*******************************************************************************
+    Route::get('notaries',                         ['uses' => 'NotaryController@index']);
+    Route::post('notary',                          ['uses' => 'NotaryController@store']);
+    Route::get('notary/{id}',                      ['uses' => 'NotaryController@show']);
+    Route::put('notary/{id}',                      ['uses' => 'NotaryController@update']);
+    Route::put('notary-delete/{id}',               ['uses' => 'NotaryController@deleteNotary']);
+    // notarias*******************************************************************************
 
+    // compañias_master*******************************************************************************
+    Route::get('companies',                        ['uses' => 'CompanyController@index']);
+    Route::post('company',                         ['uses' => 'CompanyController@companyCreateUpadate']);
+    Route::put('company-delete/{id}',              ['uses' => 'CompanyController@deleteCompany']);
     
     
-    
+    Route::get('notary/{id}',                      ['uses' => 'NotaryController@show']);
+    Route::put('notary/{id}',                      ['uses' => 'NotaryController@update']);
+    // compañias_master*******************************************************************************
 
-    //excel
-    
+
+
+
 
     
     
