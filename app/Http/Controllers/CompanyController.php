@@ -3,11 +3,34 @@
 namespace App\Http\Controllers;
 use App\Models\Company;
 use Illuminate\Support\Facades\Crypt;
+use GuzzleHttp\Client;
 
 use Illuminate\Http\Request;
 
 class CompanyController extends Controller
 {
+    public function rucSearch($ruc)
+    {
+        $apiUrl = "https://api.apis.net.pe/v2/sunat/ruc?numero={$ruc}";
+
+        try {
+            $client = new Client();
+            $response = $client->request('GET', $apiUrl, [
+                'headers' => [
+                    'Authorization' => 'Bearer apis-token-6688.nekxM8GmGEHYD9qosrnbDWNxQlNOzaT5', 
+                    'Accept' => 'application/json',
+                ],
+                
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+
+            return response()->json(['data' => $data]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function index()
     {
         $companies = Company::where('status', 1)->get();
@@ -67,4 +90,5 @@ class CompanyController extends Controller
             return response()->json(['error' => 'Error interno del servidor'], 500);
         }
     }
+
 }

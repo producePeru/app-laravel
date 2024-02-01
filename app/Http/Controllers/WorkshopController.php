@@ -6,6 +6,7 @@ use App\Models\Workshop;
 use App\Models\Testin;
 use App\Models\Testout;
 use App\Models\WorkshopDetails;
+use App\Models\Invitation;
 use App\Http\Requests\StoreWorkshopRequest;
 use App\Http\Requests\UpdateWorkshopRequest;
 use Illuminate\Http\Request;
@@ -127,8 +128,32 @@ class WorkshopController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Workshop $workshop)
+    public function invitation($slug)
     {
-        //
+        $result = Workshop::where('status', 1)
+        ->where('slug', $slug)
+        ->first();
+
+        if(!$result) {
+            return response()->json(['data' => []]);
+        } else {
+            
+            $invitation = Invitation::where('workshop_id', $result->id)->first();
+
+            if (!$invitation) {
+                return response()->json(['data' => []]);
+            }
+            
+            $data = [
+                'id' => $result->id,
+                'title' => $result->title,
+                'slug' => $result->slug,
+                'date' => $result->workshop_date,
+                "workshop_id" => $invitation->workshop_id,
+                "content" => $invitation->content
+            ];
+
+            return response()->json(['data' => $data]);
+        }
     }
 }

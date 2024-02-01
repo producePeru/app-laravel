@@ -23,6 +23,9 @@ Route::get('departaments',                      [StaticController::class,       
 Route::get('province/{idDepartament}',          [StaticController::class,           'getDataProvinces']);
 Route::get('district/{idProvince}',             [StaticController::class,           'getDataDistricts']);
 Route::get('get-workshop-slug/{workshopSlug}',  [WorkshopController::class,         'getBySlug']);
+
+// Route::get('invitation/{slug}',         [WorkshopController::class,         'invitation']);
+
 Route::get('testin-questions/{workshopId}',     [TestinController::class,           'getQuestions']);
 Route::get('testout-questions/{workshopId}',    [TestoutController::class,          'getQuestions']);
 Route::get('data-mype/{ruc}',                   [MypeController::class,             'dataMypeRuc']);
@@ -36,7 +39,23 @@ Route::get('invitations/{workshopId}',          [InvitationController::class,   
 
 
 
-Route::post('register-user',  [AuthController::class,  'registerUser']);
+// Route::post('register-user',  [AuthController::class,  'registerUser']);
+
+
+Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function() {
+    
+    Route::get('invitation/{slug}',                 ['uses' => 'WorkshopController@invitation']);
+    Route::post('accepted-invitation',              ['uses' => 'InvitationController@acceptedInvitation']);
+
+    // Route::post('insert-update-company',            ['uses' => 'CompanyPeopleController@insertUpdateCompany']);
+    // Route::post('insert-update-person',             ['uses' => 'CompanyPeopleController@insertUpdatePerson']);
+    // Route::post('accept-invitation/{workshopId}',   ['uses' => 'WorkshopDetailsController@acceptInvitationWorkshopDetails']);
+    
+    Route::get('person/{type}/{num}',               ['uses' => 'PeopleController@dniSearch']); 
+    Route::get('company/{ruc}',                     ['uses' => 'CompanyController@rucSearch']);  
+});
+
+
 
 
 
@@ -53,7 +72,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
     Route::get('sedes',                             [StaticController::class,       'getDataSedes']);
     // Route::post('register',                         [AuthController::class,         'registerUser']);
-    Route::apiResource('permission',                PermissionController::class);
+    
     
     //convenios
     Route::post('agreements/new-agreement',         [AgreementsController::class,   'newAgreement']);
@@ -78,11 +97,20 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
 
 
-    //usuarios
-    Route::apiResource('users', UserController::class);
+   
+    
+
+    // usuarios*******************************************************************************
+    Route::get('users',                             ['uses' => 'UserController@index']);
+    Route::get('user/{dni}',                        ['uses' => 'UserController@showUserWithViews']);
+    Route::put('delete-user/{idAdmin}/{dni}',       ['uses' => 'UserController@deleteUserStatus']);
+    Route::post('register-user',                    ['uses' => 'AuthController@registerUpdateUser']);
+    Route::post('permission',                       ['uses' => 'PermissionController@asignedViews']);
+    Route::get('permission/{idUser}',               ['uses' => 'PermissionController@showPermissions']);
+    // usuarios*******************************************************************************
     
     // personas_master *******************************************************************************
-    Route::get('person/{type}/{num}',                  ['uses' => 'PeopleController@dniSearch']);          //api busvar dni RENIEC
+    Route::get('person/{type}/{num}',               ['uses' => 'PeopleController@dniSearch']);          //api buscar dni RENIEC
     Route::post('new-person',                       ['uses' => 'PeopleController@personCreate']);
     Route::get('person/{idPost}',                   ['uses' => 'PeopleController@index']);
     Route::get('person-by-dni/{dni}',               ['uses' => 'PeopleController@show']);
@@ -136,7 +164,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     Route::get('test-all-questions/{workshopId}', ['uses' => 'WorkshopDetailsController@testAllQuestions']);
 
 
-    Route::post('accept-invitation/{workshopId}', ['uses' => 'WorkshopDetailsController@acceptInvitationWorkshopDetails']);             //mype acepta la invitacion
+                 //mype acepta la invitacion
 
 
 

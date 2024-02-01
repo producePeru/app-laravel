@@ -36,7 +36,9 @@ class User extends Authenticatable
         'office_code',
         'sede_code',
         'role',
-        'created_by'
+        'created_by',
+        'update_by',
+        'status'
     ];
 
     /**
@@ -67,5 +69,11 @@ class User extends Authenticatable
     public function sede()
     {
         return $this->belongsTo(Sede::class, 'sede_code');
+    }
+
+    public function permission()
+    {
+        return $this->hasOne(Permission::class, 'id_user', 'id');
+        
     }
 }

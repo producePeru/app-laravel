@@ -15,44 +15,54 @@ use \stdClass;
 
 class AuthController extends Controller
 {
-    public function registerUser(StoreAuthRequest $request)
+    public function registerUpdateUser(Request $request)
     {
-        try {
-            $newUser = User::create([
-                'nick_name' => $request->nick_name,
-                'password' => Hash::make($request->password),
-                'document_type' => $request->document_type,
-                'document_number' => $request->document_number,
-                'last_name' => $request->last_name,
-                'middle_name' => $request->middle_name,
-                'name' => $request->name,
-                'country_code' => $request->country_code,
-                'birthdate' => $request->birthdate,
-                'gender' => $request->gender,
-                'is_disabled' => $request->is_disabled,
-                'email' => $request->email,
-                'phone_number' => $request->phone_number,
-                'office_code' => $request->office_code,
-                'sede_code' => $request->sede_code,
-                'role' => $request->role,
-                'created_by' => $request->created_by
-            ]);
-        
-            return response()->json(['message' => 'Usuario creado correctamente'], 200);
-        
-        } catch (QueryException $e) {
-            return response()->json(['error' => 'Error al crear. Por favor, inténtalo de nuevo.'], 500);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error desconocido al crear.'.$e->getMessage()], 500);
-        }   
+        $isNewUser = User::where('document_number', $request->document_number)->first();
+
+        if ($isNewUser) {
+
+            $data = $request->except(['created_by', 'password']);
+            $data['update_by'] = Crypt::decryptString($request->updated_by);
+
+            // return $data;
+
+            $isNewUser->update($data);
+            
+            $message = "Datos actualizados exitosamente.";
+            $userId = $isNewUser->id;
+
+        } else {
+
+            $rol = Crypt::decryptString($request->created_by);
+
+            $user = User::where('id', $rol)->first();
+
+            if($user->role == 100) {
+                
+                $data = array_merge($request->except('update_by'), ['created_by' => Crypt::decryptString($request->created_by)]);
+
+                $newUser = User::create($data);
+                
+                $message = "Usuario creado exitosamente.";
+                $userId = $newUser->id;
+
+            } else {
+
+                return response()->json(['message' => 'No estas autorizado']);
+            }
+            
+        }
+
+        return response()->json(['message' => $message, 'user_id' => $userId]);
     }
+
 
     public function login(Request $request)
     {
 
         $credentials = $request->only('email', 'password');
     
-        $nickCredentials = ['nick_name' => $request->input('email'), 'password' => $request->input('password')];
+        $nickCredentials = ['document_number' => $request->input('email'), 'password' => $request->input('password')];
 
         if (!Auth::attempt($credentials) && !Auth::attempt($nickCredentials)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
@@ -60,24 +70,27 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // $crypt = Crypt::encryptString($user->id);
-        // return $decrypted = Crypt::decryptString($as);
+        $status = $user->status;
+
+        if($status !== 1) {
+            return ['message' => 'Ya no tienes acceso al sistema, consulta con tu administrador', 'status' => 404];
+        }
 
         if($user->role === 100) {                             
-            $token = $user->createToken('admin-token', ['super']);  //administrador
-            $role = "a0604689fce52a03ec566d93aa92ae9d";
+            $token = $user->createToken('admin-token', ['super']);                              //administrador
+            $role = "super";
         }
         if($user->role === 1) {                             
-            $token = $user->createToken('admin-token', ['create', 'update', 'delete']);  //administrador
-            $role = "c645a0fe6e69450e3ab7507d7b4a3ce3";
+            $token = $user->createToken('admin-token', ['create', 'update', 'delete']);         //administrador
+            $role = "administrador";
         }
         if($user->role === 2) {
-            $token = $user->createToken('update-token', ['create', 'update']);  //usuario
-            $role = "efddf7e3213ec1fc147d2cfd39dcdfdb";
+            $token = $user->createToken('update-token', ['create', 'update']);                  //usuario
+            $role = "usuario";
         }
         if($user->role === 3) {
-            $token = $user->createToken('invitado-token', ['read']);  //invitado
-            $role = "ee050deda41094f530c40213f3f77791";
+            $token = $user->createToken('invitado-token', ['read']);                            //invitado
+            $role = "invitado";
         }
 
         return response()->json([
@@ -86,7 +99,7 @@ class AuthController extends Controller
                 'id' =>     Crypt::encryptString($user->id),
                 'role' =>   $role,
                 'name'  =>  $user->name,
-                'nick'  =>  $user->nick_name,
+                'dni'  =>  $user->document_number,
                 'email' =>  $user->email
             ],
         ]);

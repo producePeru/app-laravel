@@ -33,14 +33,14 @@
                         <td style="padding-bottom: 5px; padding-left: 20px; padding-right: 20px;" align="center" valign="top" class="mainTitle">
                           <h2 class="text" style="color:#000;font-family:Poppins,Helvetica,Arial,sans-serif;font-size:22px;font-weight:500;font-style:normal;letter-spacing:normal;line-height:36px;text-transform:none;text-align:center;padding:0;margin:0">
                             Hola <br>
-                            {{$mype->name_complete}}
+                            {{ $mype['name_complete'] }}
                           </h2>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding-bottom: 30px; padding-left: 20px; padding-right: 20px;" align="center" valign="top" class="subTitle">
                           <h4 class="text" style="color:#999;font-family:Poppins,Helvetica,Arial,sans-serif;font-size:16px;font-weight:500;font-style:normal;letter-spacing:normal;line-height:24px;text-transform:none;text-align:center;padding:0;margin:0">
-                            Taller: {{ $workshop->title }}
+                            Taller: {{ $mype['title'] }}
                           </h4>
                         </td>
                       </tr>
@@ -63,7 +63,7 @@
                                   </p>
 
                                   <p class="text" style="color:#666;font-family:'Open Sans',Helvetica,Arial,sans-serif;font-size:14px;font-weight:400;font-style:normal;letter-spacing:normal;line-height:22px;text-transform:none;text-align:center;padding:0;margin:0">
-                                    Fecha: {{ $workshop->workshop_date }}
+                                    Fecha: {{ $mype['workshop_date'] }}
                                   </p>
                                   <br>
                                   <p class="text" style="color:#666;font-family:'Open Sans',Helvetica,Arial,sans-serif;font-size:14px;font-weight:400;font-style:normal;letter-spacing:normal;line-height:22px;text-transform:none;text-align:center;padding:0;margin:0">
@@ -82,7 +82,7 @@
                                     <tbody>
                                       <tr>
                                         <td style="background-color:#e31d1a; padding: 12px 35px; border-radius: 50px;" align="center" class="ctaButton"> 
-                                          <a href="{{ $workshop->link }}" style="color:#fff;font-family:Poppins,Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;font-style:normal;letter-spacing:1px;line-height:20px;text-transform:uppercase;text-decoration:none;display:block" target="_blank" class="text">
+                                          <a href="{{ $mype['link'] }}" style="color:#fff;font-family:Poppins,Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;font-style:normal;letter-spacing:1px;line-height:20px;text-transform:uppercase;text-decoration:none;display:block" target="_blank" class="text">
                                             Enlace del taller
                                           </a>
                                         </td>
