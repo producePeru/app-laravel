@@ -233,9 +233,7 @@ class WorkshopDetailsController extends Controller
         return $data;
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    
     public function addPointToWorkshop($workshopId, $type)
     {
         $value = Workshop::find($workshopId);

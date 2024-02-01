@@ -32,7 +32,7 @@ Route::get('data-mype/{ruc}',                   [MypeController::class,         
 Route::get('api-data-mype/{ruc}',               [MypeController::class,             'getDataFromExternalApi']);
 Route::post('register-mype',                    [MypeController::class,             'registerMype']);
 Route::post('sending-test-answers/{wsId}',      [WorkshopDetailsController::class,  'insertOrUpdateWorkshopDetails']);
-Route::put('add-point/{workshopId}/{type}',     [WorkshopDetailsController::class,  'addPointToWorkshop']);
+
 Route::get('invitations/{workshopId}',          [InvitationController::class,       'invitationContent']);
 
 
@@ -44,15 +44,13 @@ Route::get('invitations/{workshopId}',          [InvitationController::class,   
 
 Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function() {
     
+    // invitacion*******************************************************************************
     Route::get('invitation/{slug}',                 ['uses' => 'WorkshopController@invitation']);
     Route::post('accepted-invitation',              ['uses' => 'InvitationController@acceptedInvitation']);
-
-    // Route::post('insert-update-company',            ['uses' => 'CompanyPeopleController@insertUpdateCompany']);
-    // Route::post('insert-update-person',             ['uses' => 'CompanyPeopleController@insertUpdatePerson']);
-    // Route::post('accept-invitation/{workshopId}',   ['uses' => 'WorkshopDetailsController@acceptInvitationWorkshopDetails']);
-    
-    Route::get('person/{type}/{num}',               ['uses' => 'PeopleController@dniSearch']); 
-    Route::get('company/{ruc}',                     ['uses' => 'CompanyController@rucSearch']);  
+    Route::get('person/{type}/{num}',               ['uses' => 'PeopleController@dniSearch']);                  //api
+    Route::get('company/{ruc}',                     ['uses' => 'CompanyController@rucSearch']);                 //api
+    Route::put('add-point/{workshopId}/{type}',     ['uses' => 'WorkshopDetailsController@addPointToWorkshop']); 
+    // invitacion*******************************************************************************
 });
 
 

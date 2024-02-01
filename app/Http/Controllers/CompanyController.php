@@ -11,24 +11,43 @@ class CompanyController extends Controller
 {
     public function rucSearch($ruc)
     {
-        $apiUrl = "https://api.apis.net.pe/v2/sunat/ruc?numero={$ruc}";
 
-        try {
-            $client = new Client();
-            $response = $client->request('GET', $apiUrl, [
-                'headers' => [
-                    'Authorization' => 'Bearer apis-token-6688.nekxM8GmGEHYD9qosrnbDWNxQlNOzaT5', 
-                    'Accept' => 'application/json',
-                ],
-                
-            ]);
+        $company = Company::where('ruc', $ruc)->first();
 
-            $data = json_decode($response->getBody(), true);
+        if($company) {
+
+            $data = [
+                'ruc' => $company->ruc,
+                'social_reason' => $company->social_reason,
+                'category' => $company->category,
+                'person_type' => $company->person_type
+            ];
 
             return response()->json(['data' => $data]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+
+        } else {
+
+            $apiUrl = "https://api.apis.net.pe/v2/sunat/ruc?numero={$ruc}";
+
+            try {
+                $client = new Client();
+                $response = $client->request('GET', $apiUrl, [
+                    'headers' => [
+                        'Authorization' => 'Bearer apis-token-6688.nekxM8GmGEHYD9qosrnbDWNxQlNOzaT5', 
+                        'Accept' => 'application/json',
+                    ],
+                    
+                ]);
+
+                $data = json_decode($response->getBody(), true);
+
+                return response()->json(['data' => $data]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+
         }
+
     }
 
     public function index()
