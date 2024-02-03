@@ -40,29 +40,19 @@ class WorkshopController extends Controller
             'rrss',
             'sms',
             'correo'
-        )->orderBy('workshop_date', 'desc')->paginate($perPage);
+        )->orderBy('created_at', 'desc')->paginate($perPage);
 
         // $now = Carbon::now()->timestamp;
-        foreach ($workshops as $workshop) {
-            // $workshopDate = Carbon::createFromFormat('d-m-Y H:i A', $workshop->workshop_date)->timestamp;
-            // $workshop->status = ($now < $workshopDate) ? 'en curso' : 'finalizado';
-            $workshop->registered_count = WorkshopDetails::where('workshop_id', $workshop->id)->count();
-        }
+        // foreach ($workshops as $workshop) {
+        //     // $workshopDate = Carbon::createFromFormat('d-m-Y H:i A', $workshop->workshop_date)->timestamp;
+        //     // $workshop->status = ($now < $workshopDate) ? 'en curso' : 'finalizado';
+        //     $workshop->registered_count = WorkshopDetails::where('workshop_id', $workshop->id)->count();
+        // }
 
         return response()->json(['workshop' => $workshops]);
     }
 
-    /**
-     * Show the form for creating a new resource.   21-12-2023 23:50 PM
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(StoreWorkshopRequest $request)
     {
         try {
@@ -75,17 +65,7 @@ class WorkshopController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Workshop $workshop)
-    {
-        
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
+  
     public function getBySlug(Request $request, $slug)
     {
         $workshop = Workshop::where('slug', $slug)->with('exponent')->first();
@@ -116,18 +96,13 @@ class WorkshopController extends Controller
         return response()->json(['workshop' => $response]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateWorkshopRequest $request, Workshop $workshop)
     {
         $workshop->update($request->all());
         return response()->json(['message' => 'Taller actualizado correctamente']);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+  
     public function invitation($slug)
     {
         $result = Workshop::where('status', 1)

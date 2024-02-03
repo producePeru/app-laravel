@@ -127,14 +127,15 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     Route::get('companies',                        ['uses' => 'CompanyController@index']);
     Route::post('company',                         ['uses' => 'CompanyController@companyCreateUpadate']);
     Route::put('company-delete/{id}',              ['uses' => 'CompanyController@deleteCompany']);
-    
-    
+
     Route::get('notary/{id}',                      ['uses' => 'NotaryController@show']);
     Route::put('notary/{id}',                      ['uses' => 'NotaryController@update']);
     // compañias_master*******************************************************************************
 
 
-
+    // drive*******************************************************************************
+    Route::post('drive/up-files',                  ['uses' => 'DriveController@driveUpFiles']);
+    // drive*******************************************************************************
 
 
     
