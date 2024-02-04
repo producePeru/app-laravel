@@ -17,3 +17,6 @@ david.pug
 # /.fleet
 # /.idea
 # /.vscode
+
+config\cors.php
+app-pixel\bootstrap\app.php
