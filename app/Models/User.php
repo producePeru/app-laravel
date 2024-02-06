@@ -73,7 +73,10 @@ class User extends Authenticatable
 
     public function permission()
     {
-        return $this->hasOne(Permission::class, 'id_user', 'id');
-        
+        return $this->hasOne(Permission::class, 'id_user', 'id'); 
+    }
+    public function drive()
+    {
+        return $this->hasMany(Drive::class, 'created_by', 'id'); 
     }
 }

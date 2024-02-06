@@ -135,6 +135,10 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
     // drive*******************************************************************************
     Route::post('drive/up-files',                  ['uses' => 'DriveController@driveUpFiles']);
+    Route::get('drive/files/{id}',                 ['uses' => 'DriveController@showFiles']);
+    Route::get('drive/author/{id}',                ['uses' => 'DriveController@showFilesAuthor']);
+    Route::get('drive/download/{path}',            ['uses' => 'DriveController@downloadFile']);
+    Route::get('drive/search-file/{name}/{id}',    ['uses' => 'DriveController@searchByNameFile']);
     // drive*******************************************************************************
 
 

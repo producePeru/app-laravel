@@ -94,7 +94,10 @@ class PermissionController extends Controller
                 'expositores',
                 'usuarios',
                 'nuevo-usuario',
-                'lista'
+                'lista',
+                'drive',
+                'subir-archivo',
+                'mis-archivos'
             ];
         } else {
             $convertedKeys = array_map(function ($key) {

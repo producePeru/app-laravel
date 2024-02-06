@@ -10,4 +10,10 @@ class Drive extends Model
     use HasFactory;
 
     protected $fillable = [ 'created_by', 'name', 'path', 'status' ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id');
+    }
+
 }
