@@ -16,7 +16,7 @@ class PermissionController extends Controller
             $rol = Crypt::decryptString($request->created_by);
             $user = User::where('id', $rol)->first();
 
-            if ($user && $user->role == 100) {
+            if ($user && ($user->role == 100 || $user->role == 1)) {
                 
                 $views = json_encode($request->views);
                 $exclusions = json_encode($request->exclusions); 
