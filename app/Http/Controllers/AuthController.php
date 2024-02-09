@@ -37,7 +37,7 @@ class AuthController extends Controller
 
             $user = User::where('id', $rol)->first();
 
-            if($user->role == 100) {
+            if($user->role == 100 || $user->role == 1) {
                 
                 $data = array_merge($request->except('update_by'), ['created_by' => Crypt::decryptString($request->created_by)]);
 
