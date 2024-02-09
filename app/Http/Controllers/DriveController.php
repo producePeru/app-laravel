@@ -100,7 +100,7 @@ class DriveController extends Controller
                 'idFile' => $file->id,
                 'idUser' => $file->user->id,
                 'filename' => $file->name,
-                'path' => $file->path,
+                'path' => basename($file->path),
                 'created_at' => $file->created_at,
                 'status' => $file->status,
                 'user' => $userData ? $userData->name . ' ' . $userData->last_name . ' ' . $userData->middle_name : $file->user->name . ' ' . $file->user->last_name . ' ' . $file->user->middle_name
