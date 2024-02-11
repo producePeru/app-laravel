@@ -39,7 +39,7 @@ class UserController extends Controller
 
         if ($user) {
             $user->update($request->except('password'));
-            return response()->json(['message' => 'User updated successfully']);
+            return response()->json(['message' => 'Los datos fueron actualizados correctamente']);
         }
 
         return response()->json(['message' => 'User not found'], 404);
