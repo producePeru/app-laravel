@@ -15,7 +15,9 @@ use App\Http\Controllers\AgreementsController;
 
 
 
-Route::post('login',                            [AuthController::class,             'login']);
+Route::post('login',  [AuthController::class, 'login']);
+
+
 
 //RutaDigital Test
 Route::get('countries',                         [StaticController::class,           'getDataCountries']);
@@ -95,15 +97,20 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
 
 
-   
-    
 
     // usuarios*******************************************************************************
-    Route::get('users',                             ['uses' => 'UserController@index']);
-    Route::get('user/{dni}',                        ['uses' => 'UserController@showUserWithViews']);
-    Route::put('delete-user/{idAdmin}/{dni}',       ['uses' => 'UserController@deleteUserStatus']);
-    Route::post('register-user',                    ['uses' => 'AuthController@registerUpdateUser']);
+    Route::post('logout',                           [AuthController::class, 'logout']);
+    Route::post('new-user',                         ['uses' => 'AuthController@registerNewUser']);
+    Route::post('new-user-created',                 ['uses' => 'AuthController@registerNewUserCreatedBy']);
+    Route::get('users',                             ['uses' => 'UserController@listAllUsers']);
+    Route::get('user/{dni}',                        ['uses' => 'UserController@dataUserByDNI']);
+    Route::put('user/{id}',                         ['uses' => 'UserController@updateUserNoPassword']);
+    Route::post('delete-user/{id}',                  ['uses' => 'UserController@deleteAnUser']);
+
+    Route::get('views/{idUser}',                    ['uses' => 'PermissionController@viewsByUsers']);  
+    Route::put('views',                             ['uses' => 'PermissionController@assignedViews']);
     Route::post('permission',                       ['uses' => 'PermissionController@asignedViews']);
+    
     Route::get('permission/{idUser}',               ['uses' => 'PermissionController@showPermissions']);
     // usuarios*******************************************************************************
     
@@ -182,7 +189,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     // Route::post('invoices/bulk', ['uses' => 'InvoiceController@bulkStore']);
 
 
-    Route::post('logout', [AuthController::class, 'logout']);
+   
 
 
 

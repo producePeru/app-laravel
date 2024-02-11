@@ -14,9 +14,7 @@ class DriveController extends Controller
 {
     public function driveUpFiles(Request $request)
     {
-        $idDecrypt = Crypt::decryptString($request->created_by);
-
-        $user = User::where('id', $idDecrypt)->first();
+        $user = User::where('id', $request->created_by)->first();
 
         try {
             $uploadedFiles = $request->file('files');
@@ -75,9 +73,8 @@ class DriveController extends Controller
     private function getUserFiles($id)
     {
         try {
-            $idUser = Crypt::decryptString($id);
-            $user = User::with('permission')->where('id', $idUser)->firstOrFail();
-            $userData = User::with('drive')->where('id', $idUser)->first();
+            $user = User::with('permission')->where('id', $id)->firstOrFail();
+            $userData = User::with('drive')->where('id', $id)->first();
             $filesWithUsers = $userData->drive;
 
             return $this->formatFilesData($filesWithUsers, $userData);
@@ -88,7 +85,7 @@ class DriveController extends Controller
 
     private function getAllFilesWithUsers()
     {
-        $filesWithUsers = Drive::with('user')->get();
+        $filesWithUsers = Drive::with('user')->orderBy('created_at', 'desc')->get();
         return $this->formatFilesData($filesWithUsers);
     }
 
@@ -121,10 +118,10 @@ class DriveController extends Controller
 
 
     public function searchByNameFile($name, $idUser) {
-        $idDecrypt = Crypt::decryptString($idUser);
-        $user = User::where('id', $idDecrypt)->first();
+  
+        $user = User::where('id', $idUser)->first();
        
-        if($user && ($user->role === 100 || $user->role === 1)) {
+        if($user && ($user->role === 100 || $user->role === 10)) {
             $data = Drive::where('name', 'like', '%' . $name . '%')->paginate(20)
             ->through(function($drive){
                 return [

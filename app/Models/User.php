@@ -20,7 +20,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         // 'id',
-        'nick_name',
+        // 'nick_name',
         'password',
         'document_type',
         'document_number',
@@ -37,7 +37,7 @@ class User extends Authenticatable
         'sede_code',
         'role',
         'created_by',
-        'update_by',
+        'updated_by',
         'status'
     ];
 
@@ -78,5 +78,9 @@ class User extends Authenticatable
     public function drive()
     {
         return $this->hasMany(Drive::class, 'created_by', 'id'); 
+    }
+    public function createds()
+    {
+        return $this->hasOne(Created::class, 'id_user');
     }
 }

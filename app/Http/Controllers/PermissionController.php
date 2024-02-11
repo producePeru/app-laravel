@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Permission;
+use App\Models\View;
+use App\Models\ViewUser;
 use App\Http\Requests\StorePermissionRequest;
 use Illuminate\Support\Facades\Crypt;
 
@@ -12,38 +14,91 @@ class PermissionController extends Controller
 {   
     public function asignedViews(Request $request)
     {
-        try {
-            $rol = Crypt::decryptString($request->created_by);
-            $user = User::where('id', $rol)->first();
 
-            if ($user && ($user->role == 100 || $user->role == 1)) {
-                
-                $views = json_encode($request->views);
-                $exclusions = json_encode($request->exclusions); 
-
-                
-                $permissionData = [
-                    'created_by' => $user->id,
-                    'views' => $views,
-                    'exclusions' => $exclusions,
-                ];
-
-                Permission::updateOrInsert(
-                    ['id_user' => $request->id_user],
-                    $permissionData
-                );
-
-                return response()->json(['message' => "Los datos han sido registrados"]);
-
+        $request->validate([
+            'id_user' => 'required|exists:users,id',
+            'views' => 'required|array',
+            'views.*' => 'integer',
+        ]);
+        
+        foreach ($request->views as $view) {
+            $existingEntry = ViewUser::where('id_user', $request->id_user)->where('id_view', $view)->first();
+    
+            if ($existingEntry) {
+                $existingEntry->update(['id_view' => null]);
             } else {
-                return "No tienes permisos";
+                ViewUser::create([
+                    'id_user' => $request->id_user,
+                    'id_view' => $view,
+                ]);
             }
-        } catch (\Exception $e) {
-
-            return "Error al procesar la solicitud: " . $e->getMessage();
-            
         }
+    
+        return response()->json(['message' => 'Datos guardados correctamente']);
+           
     }
+
+
+
+
+    public function viewsByUsers($id)
+    {
+
+        $user = User::find($id);
+
+        if($user->role === 100)
+        {
+            $views = View::pluck('name')->toArray();
+            return response()->json(['data' => $views]);
+        } 
+
+
+        if($user->role === 10)                                              //Nataly Karina = 10
+        {
+            $views = ['drive', 'drive-subir-archivo', 'drive-mis-archivos', 'usuarios', 'usuarios-nuevo', 'usuarios-actualizar', 'usuarios-lista'];
+            return response()->json(['data' => $views]);
+        } 
+        if($user->role === 2)                                              //Nataly Karina = users 
+        {
+            $views = ['drive', 'drive-subir-archivo', 'drive-mis-archivos'];
+            return response()->json(['data' => $views]);
+        } 
+
+
+        $views = [];
+        return response()->json(['data' => $views]);
+
+
+        return response()->json(['message' => 'No eres administrador']);
+
+    }
+
+
+
+
+    public function assignedViews(Request $request)
+    {
+        $created_by = Crypt::decryptString($request->created_by);
+        
+
+        $userView = Permission::updateOrCreate(
+            ['id_user' => $request->id_user], 
+            [
+                'created_by' => $created_by,
+                'views' => $request->views,
+                'exclusions' => $request->exclusions
+            ] 
+        );
+        return response()->json(['message' => 'Asignado correctamente']);
+    }
+
+
+
+
+
+
+
+
 
 
     public function showPermissions($dni)

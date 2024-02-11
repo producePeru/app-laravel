@@ -15,4 +15,8 @@ class Permission extends Model
         'views', 
         'exclusions'
     ];
+
+    protected $casts = [
+        'views' => 'json', // Indica que el campo 'views' debe ser tratado como JSON
+    ];
 }
