@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Company;
+use App\Models\CompanyPeople;
 use Illuminate\Support\Facades\Crypt;
 use GuzzleHttp\Client;
 
@@ -67,7 +68,7 @@ class CompanyController extends Controller
         if ($company) {
 
             $data = $request->except('created_by'); 
-            $data['update_by'] = Crypt::decryptString($request->update_by);
+            // $data['update_by'] = Crypt::decryptString($request->update_by);
             
             $company->update($data);
             
@@ -75,16 +76,33 @@ class CompanyController extends Controller
 
         } else {
 
-            $data = array_merge($request->except('update_by'), ['created_by' => Crypt::decryptString($request->created_by)]);
+            $data = array_merge($request->except('update_by'));
             
             Company::create($data);
             
-            $mensaje = "Creado exitosamente.";
+            $mensaje = "Empresa creada exitosamente.";
 
         }
 
         return response()->json(['mensaje' => $mensaje]);
 
+    }
+
+    public function companyPersonRegister(Request $request)
+    {
+        $percomp = CompanyPeople::where('ruc', $request->ruc)
+        ->where('number_document', $request->number_document)
+        ->get();
+
+        if ($percomp->isEmpty()) {
+            CompanyPeople::create([
+                'ruc' => $request->ruc,
+                'number_document' => $request->number_document
+            ]);
+            return response()->json(['message' => 'Registrada correctamente'], 200);
+        } else {
+            return response()->json(['message' => 'Ya existe una persona con estos datos'], 200);
+        }
     }
 
     public function deleteCompany($id)

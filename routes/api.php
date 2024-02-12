@@ -53,6 +53,11 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::get('company/{ruc}',                     ['uses' => 'CompanyController@rucSearch']);                 //api
     Route::put('add-point/{workshopId}/{type}',     ['uses' => 'WorkshopDetailsController@addPointToWorkshop']); 
     // invitacion*******************************************************************************
+
+    // registros*******************************************************************************
+    Route::post('new-person',                       ['uses' => 'PeopleController@personCreate']);
+    Route::post('company',                          ['uses' => 'CompanyController@companyCreateUpadate']);
+    Route::post('company-user',                     ['uses' => 'CompanyController@companyPersonRegister']);
 });
 
 

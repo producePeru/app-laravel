@@ -92,7 +92,7 @@ class WorkshopDetailsController extends Controller
 
         $workshopDetails = WorkshopDetails::where('workshop_id', $id)
         ->orderBy('created_at', 'desc') 
-        ->paginate($request->input('per_page', 10)); 
+        ->paginate($request->input('per_page', 20)); 
 
         return response()->json($workshopDetails);
     }

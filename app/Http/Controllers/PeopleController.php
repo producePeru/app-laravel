@@ -76,24 +76,23 @@ class PeopleController extends Controller
         if ($user) {
             
             $data = $request->except('created_by'); 
-            $data['update_by'] = Crypt::decryptString($request->update_by);
+            // $data['update_by'] = Crypt::decryptString($request->update_by);
             $user->update($data);
             $mensaje = "Usuario actualizado exitosamente.";
 
         } else {
 
-            $data = array_merge($request->except('update_by'), ['created_by' => Crypt::decryptString($request->created_by)]);
+            $data = array_merge($request->except('update_by'));
             People::create($data);
             $mensaje = "Usuario creado exitosamente.";
-
         }
 
         $values = [
             'numero' => $request->number_document,
             'post' => $request->post,
-            'departament' => $request->department,
-            'province' => $request->province,
-            'district' => $request->district,
+            // 'departament' => $request->department,
+            // 'province' => $request->province,
+            // 'district' => $request->district,
             'msg' => $mensaje
         ];
 
