@@ -18,6 +18,7 @@ class Company extends Model
         'department',
         'province',
         'district',
+        'address',
         'email',
         'phone',
         'created_by',

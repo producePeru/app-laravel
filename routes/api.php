@@ -58,6 +58,10 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::post('new-person',                       ['uses' => 'PeopleController@personCreate']);
     Route::post('company',                          ['uses' => 'CompanyController@companyCreateUpadate']);
     Route::post('company-user',                     ['uses' => 'CompanyController@companyPersonRegister']);
+
+    Route::post('formalization',                    ['uses' => 'FormalizationController@formalizationPublicForm']);          //formulario de formalizacion agregado con el Google Maps
+    Route::get('location-cdes',                     ['uses' => 'FormalizationController@gpsCdes']);          //formulario de formalizacion agregado con el Google Maps
+
 });
 
 
@@ -125,6 +129,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     Route::get('person/{idPost}',                   ['uses' => 'PeopleController@index']);
     Route::get('person-by-dni/{dni}',               ['uses' => 'PeopleController@show']);
     Route::put('person-dni/{dni}/{rol}',            ['uses' => 'PeopleController@deleteUser']); 
+    Route::get('supervisores',                      ['uses' => 'PeopleController@allSupervisores']);
+    Route::get('applicant-new/{dni}',               ['uses' => 'PeopleController@isApplicantNew']);
     // personas_master *******************************************************************************
     
     // notarias*******************************************************************************
@@ -153,7 +159,19 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     Route::get('drive/search-file/{name}/{id}',    ['uses' => 'DriveController@searchByNameFile']);
     // drive*******************************************************************************
 
-
+    
+    // formalizaciones & asesorias*******************************************************************************
+    Route::get('my-formalizations20/{dni}',         ['uses' => 'FormalizationController@myFormalizationsRuc20']);           //preguntamos si tiene una formalizacion pendiente
+    Route::get('find-formalization20/{id}',         ['uses' => 'FormalizationController@chooseFormalizationRuc20']);        //si en caso tiene mas de una empresa, escoge un id de una formalizacion a continuar
+    Route::post('formalization20',                  ['uses' => 'FormalizationController@formalizationRuc20']);              // guardamos     
+    Route::post('person-post',                      ['uses' => 'FormalizationController@setPersonPost']);                   // si hace una accion crear empresa 20 , 10 o asesoria se convierte en un solicitante tipo (3)
+    Route::get('notaries-select',                   ['uses' => 'FormalizationController@getAllSelectNotary']);              //select para todas las notarias
+    Route::get('comercial-activities',              ['uses' => 'FormalizationController@getAllSelectComercialActivities']); //select para todas las Actividades comerciales
+    Route::post('create-comercial-activities',      ['uses' => 'FormalizationController@createComercialActivities']);       //Creamos una actividad comercial
+    Route::post('formalization-company',            ['uses' => 'FormalizationController@formalizationToCompany']);          //de formalizacion form tipo20 a company tabla master
+    
+    // formalizaciones & asesorias*******************************************************************************
+    
     
     
     Route::apiResource('workshops', WorkshopController::class);

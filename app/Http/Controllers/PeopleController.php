@@ -9,10 +9,11 @@ use App\Models\Post;
 use App\Models\Departament;
 use App\Models\Province;
 use App\Models\District;
+use App\Models\AdviserSupervisor;
 use App\Models\People;
 use App\Models\Post_Person;
 use Illuminate\Support\Facades\DB;
-
+use PhpParser\Node\Stmt\Return_;
 
 class PeopleController extends Controller
 {
@@ -32,7 +33,10 @@ class PeopleController extends Controller
                 'district' => $person->district,
                 'email' => $person->email,
                 'phone' => $person->phone,
-                'document_type' => $person->document_type
+                'document_type' => $person->document_type,
+                'birthdate' => $person->birthdate,
+                'gender' => $person->gender,
+                'lession' => $person->lession
             ];
 
             return response()->json(['data' => $data]);
@@ -83,8 +87,26 @@ class PeopleController extends Controller
         } else {
 
             $data = array_merge($request->except('update_by'));
-            People::create($data);
+            $user = People::create($data);
             $mensaje = "Usuario creado exitosamente.";
+        }
+
+
+        // ASESOR CON SUPERVISOR
+        if ($request->supervisor) {
+            $super = [
+                'id_adviser' => $user->id,
+                'id_supervisor' => $request->supervisor,
+                'created_by' => $request->created_by
+            ];
+        
+            $existingRecord = AdviserSupervisor::where('id_adviser', $user->id)->first();
+        
+            if ($existingRecord) {
+                $existingRecord->update($super);
+            } else {
+                AdviserSupervisor::create($super);
+            }
         }
 
         $values = [
@@ -115,7 +137,7 @@ class PeopleController extends Controller
             $assign->update(['status' => 1]);
         }
 
-        return response()->json(['mensaje' => $request['msg']]);
+        return response()->json(['message' => $request['msg']]);
     }
     
 
@@ -130,17 +152,17 @@ class PeopleController extends Controller
             return [
                 'document_type' => $item->people->document_type,
                 'number_document' => $item->people->number_document,
-                'last_name' => $item->people->last_name,
-                'middle_name' => $item->people->middle_name,
-                'name' => $item->people->name,
+                'last_name' => ucfirst(strtolower($item->people->last_name)),
+                'middle_name' => ucfirst(strtolower($item->people->middle_name)),
+                'name' => ucwords(strtolower($item->people->name)),
                 'department' => $this->getDepartmentName($item->people->departament),
                 'province' => Province::find($item->people->province),
                 'district' => District::find($item->people->district),
                 'phone' => $item->people->phone,
                 'email' => $item->people->email,
                 'post' => $item->id_post,
-                'created_by' => Crypt::encryptString($item->people->created_by),
-                'update_by' => Crypt::encryptString($item->people->update_by)
+                'created_by' => $item->people->created_by,
+                'update_by' => $item->people->update_by
             ];
         });
         
@@ -195,6 +217,41 @@ class PeopleController extends Controller
             return response()->json(['error' => 'Error interno del servidor'], 500);
         }
     }
-    
-}
 
+    function allSupervisores() {
+        $result = Post_Person::with('people')
+        ->where('status', 1)
+        ->where('id_post', 1)
+        ->get();
+
+        $data = $result->map(function ($item) {
+            return [
+                'label' => ucfirst(strtolower($item->people->last_name)) . ' ' .  ucfirst(strtolower($item->people->middle_name)) . ' ' . ucwords(strtolower($item->people->name)),
+                'value' => $item->people->id,
+            ];
+        });
+        return $data;
+    }
+
+    public function isApplicantNew($dni)
+    {
+        $result = People::where('number_document', $dni)->first();
+
+        if($result) {
+            $data = [
+                'id' => $result->id,
+                'document_type' => $result->document_type,
+                'number_document' => $result->number_document,
+                'last_name' => $result->last_name,
+                'middle_name' => $result->middle_name,
+                'name' => $result->name,
+                'email' => $result->email,
+                'phone' => $result->phone
+            ];
+            return $data;
+        } else {
+            return response()->json(['message' => 'Persona no encontrada', 'status' => 205]);
+        }
+    }
+
+}

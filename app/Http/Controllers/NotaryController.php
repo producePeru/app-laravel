@@ -22,16 +22,10 @@ class NotaryController extends Controller
     public function store(Request $request)
     {
         try {
-            $data = $request->all();
-            $data['created_by'] = Crypt::decryptString($request->created_by);
+            
+            Notary::create($request->all());
     
-            if (!$data['created_by']) {
-                return response()->json(['error' => 'Usuario no encontrado'], 404);
-            }
-    
-            Notary::create($data);
-    
-            return response()->json(['message' => 'Creado correctamente'], 200);
+            return response()->json(['message' => 'Notaría registrada correctamente'], 200);
         } catch (QueryException $e) {
             return response()->json(['error' => 'Error al crear. Por favor, inténtalo de nuevo.'], 500);
         } catch (\Exception $e) {

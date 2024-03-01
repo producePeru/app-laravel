@@ -68,7 +68,6 @@ class CompanyController extends Controller
         if ($company) {
 
             $data = $request->except('created_by'); 
-            // $data['update_by'] = Crypt::decryptString($request->update_by);
             
             $company->update($data);
             

@@ -20,6 +20,9 @@ class People extends Model
         'district',
         'email',
         'phone',
+        'birthdate',
+        'gender',
+        'lession',
         'created_by',
         'update_by',
     ];
