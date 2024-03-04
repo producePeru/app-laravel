@@ -24,14 +24,8 @@
                       <tr>
                         <td style="padding-top: 60px; padding-bottom: 20px;" align="center" valign="middle" class="emailLogo">
                           
-                          <img alt="" border="0" src="http://www.usat.edu.pe/ies/images/servicios/tuempresa/TU_%20EMPRESA.png" style="width:100%;max-width:150px;height:auto;display:block" width="150">
+                          <img alt="" border="0" src="http://www.usat.edu.pe/ies/images/servicios/tuempresa/TU_%20EMPRESA.png" style="width:100%;height:auto;display:block" width="120">
                           
-                        </td>
-                      </tr>
-                      
-                      <tr>
-                        <td style="text-align: center;">
-                          <img width="100" src="https://s3.amazonaws.com/documentos.api.gob.pe/iyauh06gg1q2zgu0tsaffvpdj1zg?response-content-disposition=inline%3B%20filename%3D%221.png%22%3B%20filename%2A%3DUTF-8%27%271.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJREKOSPKMJFYJDAQ%2F20240304%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240304T165314Z&X-Amz-Expires=300&X-Amz-SignedHeaders=host&X-Amz-Signature=3d6eca1dadf8e609bb4203a0221f116e783984ec96aafd0a76c90f90a6a1c0a0" />
                         </td>
                       </tr>
                       
@@ -83,9 +77,9 @@
                                 <td style="padding-top:0px;padding-bottom:20px" align="center" valign="top">
                                   <table border="0" cellpadding="0" cellspacing="0" align="center">
                                     <tbody>
-                                      <span style="color:#666;font-family:'Open Sans',Helvetica,Arial,sans-serif;font-size:12px;font-weight:400;font-style:normal;letter-spacing:normal;line-height:10px;text-transform:none;text-align:center;padding:0;margin:0">
+                                      <div style="color:#666;font-family:'Open Sans',Helvetica,Arial,sans-serif;font-size:12px;font-weight:400;font-style:normal;letter-spacing:normal;line-height:10px;text-transform:none;text-align:center;padding:0;margin:0">
                                         Un asesor se comunicará contigo dentro de las 24 horas <br> (No considerar sábados, domingos ni feriados) <br>Gracias
-                                      </span>
+                                      </div>
                                       <br>
                                       <br>
                                       <br>
