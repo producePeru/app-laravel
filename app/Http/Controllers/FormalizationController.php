@@ -12,7 +12,7 @@ use App\Models\FormFormalization;
 use App\Models\Formalization20;
 use App\Models\ComercialActivity;
 
-use App\Jobs\FormalizationFormPublicWorkshopJob;
+use App\Jobs\AcceptInvitationFormalizationJob;
 
 class FormalizationController extends Controller
 {
@@ -116,6 +116,8 @@ class FormalizationController extends Controller
         }
     }
 
+
+    // ---------------------------------------------------------------- -----FORMALIZACION DESDE EL FORMULARIO
     public function formalizationPublicForm(Request $request)
     {
         $formalization = FormFormalization::where('dni', $request->dni)->first();
@@ -126,15 +128,7 @@ class FormalizationController extends Controller
             FormFormalization::create($request->all());
         }
 
-        // $email = $request->email;
-
-        // $formalizationform = [       
-        //     'name_complete' => $request->name
-        // ];
-
-        // FormalizationFormPublicWorkshopJob::dispatch($email, $formalizationform);
-    
-        return response()->json(['message' => 'Un asesor se comunicará contigo, gracias', 'status' => '200']);
+        return response()->json(['message' => 'Un asesor se comunicará contigo dentro de las 24 horas (No considerar sábados, domingos ni feriados), gracias', 'status' => '200']);
     }
 
     public function gpsCdes()
@@ -151,7 +145,23 @@ class FormalizationController extends Controller
     
         return response()->json(['data' => $data]);
     }
+
+    public function formalizationSendEmail($dni)
+    {
+        $user = FormFormalization::where('dni', $dni)->first();
+
+        if($user) {
+            $email = $user->email;
+
+            $formalizationform = [       
+                'name_complete' => $user->name_lastname,
+                'phone' => $user->phone,
+                'id_gps_cdes' => $user->id_gps_cdes,
+                'id' => $user->id
+            ];
+
+            AcceptInvitationFormalizationJob::dispatch($email, $formalizationform);
+        }
+    }
 }
-
-
 

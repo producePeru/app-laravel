@@ -59,8 +59,9 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::post('company',                          ['uses' => 'CompanyController@companyCreateUpadate']);
     Route::post('company-user',                     ['uses' => 'CompanyController@companyPersonRegister']);
 
-    Route::post('formalization',                    ['uses' => 'FormalizationController@formalizationPublicForm']);          //formulario de formalizacion agregado con el Google Maps
-    Route::get('location-cdes',                     ['uses' => 'FormalizationController@gpsCdes']);          //formulario de formalizacion agregado con el Google Maps
+    Route::post('formalization',                    ['uses' => 'FormalizationController@formalizationPublicForm']);      //formulario de formalizacion agregado con el Google Maps
+    Route::get('location-cdes',                     ['uses' => 'FormalizationController@gpsCdes']);                     //formulario de formalizacion agregado con el Google Maps
+    Route::post('formalization-email/{dni}',        ['uses' => 'FormalizationController@formalizationSendEmail']);      //despues del mapa se le envia un email
 
 });
 

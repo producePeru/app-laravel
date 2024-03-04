@@ -9,9 +9,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
 
-use App\Mail\AcceptInvitationWorkshopDetails;
+use App\Mail\AcceptInvitationFormalizationDetails;
 
-class FormalizationFormPublicWorkshopJob implements ShouldQueue
+class AcceptInvitationFormalizationJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -27,6 +27,6 @@ class FormalizationFormPublicWorkshopJob implements ShouldQueue
     public function handle(): void
     {
         Mail::to($this->email)
-            ->send(new AcceptInvitationWorkshopDetails($this->formalizationform));
+            ->send(new AcceptInvitationFormalizationDetails($this->formalizationform));
     }
 }

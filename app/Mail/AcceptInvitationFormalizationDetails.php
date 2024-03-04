@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class FormalizationForm extends Mailable
+class AcceptInvitationFormalizationDetails extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -19,10 +19,10 @@ class FormalizationForm extends Mailable
 
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS', 'jloo6778@gmail.com'), 'Taller de Ruta Digital')
-                    ->subject('Bienvenido al taller')
-                    ->view('email.accept_invitation_workshop')
-                    ->with(['mype' => $this->formalizationform]);
+        return $this->from(env('MAIL_FROM_ADDRESS', 'jloo6778@gmail.com'), 'PRODUCE - FORMALIZACIÓN')
+                    ->subject('Formalización Digital')
+                    ->view('email.accept_invitation_formalization')
+                    ->with(['formalizationform' => $this->formalizationform]);
     }
 
     public function attachments(): array
