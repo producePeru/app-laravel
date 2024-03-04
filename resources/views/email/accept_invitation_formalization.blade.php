@@ -24,7 +24,7 @@
                       <tr>
                         <td style="padding-top: 60px; padding-bottom: 20px;" align="center" valign="middle" class="emailLogo">
                           
-                          <img alt="" border="0" src="http://www.usat.edu.pe/ies/images/servicios/tuempresa/TU_%20EMPRESA.png" style="width:100%;height:auto;display:block" width="120">
+                          <img alt="" border="0" src="http://www.usat.edu.pe/ies/images/servicios/tuempresa/TU_%20EMPRESA.png" style="width:120px;height:auto;display:block" width="120">
                           
                         </td>
                       </tr>
@@ -77,7 +77,7 @@
                                 <td style="padding-top:0px;padding-bottom:20px" align="center" valign="top">
                                   <table border="0" cellpadding="0" cellspacing="0" align="center">
                                     <tbody>
-                                      <div style="color:#666;font-family:'Open Sans',Helvetica,Arial,sans-serif;font-size:12px;font-weight:400;font-style:normal;letter-spacing:normal;line-height:10px;text-transform:none;text-align:center;padding:0;margin:0">
+                                      <div style="color:#666;font-family:'Open Sans',Helvetica,Arial,sans-serif;font-size:12px;font-weight:400;font-style:normal;letter-spacing:normal;line-height:18px;text-transform:none;text-align:center;padding:0;margin:0">
                                         Un asesor se comunicará contigo dentro de las 24 horas <br> (No considerar sábados, domingos ni feriados) <br>Gracias
                                       </div>
                                       <br>
