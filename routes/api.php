@@ -51,7 +51,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::post('accepted-invitation',              ['uses' => 'InvitationController@acceptedInvitation']);
     Route::get('person/{type}/{num}',               ['uses' => 'PeopleController@dniSearch']);                  //api
     Route::get('company/{ruc}',                     ['uses' => 'CompanyController@rucSearch']);                 //api
-    Route::put('add-point/{workshopId}/{type}',     ['uses' => 'WorkshopDetailsController@addPointToWorkshop']); 
+    Route::put('add-point/{workshopId}/{type}',     ['uses' => 'WorkshopDetailsController@addPointToWorkshop']);  
     // invitacion*******************************************************************************
 
     // registros*******************************************************************************
@@ -59,9 +59,10 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::post('company',                          ['uses' => 'CompanyController@companyCreateUpadate']);
     Route::post('company-user',                     ['uses' => 'CompanyController@companyPersonRegister']);
 
-    Route::post('formalization',                    ['uses' => 'FormalizationController@formalizationPublicForm']);      //formulario de formalizacion agregado con el Google Maps
+    Route::post('formalization',                    ['uses' => 'FormalizationController@formalizationPublicForm']);     //formulario de formalizacion agregado con el Google Maps
     Route::get('location-cdes',                     ['uses' => 'FormalizationController@gpsCdes']);                     //formulario de formalizacion agregado con el Google Maps
     Route::post('formalization-email/{dni}',        ['uses' => 'FormalizationController@formalizationSendEmail']);      //despues del mapa se le envia un email
+    Route::post('formalization-recaptcha',          ['uses' => 'FormalizationController@formalizationRecaptcha']);      //recaptcha
 
 });
 
@@ -132,6 +133,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     Route::put('person-dni/{dni}/{rol}',            ['uses' => 'PeopleController@deleteUser']); 
     Route::get('supervisores',                      ['uses' => 'PeopleController@allSupervisores']);
     Route::get('applicant-new/{dni}',               ['uses' => 'PeopleController@isApplicantNew']);
+    Route::post('user-asesor',                        ['uses' => 'PeopleController@userAsesor']);
     // personas_master *******************************************************************************
     
     // notarias*******************************************************************************
@@ -171,6 +173,14 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
     Route::post('create-comercial-activities',      ['uses' => 'FormalizationController@createComercialActivities']);       //Creamos una actividad comercial
     Route::post('formalization-company',            ['uses' => 'FormalizationController@formalizationToCompany']);          //de formalizacion form tipo20 a company tabla master
     
+    Route::post('formalization10',                  ['uses' => 'FormalizationController@formalizationRuc10']);          //de formalizacion form tipo20 a company tabla master
+    Route::get('theme-component',                   ['uses' => 'FormalizationController@allThemesComponents']);         //Lista todos los select de temas para componentes
+    Route::post('create-consulting',                ['uses' => 'FormalizationController@createNewConsulting']);          //registra una nueva asesoria
+    Route::get('historial-formalization/{dni}/{id}',['uses' => 'FormalizationController@formalizationHistorial']);         //historial
+    Route::get('asesorias',                         ['uses' => 'FormalizationController@allAsesorias']);                   //muestra todas las asesorias
+    Route::post('download-asesorias',               ['uses' => 'FormalizationController@downloadAsesorias']);                   //muestra todas las asesorias
+    Route::get('formalizations-10',                    ['uses' => 'FormalizationController@allFormalizations']); 
+
     // formalizaciones & asesorias*******************************************************************************
     
     

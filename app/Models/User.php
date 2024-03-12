@@ -83,4 +83,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Created::class, 'id_user');
     }
+
+    // public function formalization20()
+    // {
+    //     return $this->belongsTo('App\Models\Formalization20');
+    // }
 }

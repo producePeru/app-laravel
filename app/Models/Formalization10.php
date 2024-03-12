@@ -4,38 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use PhpOffice\PhpSpreadsheet\Calculation\Category;
 
-class Formalization20 extends Model
+class Formalization10 extends Model
 {
     use HasFactory;
 
-    protected $table = 'formalizations_20';
+    protected $table = 'formalizations_10';
 
     protected $fillable = [
-        'step',
         'id_person',
-        'dni',
-        'code_sid_sunarp',
-
+        'detail_procedure',
+        'modality',
         'economy_sector',
-        'department',
         'category',
+        'department',
         'province',
         'district',
-        'address',
         'created_by',
-
-
-        'social_reason',
-        'type_regimen',
-        'num_notary',
-        'modality',
-        'id_notary',
-        
-        
-        'ruc',
-        'updated_by',
+        'created_dni',
         'status'
     ];
 
@@ -44,14 +30,12 @@ class Formalization20 extends Model
         return $this->belongsTo(User::class, 'created_by', 'id');
     }
 
-    public function aupdated()
-    {
-        return $this->belongsTo(User::class, 'updated_by', 'id');
-    }
-
     public function categories()
     {
         return $this->belongsTo(ComercialActivity::class, 'category', 'id');
     }
-    
+    public function supervisor()
+    {
+        return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'created_by');
+    }
 }

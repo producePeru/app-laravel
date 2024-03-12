@@ -93,21 +93,21 @@ class PeopleController extends Controller
 
 
         // ASESOR CON SUPERVISOR
-        if ($request->supervisor) {
-            $super = [
-                'id_adviser' => $user->id,
-                'id_supervisor' => $request->supervisor,
-                'created_by' => $request->created_by
-            ];
+        // if ($request->supervisor) {
+        //     $super = [
+        //         'id_adviser' => $user->id,cccccccc 
+        //         'id_supervisor' => $request->supervisor,
+        //         'created_by' => $request->created_by
+        //     ];
         
-            $existingRecord = AdviserSupervisor::where('id_adviser', $user->id)->first();
+        //     $existingRecord = AdviserSupervisor::where('id_adviser', $user->id)->first();
         
-            if ($existingRecord) {
-                $existingRecord->update($super);
-            } else {
-                AdviserSupervisor::create($super);
-            }
-        }
+        //     if ($existingRecord) {
+        //         $existingRecord->update($super);
+        //     } else {
+        //         AdviserSupervisor::create($super);
+        //     }
+        // }
 
         $values = [
             'numero' => $request->number_document,
@@ -140,6 +140,24 @@ class PeopleController extends Controller
         return response()->json(['message' => $request['msg']]);
     }
     
+    public function userAsesor(Request $request)
+    {
+        $existingRecord = AdviserSupervisor::where('id_adviser', $request->id_adviser)->first();
+
+        $user = People::where('number_document', $request->number_document)->first();
+
+        $super = [
+            'id_adviser' => $user->id, 
+            'id_supervisor' => $request->id_supervisor,
+            'created_by' => $request->created_by
+        ];
+
+        if ($existingRecord) {
+            $existingRecord->update($super);
+        } else {
+            AdviserSupervisor::create($super);
+        }
+    }
 
     public function index($idPost)
     {
@@ -246,7 +264,10 @@ class PeopleController extends Controller
                 'middle_name' => $result->middle_name,
                 'name' => $result->name,
                 'email' => $result->email,
-                'phone' => $result->phone
+                'phone' => $result->phone,
+                'department' => $result->department,
+                'province' => $result->province,
+                'district' => $result->district
             ];
             return $data;
         } else {

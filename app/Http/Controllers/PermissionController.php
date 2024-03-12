@@ -58,9 +58,20 @@ class PermissionController extends Controller
             $views = ['drive', 'drive-subir-archivo', 'drive-mis-archivos', 'usuarios', 'usuarios-nuevo', 'usuarios-actualizar', 'usuarios-lista'];
             return response()->json(['data' => $views]);
         } 
+        if($user->role === 30)                                              //UGO ADMIN = 30
+        {
+            $views = ['asesorias', 'asesorias-formalizaciones', 'solicitantes', 'notarias', 'supervisores', 'asesores'];
+            return response()->json(['data' => $views]);
+        } 
+
         if($user->role === 2)                                              //Nataly Karina = users 
         {
             $views = ['drive', 'drive-subir-archivo', 'drive-mis-archivos'];
+            return response()->json(['data' => $views]);
+        } 
+        if($user->role === 31)                                              //UGO users = 31
+        {
+            $views = ['asesorias', 'asesorias-formalizaciones', 'solicitantes'];
             return response()->json(['data' => $views]);
         } 
 
