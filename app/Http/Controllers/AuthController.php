@@ -9,9 +9,9 @@ use App\Http\Requests\StoreAuthRequest;
 use App\Models\User;
 use App\Models\Created;
 use App\Models\Country;
-use Validator;
 use Illuminate\Support\Facades\Crypt;
 use \stdClass;
+use Illuminate\Support\Facades\Validator;
 
 
 class AuthController extends Controller
@@ -66,5 +66,33 @@ class AuthController extends Controller
         auth()->user()->tokens()->delete();
         return ['message' => 'Cerraste la session'];
     }
+
+    public function changePasswordUser(Request $request, $id, $dni)
+    {
+        try {
+            $request->validate([
+                'current_password' => 'required',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
+
+            // $user = User::findOrFail($id);
+            $user = User::where('id', $id)
+            ->where('document_number', $dni)
+            ->first();
+
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json(['error' => 'La contraseña actual es incorrecta'], 401);
+            }
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            return response()->json(['message' => 'Contraseña cambiada con éxito']);
+
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e]);
+        }
+    }
+
+    
     
 }

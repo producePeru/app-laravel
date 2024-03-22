@@ -18,6 +18,7 @@ class People extends Model
         'department',
         'province',
         'district',
+        'address',
         'email',
         'phone',
         'birthdate',
@@ -41,8 +42,6 @@ class People extends Model
     {
         return $this->belongsTo(District::class, 'district');
     }
-
-
 
     public function postPerson()
     {

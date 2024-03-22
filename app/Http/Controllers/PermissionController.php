@@ -135,11 +135,14 @@ class PermissionController extends Controller
                 'registrar-usuario',
                 'actualizar-persona',
                 'patrimonios',
+                
                 'asesorias',
+                'asesorias-formalizaciones',
                 'solicitantes',
                 'notarias',
                 'supervisores',
                 'asesores',
+                
                 'convenios',
                 'nuevo-convenio',
                 'compromisos',

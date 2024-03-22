@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Created;
+use App\Models\People;
 use App\Models\Permission;
+use App\Models\PersonPhoto;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -45,9 +48,6 @@ class UserController extends Controller
         return response()->json(['message' => 'User not found'], 404);
     }
 
-
-
-
     public function deleteAnUser($idUser, Request $request)
     {
         $user = User::find($idUser);
@@ -61,6 +61,88 @@ class UserController extends Controller
     }
 
 
+
+    public function upProfilePhotoImage(Request $request, $id, $dni)
+    {
+        $person = People::where('number_document', $dni)->where('id', $id)->get();
+
+        if (!$person) {
+            return response()->json(['message' => 'La persona no existe', 'status' => 404]);
+        }
+
+        $photo = PersonPhoto::where('dni', $dni)->first();
+
+        if ($photo) {
+            $imageBase64 = $request->input('image');
+            $imageData = explode(',', $imageBase64)[1];
+            $decodedImage = base64_decode($imageData);
+            $filename = 'image_' . time() . '.jpg';
+            $path = 'public/photos/' . $filename;
+    
+            Storage::disk('local')->put($path, $decodedImage);
+    
+            $photo->nombre = $filename;
+            $photo->ruta = $path;
+            $photo->id_person = $id;
+            $photo->dni = $dni;
+            $photo->save();
+    
+            return response()->json(['message' => 'Imagen actualizada correctamente', 'status' => 200]);
+        } else {
+            $imageBase64 = $request->input('image');
+            $imageData = explode(',', $imageBase64)[1];
+            $decodedImage = base64_decode($imageData);
+            $filename = 'image_' . time() . '.jpg';
+            $path = 'public/photos/' . $filename;
+    
+            Storage::disk('local')->put($path, $decodedImage);
+    
+            PersonPhoto::create([
+                'nombre' => $filename,
+                'ruta' => $path,
+                'id_person' => $id,
+                'dni' => $dni
+            ]);
+    
+            return response()->json(['message' => 'Imagen guardada correctamente', 'status' => 200]);
+        }
+    }
+
+    public function showProfilePhotoImage($id, $dni) 
+    {
+        $person = People::where('number_document', $dni)->where('id', $id)->get();
+
+        if (!$person) {
+            return response()->json(['message' => 'La persona no existe', 'status' => 404]);
+        }
+
+        $photo = PersonPhoto::where('dni', $dni)->first();
+
+        if (!$photo) {
+            return response()->json(['message' => 'La foto no existe', 'status' => 404]);
+        }
+
+        $path = storage_path('app/' . $photo->ruta);
+        return response()->file($path);
+    }
+
+    public function personalDataUser($dni)
+    {
+        $query = People::where('number_document', $dni)->first();
+
+       if($query) {
+        $data = [
+            'id' => $query->id,
+            'last_name' => $query->last_name,
+            'middle_name' => $query->middle_name,
+            'name' => $query->name,
+            'email' => $query->email,
+            'number_document' => $query->number_document
+        ];
+
+        return response()->json(['data' => $data, 'status' => 200]);
+       }
+    }
 
 
 

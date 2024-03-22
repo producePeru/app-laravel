@@ -53,5 +53,38 @@ class Formalization20 extends Model
     {
         return $this->belongsTo(ComercialActivity::class, 'category', 'id');
     }
-    
+    public function supervisor()
+    {
+        return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'created_by');
+    }
+    public function departmentx()
+    {
+        return $this->belongsTo(Departament::class, 'department', 'idDepartamento');
+    }
+    public function provincex()
+    {
+        return $this->belongsTo(Province::class, 'province', 'idProvincia');
+    }
+    public function districtx()
+    {
+        return $this->belongsTo(District::class, 'district', 'idDistrito');
+    }
+    public function prodecuredetail()
+    {
+        return $this->belongsTo(ProdecureDetail::class, 'detail_procedure', 'id');
+    }
+    public function economicsectors()
+    {
+        return $this->belongsTo(EconomicSectors::class, 'economy_sector', 'id');
+    }
+    public function notary()
+    {
+        return $this->belongsTo(Notary::class, 'id_notary', 'id');
+    }
 }
+
+
+
+
+    
+    

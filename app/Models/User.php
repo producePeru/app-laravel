@@ -83,6 +83,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Created::class, 'id_user');
     }
+    public function person()
+    {
+        return $this->hasOne(People::class, 'document_number');
+    }
 
     // public function formalization20()
     // {

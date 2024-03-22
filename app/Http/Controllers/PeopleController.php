@@ -14,6 +14,8 @@ use App\Models\People;
 use App\Models\Post_Person;
 use Illuminate\Support\Facades\DB;
 use PhpParser\Node\Stmt\Return_;
+use Illuminate\Support\Facades\Http;
+
 
 class PeopleController extends Controller
 {
@@ -25,6 +27,7 @@ class PeopleController extends Controller
         if($person) {
 
             $data = [
+                'numeroDocumento' => $person->number_document,
                 'apellidoMaterno' => $person->middle_name,
                 'apellidoPaterno' => $person->last_name,
                 'nombres' => $person->name,
@@ -64,6 +67,24 @@ class PeopleController extends Controller
             } else {
                 return response()->json(['status' => 404]);
             }
+        }
+    }
+
+    public function formalizationRecaptcha(Request $request)
+    {   
+        
+        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => '6LcQMYopAAAAAEHqCHDRyjOofIVdcSzxqlHM4mUS', 
+            'response' => $request->input('recaptcha_token'),
+            'remoteip' => $request->ip()
+        ]);
+
+        $responseData = $response->json();
+
+        if ($responseData['success']) {
+            return $this->personCreate(new Request($request->data));
+        } else {
+            return response()->json(['message' => 'Error al validar reCAPTCHA', 'status' => 400]);
         }
     }
 
@@ -275,4 +296,26 @@ class PeopleController extends Controller
         }
     }
 
+    public function updateDataUserProfile(Request $request, $dni)
+    {
+        $query = People::where('number_document', $dni)->first();
+
+        if (!$query) {
+            return response()->json(['message' => 'Este usuario no existe'], 404);
+        }
+
+        $request->last_name && $query->last_name = $request->input('last_name');
+        $request->middle_name && $query->middle_name = $request->input('middle_name');
+        $request->name && $query->name = $request->input('name');
+        $request->email && $query->email = $request->input('email');
+        $request->birthdate && $query->birthdate = $request->input('birthdate');
+        $request->gender && $query->gender = $request->input('gender');
+        $request->lession && $query->lession = $request->input('lession');
+        $request->phone && $query->phone = $request->input('phone');
+
+        $query->save();
+
+        return response()->json(['message' => 'Registrado correctamente', 'status' => 200]);
+
+    }
 }

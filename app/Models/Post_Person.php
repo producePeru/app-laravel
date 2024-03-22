@@ -21,4 +21,8 @@ class Post_Person extends Model
     {
         return $this->belongsTo(People::class, 'dni_people', 'number_document');
     }
+    public function digital()
+    {
+        return $this->belongsTo(FormalizationDigital::class, 'dni_people', 'dni_person');
+    }
 }
