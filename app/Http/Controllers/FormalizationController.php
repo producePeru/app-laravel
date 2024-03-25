@@ -164,16 +164,16 @@ class FormalizationController extends Controller
 
     public function createNewConsulting(Request $request)
     {
-        $user = User::where('document_number', $request->created_dni)
-                ->where('id', $request->created_by)
-                ->first();
+        // $user = User::where('document_number', $request->created_dni)
+        //         ->where('id', $request->created_by)
+        //         ->first();
 
-        if ($user) {
+        // if ($user) {
             Advisery::create($request->all());
             return response()->json(['message' =>'Asesoría registrada con éxito', 'status' => 200]);
-        } else {
-            return response()->json(['message' =>'Esta cuenta no puede hacer esto', 'status' => 400]);
-        } 
+        // } else {
+        //     return response()->json(['message' =>'Esta cuenta no puede hacer esto', 'status' => 400]);
+        // } 
     }
 
     // ---------------------------------------------------------------- -----HISTORIAL

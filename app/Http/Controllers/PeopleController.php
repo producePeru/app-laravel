@@ -263,6 +263,8 @@ class PeopleController extends Controller
         ->where('id_post', 1)
         ->get();
 
+        return $result;
+
         $data = $result->map(function ($item) {
             return [
                 'label' => ucfirst(strtolower($item->people->last_name)) . ' ' .  ucfirst(strtolower($item->people->middle_name)) . ' ' . ucwords(strtolower($item->people->name)),
