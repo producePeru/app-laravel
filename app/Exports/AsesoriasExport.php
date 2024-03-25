@@ -38,15 +38,19 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
     {
         Carbon::setLocale('es');
 
-        $adviseries = Advisery::with('acreated', 'theme', 'departmentx', 'provincex', 'districtx', 'person', 'components', 'supervisor')
+        $adviseries = Advisery::with('acreated', 'theme', 'departmentx', 'provincex', 'districtx', 'person', 'components', 'supervisorx')
             ->orderBy('created_at', 'desc')
             ->where('status', 1)
             ->get();
 
         return $adviseries->map(function ($item, $index) {
 
-            $registrador = People::where('number_document', $item->acreated->document_number)->first();
-            $supervisador = $item->supervisor ? People::where('id', $item->supervisor->id_supervisor)->first() : null;
+            // $registrador = People::where('number_document', $item->acreated->document_number)->first();
+            // $supervisador = $item->supervisor ? People::where('id', $item->supervisor->id_supervisor)->first() : null;
+            $registrador = $item->acreated;
+            
+            $supervisador = $item->supervisorx ? People::where('id', $item->supervisorx->id_supervisor)->first() : null;
+
 
             $departamento = null;
             $provincia = null;

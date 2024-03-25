@@ -164,16 +164,18 @@ class FormalizationController extends Controller
 
     public function createNewConsulting(Request $request)
     {
-        // $user = User::where('document_number', $request->created_dni)
-        //         ->where('id', $request->created_by)
-        //         ->first();
 
-        // if ($user) {
+        $user = People::where('number_document', $request->created_dni)
+        ->where('id', $request->created_by)
+        ->first();
+        
+
+        if ($user) {
             Advisery::create($request->all());
             return response()->json(['message' =>'Asesoría registrada con éxito', 'status' => 200]);
-        // } else {
-        //     return response()->json(['message' =>'Esta cuenta no puede hacer esto', 'status' => 400]);
-        // } 
+        } else {
+            return response()->json(['message' =>'Esta cuenta no puede hacer esto', 'status' => 400]);
+        } 
     }
 
     // ---------------------------------------------------------------- -----HISTORIAL
@@ -264,14 +266,16 @@ class FormalizationController extends Controller
         //     ];
         // });
 
-        $data = Advisery::with('acreated', 'theme', 'departmentx', 'provincex', 'districtx', 'person', 'components', 'supervisor')
+        $data = Advisery::with('acreated', 'theme', 'departmentx', 'provincex', 'districtx', 'person', 'components', 'supervisorx')
         ->orderBy('created_at', 'desc')
         ->where('status', 1)
         ->paginate(20)
         ->through(function($item) {
             
-            $registrador = People::where('number_document', $item->acreated->document_number)->first();
-            $supervisador = $item->supervisor ? People::where('id', $item->supervisor->id_supervisor)->first() : null;
+            $registrador = $item->acreated;
+            
+            $supervisador = $item->supervisorx ? People::where('id', $item->supervisorx->id_supervisor)->first() : null;
+
             
             $departamento = null;
             $provincia = null;
@@ -289,6 +293,7 @@ class FormalizationController extends Controller
                 'reg_pais' => 'Perú',
                 'reg_provincia' =>  $provincia ? $provincia->descripcion : null,
                 'reg_distrito' =>  $distrito ? $distrito->descripcion : null,
+                
                 'reg_tipodoc' => $registrador ? $registrador->document_type : null, 
                 'reg_numdoc' => $registrador ? $registrador->number_document : null, 
                 'reg_fecnac' => $registrador ? $registrador->birthdate : null, 

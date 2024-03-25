@@ -27,7 +27,7 @@ class Advisery extends Model
 
     public function acreated()
     {
-        return $this->belongsTo(User::class, 'created_by', 'id');
+        return $this->belongsTo(People::class, 'created_by', 'id');
     }
 
     public function theme()
@@ -55,8 +55,8 @@ class Advisery extends Model
     {
         return $this->belongsTo(Component::class, 'component', 'id');
     }
-    public function supervisor()
+    public function supervisorx()
     {
-        return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'created_by');
+        return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'id_adviser');
     }
 }
