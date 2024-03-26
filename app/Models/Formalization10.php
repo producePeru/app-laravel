@@ -62,4 +62,8 @@ class Formalization10 extends Model
     {
         return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'id_adviser');
     }
+    public function solicitante()
+    {
+        return $this->belongsTo(People::class, 'id_person', 'id');
+    }
 }

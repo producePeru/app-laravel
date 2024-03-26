@@ -242,35 +242,33 @@ class FormalizationController extends Controller
 
     }
 
-    public function allAsesorias()
+    public function allAsesorias(Request $request)
     {
         Carbon::setLocale('es');
 
-        // $data = Advisery::with('acreated', 'theme', 'departmentx', 'provincex', 'districtx', 'person')
-        // ->orderBy('created_at', 'desc')
-        // ->where('status', 1)
-        // ->paginate(20)
-        // ->through(function($item) {                                                                             //ow
-        //     return [
-        //         'id' => $item->id,
-        //         'component' => $item->component,
-        //         'tema_compoment_id' => $item->theme->id,
-        //         'tema_compoment' => $item->theme->name,
-        //         'modality' => $item->modality,
-        //         'department' => $item->departmentx->descripcion,
-        //         'province' => $item->provincex->descripcion,
-        //         'district' => $item->districtx->descripcion,
-        //         'description' => $item->description,
-        //         'person' => $item->person,
-        //         'acreated' => $item->acreated->last_name . ' ' . $item->acreated->middle_name . ', ' . $item->acreated->name,
-        //         'date' => ucfirst(Carbon::parse($item->created_at)->isoFormat('ddd DD/MM/YYYY [-] HH:mm')),
-        //     ];
-        // });
-
-        $data = Advisery::with('acreated', 'theme', 'departmentx', 'provincex', 'districtx', 'person', 'components', 'supervisorx')
+        $query = Advisery::with('acreated', 'theme', 'departmentx', 'provincex', 'districtx', 'person', 'components', 'supervisorx', 'solicitante')
         ->orderBy('created_at', 'desc')
-        ->where('status', 1)
-        ->paginate(20)
+        ->where('status', 1);
+
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereHas('acreated', function($query) use ($searchTerm) {
+                    $query->where('last_name', 'like', "%$searchTerm%")
+                          ->orWhere('middle_name', 'like', "%$searchTerm%")
+                          ->orWhere('name', 'like', "%$searchTerm%");
+                })
+                ->orWhereHas('solicitante', function($query) use ($searchTerm) {
+                    $query->where('name', 'like', "%$searchTerm%")
+                          ->orWhere('last_name', 'like', "%$searchTerm%")
+                          ->orWhere('middle_name', 'like', "%$searchTerm%")
+                          ->orWhere('email', 'like', "%$searchTerm%")
+                          ->orWhere('phone', 'like', "%$searchTerm%");
+                });
+            });
+        }
+
+        $data = $query->paginate(20)
         ->through(function($item) {
             
             $registrador = $item->acreated;
@@ -324,16 +322,39 @@ class FormalizationController extends Controller
         return response()->json($data);
     }
 
-    public function allFormalizations10()
+    public function allFormalizations10(Request $request)
     {
         Carbon::setLocale('es');
 
-        $data = Formalization10::with(
-            'categories', 'acreated', 'supervisorx', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors'
+        $query = Formalization10::with(
+            'categories', 'acreated', 'supervisorx', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors', 'solicitante'
         )
         ->orderBy('created_at', 'desc')
-        ->where('status', 1)
-        ->paginate(20)
+        ->where('status', 1);
+
+
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereHas('acreated', function($query) use ($searchTerm) {
+                    $query->where('last_name', 'like', "%$searchTerm%")
+                          ->orWhere('middle_name', 'like', "%$searchTerm%")
+                          ->orWhere('name', 'like', "%$searchTerm%");
+                })
+                ->orWhereHas('solicitante', function($query) use ($searchTerm) {
+                    $query->where('name', 'like', "%$searchTerm%")
+                          ->orWhere('last_name', 'like', "%$searchTerm%")
+                          ->orWhere('middle_name', 'like', "%$searchTerm%")
+                          ->orWhere('email', 'like', "%$searchTerm%")
+                          ->orWhere('phone', 'like', "%$searchTerm%");
+                })
+                ->orWhereHas('categories', function($query) use ($searchTerm) {
+                    $query->where('name', 'like', "%$searchTerm%");
+                });
+            });
+        }
+
+        $data = $query->paginate(20)
         ->through(function($item) {
 
             // $registrador = People::where('number_document', $item->acreated->document_number)->first();
@@ -391,16 +412,41 @@ class FormalizationController extends Controller
     }
 
 
-    public function allFormalizations20()
+    public function allFormalizations20(Request $request)
     {
         Carbon::setLocale('es');
 
-        $data = Formalization20::with(
-            'categories', 'acreated', 'supervisorx', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors', 'notary'
+        $query = Formalization20::with(
+            'categories', 'acreated', 'supervisorx', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors', 'notary', 'solicitante'
         )
         ->orderBy('created_at', 'desc')
-        ->where('status', 1)
-        ->paginate(20)
+        ->where('status', 1);
+
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('code_sid_sunarp', 'like', "%$searchTerm%")
+                  ->orWhereHas('acreated', function($query) use ($searchTerm) {
+                      $query->where('last_name', 'like', "%$searchTerm%")
+                            ->orWhere('middle_name', 'like', "%$searchTerm%")
+                            ->orWhere('name', 'like', "%$searchTerm%");
+                    })
+                    ->orWhereHas('solicitante', function($query) use ($searchTerm) {
+                        $query->where('name', 'like', "%$searchTerm%")
+                            ->orWhere('last_name', 'like', "%$searchTerm%")
+                            ->orWhere('middle_name', 'like', "%$searchTerm%")
+                            ->orWhere('email', 'like', "%$searchTerm%")
+                            ->orWhere('phone', 'like', "%$searchTerm%");
+                    })
+                    ->orWhereHas('categories', function($query) use ($searchTerm) {
+                      $query->where('name', 'like', "%$searchTerm%");
+                    });
+                  
+            });
+        }
+
+
+        $data = $query->paginate(20)
         ->through(function($item) {
 
             $registrador = $item->acreated;

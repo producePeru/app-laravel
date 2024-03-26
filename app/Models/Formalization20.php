@@ -81,6 +81,10 @@ class Formalization20 extends Model
     {
         return $this->belongsTo(Notary::class, 'id_notary', 'id');
     }
+    public function solicitante()
+    {
+        return $this->belongsTo(People::class, 'id_person', 'id');
+    }
 }
 
 
