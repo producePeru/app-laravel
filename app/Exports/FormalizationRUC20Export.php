@@ -39,7 +39,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
         Carbon::setLocale('es');
 
         $adviseries = Formalization20::with(
-            'categories', 'acreated', 'supervisor', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors', 'notary'
+            'categories', 'acreated', 'supervisorx', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors', 'notary'
             )
             ->orderBy('created_at', 'desc')
             ->where('status', 1)
@@ -47,8 +47,9 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
 
         return $adviseries->map(function ($item, $index) {
 
-            $registrador = People::where('number_document', $item->acreated->document_number)->first();
-            $supervisador = $item->supervisor ? People::where('id', $item->supervisor->id_supervisor)->first() : null;
+            $registrador = $item->acreated;
+            $supervisador = $item->supervisorx ? People::where('id', $item->supervisorx->id_supervisor)->first() : null;
+
             $solicitante = People::where('id', $item->id_person)->first();
 
             $departamento = null;

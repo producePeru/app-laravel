@@ -25,7 +25,7 @@ class Formalization20 extends Model
         'district',
         'address',
         'created_by',
-
+        'created_dni',
 
         'social_reason',
         'type_regimen',
@@ -41,21 +41,21 @@ class Formalization20 extends Model
 
     public function acreated()
     {
-        return $this->belongsTo(User::class, 'created_by', 'id');
+        return $this->belongsTo(People::class, 'created_by', 'id');
     }
 
     public function aupdated()
     {
-        return $this->belongsTo(User::class, 'updated_by', 'id');
+        return $this->belongsTo(People::class, 'updated_by', 'id');
     }
 
     public function categories()
     {
         return $this->belongsTo(ComercialActivity::class, 'category', 'id');
     }
-    public function supervisor()
+    public function supervisorx()
     {
-        return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'created_by');
+        return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'id_adviser');
     }
     public function departmentx()
     {

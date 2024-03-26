@@ -69,11 +69,11 @@ class FormalizationController extends Controller
 
     public function formalizationRuc20(Request $request)
     {
-        $solicitante = People::where('number_document', $request->dni)
-            ->where('id', $request->id_person)
-            ->first();
+        $user = People::where('number_document', $request->created_dni)
+                ->where('id', $request->created_by)
+                ->first();
 
-        if($solicitante) {
+        if($user) {
             $formalization = Formalization20::where('dni', $request->dni)
             ->where('code_sid_sunarp', $request->code_sid_sunarp)
             ->first();
@@ -87,6 +87,8 @@ class FormalizationController extends Controller
             }
 
             return response()->json(['message' => $message]);
+        } else {
+            return "jjjj";
         }
     }
 
@@ -198,8 +200,8 @@ class FormalizationController extends Controller
 
         
         $ruc20 = $formalization20->map(function ($item) {
-            $asesor_create = $item->acreated ? $item->acreated->last_name . ' ' . $item->acreated->middle_name . ' ' . $item->acreated->name : 'N/A';
-            $asesor_update = $item->aupdated ? $item->aupdated->last_name . ' ' . $item->aupdated->middle_name . ' ' . $item->aupdated->name : 'N/A';
+            $asesor_create = $item->acreated ? $item->acreated->last_name . ' ' . $item->acreated->middle_name . ' ' . $item->acreated->name : '-';
+            $asesor_update = $item->aupdated ? $item->aupdated->last_name . ' ' . $item->aupdated->middle_name . ' ' . $item->aupdated->name : '-';
             $category_name = $item->categories ? $item->categories->name : 'N/A';
 
             return [
@@ -394,16 +396,16 @@ class FormalizationController extends Controller
         Carbon::setLocale('es');
 
         $data = Formalization20::with(
-            'categories', 'acreated', 'supervisor', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors', 'notary'
+            'categories', 'acreated', 'supervisorx', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors', 'notary'
         )
         ->orderBy('created_at', 'desc')
         ->where('status', 1)
         ->paginate(20)
         ->through(function($item) {
 
-            $registrador = People::where('number_document', $item->acreated->document_number)->first();
+            $registrador = $item->acreated;
             $solicitante = People::where('id', $item->id_person)->first();
-            $supervisador = $item->supervisor ? People::where('id', $item->supervisor->id_supervisor)->first() : null;
+            $supervisador = $item->supervisorx ? People::where('id', $item->supervisorx->id_supervisor)->first() : null;
 
             $departamento = null;
             $provincia = null;
