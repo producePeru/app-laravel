@@ -102,7 +102,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
                 'Número envio notaría' => $item->num_notary,
                 'Notaria' => $item->notary ? $item->notary->name : null,
                 'RUC' => $item->ruc,
-                'Modalidad' => $item->modality == 1 ? 'PRESENCIAL' : 'VIRTUAL',
+                'Modalidad' => $item->modality == 1 ? 'VIRTUAL' : 'PRESENCIAL',
             ];
         });
     }
