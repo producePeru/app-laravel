@@ -450,7 +450,7 @@ class FormalizationController extends Controller
                 'tipo_regimen' => strtoupper($item->type_regimen),
                 'numero_envio_notaria' => $item->num_notary,
                 'notaria' => $item->notary ? $item->notary->name : null,
-                'modalidad' => $item->modality == 0 ? 'PRESENCIAL' : 'VIRTUAL',
+                'modalidad' => $item->modality ? $item->modality : '-',
                 'ruc' => $item->ruc
             ];
         });
