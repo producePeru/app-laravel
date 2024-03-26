@@ -317,7 +317,7 @@ class FormalizationController extends Controller
                 'componente' => $item->components->name,
                 'tema_componente' => $item->theme->name,
                 'observacion' => $item ? $item->person->description : null,
-                'modalidad' => $item->modality == 1 ? 'PRESENCIAL' : ' VIRTUAL',
+                'modalidad' => $item->modality == 1 ? 'VIRTUAL' : 'PRESENCIAL'
             ];
         });
 
@@ -450,7 +450,7 @@ class FormalizationController extends Controller
                 'tipo_regimen' => strtoupper($item->type_regimen),
                 'numero_envio_notaria' => $item->num_notary,
                 'notaria' => $item->notary ? $item->notary->name : null,
-                'modalidad' => $item->modality ? $item->modality : '-',
+                'modalidad' => $item->modality == 1 ? 'VIRTUAL' : 'PRESENCIAL',
                 'ruc' => $item->ruc
             ];
         });
