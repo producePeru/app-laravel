@@ -27,17 +27,17 @@ class Formalization10 extends Model
 
     public function acreated()
     {
-        return $this->belongsTo(User::class, 'created_by', 'id');
+        return $this->belongsTo(People::class, 'created_by', 'id');
     }
 
     public function categories()
     {
         return $this->belongsTo(ComercialActivity::class, 'category', 'id');
     }
-    public function supervisor()
-    {
-        return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'created_by');
-    }
+    // public function supervisor()
+    // {
+    //     return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'created_by');
+    // }
     public function departmentx()
     {
         return $this->belongsTo(Departament::class, 'department', 'idDepartamento');
@@ -57,5 +57,9 @@ class Formalization10 extends Model
     public function economicsectors()
     {
         return $this->belongsTo(EconomicSectors::class, 'economy_sector', 'id');
+    }
+    public function supervisorx()
+    {
+        return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'id_adviser');
     }
 }

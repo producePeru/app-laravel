@@ -137,7 +137,7 @@ class FormalizationController extends Controller
 
     public function formalizationRuc10(Request $request)
     {
-        $user = User::where('document_number', $request->created_dni)
+        $user = People::where('number_document', $request->created_dni)
                 ->where('id', $request->created_by)
                 ->first();
 
@@ -164,7 +164,6 @@ class FormalizationController extends Controller
 
     public function createNewConsulting(Request $request)
     {
-
         $user = People::where('number_document', $request->created_dni)
         ->where('id', $request->created_by)
         ->first();
@@ -328,16 +327,20 @@ class FormalizationController extends Controller
         Carbon::setLocale('es');
 
         $data = Formalization10::with(
-            'categories', 'acreated', 'supervisor', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors'
+            'categories', 'acreated', 'supervisorx', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors'
         )
         ->orderBy('created_at', 'desc')
         ->where('status', 1)
         ->paginate(20)
         ->through(function($item) {
 
-            $registrador = People::where('number_document', $item->acreated->document_number)->first();
+            // $registrador = People::where('number_document', $item->acreated->document_number)->first();
+            
+            $registrador = $item->acreated;
+
             $solicitante = People::where('id', $item->id_person)->first();
-            $supervisador = $item->supervisor ? People::where('id', $item->supervisor->id_supervisor)->first() : null;
+            
+            $supervisador = $item->supervisorx ? People::where('id', $item->supervisorx->id_supervisor)->first() : null;
 
             $departamento = null;
             $provincia = null;
