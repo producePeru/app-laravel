@@ -63,4 +63,8 @@ class Advisery extends Model
     {
         return $this->belongsTo(People::class, 'id_person', 'id');
     }
+    public function photoAsesor()
+    {
+        return $this->belongsTo(PersonPhoto::class, 'created_dni', 'dni');
+    }
 }

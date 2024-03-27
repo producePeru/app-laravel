@@ -47,4 +47,8 @@ class People extends Model
     {
         return $this->hasOne(Post_Person::class, 'number_document', 'dni_people');
     }
+    public function userPhoto()
+    {
+        return $this->hasOne(PersonPhoto::class, 'dni', 'number_document');
+    }
 }

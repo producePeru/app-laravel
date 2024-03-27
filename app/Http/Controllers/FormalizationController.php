@@ -246,7 +246,7 @@ class FormalizationController extends Controller
     {
         Carbon::setLocale('es');
 
-        $query = Advisery::with('acreated', 'theme', 'departmentx', 'provincex', 'districtx', 'person', 'components', 'supervisorx', 'solicitante')
+        $query = Advisery::with('acreated', 'theme', 'departmentx', 'provincex', 'districtx', 'person', 'components', 'supervisorx', 'solicitante', 'photoAsesor')
         ->orderBy('created_at', 'desc')
         ->where('status', 1);
 
@@ -287,6 +287,7 @@ class FormalizationController extends Controller
             if ($registrador) { $distrito = District::where('idDistrito', $registrador->district)->first(); }
 
             return [
+                
                 'reg_nombres' => $registrador ? $registrador->last_name . ' ' . $registrador->middle_name . ', ' . $registrador->name : '',
                 'reg_departamento' =>  $departamento ? $departamento->descripcion : null,
                 'reg_pais' => 'Perú',
