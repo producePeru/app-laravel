@@ -1,252 +1,206 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\People\PersonController;
+use App\Http\Controllers\User\AuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\StaticController;
-use App\Http\Controllers\WorkshopController;
-use App\Http\Controllers\TestinController;
-use App\Http\Controllers\TestoutController;
-use App\Http\Controllers\MypeController;
-use App\Http\Controllers\WorkshopDetailsController;
-use App\Http\Controllers\InvitationController;
-use App\Http\Controllers\ReportsController;
-use App\Http\Controllers\AgreementsController;
+use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\Advisory\AdvisoryController;
+use App\Http\Controllers\Selects\SelectController;
+use App\Http\Controllers\Selects\CreateController;
+use App\Http\Controllers\Formalization\Formalization10Controller;
+use App\Http\Controllers\Formalization\Formalization20Controller;
+use App\Http\Controllers\Formalization\NotaryController;
+use App\Http\Controllers\Formalization\HistorialController;
+use App\Http\Controllers\Mype\MypeController;
+
+
+Route::post('login', [AuthController::class, 'login']);
 
 
 
-Route::post('login',  [AuthController::class, 'login']);
+Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+  Route::get('list', [UserController::class, 'index']);
+  Route::post('create', [UserController::class, 'store']);
+  Route::delete('delete/{id}', [UserController::class, 'destroy']);
+  Route::put('update/{id}', [UserController::class, 'update']);
 
+  Route::get('dni-data/{num}', [AuthController::class, 'dniDataUser']);
+  Route::post('logout', [AuthController::class, 'logout']);
+});
 
+Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+  Route::get('list', [PersonController::class, 'index']);
+  Route::get('found/{type}/{dni}', [PersonController::class, 'dniFoundUser']);
+  Route::post('create', [PersonController::class, 'store']);
+  Route::delete('delete/{id}', [PersonController::class, 'destroy']);
+});
 
-//RutaDigital Test
-Route::get('countries',                         [StaticController::class,           'getDataCountries']);
-Route::get('departaments',                      [StaticController::class,           'getDataDepartaments']);
-Route::get('province/{idDepartament}',          [StaticController::class,           'getDataProvinces']);
-Route::get('district/{idProvince}',             [StaticController::class,           'getDataDistricts']);
-Route::get('get-workshop-slug/{workshopSlug}',  [WorkshopController::class,         'getBySlug']);
+Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+  Route::get('list', [AdvisoryController::class, 'index']);
+  Route::post('create', [AdvisoryController::class, 'store']);
+  Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
+});
 
-// Route::get('invitation/{slug}',         [WorkshopController::class,         'invitation']);
+Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::get('list-ruc-10', [Formalization10Controller::class, 'indexRuc10']);
+    Route::get('list-ruc-20', [Formalization20Controller::class, 'indexRuc20']);
+    Route::get('list-ruc-20/{idPerson}', [Formalization20Controller::class, 'allFormalizationsRuc20ByPersonId']);
 
-Route::get('testin-questions/{workshopId}',     [TestinController::class,           'getQuestions']);
-Route::get('testout-questions/{workshopId}',    [TestoutController::class,          'getQuestions']);
-Route::get('data-mype/{ruc}',                   [MypeController::class,             'dataMypeRuc']);
-Route::get('api-data-mype/{ruc}',               [MypeController::class,             'getDataFromExternalApi']);
-Route::post('register-mype',                    [MypeController::class,             'registerMype']);
-Route::post('sending-test-answers/{wsId}',      [WorkshopDetailsController::class,  'insertOrUpdateWorkshopDetails']);
+    Route::post('create-ruc-10', [Formalization10Controller::class, 'storeRuc10']);
+    Route::post('ruc20-step1', [Formalization20Controller::class, 'ruc20Step1']);
+    Route::post('ruc20-step2/{codesunarp}', [Formalization20Controller::class, 'ruc20Step2']);
+    Route::post('ruc20-step3/{codesunarp}', [Formalization20Controller::class, 'ruc20Step3']);
+});
 
-Route::get('invitations/{workshopId}',          [InvitationController::class,       'invitationContent']);
-
-
-
-
-
-// Route::post('register-user',  [AuthController::class,  'registerUser']);
-
-
-Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function() {
-    
-    // invitacion*******************************************************************************
-    Route::get('invitation/{slug}',                 ['uses' => 'WorkshopController@invitation']);
-    Route::post('accepted-invitation',              ['uses' => 'InvitationController@acceptedInvitation']);        // Buscar personas por DNI o si existe en el sistema
-    Route::get('person/{type}/{num}',               ['uses' => 'PeopleController@dniSearch']);                  //api
-    Route::get('company/{ruc}',                     ['uses' => 'CompanyController@rucSearch']);                 //api
-    Route::put('add-point/{workshopId}/{type}',     ['uses' => 'WorkshopDetailsController@addPointToWorkshop']);  
-    // invitacion*******************************************************************************
-
-    // registros*******************************************************************************
-    Route::post('new-person',                       ['uses' => 'PeopleController@personCreate']);
-    Route::post('company',                          ['uses' => 'CompanyController@companyCreateUpadate']);
-    Route::post('company-user',                     ['uses' => 'CompanyController@companyPersonRegister']);
-
-    Route::post('formalization',                    ['uses' => 'FormalizationController@formalizationPublicForm']);     //formulario de formalizacion agregado con el Google Maps
-    Route::get('location-cdes',                     ['uses' => 'FormalizationController@gpsCdes']);                     //formulario de formalizacion agregado con el Google Maps
-    Route::post('formalization-email/{dni}',        ['uses' => 'FormalizationController@formalizationSendEmail']);      //despues del mapa se le envia un email
-    // Route::post('formalization-recaptcha',          ['uses' => 'FormalizationController@formalizationRecaptcha']);      //recaptcha
-
-
-    //CAPTCHA
-    Route::post('formalization-user',               ['uses' => 'PeopleController@formalizationRecaptcha']);                                 // formulariooo desde public
-    Route::post('formalization-digital',            ['uses' => 'FormalizationController@formalizationDigitalCreate']);                      //Queremos poblar la tabla formalization_digital
-    Route::get('formalization-digital-request/{dni}',['uses' => 'FormalizationController@requestMyStatusFormalization']);              //Consultar en que estado esta mi soliicitud de formaalizacion DNI
+Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::get('advisories/{idAsesor}', [HistorialController::class, 'historialAdvisories']);
+    Route::get('formalizations-10/{idAsesor}', [HistorialController::class, 'historialFormalizations10']);
+    Route::get('formalizations-20/{idAsesor}', [HistorialController::class, 'historialFormalizations20']);
 
 });
 
+Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], function() {
+    Route::get('list', [NotaryController::class, 'indexNotary']);
+    Route::post('create', [NotaryController::class, 'storeNotary']);
+    Route::delete('delete/{id}', [NotaryController::class, 'deleteNotary']);
+    Route::patch('update/{id}', [NotaryController::class, 'updateNotary']);
+});
 
+// Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers'], function() {
+//     Route::post('mype', [MypeController::class, 'store']);
 
+// });
+
+Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::post('comercial-activities', [CreateController::class, 'postComercialActivities']);
+});
+
+Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function() {
+    Route::get('cities', [SelectController::class, 'getCities']);
+    Route::get('provinces/{idCity}', [SelectController::class, 'getProvinces']);
+    Route::get('districts/{idProv}', [SelectController::class, 'getDistricts']);
+    Route::get('offices', [SelectController::class, 'getOffices']);
+    Route::get('cdes', [SelectController::class, 'getCdes']);
+    Route::get('genders', [SelectController::class, 'getGenders']);
+    Route::get('modalities', [SelectController::class, 'getModalities']);
+    Route::get('type-documents', [SelectController::class, 'getTypeDocuments']);
+    Route::get('components', [SelectController::class, 'getComponents']);
+    Route::get('component-theme/{id}', [SelectController::class, 'getComponentTheme']);
+    Route::get('roles', [SelectController::class, 'getRoles']);
+    Route::get('detail-procedures', [SelectController::class, 'getProcedures']);
+    Route::get('economic-sectors', [SelectController::class, 'getEconomicSectors']);
+    Route::get('comercial-activities', [SelectController::class, 'getComercialActivities']);
+    Route::get('regimes', [SelectController::class, 'getRegimes']);
+    Route::get('notaries', [SelectController::class, 'getNotaries']);
+});
 
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
-    
 
-    Route::apiResource('exponents',                 ExponentController::class);
-    Route::get('enableds-exponents',                ['uses' => 'ExponentController@allExponents']);
-    Route::put('enabled-disabled/{exponentId}',     ['uses' => 'ExponentController@isEnabledDisabled']);
-
-    Route::get('mype-registered',                   [ReportsController::class,      'TotalMype']);
-    Route::get('mype-anual-progress',               [ReportsController::class,      'AnualProgress']);
-    Route::get('mype-month-progress',               [ReportsController::class,      'MonthProgress']);
-
-    Route::get('sedes',                             [StaticController::class,       'getDataSedes']);
-    // Route::post('register',                         [AuthController::class,         'registerUser']);
-    
-    
-    //convenios
-    Route::post('agreements/new-agreement',         [AgreementsController::class,   'newAgreement']);
-    Route::post('agreements/upload-pdf',            [AgreementsController::class,   'uploadPdf']);
-    Route::post('agreements/commitments',           [AgreementsController::class,   'newCommitments']);
-    Route::delete('delete/agreements/{id}',         [AgreementsController::class,   'deleteCommitments']);
-    
-    Route::get('agreements/commitments/{id}',       [AgreementsController::class,   'commitments']);
-
-    Route::get('agreements/get-uploaded-files',     [AgreementsController::class,   'getUploadedFiles']);
-    
-
-    //MYPE
-    Route::apiResource('mype',                      MypeController::class);
-    Route::post('import-excel',                     ['uses' => 'MypeController@uploadExcel']);
-    Route::get('export-excel',                      ['uses' => 'MypeController@downloadExcel']);
-    Route::get('data-mype/{ruc}',                   ['uses' => 'MypeController@dataMypeRuc']);
-    Route::get('api-data-mype/{ruc}',               ['uses' => 'MypeController@getDataFromExternalApi']);
-
-    //patrimonios
-    // Route::post('import-excel',                     []);
-
-
-
-
-    // usuarios*******************************************************************************
-    Route::post('logout',                           [AuthController::class, 'logout']);
-    Route::post('new-user',                         ['uses' => 'AuthController@registerNewUser']);
-    Route::post('change-password-user/{id}/{dni}',  ['uses' => 'AuthController@changePasswordUser']);              // cambiar contraseña de usuario
-    Route::post('new-user-created',                 ['uses' => 'AuthController@registerNewUserCreatedBy']);
-    Route::get('users',                             ['uses' => 'UserController@listAllUsers']);
-    Route::get('user/{dni}',                        ['uses' => 'UserController@dataUserByDNI']);
-    Route::put('user/{id}',                         ['uses' => 'UserController@updateUserNoPassword']);
-    Route::post('delete-user/{id}',                  ['uses' => 'UserController@deleteAnUser']);
-    
-    Route::post('profile-photo/{id}/{dni}',         ['uses' => 'UserController@upProfilePhotoImage']);
-    Route::get('profile-photo/{id}/{dni}',          ['uses' => 'UserController@showProfilePhotoImage']);
-    Route::get('personal-data/{dni}',               ['uses' => 'UserController@personalDataUser']);  
-
-    Route::get('views/{idUser}',                    ['uses' => 'PermissionController@viewsByUsers']);  
-    Route::put('views',                             ['uses' => 'PermissionController@assignedViews']);
-    Route::post('permission',                       ['uses' => 'PermissionController@asignedViews']);
-    Route::get('permission/{idUser}',               ['uses' => 'PermissionController@showPermissions']);
-    // usuarios*******************************************************************************
-    
-    // personas_master *******************************************************************************
-    Route::get('person/{type}/{num}',               ['uses' => 'PeopleController@dniSearch']);          //api buscar dni RENIEC
-    Route::post('new-person',                       ['uses' => 'PeopleController@personCreate']);
-    Route::get('person/{idPost}',                   ['uses' => 'PeopleController@index']);
-    Route::get('person-by-dni/{dni}',               ['uses' => 'PeopleController@show']);
-    Route::put('person-dni/{dni}/{rol}',            ['uses' => 'PeopleController@deleteUser']); 
-    Route::get('supervisores',                      ['uses' => 'PeopleController@allSupervisores']);
-    Route::get('applicant-new/{dni}',               ['uses' => 'PeopleController@isApplicantNew']);
-    Route::post('user-asesor',                      ['uses' => 'PeopleController@userAsesor']);
-    Route::patch('update-profile/{dni}',                      ['uses' => 'PeopleController@updateDataUserProfile']);
-
-    // personas_master *******************************************************************************
-    
-    // notarias*******************************************************************************
-    Route::get('notaries',                         ['uses' => 'NotaryController@index']);
-    Route::post('notary',                          ['uses' => 'NotaryController@store']);
-    Route::get('notary/{id}',                      ['uses' => 'NotaryController@show']);
-    Route::put('notary/{id}',                      ['uses' => 'NotaryController@update']);
-    Route::put('notary-delete/{id}',               ['uses' => 'NotaryController@deleteNotary']);
-    // notarias*******************************************************************************
-
-    // compañias_master*******************************************************************************
-    Route::get('companies',                        ['uses' => 'CompanyController@index']);
-    Route::post('company',                         ['uses' => 'CompanyController@companyCreateUpadate']);
-    Route::put('company-delete/{id}',              ['uses' => 'CompanyController@deleteCompany']);
-
-    Route::get('notary/{id}',                      ['uses' => 'NotaryController@show']);
-    Route::put('notary/{id}',                      ['uses' => 'NotaryController@update']);
-    // compañias_master*******************************************************************************
-
-
-    // drive*******************************************************************************
-    Route::post('drive/up-files',                  ['uses' => 'DriveController@driveUpFiles']);
-    Route::get('drive/files/{id}',                 ['uses' => 'DriveController@showFiles']);
-    Route::get('drive/author/{id}',                ['uses' => 'DriveController@showFilesAuthor']);
-    Route::get('drive/download/{path}',            ['uses' => 'DriveController@downloadFile']);
-    Route::get('drive/search-file/{name}/{id}',    ['uses' => 'DriveController@searchByNameFile']);
-    // drive*******************************************************************************
-
-    
-    // formalizaciones & asesorias*******************************************************************************
-    Route::get('my-formalizations20/{dni}',         ['uses' => 'FormalizationController@myFormalizationsRuc20']);           //preguntamos si tiene una formalizacion pendiente
-    Route::get('find-formalization20/{id}',         ['uses' => 'FormalizationController@chooseFormalizationRuc20']);        //si en caso tiene mas de una empresa, escoge un id de una formalizacion a continuar
-    Route::post('formalization20',                  ['uses' => 'FormalizationController@formalizationRuc20']);              // guardamos     
-    Route::post('person-post',                      ['uses' => 'FormalizationController@setPersonPost']);                   // si hace una accion crear empresa 20 , 10 o asesoria se convierte en un solicitante tipo (3)
-    Route::get('notaries-select',                   ['uses' => 'FormalizationController@getAllSelectNotary']);              //select para todas las notarias
-    Route::get('comercial-activities',              ['uses' => 'FormalizationController@getAllSelectComercialActivities']); //select para todas las Actividades comerciales
-    Route::post('create-comercial-activities',      ['uses' => 'FormalizationController@createComercialActivities']);       //Creamos una actividad comercial
-    Route::post('formalization-company',            ['uses' => 'FormalizationController@formalizationToCompany']);          //de formalizacion form tipo20 a company tabla master
-    
-    Route::post('formalization10',                  ['uses' => 'FormalizationController@formalizationRuc10']);          //de formalizacion form tipo20 a company tabla master
-    Route::get('theme-component',                   ['uses' => 'FormalizationController@allThemesComponents']);         //Lista todos los select de temas para componentes
-    Route::post('create-consulting',                ['uses' => 'FormalizationController@createNewConsulting']);          //registra una nueva asesoria
-    Route::get('historial-formalization/{dni}/{id}',['uses' => 'FormalizationController@formalizationHistorial']);         //historial
-    Route::get('asesorias',                         ['uses' => 'FormalizationController@allAsesorias']);                   //muestra todas las asesorias
-    Route::get('formalizations-10',                 ['uses' => 'FormalizationController@allFormalizations10']); 
-    Route::get('formalizations-20',                 ['uses' => 'FormalizationController@allFormalizations20']); 
-    Route::post('download-asesorias',               ['uses' => 'FormalizationController@downloadAsesorias']);                   //muestra todas las asesorias
-    Route::post('download-formalizations-10',       ['uses' => 'FormalizationController@downloadFormalizationsRuc10']);                   //muestra todas las asesorias
-    Route::post('download-formalizations-20',       ['uses' => 'FormalizationController@downloadFormalizationsRuc20']);                   //muestra todas las asesorias
-
-    Route::get('formalization-digital',             ['uses' => 'FormalizationController@formalizationDigitalList']);              //Hacemos referencia la tbla de formalization_digital
-    Route::get('actives-cdes-digitals',             ['uses' => 'FormalizationController@showAllCdesFormalizations']);              //Hacemos referencia la tbla de formalization_digital
-    Route::patch('formalization-digital-status/{dni}',['uses' => 'FormalizationController@updateStatusFormalization']);              //Actualizamos la tabla formalization_digital el status y booking
-    
-
-    // formalizaciones & asesorias*******************************************************************************
-    
-    
-    
-    Route::apiResource('workshops', WorkshopController::class);
-    
-
-    // Route::apiResource('invitations', InvitationController::class);
-
-
-    Route::apiResource('testin', TestinController::class);
-    Route::post('create-test-in/{workshopId}', ['uses' => 'TestinController@createTestin']);
-    
-    Route::apiResource('testout', TestoutController::class);
-    Route::post('create-test-out/{workshopId}', ['uses' => 'TestoutController@createTestout']);
-
-    Route::apiResource('invitations', InvitationController::class);
-    Route::post('create-invitation/{workshopId}', ['uses' => 'InvitationController@createInvitation']);
-
-
-    // Route::apiResource('invitations', InvitationController::class);
-    Route::get('workshop/details/{workshopId}', ['uses' => 'WorkshopDetailsController@workshopDetails']);
-    Route::put('workshop/details/average', ['uses' => 'WorkshopDetailsController@averageWorkshopDetails']);
-    Route::get('workshop/bydate', ['uses' => 'WorkshopDetailsController@getWorkshopsGroupedByDate']);
-    Route::get('test-all-questions/{workshopId}', ['uses' => 'WorkshopDetailsController@testAllQuestions']);
-
-
-                 //mype acepta la invitacion
-
-
-
-    
-
-
-
-   
-    
-
-
-    // Route::post('invoices/bulk', ['uses' => 'InvoiceController@bulkStore']);
-
-
-   
-
-
-
-    Route::apiResource('customers', CustomerController::class);
-    Route::apiResource('invoices', InvoiceController::class);
 });
+
+
+
+
+
+// {
+//     "email": "test3@test.com",
+//     "password": "12345678",
+//     "name": "Pedro",
+//     "lastname": "Mendoza",
+//     "middlename": "Gonzales",
+//     "birthday": "2000-12-12",
+//     "sick": 1,
+//     "phone": "987654321",
+//     "gender_id": 1,
+//     "cde_id": 1,
+//     "office_id": 1,
+//     "role_id": 1
+// }
+
+
+// INSERT INTO views (user_id, views, created_at, updated_at) VALUES (2, '["home","person"]', NOW(), NOW());
+
+
+// People
+// {
+//   "documentnumber": "1212",
+//   "lastname": "Libido",
+//   "middlename": "Gonzales",
+//   "name": "Pamela",
+//   "phone": "987654001",
+//   "email": "pame@hahah.com",
+//   "birthday": "1990-12-12",
+//   "sick": 2,
+//   "facebook": null,
+//   "linkedin": null,
+//   "instagram": "https://www.youtube.com/watch?v=3JkKdgs6IS8&list=PL36D5522F03F1E241&index=3&ab_channel=DiegoHalc%C3%B3n",
+//   "tiktok": null,
+//   "city_id": 1,
+//   "province_id": 1,
+//   "district_id": 2,
+//   "typedocument_id": 1,
+//   "gender_id": 1,
+//   "people_id": 2,
+//   "from_id": 1
+// }
+
+
+//asesoria
+// {
+//   "observations": null,
+//   "user_id": 2,
+//   "people_id": 2,
+//   "component_id": 1,
+//   "theme_id": 1,
+//   "modality_id": 1
+// }
+
+
+// formalizacion 10
+// {
+//     "detailprocedure_id": 1,
+//     "modality_id": 1,
+//     "economicsector_id": 1,
+//     "comercialactivity_id": 1,
+//     "city_id": 1,
+//     "province_id": 1,
+//     "district_id": 2,
+//     "people_id": 6,
+//     "user_id": 2
+// }
+
+
+
+
+
+
+
+
+// paso1
+    // "task": 1,
+    // "codesunarp": "PERU899",
+    // "economicsector_id": 1,
+    // "comercialactivity_id": 1,
+    // "regime_id": 1,
+    // "address": "Calle los jardeincesz 1234",
+    // "city_id": 1,
+    // "province_id": 2,
+    // "district_id": 25,
+    // "modality_id": 2,
+    // "user_id": 2,
+
+
+    // paso2
+    // "task": 2,
+    // "user_id": 2,
+    // "people_id": 25,
+    // "name": "Hermanos RIVERA SAC",
+    // "numbernotary": "R23",
+    // "notary_id": 1,
+    // "userupdated_id": 2
+
+    // paso3 /code
+    // "task": 3,
+    // "mype_id": 3,
+    // "ruc": "2099393939"

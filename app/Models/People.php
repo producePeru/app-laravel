@@ -9,46 +9,90 @@ class People extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'document_type',
-        'number_document',
-        'last_name',
-        'middle_name',
-        'name',
-        'department',
-        'province',
-        'district',
-        'address',
-        'email',
-        'phone',
-        'birthdate',
-        'gender',
-        'lession',
-        'created_by',
-        'update_by',
-    ];
+    protected $guarded = ['id'];
 
-    public function departament()
+    public function city()
     {
-        return $this->belongsTo(Departament::class, 'department');
+        return $this->belongsTo('App\Models\City');
     }
 
     public function province()
     {
-        return $this->belongsTo(Province::class, 'province');
+        return $this->belongsTo('App\Models\Province');
     }
 
     public function district()
     {
-        return $this->belongsTo(District::class, 'district');
+        return $this->belongsTo('App\Models\District');
     }
 
-    public function postPerson()
+    public function gender()
     {
-        return $this->hasOne(Post_Person::class, 'number_document', 'dni_people');
+        return $this->belongsTo('App\Models\Gender');
     }
-    public function userPhoto()
+
+    public function user()
     {
-        return $this->hasOne(PersonPhoto::class, 'dni', 'number_document');
+        return $this->belongsToMany(User::class);
+    }
+
+    public function from()
+    {
+        return $this->belongsToMany(From::class);
+    }
+
+    public function mype()
+    {
+        return $this->belongsToMany(Mype::class);
+    }
+
+    public function typedocument()
+    {
+        return $this->belongsTo('App\Models\Typedocument');
+    }
+
+    public function advisory()
+    {
+        return $this->hasMany('App\Models\Advisory');
+    }
+
+    public function formalization10()
+    {
+        return $this->belongsTo('App\Models\Formalization10');
+    }
+
+    public function formalization20()
+    {
+        return $this->belongsTo('App\Models\Formalization20');
+    }
+
+    public function idadvisory()
+    {
+        return $this->hasMany('App\Models\Advisory', 'people_id');
+    }
+
+    public function idformalization10()
+    {
+        return $this->hasMany('App\Models\Formalization10', 'people_id');
+    }
+
+    public function idformalization20()
+    {
+        return $this->hasMany('App\Models\Formalization20', 'people_id');
+    }
+
+    public function scopeWithProfileAndRelations($query)
+    {
+        return $query->with(['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile'])
+        ->orderBy('created_at', 'desc')
+        ->paginate(20);
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            $user->from()->detach();
+            $user->user()->detach();
+        });
     }
 }

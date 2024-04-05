@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Ramsey\Uuid\Uuid;
 
 class User extends Authenticatable
 {
@@ -19,26 +18,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        // 'id',
-        // 'nick_name',
-        'password',
-        'document_type',
-        'document_number',
-        'last_name',
-        'middle_name',
-        'name',
-        'country_code',
-        'birthdate',
-        'gender',
-        'is_disabled',
+        // 'name',
         'email',
-        'phone_number',
-        'office_code',
-        'sede_code',
-        'role',
-        'created_by',
-        'updated_by',
-        'status'
+        'password',
     ];
 
     /**
@@ -47,8 +29,12 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
+        'pivot',
+        'email_verified_at',
         'password',
         'remember_token',
+        'created_at',
+        'updated_at'
     ];
 
     /**
@@ -58,38 +44,61 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed'
+        'password' => 'hashed',
     ];
 
-    public function country()
+    public function profile()
     {
-        return $this->belongsTo(Country::class, 'country_code');
+        return $this->hasOne(Profile::class);
     }
 
-    public function sede()
+    public function views()
     {
-        return $this->belongsTo(Sede::class, 'sede_code');
+        return $this->hasMany('App\Models\View');
     }
 
-    public function permission()
+    public function roles()
     {
-        return $this->hasOne(Permission::class, 'id_user', 'id'); 
-    }
-    public function drive()
-    {
-        return $this->hasMany(Drive::class, 'created_by', 'id'); 
-    }
-    public function createds()
-    {
-        return $this->hasOne(Created::class, 'id_user');
-    }
-    public function person()
-    {
-        return $this->hasOne(People::class, 'document_number');
+        return $this->belongsToMany(Role::class);
     }
 
-    // public function formalization20()
-    // {
-    //     return $this->belongsTo('App\Models\Formalization20');
-    // }
+    public function people()
+    {
+        return $this->belongsToMany(People::class);
+    }
+
+    public function advisory()
+    {
+        return $this->hasOne(Advisory::class);
+    }
+
+    public function formalization10()
+    {
+        return $this->hasOne(Formalization10::class);
+    }
+
+    public function formalization20()
+    {
+        return $this->hasOne(Formalization20::class);
+    }
+
+    public function notary()
+    {
+        return $this->hasOne('App\Models\Notary');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            $user->profile()->delete();
+            $user->roles()->detach();
+        });
+    }
+
+    public function scopeWithProfileAndRelations($query)
+    {
+        return $query->with(['profile', 'profile.office', 'profile.cde'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+    }
 }

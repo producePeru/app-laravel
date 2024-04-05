@@ -9,61 +9,79 @@ class Formalization10 extends Model
 {
     use HasFactory;
 
-    protected $table = 'formalizations_10';
+    protected $table = 'formalizations10';
 
-    protected $fillable = [
-        'id_person',
-        'detail_procedure',
-        'modality',
-        'economy_sector',
-        'category',
-        'department',
-        'province',
-        'district',
-        'created_by',
-        'created_dni',
-        'status'
-    ];
+    protected $guarded = ['id'];
 
-    public function acreated()
+    public function economicsector()
     {
-        return $this->belongsTo(People::class, 'created_by', 'id');
+        return $this->belongsTo('App\Models\EconomicSector');
     }
 
-    public function categories()
+    public function detailprocedure()
     {
-        return $this->belongsTo(ComercialActivity::class, 'category', 'id');
+        return $this->belongsTo('App\Models\DetailProcedure');
     }
-    // public function supervisor()
-    // {
-    //     return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'created_by');
-    // }
-    public function departmentx()
+
+    public function comercialactivity()
     {
-        return $this->belongsTo(Departament::class, 'department', 'idDepartamento');
+        return $this->belongsTo('App\Models\ComercialActivities');
     }
-    public function provincex()
+
+    public function modality()
     {
-        return $this->belongsTo(Province::class, 'province', 'idProvincia');
+        return $this->belongsTo('App\Models\Modality');
     }
-    public function districtx()
+
+    public function city()
     {
-        return $this->belongsTo(District::class, 'district', 'idDistrito');
+        return $this->belongsTo('App\Models\City');
     }
-    public function prodecuredetail()
+
+    public function province()
     {
-        return $this->belongsTo(ProdecureDetail::class, 'detail_procedure', 'id');
+        return $this->belongsTo('App\Models\Province');
     }
-    public function economicsectors()
+
+    public function district()
     {
-        return $this->belongsTo(EconomicSectors::class, 'economy_sector', 'id');
+        return $this->belongsTo('App\Models\District');
     }
-    public function supervisorx()
+    public function user()
     {
-        return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'id_adviser');
+        return $this->belongsTo('App\Models\User');
     }
-    public function solicitante()
+    public function people()
     {
-        return $this->belongsTo(People::class, 'id_person', 'id');
+        return $this->belongsTo('App\Models\People');
+    }
+
+    public function idpeople()
+    {
+        return $this->belongsTo('App\Models\People', 'people_id');
+    }
+
+    public function scopeWithFormalizationAndRelations($query)
+    {
+        return $query->with([
+            'economicsector',
+            'detailprocedure',
+            'comercialactivity',
+            'modality',
+            'city',
+            'province',
+            'district',
+            'user.profile',
+            'people:id,name,lastname,middlename,documentnumber,email,phone',
+            ])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+    }
+
+    public function scopeByUserId($query, $userId)
+    {
+        return $query->whereHas('user', function($q) use ($userId) {
+            $q->where('id', $userId);
+        });
     }
 }

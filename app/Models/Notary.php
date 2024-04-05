@@ -9,30 +9,41 @@ class Notary extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'department',
-        'province',
-        'district',
-        'address',
-        'normal_rate',
-        'social_rate',
-        'status',
-        'created_by'
-    ];
+    protected $guarded = ['id'];
 
-    public function departament()
+    protected $hidden = ['city_id', 'province_id', 'district_id', 'user_id', 'created_at', 'updated_at'];
+
+    public function city()
     {
-        return $this->belongsTo(Departament::class, 'department');
+        return $this->belongsTo('App\Models\City');
     }
 
     public function province()
     {
-        return $this->belongsTo(Province::class, 'province');
+        return $this->belongsTo('App\Models\Province');
     }
 
     public function district()
     {
-        return $this->belongsTo(District::class, 'district');
+        return $this->belongsTo('App\Models\District');
+    }
+
+    public function formalization20()
+    {
+        return $this->hasMany('App\Models\Formalization20');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User');
+    }
+
+    public function scopeWithNotariesAndRelations($query)
+    {
+        return $query->with([
+            'city', 'province', 'district', 'user.profile'
+            ])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
     }
 }

@@ -9,5 +9,17 @@ class View extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'status'];
+    protected $guarded = ['id'];
+
+    protected $hidden = ['id', 'user_id', 'created_at', 'updated_at'];
+
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User');
+    }
+
+    public function getDecodedViewsAttribute()
+    {
+        return json_decode($this->attributes['views'], true);
+    }
 }

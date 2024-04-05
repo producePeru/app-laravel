@@ -9,20 +9,27 @@ class Province extends Model
 {
     use HasFactory;
 
-    protected $table = 'provincia';
+    protected $guarded = ['id'];
 
-    protected $primaryKey = 'idProvincia';
+    protected $hidden = ['city_id', 'created_at', 'updated_at'];
 
-    protected $fillable = [
-        'idProvincia',
-        'descripcion',
-        'idUsuario',
-        'idDepartamento',
-        'estado'
-    ];
-
-    public function department()
+    public function people()
     {
-        return $this->hasMany(Province::class, 'idProvincia');
+        return $this->hasMany('App\Models\People');
     }
-}   
+
+    public function advisory()
+    {
+        return $this->hasMany('App\Models\Advisory');
+    }
+
+    public function formalization10()
+    {
+        return $this->hasMany('App\Models\Formalization10');
+    }
+
+    public function formalization20()
+    {
+        return $this->hasMany('App\Models\Formalization20');
+    }
+}

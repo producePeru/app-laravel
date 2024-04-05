@@ -5,16 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Mype extends Model
+class Regime extends Model
 {
     use HasFactory;
 
     protected $guarded = ['id'];
-
-    public function people()
-    {
-        return $this->belongsToMany(People::class);
-    }
+    protected $hidden = ['created_at', 'updated_at'];
 
     public function formalization20()
     {

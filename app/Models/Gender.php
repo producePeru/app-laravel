@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Component extends Model
+class Gender extends Model
 {
     use HasFactory;
 
@@ -13,13 +13,13 @@ class Component extends Model
 
     protected $hidden = ['created_at', 'updated_at'];
 
-    public function advisory()
+    public function profiles()
     {
-        return $this->belongsTo('App\Models\Advisory');
+        return $this->hasMany('App\Models\Profile');
     }
 
-    public function theme()
+    public function person()
     {
-        return $this->hasOne('App\Models\ThemeComponent');
+        return $this->hasMany('App\Models\People');
     }
 }

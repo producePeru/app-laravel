@@ -4,91 +4,126 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use PhpOffice\PhpSpreadsheet\Calculation\Category;
 
 class Formalization20 extends Model
 {
     use HasFactory;
 
-    protected $table = 'formalizations_20';
+    protected $guarded = ['id'];
 
-    protected $fillable = [
-        'step',
-        'id_person',
-        'dni',
-        'code_sid_sunarp',
-
-        'economy_sector',
-        'department',
-        'category',
-        'province',
-        'district',
-        'address',
-        'created_by',
-        'created_dni',
-
-        'social_reason',
-        'type_regimen',
-        'num_notary',
-        'modality',
-        'id_notary',
-        
-        
-        'ruc',
-        'updated_by',
-        'status'
+    protected $hidden = [
+        'city_id',
+        'province_id',
+        'district_id',
+        'regime_id',
+        'notary_id',
+        'modality_id',
+        'comercialactivity_id',
+        'economicsector_id',
+        'user_id',
+        'mype_id',
+        // 'people_id'
     ];
 
-    public function acreated()
+    public function city()
     {
-        return $this->belongsTo(People::class, 'created_by', 'id');
+        return $this->belongsTo('App\Models\City');
     }
 
-    public function aupdated()
+    public function province()
     {
-        return $this->belongsTo(People::class, 'updated_by', 'id');
+        return $this->belongsTo('App\Models\Province');
     }
 
-    public function categories()
+    public function district()
     {
-        return $this->belongsTo(ComercialActivity::class, 'category', 'id');
+        return $this->belongsTo('App\Models\District');
     }
-    public function supervisorx()
+
+    public function modality()
     {
-        return $this->belongsTo(AdviserSupervisor::class, 'created_by', 'id_adviser');
+        return $this->belongsTo('App\Models\Modality');
     }
-    public function departmentx()
+
+    public function comercialactivity()
     {
-        return $this->belongsTo(Departament::class, 'department', 'idDepartamento');
+        return $this->belongsTo('App\Models\ComercialActivities');
     }
-    public function provincex()
+
+    public function regime()
     {
-        return $this->belongsTo(Province::class, 'province', 'idProvincia');
+        return $this->belongsTo('App\Models\Regime');
     }
-    public function districtx()
-    {
-        return $this->belongsTo(District::class, 'district', 'idDistrito');
-    }
-    public function prodecuredetail()
-    {
-        return $this->belongsTo(ProdecureDetail::class, 'detail_procedure', 'id');
-    }
-    public function economicsectors()
-    {
-        return $this->belongsTo(EconomicSectors::class, 'economy_sector', 'id');
-    }
+
     public function notary()
     {
-        return $this->belongsTo(Notary::class, 'id_notary', 'id');
+        return $this->belongsTo('App\Models\Notary');
     }
-    public function solicitante()
+    public function economicsector()
     {
-        return $this->belongsTo(People::class, 'id_person', 'id');
+        return $this->belongsTo('App\Models\EconomicSector');
     }
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User');
+    }
+
+    public function userupdater()
+    {
+        return $this->belongsTo('App\Models\User', 'userupdated_id');
+    }
+
+    public function mype()
+    {
+        return $this->belongsTo('App\Models\Mype');
+    }
+
+    public function people()
+    {
+        return $this->belongsTo('App\Models\People');
+    }
+
+
+
+    public function scopeWithFormalizationAndRelations($query)
+    {
+        return $query->with([
+            'city',
+            'province',
+            'district',
+            'modality',
+            'comercialactivity',
+            'regime',
+            'notary:id,name,price',
+            'economicsector',
+            'user.profile',
+            'mype:id,name,ruc',
+            'people:id,name,lastname,middlename,documentnumber,email,phone',
+            'userupdater.profile'
+            ])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+    }
+
+    // POR ID DE PEOPLE_ID
+    public function scopeWithFormalizationAndRelationsId($query, $id)
+    {
+        return $query->where('people_id', $id)
+            ->with([
+                'user.profile',
+                'people:id,name,lastname,middlename,documentnumber',
+                'userupdater.profile',
+                'mype:id,name,ruc'
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function scopeByUserId($query, $userId)
+    {
+        return $query->whereHas('user', function($q) use ($userId) {
+            $q->where('id', $userId);
+        });
+    }
+
 }
-
-
-
-
-    
-    
