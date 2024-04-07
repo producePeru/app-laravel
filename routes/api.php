@@ -16,6 +16,10 @@ use App\Http\Controllers\Mype\MypeController;
 
 Route::post('login', [AuthController::class, 'login']);
 
+//testing
+Route::post('create', [UserController::class, 'store']);
+
+
 
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -30,7 +34,7 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
   Route::get('list', [PersonController::class, 'index']);
-  Route::get('found/{type}/{dni}', [PersonController::class, 'dniFoundUser']);
+  Route::get('found/{type}/{dni}', [PersonController::class, 'dniFoundUser']);    
   Route::post('create', [PersonController::class, 'store']);
   Route::delete('delete/{id}', [PersonController::class, 'destroy']);
 });
@@ -92,6 +96,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('comercial-activities', [SelectController::class, 'getComercialActivities']);
     Route::get('regimes', [SelectController::class, 'getRegimes']);
     Route::get('notaries', [SelectController::class, 'getNotaries']);
+    Route::get('supervisores', [SelectController::class, 'getSupervisores']);
 });
 
 

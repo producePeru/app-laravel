@@ -87,6 +87,11 @@ class User extends Authenticatable
         return $this->hasOne('App\Models\Notary');
     }
 
+    public function supervisor()
+    {
+        return $this->hasOne('App\Models\Supervisor');
+    }
+
     protected static function booted()
     {
         static::deleting(function ($user) {

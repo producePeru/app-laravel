@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Profile;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\View;
+use App\Models\Supervisor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -17,6 +20,8 @@ class UserController extends Controller
         return response()->json($users, 200);
     }
 
+    
+    
     public function store(Request $request)
     {
         $request->validate([
@@ -35,7 +40,7 @@ class UserController extends Controller
         $profile->name = $request->name;
         $profile->lastname = $request->lastname;
         $profile->middlename = $request->middlename;
-        $profile->documentnumber = $request->documentnumber;
+        // $profile->documentnumber = $request->documentnumber;
         $profile->birthday = $request->birthday;
         $profile->sick = $request->sick;
         $profile->phone = $request->phone;
@@ -46,6 +51,37 @@ class UserController extends Controller
         $profile->save();
 
         $profile = new Role();
+
+
+        $viewsByRole = [
+            1 =>    ["home", "asesorias", "solicitudes", "asesorias", "asesorias-formalizaciones", 
+                    "solicitantes", "notarias", "asesores", "supervisores", "usuarios", "usuarios-nuevo", "usuarios-lista"],             //supervisor
+            2 =>    ["home", "users", "profiles"]                                  //asesor
+        ];
+
+        $views = $viewsByRole[$request->role_id] ?? [];
+
+        if (!empty($views)) {
+            $view = new View();
+            $view->user_id = $user->id;
+            $view->views = json_encode($views);
+            $view->save();
+        }
+
+        if($request->role_id === 1) {
+            $view = new Supervisor();
+            $view->user_id = $user->id;
+            $view->save();
+        }
+
+        if($request->supervisor_id) {
+            DB::table('supervisor_user')->insert([
+                'supervisor_id' => $request->supervisor_id,
+                'supervisado_id' => $user->id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+        }
 
         return response()->json(['message' => 'Usuario creado correctamente'], 200);
     }
