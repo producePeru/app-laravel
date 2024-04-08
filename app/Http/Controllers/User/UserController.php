@@ -17,6 +17,15 @@ class UserController extends Controller
         return response()->json($users, 200);
     }
 
+
+
+
+
+
+
+
+
+
     public function store(Request $request)
     {
         $request->validate([
@@ -49,6 +58,22 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Usuario creado correctamente'], 200);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function update(Request $request, $id)
     {
