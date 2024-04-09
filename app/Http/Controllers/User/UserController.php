@@ -20,20 +20,8 @@ class UserController extends Controller
         return response()->json($users, 200);
     }
 
-<<<<<<< HEAD
-
-
-
-
-
-
-
-
-
-=======
     
     
->>>>>>> 6ac6c8c39a6371cffa724fc3936a2aa56179dec3
     public function store(Request $request)
     {
         $request->validate([
@@ -99,46 +87,30 @@ class UserController extends Controller
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        $user = Profile::findOrFail($id);
 
-        if (!$user->profile) {
+        if (!$user) {
             return response()->json(['message' => 'El usuario no tiene un perfil'], 404);
         }
 
-        $profile = $user->profile;
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'middlename' => 'nullable|string|max:255',
+            'birthday' => 'nullable|date',
+            'sick' => 'required|in:yes,no',
+            'phone' => 'required|string|max:20',
+            'gender_id' => 'required|integer',
+            'cde_id' => 'required|integer',
+            'office_id' => 'required|integer',
+        ]);
 
-        $profile->name = $request->input('name');
-        $profile->lastname = $request->input('lastname');
-        $profile->middlename = $request->input('middlename');
-        $profile->birthday = $request->input('birthday');
-        $profile->sick = $request->input('sick');
-        $profile->phone = $request->input('phone');
-        $profile->gender_id = $request->input('gender_id');
-        $profile->cde_id = $request->input('cde_id');
-        $profile->office_id = $request->input('office_id');
-        $profile->save();
+        $user->update($validatedData);
 
-        // Actualizar el role del usuario
-        $user->roles()->sync([$request->input('role_id')]);
+        return response()->json(['message' => 'Perfil actualizado con éxito', 'status' => 200]);
 
-        return response()->json(['message' => 'Perfil actualizado correctamente'], 200);
     }
 
     public function destroy($id)
