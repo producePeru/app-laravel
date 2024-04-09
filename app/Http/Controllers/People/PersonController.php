@@ -90,4 +90,12 @@ class PersonController extends Controller
             return response()->json(['message' => 'El usuario no existe', 'status' => 404]);
         }
     }
+
+    // public function show($id)
+    // {
+
+    //     $people = People::withProfileAndRelations();
+
+    //     return response()->json($people, 200);
+    // }
 }

@@ -20,6 +20,7 @@ use App\Models\EconomicSector;
 use App\Models\ComercialActivities;
 use App\Models\Regime;
 use App\Models\Notary;
+use App\Models\Supervisor;
 
 class SelectController extends Controller
 {
@@ -225,6 +226,19 @@ class SelectController extends Controller
             return [
                 'label' => $item->name,
                 'value' => $item->id
+            ];
+        });
+        return response()->json(['data' => $data]);
+    }
+
+    public function getSupervisores()
+    {
+        $supervisors = Supervisor::with('profile')->get();
+
+        $data = $supervisors->map(function ($item) {
+            return [
+                'label' => $item->profile['name'] . ' ' . $item->profile['lastname'] . ' ' . $item->profile['middlename'],
+                'value' => $item->user_id
             ];
         });
         return response()->json(['data' => $data]);

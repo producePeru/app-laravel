@@ -44,6 +44,16 @@ class Notary extends Model
             'city', 'province', 'district', 'user.profile'
             ])
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(200);
+    }
+
+    public function scopeWithNotariesById($query, $cityId)
+    {
+        return $query->with([
+            'city', 'province', 'district', 'user.profile'
+            ])
+            ->where('city_id', $cityId) // Filtro por city_id
+            ->orderBy('created_at', 'desc')
+            ->paginate(200);
     }
 }

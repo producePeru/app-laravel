@@ -16,6 +16,10 @@ use App\Http\Controllers\Mype\MypeController;
 
 Route::post('login', [AuthController::class, 'login']);
 
+//testing
+Route::post('create', [UserController::class, 'store']);
+
+
 
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -59,11 +63,15 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
 
 });
 
-Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], function() {
+Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
     Route::get('list', [NotaryController::class, 'indexNotary']);
+    Route::get('list/{id}', [NotaryController::class, 'indexNotaryById']);
     Route::post('create', [NotaryController::class, 'storeNotary']);
     Route::delete('delete/{id}', [NotaryController::class, 'deleteNotary']);
     Route::patch('update/{id}', [NotaryController::class, 'updateNotary']);
+});
+Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], function() {
+    Route::get('list', [NotaryController::class, 'indexNotary']);
 });
 
 // Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers'], function() {
@@ -92,6 +100,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('comercial-activities', [SelectController::class, 'getComercialActivities']);
     Route::get('regimes', [SelectController::class, 'getRegimes']);
     Route::get('notaries', [SelectController::class, 'getNotaries']);
+    Route::get('supervisores', [SelectController::class, 'getSupervisores']);
 });
 
 

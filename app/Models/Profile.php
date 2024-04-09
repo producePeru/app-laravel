@@ -36,6 +36,11 @@ class Profile extends Model
         return $this->belongsTo('App\Models\People');
     }
 
+    public function supervisor()
+    {
+        return $this->belongsTo(Supervisor::class, 'user_id', 'user_id');         //inversa
+    }
+
    
     protected static function booted()
     {
