@@ -66,6 +66,11 @@ class People extends Model
         return $this->belongsTo('App\Models\Formalization20');
     }
 
+    public function profile()
+    {
+        return $this->belongsTo('App\Models\Profile');
+    }
+
     public function idadvisory()
     {
         return $this->hasMany('App\Models\Advisory', 'people_id');
@@ -81,9 +86,25 @@ class People extends Model
         return $this->hasMany('App\Models\Formalization20', 'people_id');
     }
 
-    public function scopeWithProfileAndRelations($query)
+    public function genderpeople()
+    {
+        return $this->belongsTo(Gender::class, 'id');
+    }
+
+
+    public function scopeWithProfileAndRelations($query)        //super
     {
         return $query->with(['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile'])
+        ->orderBy('created_at', 'desc')
+        ->paginate(20);
+    }
+
+    public function scopeWithProfileAndUser($query, $userId)        //asesores
+    {
+        return $query->with(['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile'])
+        ->whereHas('user', function ($q) use ($userId) {
+            $q->where('users.id', $userId); // Cambio aquí
+        })
         ->orderBy('created_at', 'desc')
         ->paginate(20);
     }

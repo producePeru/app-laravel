@@ -106,4 +106,10 @@ class User extends Authenticatable
             ->orderBy('created_at', 'desc')
             ->paginate(20);
     }
+
+    // public function advisories()
+    // {
+    //     return $this->hasManyThrough(Advisory::class, SupervisorUser::class, 'user_id', 'id', 'id', 'supervisado_id');
+    // }
+
 }

@@ -36,12 +36,11 @@ class Profile extends Model
         return $this->belongsTo('App\Models\People');
     }
 
-    public function supervisor()
+    public function advisory()
     {
-        return $this->belongsTo(Supervisor::class, 'user_id', 'user_id');         //inversa
+        return $this->belongsTo('App\Models\Advisory');
     }
-
-   
+    
     protected static function booted()
     {
         static::deleting(function ($profile) {

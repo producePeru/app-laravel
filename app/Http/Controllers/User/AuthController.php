@@ -22,7 +22,7 @@ class AuthController extends Controller
         if (Auth::attempt($request->only('email', 'password'))) {
             $user = Auth::user();
             $token = $user->createToken('AuthToken')->plainTextToken;
-            $profile = $user->profile->only(['id', 'name', 'lastname', 'middlename', 'documentnumber']);
+            $profile = $user->profile->only(['id', 'name', 'lastname', 'middlename', 'documentnumber', 'user_id']);
             $role = $user->roles;
 
             // Construir un array con las vistas decodificadas

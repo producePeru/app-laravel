@@ -24,66 +24,68 @@ class UserController extends Controller
     
     public function store(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
-
-        $user = new User();
-        $user->email = $request->input('email');
-        $user->password = bcrypt($request->input('password'));
-        $user->save();
-
-        $user->roles()->attach($request->input('role_id'));
-
-        $profile = new Profile();
-        $profile->name = $request->name;
-        $profile->lastname = $request->lastname;
-        $profile->middlename = $request->middlename;
-        // $profile->documentnumber = $request->documentnumber;
-        $profile->birthday = $request->birthday;
-        $profile->sick = $request->sick;
-        $profile->phone = $request->phone;
-        $profile->user_id = $user->id;
-        $profile->gender_id = $request->gender_id;
-        $profile->cde_id = $request->cde_id;
-        $profile->office_id = $request->office_id;
-        $profile->save();
-
-        $profile = new Role();
-
-
-        $viewsByRole = [
-            1 =>    ["home", "asesorias", "solicitudes", "asesorias", "asesorias-formalizaciones", 
-                    "solicitantes", "notarias", "asesores", "supervisores", "usuarios", "usuarios-nuevo", "usuarios-lista"],             //supervisor
-            2 =>    ["home", "users", "profiles"]                                  //asesor
-        ];
-
-        $views = $viewsByRole[$request->role_id] ?? [];
-
-        if (!empty($views)) {
-            $view = new View();
-            $view->user_id = $user->id;
-            $view->views = json_encode($views);
-            $view->save();
-        }
-
-        if($request->role_id === 1) {
-            $view = new Supervisor();
-            $view->user_id = $user->id;
-            $view->save();
-        }
-
-        if($request->supervisor_id) {
-            DB::table('supervisor_user')->insert([
-                'supervisor_id' => $request->supervisor_id,
-                'supervisado_id' => $user->id,
-                'created_at' => now(),
-                'updated_at' => now()
+        try {
+            $request->validate([
+                'email' => 'required|email|unique:users',
+                'password' => 'required|string|min:6',
             ]);
+    
+            $user = new User();
+            $user->email = $request->input('email');
+            $user->password = bcrypt($request->input('password'));
+            $user->save();
+    
+            // $user->roles()->attach($request->input('role_id'));
+            $user->roles()->attach($request->input('role_id'), ['dniuser' => $request->input('documentnumber')]);
+         
+            $profile = new Profile();
+            $profile->name = $request->name;
+            $profile->lastname = $request->lastname;
+            $profile->middlename = $request->middlename;
+            $profile->documentnumber = $request->documentnumber;
+            $profile->birthday = $request->birthday;
+            $profile->sick = $request->sick;
+            $profile->phone = $request->phone;
+            $profile->user_id = $user->id;
+            $profile->gender_id = $request->gender_id;
+            $profile->cde_id = $request->cde_id;
+            $profile->office_id = $request->office_id;
+            $profile->save();
+    
+            $viewsByRole = [
+                1 => ["home", "asesorias", "solicitudes", "asesorias", "asesorias-formalizaciones",
+                    "solicitantes", "notarias", "asesores", "supervisores", "usuarios", "usuarios-nuevo", "usuarios-lista"], //supervisor
+                2 => ["home", "asesorias", "asesorias-formalizaciones", "solicitantes"] //asesor
+            ];
+    
+            $views = $viewsByRole[$request->role_id] ?? [];
+    
+            if (!empty($views)) {
+                $view = new View();
+                $view->user_id = $user->id;
+                $view->views = json_encode($views);
+                $view->save();
+            }
+    
+            if ($request->role_id === 1) {
+                $view = new Supervisor();
+                $view->user_id = $user->id;
+                $view->save();
+            }
+    
+            if ($request->supervisor_id) {
+                DB::table('supervisor_user')->insert([
+                    'supervisor_id' => $request->supervisor_id,
+                    'supervisado_id' => $user->id,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
+    
+            return response()->json(['message' => 'Usuario creado correctamente'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al crear el usuario: ' . $e->getMessage()], 500);
         }
-
-        return response()->json(['message' => 'Usuario creado correctamente'], 200);
     }
 
 

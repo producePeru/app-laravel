@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Advisory extends Model
 {
@@ -12,7 +13,6 @@ class Advisory extends Model
     protected $guarded = ['id'];
 
     protected $hidden = [
-        'user_id',
         'people_id',
         'component_id',
         'theme_id',
@@ -42,6 +42,11 @@ class Advisory extends Model
         return $this->belongsTo('App\Models\User');
     }
 
+    public function asesor()
+    {
+        return $this->belongsTo('App\Models\Profile', 'user_id');
+    }
+
     public function people()
     {
         return $this->belongsTo('App\Models\People');
@@ -62,12 +67,39 @@ class Advisory extends Model
         return $this->belongsTo('App\Models\District');
     }
 
+    // relacion 
+    public function gender()
+    {
+        return $this->belongsTo('App\Models\Gender', 'people.gender_id', 'genders.id');
+    }
+
+    public function supervisorx()
+    {
+        return $this->belongsTo(Profile::class, 'user_id')
+            ->join('supervisor_user', 'supervisor_user.supervisor_id', '=', 'profiles.user_id');
+    }
+
+    public function scopeAllNotaries($query)
+    {
+        return $query->with([
+            'modality',
+            'people.gender:id,name',
+            'asesor.cde:id,name',
+            'theme',
+            'component',
+            'city',
+            'province',
+            'district'
+        ])
+        ->orderBy('created_at', 'desc')->get();
+    }
+
+
     public function scopeWithProfileAndRelations($query)
     {
         return $query->with([
             'modality',
             'people:id,name,lastname,middlename,documentnumber,email,phone',
-            'user.profile',
             'theme',
             'component',
             'city',
@@ -83,4 +115,6 @@ class Advisory extends Model
             $q->where('id', $userId);
         });
     }
+
+    
 }
