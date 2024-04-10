@@ -95,23 +95,23 @@ Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers',
 });
 
 Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function() {
-    Route::get('cities', [SelectController::class, 'getCities']);
-    Route::get('provinces/{idCity}', [SelectController::class, 'getProvinces']);
-    Route::get('districts/{idProv}', [SelectController::class, 'getDistricts']);
-    Route::get('offices', [SelectController::class, 'getOffices']);
-    Route::get('cdes', [SelectController::class, 'getCdes']);
-    Route::get('genders', [SelectController::class, 'getGenders']);
-    Route::get('modalities', [SelectController::class, 'getModalities']);
-    Route::get('type-documents', [SelectController::class, 'getTypeDocuments']);
-    Route::get('components', [SelectController::class, 'getComponents']);
-    Route::get('component-theme/{id}', [SelectController::class, 'getComponentTheme']);
-    Route::get('roles', [SelectController::class, 'getRoles']);
-    Route::get('detail-procedures', [SelectController::class, 'getProcedures']);
-    Route::get('economic-sectors', [SelectController::class, 'getEconomicSectors']);
-    Route::get('comercial-activities', [SelectController::class, 'getComercialActivities']);
-    Route::get('regimes', [SelectController::class, 'getRegimes']);
-    Route::get('notaries', [SelectController::class, 'getNotaries']);
-    Route::get('supervisores', [SelectController::class, 'getSupervisores']);
+    Route::get('select/cities', [SelectController::class, 'getCities']);
+    Route::get('select/provinces/{idCity}', [SelectController::class, 'getProvinces']);
+    Route::get('select/districts/{idProv}', [SelectController::class, 'getDistricts']);
+    Route::get('select/offices', [SelectController::class, 'getOffices']);
+    Route::get('select/cdes', [SelectController::class, 'getCdes']);
+    Route::get('select/genders', [SelectController::class, 'getGenders']);
+    Route::get('select/modalities', [SelectController::class, 'getModalities']);
+    Route::get('select/type-documents', [SelectController::class, 'getTypeDocuments']);
+    Route::get('select/components', [SelectController::class, 'getComponents']);
+    Route::get('select/component-theme/{id}', [SelectController::class, 'getComponentTheme']);
+    Route::get('select/roles', [SelectController::class, 'getRoles']);
+    Route::get('select/detail-procedures', [SelectController::class, 'getProcedures']);
+    Route::get('select/economic-sectors', [SelectController::class, 'getEconomicSectors']);
+    Route::get('select/comercial-activities', [SelectController::class, 'getComercialActivities']);
+    Route::get('select/regimes', [SelectController::class, 'getRegimes']);
+    Route::get('select/notaries', [SelectController::class, 'getNotaries']);
+    Route::get('select/supervisores', [SelectController::class, 'getSupervisores']);
 });
 
 
