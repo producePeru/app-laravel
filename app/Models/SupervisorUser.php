@@ -11,9 +11,15 @@ class SupervisorUser extends Model
 
     protected $table = 'supervisor_user';
 
-    public function profiles()
+    public function profile()
     {
-        return $this->hasMany('App\Models\Advisory', 'user_id');
+        return $this->hasOne(Profile::class, 'user_id', 'supervisado_id');
     }
+
+
+    // public function user()
+    // {
+    //     return $this->hasMany(User::class, 'id', 'supervisado_id');
+    // }
 
 }

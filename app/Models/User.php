@@ -91,6 +91,25 @@ class User extends Authenticatable
     {
         return $this->hasOne('App\Models\Supervisor');
     }
+    
+    // public function profile()
+    // {
+    //     return $this->hasOne(Profile::class);
+    // }
+
+    public function asesores()
+    {
+        return $this->hasOne(SupervisorUser::class, 'supervisado_id', 'id');
+    }
+
+    public function scopeWithProfileAsesories($query)
+    {
+        return $query->has('asesores')
+            ->with(['asesores.profile'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(100);
+    }
+
 
     protected static function booted()
     {
@@ -107,6 +126,7 @@ class User extends Authenticatable
             ->paginate(20);
     }
 
+    
     // public function advisories()
     // {
     //     return $this->hasManyThrough(Advisory::class, SupervisorUser::class, 'user_id', 'id', 'id', 'supervisado_id');

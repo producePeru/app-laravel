@@ -124,4 +124,11 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Usuario y sus relaciones eliminados correctamente'], 200);
     }
+
+    public function allAsesores()
+    {
+        $users = User::withProfileAsesories();
+
+        return response()->json($users, 200);
+    }
 }

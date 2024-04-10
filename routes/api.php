@@ -19,9 +19,6 @@ Route::post('login', [AuthController::class, 'login']);
 //testing
 Route::post('create', [UserController::class, 'store']);
 
-
-
-
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
   Route::get('list', [UserController::class, 'index']);
   Route::post('create', [UserController::class, 'store']);
@@ -30,6 +27,9 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
 
   Route::get('dni-data/{num}', [AuthController::class, 'dniDataUser']);
   Route::post('logout', [AuthController::class, 'logout']);
+
+  Route::get('list-asesories', [UserController::class, 'allAsesores']);
+
 });
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
