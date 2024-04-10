@@ -237,7 +237,7 @@ class SelectController extends Controller
 
         $data = $supervisors->map(function ($item) {
             return [
-                'label' => $item,
+                'label' => $item->profile['name'] . ' ' . $item->profile['lastname'] . ' ' . $item->profile['middlename'],
                 'value' => $item->user_id
             ];
         });
