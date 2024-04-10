@@ -9,15 +9,30 @@ use App\Models\People;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PersonController extends Controller
 {
-    public function index()
+    public function index($userId, $dni)
     {
+        $roleUser = DB::table('role_user')
+                ->where('user_id', $userId)
+                ->where('dniuser', $dni)
+                ->first();
 
-        $people = People::withProfileAndRelations();
+        if (!$roleUser) {
+            return response()->json(['message' => 'Role not found'], 404);
+        }
 
-        return response()->json($people, 200);
+        if ($roleUser->role_id === 1) {
+            $people = People::withProfileAndRelations();
+            return response()->json($people, 200);
+        }
+
+        if ($roleUser->role_id === 2) {
+            $people = People::withProfileAndUser($userId);
+            return response()->json($people, 200);
+        }
     }
 
     public function store(Request $request)
@@ -72,13 +87,13 @@ class PersonController extends Controller
                 ->where('documentnumber', $dni)
                 ->with([
                     'idformalization10' => function($query) {
-                        $query->with('detailprocedure', 'modality', 'economicsector', 'user.profile');
+                        $query->with('detailprocedure', 'modality', 'economicsector');
                     },
                     'idformalization20' => function($query) {
-                        $query->with('economicsector', 'user.profile', 'userupdater.profile');
+                        $query->with('economicsector', 'userupdater.profile');
                     },
                     'idadvisory' => function($query) {
-                        $query->with('component','theme', 'modality', 'user.profile');
+                        $query->with('component','theme', 'modality');
                     }
                 ])
                 ->first();
@@ -91,11 +106,31 @@ class PersonController extends Controller
         }
     }
 
-    // public function show($id)
-    // {
+    public function update(Request $request, $id)
+    {
+        $user = People::find($id);
 
-    //     $people = People::withProfileAndRelations();
+        if (!$user) {
+            return response()->json(['message' => 'El usuario no tiene un perfil'], 404);
+        }
 
-    //     return response()->json($people, 200);
-    // }
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'middlename' => 'nullable|string|max:255',
+            'birthday' => 'nullable|date',
+            'gender_id' => 'required|integer',
+            'city_id' => 'required|integer',
+            'province_id' => 'required|integer',
+            'district_id' => 'required|integer',
+            'sick' => 'required|in:yes,no',
+            'phone' => 'required|string|max:20',
+            'email' => 'required|string'
+        ]);
+
+        $user->update($validatedData);
+
+        return response()->json(['message' => 'Perfil actualizado con éxito', 'status' => 200]);
+    }
+
 }

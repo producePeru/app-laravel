@@ -11,17 +11,13 @@ use App\Http\Controllers\Formalization\Formalization10Controller;
 use App\Http\Controllers\Formalization\Formalization20Controller;
 use App\Http\Controllers\Formalization\NotaryController;
 use App\Http\Controllers\Formalization\HistorialController;
-use App\Http\Controllers\Mype\MypeController;
-use App\Http\Controllers\User\SupervisorController;
+use App\Http\Controllers\Download\DownloadFormalizationsController;
 
 
 Route::post('login', [AuthController::class, 'login']);
 
 //testing
 Route::post('create', [UserController::class, 'store']);
-
-
-
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
   Route::get('list', [UserController::class, 'index']);
@@ -31,13 +27,17 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
 
   Route::get('dni-data/{num}', [AuthController::class, 'dniDataUser']);
   Route::post('logout', [AuthController::class, 'logout']);
+
+  Route::get('list-asesories', [UserController::class, 'allAsesores']);
+
 });
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-  Route::get('list', [PersonController::class, 'index']);
+  Route::get('list/{rol}/{dni}', [PersonController::class, 'index']);
   Route::get('found/{type}/{dni}', [PersonController::class, 'dniFoundUser']);
   Route::post('create', [PersonController::class, 'store']);
   Route::delete('delete/{id}', [PersonController::class, 'destroy']);
+  Route::put('update/{id}', [PersonController::class, 'update']);
 });
 
 Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -58,9 +58,13 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
 });
 
 Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::get('advisories/{idAsesor}', [HistorialController::class, 'historialAdvisories']);
-    Route::get('formalizations-10/{idAsesor}', [HistorialController::class, 'historialFormalizations10']);
-    Route::get('formalizations-20/{idAsesor}', [HistorialController::class, 'historialFormalizations20']);
+    Route::get('advisories/{rol}/{dni}',        [HistorialController::class, 'historialAdvisories']);
+    Route::get('formalizations-10/{rol}/{dni}', [HistorialController::class, 'historialFormalizations10']);
+    Route::get('formalizations-20/{rol}/{dni}', [HistorialController::class, 'historialFormalizations20']);
+});
+
+Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::get('asesories', [DownloadFormalizationsController::class, 'exportAsesories']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {

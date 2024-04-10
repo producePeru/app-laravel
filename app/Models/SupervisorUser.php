@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class SupervisorUser extends Model
+{
+    use HasFactory;
+
+    protected $table = 'supervisor_user';
+
+    public function profile()
+    {
+        return $this->hasOne(Profile::class, 'user_id', 'supervisado_id');
+    }
+
+
+    // public function user()
+    // {
+    //     return $this->hasMany(User::class, 'id', 'supervisado_id');
+    // }
+
+}

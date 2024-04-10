@@ -22,4 +22,10 @@ class Gender extends Model
     {
         return $this->hasMany('App\Models\People');
     }
+
+    // relacion 
+    // public function advisory()
+    // {
+    //     return $this->hasMany('App\Models\Advisory');
+    // }
 }
