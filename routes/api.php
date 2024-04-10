@@ -12,6 +12,8 @@ use App\Http\Controllers\Formalization\Formalization20Controller;
 use App\Http\Controllers\Formalization\NotaryController;
 use App\Http\Controllers\Formalization\HistorialController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
+use App\Http\Controllers\User\SupervisorController;
+
 
 
 Route::post('login', [AuthController::class, 'login']);
