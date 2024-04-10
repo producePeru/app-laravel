@@ -88,6 +88,7 @@ Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
     Route::post('comercial-activities', [CreateController::class, 'postComercialActivities']);
     Route::post('office', [CreateController::class, 'createOffice']);
+    Route::post('economic-sector', [CreateController::class, 'createEconomicSector']);
 
 });
 
