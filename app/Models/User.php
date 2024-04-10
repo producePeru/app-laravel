@@ -87,10 +87,10 @@ class User extends Authenticatable
         return $this->hasOne('App\Models\Notary');
     }
 
-    public function supervisor()
-    {
-        return $this->hasOne('App\Models\Supervisor');
-    }
+    // public function supervisor()
+    // {
+    //     return $this->hasMany('App\Models\Supervisor', 'user_id');
+    // }
 
     protected static function booted()
     {

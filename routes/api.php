@@ -12,6 +12,7 @@ use App\Http\Controllers\Formalization\Formalization20Controller;
 use App\Http\Controllers\Formalization\NotaryController;
 use App\Http\Controllers\Formalization\HistorialController;
 use App\Http\Controllers\Mype\MypeController;
+use App\Http\Controllers\User\SupervisorController;
 
 
 Route::post('login', [AuthController::class, 'login']);
@@ -60,7 +61,6 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
     Route::get('advisories/{idAsesor}', [HistorialController::class, 'historialAdvisories']);
     Route::get('formalizations-10/{idAsesor}', [HistorialController::class, 'historialFormalizations10']);
     Route::get('formalizations-20/{idAsesor}', [HistorialController::class, 'historialFormalizations20']);
-
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -81,6 +81,11 @@ Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], func
 
 Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
     Route::post('comercial-activities', [CreateController::class, 'postComercialActivities']);
+});
+
+Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::get('list', [SupervisorController::class, 'index']);
+
 });
 
 Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function() {

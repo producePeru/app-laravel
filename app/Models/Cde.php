@@ -17,4 +17,9 @@ class Cde extends Model
     {
         return $this->hasMany('App\Models\Profile');
     }
+
+    public function supervisor()
+    {
+        return $this->belongsTo('App\Models\Supervisor', 'cde_id', 'cde_id');
+    }
 }

@@ -20,20 +20,6 @@ class UserController extends Controller
         return response()->json($users, 200);
     }
 
-<<<<<<< HEAD
-
-
-
-
-
-
-
-
-
-=======
-    
-    
->>>>>>> 6ac6c8c39a6371cffa724fc3936a2aa56179dec3
     public function store(Request $request)
     {
         $request->validate([
@@ -66,7 +52,7 @@ class UserController extends Controller
 
 
         $viewsByRole = [
-            1 =>    ["home", "asesorias", "solicitudes", "asesorias", "asesorias-formalizaciones", 
+            1 =>    ["home", "asesorias", "solicitudes", "asesorias", "asesorias-formalizaciones",
                     "solicitantes", "notarias", "asesores", "supervisores", "usuarios", "usuarios-nuevo", "usuarios-lista"],             //supervisor
             2 =>    ["home", "users", "profiles"]                                  //asesor
         ];

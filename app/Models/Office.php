@@ -17,4 +17,6 @@ class Office extends Model
     {
         return $this->hasMany('App\Models\Profile');
     }
+
+
 }
