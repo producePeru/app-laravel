@@ -13,7 +13,7 @@ use App\Http\Controllers\Formalization\NotaryController;
 use App\Http\Controllers\Formalization\HistorialController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\User\SupervisorController;
-
+use App\Http\Controllers\Drive\DriveController;
 
 
 Route::post('login', [AuthController::class, 'login']);
@@ -31,8 +31,25 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
   Route::post('logout', [AuthController::class, 'logout']);
 
   Route::get('list-asesories', [UserController::class, 'allAsesores']);
+});
+
+
+Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function() {
+  Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
 
 });
+
+
+
+Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::get('list-files/{userId}/{dni}', [DriveController::class, 'index']);
+    Route::get('download/{any}', [DriveController::class, 'downloadFile'])->where('any', '.*');
+    Route::post('up-files', [DriveController::class, 'store']);
+    Route::delete('delete-file/{id}', [DriveController::class, 'deleteFile']);
+});
+
+
+
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
   Route::get('list/{rol}/{dni}', [PersonController::class, 'index']);
@@ -121,3 +138,17 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
 
 });
+
+
+
+// CREATE TABLE drives (
+//     id INT AUTO_INCREMENT PRIMARY KEY,
+//     name VARCHAR(255) NOT NULL,
+//     path VARCHAR(255) NOT NULL,
+//     user_id INT UNSIGNED,
+//     profile_id INT UNSIGNED,
+//     FOREIGN KEY (user_id) REFERENCES users(id),
+//     FOREIGN KEY (profile_id) REFERENCES profiles(id),
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+// );
