@@ -16,6 +16,11 @@ class SupervisorUser extends Model
         return $this->hasOne(Profile::class, 'user_id', 'supervisado_id');
     }
 
+    public function profilesupervisor()
+    {
+        return $this->hasOne(Profile::class, 'user_id', 'supervisor_id');
+    }
+
 
     // public function user()
     // {

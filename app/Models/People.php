@@ -91,6 +91,11 @@ class People extends Model
         return $this->belongsTo(Gender::class, 'id');
     }
 
+    public function formalizationDigital()
+    {
+        return $this->hasOne('App\Models\FormalizationDigital', 'documentnumber', 'documentnumber');
+    }
+
 
     public function scopeWithProfileAndRelations($query)        //super
     {
