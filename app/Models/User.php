@@ -102,6 +102,19 @@ class User extends Authenticatable
         return $this->hasOne(SupervisorUser::class, 'supervisado_id', 'id');
     }
 
+    public function supervisores()
+    {
+        return $this->hasOne(SupervisorUser::class, 'supervisor_id', 'id');
+    }
+
+    // public function scopeWithProfileAsesories($query)
+    // {
+    //     return $query->has('asesores')
+    //         ->with(['asesores.profile'])
+    //         ->orderBy('created_at', 'desc')
+    //         ->paginate(100);
+    // }
+
     public function scopeWithProfileAsesories($query)
     {
         return $query->has('asesores')

@@ -14,7 +14,7 @@ use App\Http\Controllers\Formalization\HistorialController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\User\SupervisorController;
 use App\Http\Controllers\Drive\DriveController;
-
+use App\Http\Controllers\Formalization\FormalizationDigitalController;
 
 Route::post('login', [AuthController::class, 'login']);
 
@@ -36,6 +36,8 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
 
 Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function() {
   Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
+  Route::post('formalization-digital', [FormalizationDigitalController::class, 'formalizationDigital']);
+  Route::post('formalization-digital/exist-number', [FormalizationDigitalController::class, 'getStatusByDocumentNumber']);
 
 });
 
@@ -69,11 +71,16 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::get('list-ruc-10', [Formalization10Controller::class, 'indexRuc10']);
     Route::get('list-ruc-20', [Formalization20Controller::class, 'indexRuc20']);
     Route::get('list-ruc-20/{idPerson}', [Formalization20Controller::class, 'allFormalizationsRuc20ByPersonId']);
-
     Route::post('create-ruc-10', [Formalization10Controller::class, 'storeRuc10']);
     Route::post('ruc20-step1', [Formalization20Controller::class, 'ruc20Step1']);
     Route::post('ruc20-step2/{codesunarp}', [Formalization20Controller::class, 'ruc20Step2']);
     Route::post('ruc20-step3/{codesunarp}', [Formalization20Controller::class, 'ruc20Step3']);
+
+    // Formalizacion Digital
+    Route::get('digital-list', [FormalizationDigitalController::class, 'index']);
+    Route::delete('delete/{id}', [FormalizationDigitalController::class, 'deleteRegister']);
+    Route::put('digital/update-attended', [FormalizationDigitalController::class, 'updateAttendedStatus']);
+
 });
 
 Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -141,14 +148,11 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
 
 
-// CREATE TABLE drives (
+// CREATE TABLE formalizationdigital (
 //     id INT AUTO_INCREMENT PRIMARY KEY,
-//     name VARCHAR(255) NOT NULL,
-//     path VARCHAR(255) NOT NULL,
-//     user_id INT UNSIGNED,
-//     profile_id INT UNSIGNED,
-//     FOREIGN KEY (user_id) REFERENCES users(id),
-//     FOREIGN KEY (profile_id) REFERENCES profiles(id),
+//     documentnumber VARCHAR(20) NOT NULL,
+//     localization VARCHAR(200),
 //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL
 // );

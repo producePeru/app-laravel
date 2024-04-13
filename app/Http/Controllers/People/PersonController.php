@@ -55,7 +55,7 @@ class PersonController extends Controller
                 'province_id' => 'required|integer',
                 'district_id' => 'required|integer',
                 'typedocument_id' => 'required|integer',
-                'gender_id' => 'required|integer',
+                'gender_id' => 'nullable|integer',
             ]);
 
             $person = People::create($data);
@@ -119,13 +119,13 @@ class PersonController extends Controller
             'lastname' => 'required|string|max:255',
             'middlename' => 'nullable|string|max:255',
             'birthday' => 'nullable|date',
-            'gender_id' => 'required|integer',
+            'gender_id' => 'nullable|integer',
             'city_id' => 'required|integer',
             'province_id' => 'required|integer',
             'district_id' => 'required|integer',
-            'sick' => 'required|in:yes,no',
-            'phone' => 'required|string|max:20',
-            'email' => 'required|string'
+            'sick' => 'nullable|in:yes,no',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|string'
         ]);
 
         $user->update($validatedData);
