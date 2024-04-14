@@ -21,6 +21,18 @@ Route::post('login', [AuthController::class, 'login']);
 //testing
 Route::post('create', [UserController::class, 'store']);
 
+Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function() {
+  Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
+  Route::post('formalization-digital', [FormalizationDigitalController::class, 'formalizationDigital']);
+  Route::post('formalization-digital/exist-number', [FormalizationDigitalController::class, 'getStatusByDocumentNumber']);
+  
+  Route::get('location-cdes', [FormalizationDigitalController::class, 'gpsCdes']);
+  Route::get('formalization/select-cde/{dni}/{id}', [FormalizationDigitalController::class, 'selectCde']);
+
+});
+
+
+
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
   Route::get('list', [UserController::class, 'index']);
   Route::post('create', [UserController::class, 'store']);
@@ -34,12 +46,7 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
 });
 
 
-Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function() {
-  Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
-  Route::post('formalization-digital', [FormalizationDigitalController::class, 'formalizationDigital']);
-  Route::post('formalization-digital/exist-number', [FormalizationDigitalController::class, 'getStatusByDocumentNumber']);
 
-});
 
 
 
@@ -91,6 +98,8 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
 
 Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
     Route::get('asesories', [DownloadFormalizationsController::class, 'exportAsesories']);
+    Route::get('formalizations-ruc10', [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
+    Route::get('formalizations-ruc20', [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {

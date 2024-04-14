@@ -67,16 +67,25 @@ class Advisory extends Model
         return $this->belongsTo('App\Models\District');
     }
 
+    public function cde()
+    {
+        return $this->belongsTo('App\Models\Cde');
+    }
+
     // relacion 
     public function gender()
     {
         return $this->belongsTo('App\Models\Gender', 'people.gender_id', 'genders.id');
     }
 
-    public function supervisorx()
+    public function supervisor()
     {
-        return $this->belongsTo(Profile::class, 'user_id')
-            ->join('supervisor_user', 'supervisor_user.supervisor_id', '=', 'profiles.user_id');
+        return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
+    }
+
+    public function supervisado()
+    {
+        return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
     }
 
     public function scopeAllNotaries($query)
@@ -84,7 +93,12 @@ class Advisory extends Model
         return $query->with([
             'modality',
             'people.gender:id,name',
-            'asesor.cde:id,name',
+
+            'supervisor.supervisorUser.profile',
+            
+            'supervisado.supervisadoUser.profile',
+            'supervisado.supervisadoUser.profile.cde:id,name',
+
             'theme',
             'component',
             'city',

@@ -9,21 +9,23 @@ class Formalization20 extends Model
 {
     use HasFactory;
 
+    protected $table = 'formalization20s';
+
     protected $guarded = ['id'];
 
-    protected $hidden = [
-        'city_id',
-        'province_id',
-        'district_id',
-        'regime_id',
-        'notary_id',
-        'modality_id',
-        'comercialactivity_id',
-        'economicsector_id',
-        'user_id',
-        'mype_id',
-        // 'people_id'
-    ];
+    // protected $hidden = [
+    //     'city_id',
+    //     'province_id',
+    //     'district_id',
+    //     'regime_id',
+    //     'notary_id',
+    //     'modality_id',
+    //     'comercialactivity_id',
+    //     'economicsector_id',
+    //     // 'user_id',
+    //     'mype_id',
+    //     // 'people_id'
+    // ];
 
     public function city()
     {
@@ -83,8 +85,6 @@ class Formalization20 extends Model
         return $this->belongsTo('App\Models\People');
     }
 
-
-
     public function scopeWithFormalizationAndRelations($query)
     {
         return $query->with([
@@ -126,4 +126,37 @@ class Formalization20 extends Model
         });
     }
 
+    public function supervisor()
+    {
+        return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisor_id');
+    }
+
+    public function supervisado()
+    {
+        return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisor_id');
+    }
+
+    public function scopeAllFormalizations20($query)
+    {
+        return $query->with([
+            'modality',
+            'people.gender:id,name',
+
+            'supervisor.supervisorUser.profile',
+            
+            'supervisado.supervisadoUser.profile',
+            'supervisado.supervisadoUser.profile.cde:id,name',
+           
+            'mype:id,name,ruc',
+            'comercialactivity',
+            'regime',
+            'notary:id,name,price',
+            'economicsector',
+
+            'city',
+            'province',
+            'district'
+        ])
+        ->orderBy('created_at', 'desc')->get();
+    }
 }

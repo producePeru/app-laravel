@@ -84,4 +84,34 @@ class Formalization10 extends Model
             $q->where('id', $userId);
         });
     }
+
+    public function supervisor()
+    {
+        return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
+    }
+
+    public function supervisado()
+    {
+        return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
+    }
+
+    public function scopeAllFormalizations10($query)
+    {
+        return $query->with([
+            'modality',
+            'people.gender:id,name',
+
+            'supervisor.supervisorUser.profile',
+            
+            'supervisado.supervisadoUser.profile',
+            'supervisado.supervisadoUser.profile.cde:id,name',
+            'detailprocedure',
+            'economicsector',
+            'comercialactivity',
+            'city',
+            'province',
+            'district'
+        ])
+        ->orderBy('created_at', 'desc')->get();
+    }
 }

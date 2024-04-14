@@ -36,4 +36,9 @@ class FormalizationDigital extends Model
     {
         return $this->belongsTo('App\Models\District');
     }
+
+    public function cde()
+    {
+        return $this->belongsTo('App\Models\Cde');
+    }
 }

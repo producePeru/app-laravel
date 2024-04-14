@@ -5,16 +5,16 @@ namespace App\Http\Controllers\Formalization;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\People;
+use App\Models\Cde;
 use App\Models\FormalizationDigital;
 use Illuminate\Support\Facades\DB;
 
 class FormalizationDigitalController extends Controller
 {
 
-
     public function index()
     {
-        $formalizationDigitals = FormalizationDigital::with(['people.city', 'people.province', 'people.district'])->paginate(10);
+        $formalizationDigitals = FormalizationDigital::with(['people.city', 'people.province', 'people.district', 'cde'])->paginate(10);
         return response()->json(['data' => $formalizationDigitals]);
     }
 
@@ -92,5 +92,37 @@ class FormalizationDigitalController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Proceso de formalizacion nueva', 'status' => 404]);
         }
+    }
+
+    public function gpsCdes()
+    {
+        $data = Cde::select('latitud', 'longitud', 'name', 'id')->get()->map(function ($item) {
+            return [
+                'position' => [
+                    'lat' => $item->longitud,
+                    'lng' => $item->latitud,
+                ],
+                'title' => $item->name,
+                'id' => $item->id
+            ];
+        });
+    
+        return response()->json(['data' => $data]);
+    }
+
+    public function selectCde($dni, $id)
+    {
+        $formalization = FormalizationDigital::where('documentnumber', $dni)->first();
+
+        if ($formalization) {
+            $formalization->cde_id = $id;
+            $formalization->save();
+        } else {
+            $formalization = new FormalizationDigital();
+            $formalization->documentnumber = $dni;
+            $formalization->cde_id = $id;
+            $formalization->save();
+        }
+        return response()->json(['status' =>200]);  
     }
 }

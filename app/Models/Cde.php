@@ -22,4 +22,9 @@ class Cde extends Model
     {
         return $this->belongsTo('App\Models\Supervisor', 'cde_id', 'cde_id');
     }
+
+    public function formalizationdigital()
+    {
+        return $this->hasMany('App\Models\FormalizationDigital');
+    }
 }

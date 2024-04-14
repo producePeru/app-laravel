@@ -23,11 +23,11 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
     {
         $sheet->getStyle('A1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00B0F0');
         $sheet->getStyle('B1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('C4D79B');
-        $sheet->getStyle('C1:J1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFC000');
-        $sheet->getStyle('K1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF6699');
-        $sheet->getStyle('L1:Q1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF00');
-        $sheet->getStyle('R1:W1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('B7DEE8');
-        $sheet->getStyle('X1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('92D050');
+        $sheet->getStyle('C1:H1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFC000');
+        $sheet->getStyle('I1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF6699');
+        $sheet->getStyle('J1:P1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF00');
+        $sheet->getStyle('Q1:V1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('B7DEE8');
+        $sheet->getStyle('W1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('92D050');
     }
 
     public function collection()
@@ -35,35 +35,43 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
         $results = Advisory::allNotaries();
 
         return $results->map(function ($item, $index) {
+
+            $asesor = $item->supervisado->supervisadoUser->profile;
+            $supervisador = $item->supervisor->supervisorUser->profile;
+            $solicitante = $item->people;
+
             return [
                 'No' => $index + 1,
                 'Fecha de Asesoria' => Carbon::parse($item->created_at)->format('d/m/Y'),
-                'Asesor (a) - Nombre Completo' => $item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename,
-                'CDE del Asesor' => $item->asesor->cde->name,
-                'Provincia del CDE del Asesor' => $item->asesor->cde->name,
-                'Distrito del  CDE del Asesor' => $item->asesor->cde->name,
+                
+                'Asesor (a) - Nombre Completo' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
+                'CDE del Asesor' => $asesor->cde->name,
+                // 'Provincia del CDE del Asesor' => $item->asesor->cde->name,
+                // 'Distrito del  CDE del Asesor' => $item->asesor->cde->name,
                 'Tipo de Documento de Identidad' => 'DNI',
-                'Numero de Documento de Identidad' => $item->asesor->documentnumber,
-                'Fecha de Nacimiento' => $item->asesor->birthday ? $item->asesor->birthday : null,
+                'Numero de Documento de Identidad' => $asesor->documentnumber,
+                'Fecha de Nacimiento' => $asesor->birthday,
                 'Nombre del Pais' => 'Perú',
 
+                'Supervisor' => $supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename,
 
-                'Apellido Paterno del Solicitante (socio o Gte General)' => $item->people ? $item->people->lastname : null,
-                'Apellido Materno del Solicitante (socio o Gte General)' => $item->people ? $item->people->lastname : null,
-                'Nombres del Solicitante (socio o Gte General)' => $item->people ? $item->people->name : null,
-                'Genero' => $item->people ? $item->people->gender->name : null,
-                'Tiene alguna Discapacidad ? (SI / NO)' => $item->people && $item->people->sick == 'mo' ? 'NO' : 'SI',
-                'Telefono' => $item->people ? $item->people->phone : null,
-                'Correo electronico' => $item->people ? $item->people->email : null,
+                'Apellido Paterno del Solicitante (socio o Gte General)' => $solicitante->lastname,
+                'Apellido Materno del Solicitante (socio o Gte General)' => $solicitante->middlename,
+                'Nombres del Solicitante (socio o Gte General)' => $solicitante->name,
+                'Genero' => $solicitante->gender->name,
+                'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
+                'Telefono' => $solicitante->phone,
+                'Correo electronico' => $solicitante->email,
+                
                 'Region MYPE' => $item->city->name,
                 'Provincia MYPE' => $item->province->name,
                 'Distrito MYPE' => $item->district->name,
+                
                 'Componente' => $item->component->name,
                 'Tema' => $item->theme->name,
                 'Observación' => $item->observations,
-                'MODALIDAD DE ATENCION' => $item->modality->name,
-                
 
+                'MODALIDAD DE ATENCION' => $item->modality->name
             ];
         });
     }
@@ -76,13 +84,13 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Fecha de Asesoria',
             'Asesor (a) - Nombre Completo',
             'CDE del Asesor',
-            'Provincia del CDE del Asesor',
-            'Distrito del  CDE del Asesor',
+            // 'Provincia del CDE del Asesor',
+            // 'Distrito del  CDE del Asesor',
             'Tipo de Documento de Identidad',
             'Numero de Documento de Identidad',
             'Fecha de Nacimiento',
             'Nombre del Pais',
-            // 'Supervisor',
+            'Supervisor',
             'Apellido Paterno del Solicitante (socio o Gte General)',
             'Apellido Materno del Solicitante (socio o Gte General)',
             'Nombres del Solicitante (socio o Gte General)',

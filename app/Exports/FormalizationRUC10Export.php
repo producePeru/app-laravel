@@ -3,16 +3,13 @@
 namespace App\Exports;
 
 use App\Models\Formalization10;
-use App\Models\Departament;
-use App\Models\District;
-use App\Models\People;
-use App\Models\Province;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+Carbon::setLocale('es');
 
 class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitle, WithStyles
 {
@@ -27,82 +24,58 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
     {
         $sheet->getStyle('A1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00B0F0');
         $sheet->getStyle('B1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('C4D79B');
-        $sheet->getStyle('C1:J1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFC000');
-        $sheet->getStyle('K1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF6699');
-        $sheet->getStyle('L1:Q1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF00');
-        $sheet->getStyle('R1:X1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('B7DEE8');
-        $sheet->getStyle('Y1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('92D050');
+        $sheet->getStyle('C1:H1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFC000');
+        $sheet->getStyle('I1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF6699');
+        $sheet->getStyle('J1:P1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF00');
+        $sheet->getStyle('Q1:W1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('B7DEE8');
+        $sheet->getStyle('X1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('92D050');
     }
 
     public function collection()
     {
-        Carbon::setLocale('es');
+        $results = Formalization10::allFormalizations10();
 
-        $adviseries = Formalization10::with(
-            'categories', 'acreated', 'supervisorx', 'departmentx', 'provincex', 'districtx', 'prodecuredetail', 'economicsectors'
-            )
-            ->orderBy('created_at', 'desc')
-            ->where('status', 1)
-            ->get();
+        return $results->map(function ($item, $index) {
 
-        return $adviseries->map(function ($item, $index) {
-
-            // $registrador = People::where('number_document', $item->acreated->document_number)->first();
-            
-            $registrador = $item->acreated;
-
-            $supervisador = $item->supervisorx ? People::where('id', $item->supervisorx->id_supervisor)->first() : null;
-            
-            $solicitante = People::where('id', $item->id_person)->first();
-
-            $departamento = null;
-            $provincia = null;
-            $distrito = null;
-
-            if ($registrador) {
-                $departamento = Departament::where('idDepartamento', $registrador->department)->first();
-            }
-
-            if ($registrador) {
-                $provincia = Province::where('idProvincia', $registrador->province)->first();
-            }
-
-            if ($registrador) {
-                $distrito = District::where('idDistrito', $registrador->district)->first();
-            }
+            $asesor = $item->supervisado->supervisadoUser->profile;
+            $supervisador = $item->supervisor->supervisorUser->profile;
+            $solicitante = $item->people;
 
             return [
                 'No' => $index + 1,
-                'Fecha de Producto' => Carbon::parse($item->created_at)->format('d/m/Y'),
-                'Asesor (a) - Nombre Completo' => $registrador ? $registrador->last_name . ' ' . $registrador->middle_name . ', ' . $registrador->name : '',
-                'Region del CDE del Asesor' =>  $departamento ? $departamento->descripcion : null,
-                'Provincia del CDE del Asesor' =>  $provincia ? $provincia->descripcion : null,
-                'Distrito del  CDE del Asesor' =>  $distrito ? $distrito->descripcion : null,
-                'Tipo de Documento de Identidad' => $registrador ? $registrador->document_type : null,
-                'Numero de Documento de Identidad' => $registrador ? $registrador->number_document : null,
-                'Nombre del Pais' => 'Perú',
-                'Fecha de Nacimiento' => $registrador ? $registrador->birthdate : null,
+                'Fecha de Asesoria' => Carbon::parse($item->created_at)->format('d/m/Y'),
                 
-                'Supervisor' => $supervisador ? $supervisador->last_name . ' ' . $supervisador->middle_name . ' ' . $supervisador->name : null,
+                'Asesor (a) - Nombre Completo' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
+                'CDE del Asesor' => $asesor->cde->name,
+                // 'Provincia del CDE del Asesor' =>  $provincia ? $provincia->descripcion : null,
+                // 'Distrito del  CDE del Asesor' =>  $distrito ? $distrito->descripcion : null,
+                
+                'Tipo de Documento de Identidad' => 'DNI',
+                'Numero de Documento de Identidad' => $asesor->documentnumber,
+                'Fecha de Nacimiento' => $asesor->birthday,
+                'Nombre del Pais' => 'Perú',
+                
+                'Supervisor' => $supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename,
 
-                'Apellidos del Solicitante (socio o Gte General)' => $solicitante->last_name . ' ' . $solicitante->middle_name,
+                'Apellido Paterno del Solicitante (socio o Gte General)' => $solicitante->lastname,
+                'Apellido Materno del Solicitante (socio o Gte General)' => $solicitante->middlename,
                 'Nombres del Solicitante (socio o Gte General)' => $solicitante->name,
-                'Genero Solicitante' => $solicitante->gender,
-                'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante && $solicitante->lession == 1 ? 'SI' : 'NO',
-                'Celular' => $solicitante ? $solicitante->phone : null,
-                'Correo electronico' => $solicitante ? $solicitante->email : null,
+                'Genero' => $solicitante->gender->name,
+                'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
+                'Telefono' => $solicitante->phone,
+                'Correo electronico' => $solicitante->email,
+                
                 'Tipo formalización' => 'PPNN (RUC 10)',
                 
-                
-                
-                'Region MYPE' => $item->departmentx->descripcion,
-                'Provincia MYPE' => $item->provincex->descripcion,
-                'Distrito MYPE' => $item->districtx->descripcion,
+                'Region MYPE' => $item->city->name,
+                'Provincia MYPE' => $item->province->name,
+                'Distrito MYPE' => $item->district->name,
 
-                'Detalle del trámite' => $item->prodecuredetail->name,
-                'Sector economico' => $item->economicsectors->name,
-                'Atividad comercial' => $item->categories->name,
-                'Modalidad' => $item->modality == 1 ? 'VIRTUAL' : 'PRESENCIAL'
+                'Detalle del trámite' => $item->detailprocedure->name,
+                'Sector economico' => $item->economicsector->name,
+                'Atividad comercial' => $item->comercialactivity->name,
+
+                'MODALIDAD DE ATENCION' => $item->modality->name
             ];
         });
     }
@@ -114,22 +87,24 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             'No',
             'Fecha de Producto',
             'Asesor (a) - Nombre Completo',
-            'Region del CDE del Asesor',
-            'Provincia del CDE del Asesor',
-            'Distrito del  CDE del Asesor',
+            'CDE del Asesor',
+            // 'Provincia del CDE del Asesor',
+            // 'Distrito del  CDE del Asesor',
             'Tipo de Documento de Identidad',
             'Numero de Documento de Identidad',
-            'Nombre del Pais',
             'Fecha de Nacimiento',
+            'Nombre del Pais',
 
             'Supervisor',
 
-            'Apellidos del Solicitante (socio o Gte General)',
+            'Apellido Paterno del Solicitante (socio o Gte General)',
+            'Apellido Materno del Solicitante (socio o Gte General)',
             'Nombres del Solicitante (socio o Gte General)',
-            'Genero Solicitante',
+            'Genero',
             'Tiene alguna Discapacidad ? (SI / NO)',
-            'Celular',
+            'Telefono',
             'Correo electronico',
+
             'Tipo formalización',
             'Region MYPE',
             'Provincia MYPE',
@@ -138,7 +113,7 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             'Detalle del trámite',
             'Sector economico',
             'Atividad comercial',
-            'Modalidad'
+            'MODALIDAD DE ATENCION'
         ];
     }
 }
