@@ -15,6 +15,7 @@ use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\User\SupervisorController;
 use App\Http\Controllers\Drive\DriveController;
 use App\Http\Controllers\Formalization\FormalizationDigitalController;
+use App\Http\Controllers\Formalization\ChartController;
 
 Route::post('login', [AuthController::class, 'login']);
 
@@ -57,9 +58,6 @@ Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middl
     Route::delete('delete-file/{id}', [DriveController::class, 'deleteFile']);
 });
 
-
-
-
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
   Route::get('list/{rol}/{dni}', [PersonController::class, 'index']);
   Route::get('found/{type}/{dni}', [PersonController::class, 'dniFoundUser']);
@@ -68,10 +66,15 @@ Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'midd
   Route::put('update/{id}', [PersonController::class, 'update']);
 });
 
+
 Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
   Route::get('list', [AdvisoryController::class, 'index']);
   Route::post('create', [AdvisoryController::class, 'store']);
   Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
+
+  //filters
+  Route::get('list/{date1}/{date2}', [AdvisoryController::class, 'findByData']);
+
 });
 
 Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -87,7 +90,9 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::get('digital-list', [FormalizationDigitalController::class, 'index']);
     Route::delete('delete/{id}', [FormalizationDigitalController::class, 'deleteRegister']);
     Route::put('digital/update-attended', [FormalizationDigitalController::class, 'updateAttendedStatus']);
-
+    // Chart 
+    Route::get('chart', [ChartController::class, 'index']);
+    Route::get('by-advisors', [ChartController::class, 'countAdvisoriesByAdvisors']);
 });
 
 Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {

@@ -130,5 +130,21 @@ class Advisory extends Model
         });
     }
 
+    //filters
+    public function scopeWithAdvisoryRangeDate($query, $date1, $date2)
+    {
+        return $query->with([
+            'modality',
+            'people:id,name,lastname,middlename,documentnumber,email,phone',
+            'theme',
+            'component',
+            'city',
+            'province',
+            'district'])
+        ->whereBetween('created_at', [$date1, date('Y-m-d', strtotime($date2. ' + 1 day'))])
+        ->orderBy('created_at', 'desc')
+        ->paginate(20);
+    }
+
     
 }
