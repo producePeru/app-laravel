@@ -34,7 +34,13 @@ class ChartController extends Controller
 
     public function countAdvisoriesByAdvisors()
     {
-        return "Hello";
+        
     }
 }
 
+crea l funcion 
+hace referencia a la tabla advisories que su modelo es Advisory
+que tiene los siguientes atributos
+id, observations, component, theme y user_id
+donde el user_id hace referencia a un id de la tabla user 
+sucede que tambien hay una tabla llamada people 
