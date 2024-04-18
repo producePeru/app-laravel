@@ -143,10 +143,10 @@ class Formalization20 extends Model
             'people.gender:id,name',
 
             'supervisor.supervisorUser.profile',
-            
+
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde:id,name',
-           
+
             'mype:id,name,ruc',
             'comercialactivity',
             'regime',
@@ -158,5 +158,31 @@ class Formalization20 extends Model
             'district'
         ])
         ->orderBy('created_at', 'desc')->get();
+    }
+
+    // todas las formalizaciones tipo 20
+    public function scopeWithAllFomalizations20($query)
+    {
+        return $query->with([
+            'modality',
+            'people.gender:id,name',
+
+            'supervisor.supervisorUser.profile',
+
+            'supervisado.supervisadoUser.profile',
+            'supervisado.supervisadoUser.profile.cde:id,name',
+
+            'mype:id,name,ruc',
+            'comercialactivity',
+            'regime',
+            'notary:id,name,price',
+            'economicsector',
+
+            'city',
+            'province',
+            'district'
+        ])
+        ->orderBy('created_at', 'desc')
+        ->paginate(20);
     }
 }

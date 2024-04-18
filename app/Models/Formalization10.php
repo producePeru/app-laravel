@@ -85,6 +85,12 @@ class Formalization10 extends Model
         });
     }
 
+
+    public function typedocument()
+    {
+        return $this->belongsTo('App\Models\Gender', 'people.typedocument_id', 'typedocuments.id');
+    }
+
     public function supervisor()
     {
         return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
@@ -102,7 +108,7 @@ class Formalization10 extends Model
             'people.gender:id,name',
 
             'supervisor.supervisorUser.profile',
-            
+
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde:id,name',
             'detailprocedure',
@@ -113,5 +119,28 @@ class Formalization10 extends Model
             'district'
         ])
         ->orderBy('created_at', 'desc')->get();
+    }
+
+    // todas las formalizaciones de tipo RUC 10
+    public function scopeWithAllFomalizations10($query)
+    {
+        return $query->with([
+            'modality',
+            'people.gender:id,name',
+
+            'supervisor.supervisorUser.profile',
+            'people.typedocument:id,name',
+
+            'supervisado.supervisadoUser.profile',
+            'supervisado.supervisadoUser.profile.cde:id,name',
+            'detailprocedure',
+            'economicsector',
+            'comercialactivity',
+            'city',
+            'province',
+            'district'
+        ])
+        ->orderBy('created_at', 'desc')
+        ->paginate(20);
     }
 }

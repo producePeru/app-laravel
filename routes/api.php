@@ -26,7 +26,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
   Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
   Route::post('formalization-digital', [FormalizationDigitalController::class, 'formalizationDigital']);
   Route::post('formalization-digital/exist-number', [FormalizationDigitalController::class, 'getStatusByDocumentNumber']);
-  
+
   Route::get('location-cdes', [FormalizationDigitalController::class, 'gpsCdes']);
   Route::get('formalization/select-cde/{dni}/{id}', [FormalizationDigitalController::class, 'selectCde']);
 
@@ -90,15 +90,15 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::get('digital-list', [FormalizationDigitalController::class, 'index']);
     Route::delete('delete/{id}', [FormalizationDigitalController::class, 'deleteRegister']);
     Route::put('digital/update-attended', [FormalizationDigitalController::class, 'updateAttendedStatus']);
-    // Chart 
+    // Chart
     Route::get('chart', [ChartController::class, 'index']);
     Route::get('by-advisors', [ChartController::class, 'countAdvisoriesByAdvisors']);
 });
 
 Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::get('advisories/{rol}/{dni}',        [HistorialController::class, 'historialAdvisories']);
-    Route::get('formalizations-10/{rol}/{dni}', [HistorialController::class, 'historialFormalizations10']);
-    Route::get('formalizations-20/{rol}/{dni}', [HistorialController::class, 'historialFormalizations20']);
+    Route::get('advisories',        [HistorialController::class, 'historialAdvisories']);
+    Route::get('formalizations-10', [HistorialController::class, 'historialFormalizations10']);
+    Route::get('formalizations-20', [HistorialController::class, 'historialFormalizations20']);
 });
 
 Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {

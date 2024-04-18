@@ -72,10 +72,15 @@ class Advisory extends Model
         return $this->belongsTo('App\Models\Cde');
     }
 
-    // relacion 
+    // relacion
     public function gender()
     {
         return $this->belongsTo('App\Models\Gender', 'people.gender_id', 'genders.id');
+    }
+
+    public function typedocument()
+    {
+        return $this->belongsTo('App\Models\Gender', 'people.typedocument_id', 'typedocuments.id');
     }
 
     public function supervisor()
@@ -88,6 +93,7 @@ class Advisory extends Model
         return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
     }
 
+
     public function scopeAllNotaries($query)
     {
         return $query->with([
@@ -95,7 +101,7 @@ class Advisory extends Model
             'people.gender:id,name',
 
             'supervisor.supervisorUser.profile',
-            
+
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde:id,name',
 
@@ -106,6 +112,30 @@ class Advisory extends Model
             'district'
         ])
         ->orderBy('created_at', 'desc')->get();
+    }
+
+
+    // todas las asesorias y paginadas...
+    public function scopeWithAllAdvisories($query)
+    {
+        return $query->with([
+            'modality',
+            'people.gender:id,name',
+            'people.typedocument:id,name',
+
+            'supervisor.supervisorUser.profile',
+
+            'supervisado.supervisadoUser.profile',
+            'supervisado.supervisadoUser.profile.cde:id,name',
+
+            'theme',
+            'component',
+            'city',
+            'province',
+            'district'
+        ])
+        ->orderBy('created_at', 'desc')
+        ->paginate(20);
     }
 
 
@@ -146,5 +176,5 @@ class Advisory extends Model
         ->paginate(20);
     }
 
-    
+
 }
