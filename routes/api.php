@@ -30,6 +30,8 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
   Route::get('location-cdes', [FormalizationDigitalController::class, 'gpsCdes']);
   Route::get('formalization/select-cde/{dni}/{id}', [FormalizationDigitalController::class, 'selectCde']);
 
+  Route::get('notaries', [NotaryController::class, 'indexNotary']);
+Route::get('notaries/{id}', [NotaryController::class, 'indexNotaryById']);
 });
 
 
@@ -44,6 +46,7 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
   Route::post('logout', [AuthController::class, 'logout']);
 
   Route::get('list-asesories', [UserController::class, 'allAsesores']);
+  Route::get('my-profile', [UserController::class, 'showMyProfile']);
 });
 
 
@@ -118,8 +121,9 @@ Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'midd
     Route::delete('delete/{id}', [NotaryController::class, 'deleteNotary']);
     Route::patch('update/{id}', [NotaryController::class, 'updateNotary']);
 });
+
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], function() {
-    Route::get('list', [NotaryController::class, 'indexNotary']);
+
 });
 
 // Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers'], function() {
@@ -164,21 +168,3 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
 
 });
-
-
-
-// CREATE TABLE drive_file (
-//     id INT AUTO_INCREMENT PRIMARY KEY,
-//     name VARCHAR(150),
-//     color VARCHAR(15),
-//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-//     deleted_at TIMESTAMP NULL
-// );
-
-// ALTER TABLE drive
-// ADD COLUMN file_id INT AFTER profile_id,
-// ADD CONSTRAINT fk_drive_file_id
-//     FOREIGN KEY (file_id)
-//     REFERENCES drive_file(id)
-//     ON DELETE CASCADE;
