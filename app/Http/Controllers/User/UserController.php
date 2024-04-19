@@ -56,8 +56,8 @@ class UserController extends Controller
                 1 => ["home", "asesorias", "solicitudes", "asesorias", "asesorias-formalizaciones",
                     "solicitantes", "notarias", "asesores", "supervisores", "usuarios", "usuarios-nuevo", "usuarios-lista"], //supervisor
                 2 => ["home", "asesorias", "asesorias-formalizaciones", "solicitantes"], //asesor
-                3 => ["drive-mis-archivos", "drive-subir-archivo", "usuarios-nuevo"],
-                4 => ["drive-mis-archivos", "drive-subir-archivo"],
+                3 => ["drive-mis-archivos", "drive-subir-archivo", "drive-mis-carpetas", "usuarios-nuevo"], //driver admin
+                4 => ["drive-mis-archivos", "drive-subir-archivo"], //driver user
             ];
 
             $views = $viewsByRole[$request->role_id] ?? [];

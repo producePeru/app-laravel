@@ -48,14 +48,18 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
 
 
 
-
-
-
+// KARINA
 Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::get('list-files/{userId}/{dni}', [DriveController::class, 'index']);
+    Route::get('list-files', [DriveController::class, 'index']);
     Route::get('download/{any}', [DriveController::class, 'downloadFile'])->where('any', '.*');
     Route::post('up-files', [DriveController::class, 'store']);
     Route::delete('delete-file/{id}', [DriveController::class, 'deleteFile']);
+
+    Route::get('files', [DriveController::class, 'allFiles']);
+    Route::post('create-file', [DriveController::class, 'createFile']);
+    Route::put('update-file/{id}', [DriveController::class, 'updateFile']);
+    Route::get('data-files/{id}', [DriveController::class, 'dataByIdFile']);
+
 });
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -153,6 +157,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('regimes', [SelectController::class, 'getRegimes']);
     Route::get('notaries', [SelectController::class, 'getNotaries']);
     Route::get('supervisores', [SelectController::class, 'getSupervisores']);
+    Route::get('folders', [SelectController::class, 'getFolders']);
 });
 
 
@@ -162,11 +167,18 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 
 
 
-// CREATE TABLE formalizationdigital (
+// CREATE TABLE drive_file (
 //     id INT AUTO_INCREMENT PRIMARY KEY,
-//     documentnumber VARCHAR(20) NOT NULL,
-//     localization VARCHAR(200),
+//     name VARCHAR(150),
+//     color VARCHAR(15),
 //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 //     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 //     deleted_at TIMESTAMP NULL
 // );
+
+// ALTER TABLE drive
+// ADD COLUMN file_id INT AFTER profile_id,
+// ADD CONSTRAINT fk_drive_file_id
+//     FOREIGN KEY (file_id)
+//     REFERENCES drive_file(id)
+//     ON DELETE CASCADE;

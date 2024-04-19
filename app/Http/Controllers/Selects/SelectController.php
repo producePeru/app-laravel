@@ -21,6 +21,8 @@ use App\Models\ComercialActivities;
 use App\Models\Regime;
 use App\Models\Notary;
 use App\Models\Supervisor;
+use App\Models\DriveFile;
+
 
 class SelectController extends Controller
 {
@@ -239,6 +241,19 @@ class SelectController extends Controller
             return [
                 'label' => $item->profile['name'] . ' ' . $item->profile['lastname'] . ' ' . $item->profile['middlename'],
                 'value' => $item->user_id
+            ];
+        });
+        return response()->json(['data' => $data]);
+    }
+
+    public function getFolders()
+    {
+        $files = DriveFile::all();
+
+        $data = $files->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
             ];
         });
         return response()->json(['data' => $data]);
