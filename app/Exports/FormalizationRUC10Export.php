@@ -37,24 +37,24 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
 
         return $results->map(function ($item, $index) {
 
-            $asesor = $item->supervisado->supervisadoUser->profile;
-            $supervisador = $item->supervisor->supervisorUser->profile;
+            $asesor = $item->supervisado ? $item->supervisado->supervisadoUser->profile : $item->asesorsupervisor;
+            $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
             $solicitante = $item->people;
 
             return [
                 'No' => $index + 1,
                 'Fecha de Asesoria' => Carbon::parse($item->created_at)->format('d/m/Y'),
-                
+
                 'Asesor (a) - Nombre Completo' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
                 'CDE del Asesor' => $asesor->cde->name,
                 // 'Provincia del CDE del Asesor' =>  $provincia ? $provincia->descripcion : null,
                 // 'Distrito del  CDE del Asesor' =>  $distrito ? $distrito->descripcion : null,
-                
+
                 'Tipo de Documento de Identidad' => 'DNI',
                 'Numero de Documento de Identidad' => $asesor->documentnumber,
                 'Fecha de Nacimiento' => $asesor->birthday,
                 'Nombre del Pais' => 'Perú',
-                
+
                 'Supervisor' => $supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename,
 
                 'Apellido Paterno del Solicitante (socio o Gte General)' => $solicitante->lastname,
@@ -64,9 +64,9 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
                 'Telefono' => $solicitante->phone,
                 'Correo electronico' => $solicitante->email,
-                
+
                 'Tipo formalización' => 'PPNN (RUC 10)',
-                
+
                 'Region MYPE' => $item->city->name,
                 'Provincia MYPE' => $item->province->name,
                 'Distrito MYPE' => $item->district->name,

@@ -128,12 +128,12 @@ class Formalization20 extends Model
 
     public function supervisor()
     {
-        return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisor_id');
+        return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
     }
 
     public function supervisado()
     {
-        return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisor_id');
+        return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
     }
 
     public function scopeAllFormalizations20($query)
@@ -157,7 +157,10 @@ class Formalization20 extends Model
             'province',
             'district'
         ])
-        ->orderBy('created_at', 'desc')->get();
+        ->orderBy('created_at', 'desc')->get()->map(function ($item) {
+            $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
+            return $item;
+        });
     }
 
     // todas las formalizaciones tipo 20
@@ -166,6 +169,7 @@ class Formalization20 extends Model
         return $query->with([
             'modality',
             'people.gender:id,name',
+            'people.typedocument:id,name',
 
             'supervisor.supervisorUser.profile',
 

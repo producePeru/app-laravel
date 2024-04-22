@@ -99,7 +99,6 @@ class DriveController extends Controller
 
     public function deleteFile($id)
     {
-
         $user_id = Auth::user()->id;
 
         $roleUser = DB::table('role_user')

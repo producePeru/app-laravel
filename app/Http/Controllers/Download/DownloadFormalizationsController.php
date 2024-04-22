@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Formalization20;
 use App\Models\Formalization10;
+use App\Models\Advisory;
 
 use App\Exports\AsesoriasExport;
 use App\Exports\FormalizationRUC10Export;

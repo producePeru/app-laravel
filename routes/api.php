@@ -31,7 +31,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
   Route::get('formalization/select-cde/{dni}/{id}', [FormalizationDigitalController::class, 'selectCde']);
 
   Route::get('notaries', [NotaryController::class, 'indexNotary']);
-Route::get('notaries/{id}', [NotaryController::class, 'indexNotaryById']);
+  Route::get('notaries/{id}', [NotaryController::class, 'indexNotaryById']);
 });
 
 
@@ -62,11 +62,10 @@ Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middl
     Route::post('create-file', [DriveController::class, 'createFile']);
     Route::put('update-file/{id}', [DriveController::class, 'updateFile']);
     Route::get('data-files/{id}', [DriveController::class, 'dataByIdFile']);
-
 });
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-  Route::get('list/{rol}/{dni}', [PersonController::class, 'index']);
+  Route::get('list', [PersonController::class, 'index']);
   Route::get('found/{type}/{dni}', [PersonController::class, 'dniFoundUser']);
   Route::post('create', [PersonController::class, 'store']);
   Route::delete('delete/{id}', [PersonController::class, 'destroy']);
@@ -168,3 +167,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
 
 });
+
+
+// ALTER TABLE people
+// ADD COLUMN deleted_at TIMESTAMP NULL;

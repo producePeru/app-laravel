@@ -12,11 +12,11 @@ use Illuminate\Support\Facades\Auth;
 
 class HistorialController extends Controller
 {
-    public function historialAdvisories()
+    private function getUserRole()
     {
-        $user_id = Auth::user()->id;            // token
+        $user_id = Auth::user()->id;
 
-        $roleUser = DB::table('role_user')      // role
+        $roleUser = DB::table('role_user')
         ->where('user_id', $user_id)
         ->first();
 
@@ -24,64 +24,59 @@ class HistorialController extends Controller
             return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
         }
 
+        return [
+            "role_id" => $roleUser->role_id,
+            'user_id' => $user_id
+        ];
+    }
+
+    public function historialAdvisories()
+    {
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
+
         // 1.supervisor
-        if ($roleUser->role_id === 1) {
+        if ($role_id === 1 || $user_id === 1) {
             $results = Advisory::withAllAdvisories();
             return response()->json($results, 200);
         }
         // 2.asesor
-        if ($roleUser->role_id === 2) {
+        if ($role_id === 2) {
             $results = Advisory::ByUserId($user_id)->withAllAdvisories();
             return response()->json($results, 200);
         }
     }
 
-
     public function historialFormalizations10()
     {
-        $user_id = Auth::user()->id;
-
-        $roleUser = DB::table('role_user')
-        ->where('user_id', $user_id)
-        ->first();
-
-        if ($user_id != $roleUser->user_id) {
-            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
-        }
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
 
         // 1.supervisor
-        if ($roleUser->role_id === 1) {
+        if ($role_id === 1 || $user_id === 1) {
             $results = Formalization10::withAllFomalizations10();
             return response()->json($results, 200);
         }
         // 2. asesor
-        if ($roleUser->role_id === 2) {
-            $results = Formalization10::ByUserId($userId)->withAllFomalizations10();
+        if ($role_id === 2) {
+            $results = Formalization10::ByUserId($user_id)->withAllFomalizations10();
             return response()->json($results, 200);
         }
     }
 
-
-
     public function historialFormalizations20()
     {
-        $user_id = Auth::user()->id;
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
 
-        $roleUser = DB::table('role_user')
-        ->where('user_id', $user_id)
-        ->first();
-
-        if ($user_id != $roleUser->user_id) {
-            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
-        }
-
-        if ($roleUser->role_id === 1) {
+        // Supervisor y superandin
+        if ($role_id === 1 || $user_id === 1) {
             $results = Formalization20::withAllFomalizations20();
             return response()->json($results, 200);
         }
 
-        if ($roleUser->role_id === 2) {
-            $results = Formalization20::ByUserId($userId)->withAllFomalizations20();
+        if ($role_id === 2) {
+            $results = Formalization20::ByUserId($user_id)->withAllFomalizations20();
             return response()->json($results, 200);
         }
     }

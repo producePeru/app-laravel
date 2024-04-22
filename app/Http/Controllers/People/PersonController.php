@@ -2,35 +2,48 @@
 
 namespace App\Http\Controllers\People;
 
+use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use App\Http\Controllers\Controller;
 use App\Models\From;
 use App\Models\People;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class PersonController extends Controller
 {
-    public function index($userId, $dni)
+    private function getUserRole()
     {
-        $roleUser = DB::table('role_user')
-                ->where('user_id', $userId)
-                ->where('dniuser', $dni)
-                ->first();
+        $user_id = Auth::user()->id;
 
-        if (!$roleUser) {
-            return response()->json(['message' => 'Role not found'], 404);
+        $roleUser = DB::table('role_user')
+        ->where('user_id', $user_id)
+        ->first();
+
+        if ($user_id != $roleUser->user_id) {
+            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
         }
 
-        if ($roleUser->role_id === 1) {
+        return [
+            "role_id" => $roleUser->role_id,
+            'user_id' => $user_id
+        ];
+    }
+
+    public function index()
+    {
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
+
+        if ($role_id === 1 || $user_id === 1) {
             $people = People::withProfileAndRelations();
             return response()->json($people, 200);
         }
 
-        if ($roleUser->role_id === 2) {
-            $people = People::withProfileAndUser($userId);
+        if ($role_id === 2) {
+            $people = People::withProfileAndUser($user_id);
             return response()->json($people, 200);
         }
     }
@@ -74,11 +87,15 @@ class PersonController extends Controller
 
     public function destroy($id)
     {
-        $person = People::findOrFail($id);
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
 
-        $person->delete();
-
-        return response()->json(['message' => 'Usuario y sus relaciones eliminados correctamente'], 200);
+        if ($role_id === 1 || $user_id === 1) {
+            People::destroy($id);
+            return response()->json(['message' => 'Usuario y sus relaciones eliminados correctamente'], 200);
+        } else {
+            return response()->json(['message' => 'La eliminación de este usuario no es posible. Por favor, busca orientación de tu administrador.', 'status' => 500]);
+        }
     }
 
     public function dniFoundUser($type, $dni)

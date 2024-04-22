@@ -36,14 +36,16 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
 
         return $results->map(function ($item, $index) {
 
-            $asesor = $item->supervisado->supervisadoUser->profile;
-            $supervisador = $item->supervisor->supervisorUser->profile;
+            // $asesor = $item->supervisado->supervisadoUser->profile;
+            // $supervisador = $item->supervisor->supervisorUser->profile;
+            $asesor = $item->supervisado ? $item->supervisado->supervisadoUser->profile : $item->asesorsupervisor;
+            $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
             $solicitante = $item->people;
 
             return [
                 'No' => $index + 1,
                 'Fecha de Asesoria' => Carbon::parse($item->created_at)->format('d/m/Y'),
-                
+
                 'Asesor (a) - Nombre Completo' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
                 'CDE del Asesor' => $asesor->cde->name,
                 // 'Provincia del CDE del Asesor' => $item->asesor->cde->name,
@@ -62,11 +64,11 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
                 'Telefono' => $solicitante->phone,
                 'Correo electronico' => $solicitante->email,
-                
+
                 'Region MYPE' => $item->city->name,
                 'Provincia MYPE' => $item->province->name,
                 'Distrito MYPE' => $item->district->name,
-                
+
                 'Componente' => $item->component->name,
                 'Tema' => $item->theme->name,
                 'Observación' => $item->observations,

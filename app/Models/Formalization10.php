@@ -118,7 +118,10 @@ class Formalization10 extends Model
             'province',
             'district'
         ])
-        ->orderBy('created_at', 'desc')->get();
+        ->orderBy('created_at', 'desc')->get()->map(function ($item) {
+            $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
+            return $item;
+        });
     }
 
     // todas las formalizaciones de tipo RUC 10
@@ -127,12 +130,13 @@ class Formalization10 extends Model
         return $query->with([
             'modality',
             'people.gender:id,name',
+            'people.typedocument:id,name',
 
             'supervisor.supervisorUser.profile',
-            'people.typedocument:id,name',
 
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde:id,name',
+
             'detailprocedure',
             'economicsector',
             'comercialactivity',

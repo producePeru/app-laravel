@@ -14,7 +14,7 @@ Carbon::setLocale('es');
 class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitle, WithStyles
 {
     /**
-     * @return \Illuminate\Support\Collectionc 
+     * @return \Illuminate\Support\Collectionc
      */
     public function title(): string
     {
@@ -37,8 +37,8 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
 
         return $results->map(function ($item, $index) {
 
-            $asesor = $item->supervisado->supervisadoUser->profile;
-            $supervisador = $item->supervisor->supervisorUser->profile;
+            $asesor = $item->supervisado ? $item->supervisado->supervisadoUser->profile : $item->asesorsupervisor;
+            $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
             $solicitante = $item->people;
 
             return [
@@ -53,7 +53,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
                 'Nombre del Pais' => 'Perú',
 
                 'Supervisor' => $supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename,
-                
+
                 'Apellido Paterno del Solicitante (socio o Gte General)' => $solicitante->lastname,
                 'Apellido Materno del Solicitante (socio o Gte General)' => $solicitante->middlename,
                 'Nombres del Solicitante (socio o Gte General)' => $solicitante->name,
@@ -61,15 +61,15 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
                 'Telefono' => $solicitante->phone,
                 'Correo electronico' => $solicitante->email,
-                
-                
+
+
                 'Tipo formalización' => 'PPJJ (RUC 20)',
-                
+
                 'Region MYPE' => $item->city->name,
                 'Provincia MYPE' => $item->province->name,
                 'Distrito MYPE' => $item->district->name,
                 'Dirección MYPE' => $item->address,
-                
+
                 'Código SUNARP' => $item->codesunarp,
                 'Número envio notaría' => $item->numbernotary,
                 'Sector económico' => $item->economicsector ? $item->economicsector->name : '-',
@@ -98,7 +98,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'Nombre del Pais',
 
             'Supervisor',
-    
+
             'Apellido Paterno del Solicitante (socio o Gte General)',
             'Apellido Materno del Solicitante (socio o Gte General)',
             'Nombres del Solicitante (socio o Gte General)',
@@ -106,9 +106,9 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'Tiene alguna Discapacidad ? (SI / NO)',
             'Telefono',
             'Correo electronico',
-            
+
             'Tipo formalización',
-            
+
             'Region MYPE',
             'Provincia MYPE',
             'Distrito MYPE',

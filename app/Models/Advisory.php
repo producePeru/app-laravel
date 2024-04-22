@@ -111,7 +111,10 @@ class Advisory extends Model
             'province',
             'district'
         ])
-        ->orderBy('created_at', 'desc')->get();
+        ->orderBy('created_at', 'desc')->get()->map(function ($item) {
+            $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
+            return $item;
+        });
     }
 
 
