@@ -18,5 +18,5 @@ david.pug
 # /.idea
 # /.vscode
 
-config\cors.php
-app-pixel\bootstrap\app.php
+/config/cors.php
+/bootstrap/app.php
