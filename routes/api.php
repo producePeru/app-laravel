@@ -50,8 +50,7 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
 });
 
 
-
-// KARINA
+// DRIVE - KARINA
 Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
     Route::get('list-files', [DriveController::class, 'index']);
     Route::get('download/{any}', [DriveController::class, 'downloadFile'])->where('any', '.*');
