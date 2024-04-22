@@ -18,5 +18,8 @@ david.pug
 # /.idea
 # /.vscode
 
+
+
 /config/cors.php
+
 /bootstrap/app.php
