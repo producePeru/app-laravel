@@ -18,7 +18,7 @@
 # /.idea
 # /.vscode
 
-config/cors.php
+# config/cors.php
 
 
-bootstrap/app.php
+# bootstrap/app.php
