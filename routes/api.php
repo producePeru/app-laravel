@@ -167,7 +167,3 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
 
 });
-
-
-// ALTER TABLE people
-// ADD COLUMN deleted_at TIMESTAMP NULL;
