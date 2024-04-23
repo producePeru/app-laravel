@@ -24,13 +24,13 @@ return new class extends Migration
             $table->unsignedBigInteger('people_id')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
 
-            $table->foreign('detailprocedure_id')->references('id')->on('detailprocedures')->onDelete('cascade');
-            $table->foreign('modality_id')->references('id')->on('modalities')->onDelete('cascade');
-            $table->foreign('economicsector_id')->references('id')->on('economicsectors')->onDelete('cascade');
-            $table->foreign('comercialactivity_id')->references('id')->on('comercialactivities')->onDelete('cascade');
-            $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
-            $table->foreign('province_id')->references('id')->on('provinces')->onDelete('cascade');
-            $table->foreign('district_id')->references('id')->on('districts')->onDelete('cascade');
+            $table->foreign('detailprocedure_id')->references('id')->on('detailprocedures')->onDelete('set null');
+            $table->foreign('modality_id')->references('id')->on('modalities')->onDelete('set null');
+            $table->foreign('economicsector_id')->references('id')->on('economicsectors')->onDelete('set null');
+            $table->foreign('comercialactivity_id')->references('id')->on('comercialactivities')->onDelete('set null');
+            $table->foreign('city_id')->references('id')->on('cities')->onDelete('set null');
+            $table->foreign('province_id')->references('id')->on('provinces')->onDelete('set null');
+            $table->foreign('district_id')->references('id')->on('districts')->onDelete('set null');
             $table->foreign('people_id')->references('id')->on('people')->onDelete('set null');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
 

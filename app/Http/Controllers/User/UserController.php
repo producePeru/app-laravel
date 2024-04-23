@@ -14,6 +14,24 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    private function getUserRole()
+    {
+        $user_id = Auth::user()->id;
+
+        $roleUser = DB::table('role_user')
+        ->where('user_id', $user_id)
+        ->first();
+
+        if ($user_id != $roleUser->user_id) {
+            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
+        }
+
+        return [
+            "role_id" => $roleUser->role_id,
+            'user_id' => $user_id
+        ];
+    }
+
     public function index()
     {
         $users = User::withProfileAndRelations();
@@ -118,12 +136,19 @@ class UserController extends Controller
 
     public function destroy($id)
     {
-        $user = User::findOrFail($id);
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
 
-        // Eliminar al usuario (esto desencadenará la eliminación en cascada)
-        $user->delete();
+        if($id == 1) {
+            return response()->json(['message' => 'No tienes permisos para eliminar', 'status' => 500]);
+        }
 
-        return response()->json(['message' => 'Usuario y sus relaciones eliminados correctamente'], 200);
+        if ($role_id === 1 || $user_id === 1) {
+            $user = User::findOrFail($id);
+            $user->delete();
+            return response()->json(['message' => 'Usuario eliminado correctamente'], 200);
+        }
+        return response()->json(['message' => 'No tienes permisos para eliminar', 'status' => 500]);
     }
 
     public function allAsesores()

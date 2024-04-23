@@ -25,14 +25,14 @@ return new class extends Migration
             $table->unsignedBigInteger('province_id');
             $table->unsignedBigInteger('district_id');
 
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('people_id')->references('id')->on('people')->onDelete('cascade');
-            $table->foreign('component_id')->references('id')->on('components')->onDelete('cascade');
-            $table->foreign('theme_id')->references('id')->on('themecomponents')->onDelete('cascade');
-            $table->foreign('modality_id')->references('id')->on('modalities')->onDelete('cascade');
-            $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
-            $table->foreign('province_id')->references('id')->on('provinces')->onDelete('cascade');
-            $table->foreign('district_id')->references('id')->on('districts')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('null');
+            $table->foreign('people_id')->references('id')->on('people')->onDelete('null');
+            $table->foreign('component_id')->references('id')->on('components')->onDelete('null');
+            $table->foreign('theme_id')->references('id')->on('themecomponents')->onDelete('null');
+            $table->foreign('modality_id')->references('id')->on('modalities')->onDelete('null');
+            $table->foreign('city_id')->references('id')->on('cities')->onDelete('null');
+            $table->foreign('province_id')->references('id')->on('provinces')->onDelete('null');
+            $table->foreign('district_id')->references('id')->on('districts')->onDelete('null');
 
             $table->timestamps();
         });

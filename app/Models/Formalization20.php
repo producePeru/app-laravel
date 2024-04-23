@@ -9,7 +9,7 @@ class Formalization20 extends Model
 {
     use HasFactory;
 
-    protected $table = 'formalization20s';
+    protected $table = 'formalizations20';
 
     protected $guarded = ['id'];
 
