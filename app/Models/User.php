@@ -134,7 +134,7 @@ class User extends Authenticatable
 
     public function scopeWithProfileAndRelations($query)
     {
-        return $query->with(['profile', 'profile.office', 'profile.cde'])
+        return $query->with(['profile', 'profile.office', 'profile.cde', 'roles'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
     }
