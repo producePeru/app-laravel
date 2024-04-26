@@ -80,4 +80,76 @@ class HistorialController extends Controller
             return response()->json($results, 200);
         }
     }
+
+    // FILTROS POR FECHAS...
+
+    public function filterHistorialAdvisoriesByDates(Request $request)
+    {
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
+        $filters = [
+            'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
+            'people_id' => $request->input('people_id'),
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd' => $request->input('dateEnd'),
+            'city_id' => $request->input('city_id')
+        ];
+
+        if ($role_id === 1 || $user_id === 1) {
+            $advisories = Advisory::withAdvisoryRangeDate($filters);
+            return response()->json($advisories, 200);
+        }
+
+        if ($role_id === 2) {
+            $results = Advisory::ByUserId($user_id)->withAdvisoryRangeDate($filters);
+            return response()->json($results, 200);
+        }
+    }
+
+    // 10
+    public function filterHistorialFormalizations10ByDates(Request $request)
+    {
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
+        $filters = [
+            'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
+            'people_id' => $request->input('people_id'),
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd' => $request->input('dateEnd'),
+            'city_id' => $request->input('city_id')
+        ];
+
+        if ($role_id === 1 || $user_id === 1) {
+            $data = Formalization10::withFormalizationRangeDate($filters);
+            return response()->json($data, 200);
+        }
+        if ($role_id === 2) {
+            $results = Formalization10::ByUserId($user_id)->withFormalizationRangeDate($filters);
+            return response()->json($results, 200);
+        }
+    }
+
+    public function filterHistorialFormalizations20ByDates(Request $request)
+    {
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
+        $filters = [
+            'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
+            'people_id' => $request->input('people_id'),
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd' => $request->input('dateEnd'),
+            'city_id' => $request->input('city_id')
+        ];
+
+        if ($role_id === 1 || $user_id === 1) {
+            $data = Formalization20::withFormalizationRangeDate($filters);
+            return response()->json($data, 200);
+        }
+        if ($role_id === 2) {
+            $results = Formalization20::ByUserId($user_id)->withFormalizationRangeDate($filters);
+            return response()->json($results, 200);
+        }
+    }
+
+
 }

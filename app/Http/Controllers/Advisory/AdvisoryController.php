@@ -48,9 +48,9 @@ class AdvisoryController extends Controller
         return response()->json(['message' => 'Asesoría eliminada correctamente'], 200);
     }
 
-    public function findByData($date1, $date2)
-    {
-        $advisory = Advisory::withAdvisoryRangeDate($date1, $date2);
-        return response()->json($advisory, 200);
-    }
+    // public function findByData($date1, $date2)
+    // {
+    //     $advisory = Advisory::withAdvisoryRangeDate($date1, $date2);
+    //     return response()->json($advisory, 200);
+    // }
 }

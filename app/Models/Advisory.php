@@ -164,20 +164,43 @@ class Advisory extends Model
     }
 
     //filters
-    public function scopeWithAdvisoryRangeDate($query, $date1, $date2)
+    public function scopeWithAdvisoryRangeDate($query, $filters)
     {
-        return $query->with([
+        $query = $query->with([
             'modality',
-            'people:id,name,lastname,middlename,documentnumber,email,phone',
+            'people.gender:id,name',
+            'people.typedocument:id,name',
+            'supervisor.supervisorUser.profile',
+            'supervisado.supervisadoUser.profile',
+            'user.profile',
+            'supervisado.supervisadoUser.profile.cde:id,name',
             'theme',
             'component',
             'city',
             'province',
-            'district'])
-        ->whereBetween('created_at', [$date1, date('Y-m-d', strtotime($date2. ' + 1 day'))])
-        ->orderBy('created_at', 'desc')
-        ->paginate(20);
-    }
+            'district'
+        ])->orderBy('created_at', 'desc');
 
+        if ($filters['user_id'] !== null) {
+            $query->whereIn('user_id', $filters['user_id']);
+        }
+
+        if ($filters['dateStart'] && $filters['dateEnd']) {
+            $endDate = date('Y-m-d', strtotime($filters['dateEnd']));
+            $endDate = date('Y-m-d', strtotime($endDate . ' + 1 day'));
+            $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
+        }
+
+
+        // if ($filters['people_id'] !== null) {
+        //     $query->where('people_id', $filters['people_id']);
+        // }
+
+        // if ($filters['city_id'] !== null) {
+        //     $query->where('city_id', $filters['city_id']);
+        // }
+
+        return $query->paginate(20);
+    }
 
 }

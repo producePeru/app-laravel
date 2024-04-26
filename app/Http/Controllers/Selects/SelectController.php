@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Selects;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\City;
 use App\Models\Province;
 use App\Models\District;
@@ -22,10 +23,29 @@ use App\Models\Regime;
 use App\Models\Notary;
 use App\Models\Supervisor;
 use App\Models\DriveFile;
+use App\Models\Profile;
 
 
 class SelectController extends Controller
 {
+    private function getUserRole()
+    {
+        $user_id = Auth::user()->id;
+
+        $roleUser = DB::table('role_user')
+        ->where('user_id', $user_id)
+        ->first();
+
+        if ($user_id != $roleUser->user_id) {
+            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
+        }
+
+        return [
+            "role_id" => $roleUser->role_id,
+            'user_id' => $user_id
+        ];
+    }
+
     public function getCities()
     {
         $cities = City::all();
@@ -256,6 +276,25 @@ class SelectController extends Controller
                 'value' => $item->id
             ];
         });
+        return response()->json(['data' => $data]);
+    }
+
+    public function getAsesores()
+    {
+        $asesores = DB::table('role_user')->where('role_id', 2)->get();
+
+        $data = collect();
+
+        foreach ($asesores as $asesor) {
+            $profile = Profile::find($asesor->user_id);
+            if ($profile) {
+                $data->push([
+                    'label' => $profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename,
+                    'value' => $profile->id
+                ]);
+            }
+        }
+
         return response()->json(['data' => $data]);
     }
 }

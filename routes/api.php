@@ -78,8 +78,7 @@ Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'mi
   Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
 
   //filters
-  Route::get('list/{date1}/{date2}', [AdvisoryController::class, 'findByData']);
-
+//   Route::get('list/{date1}/{date2}', [AdvisoryController::class, 'findByData']);
 });
 
 Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -104,6 +103,12 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
     Route::get('advisories',        [HistorialController::class, 'historialAdvisories']);
     Route::get('formalizations-10', [HistorialController::class, 'historialFormalizations10']);
     Route::get('formalizations-20', [HistorialController::class, 'historialFormalizations20']);
+
+    //filters
+    Route::get('advisories/filters', [HistorialController::class, 'filterHistorialAdvisoriesByDates']);
+    Route::get('formalizations-10/filters', [HistorialController::class, 'filterHistorialFormalizations10ByDates']);
+    Route::get('formalizations-20/filters', [HistorialController::class, 'filterHistorialFormalizations20ByDates']);
+
 });
 
 Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -160,6 +165,8 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('notaries', [SelectController::class, 'getNotaries']);
     Route::get('supervisores', [SelectController::class, 'getSupervisores']);
     Route::get('folders', [SelectController::class, 'getFolders']);
+    Route::get('asesores', [SelectController::class, 'getAsesores']);
+
 });
 
 

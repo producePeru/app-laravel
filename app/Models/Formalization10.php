@@ -147,4 +147,35 @@ class Formalization10 extends Model
         ->orderBy('created_at', 'desc')
         ->paginate(20);
     }
+
+    //filters
+    public function scopeWithFormalizationRangeDate($query, $filters)
+    {
+        $query->with([
+            'modality',
+            'people.gender:id,name',
+            'people.typedocument:id,name',
+            'supervisor.supervisorUser.profile',
+            'supervisado.supervisadoUser.profile',
+            'user.profile',
+            'supervisado.supervisadoUser.profile.cde:id,name',
+            'detailprocedure',
+            'economicsector',
+            'comercialactivity',
+            'city',
+            'province',
+            'district'
+        ])->orderBy('created_at', 'desc');
+
+        if ($filters['user_id'] !== null) {
+            $query->whereIn('user_id', $filters['user_id']);
+        }
+
+        if ($filters['dateStart'] && $filters['dateEnd']) {
+            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' + 1 day'));
+            $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
+        }
+
+        return $query->paginate(20);
+    }
 }
