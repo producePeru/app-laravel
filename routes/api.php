@@ -44,6 +44,7 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
 
   Route::get('dni-data/{num}', [AuthController::class, 'dniDataUser']);
   Route::post('logout', [AuthController::class, 'logout']);
+  Route::post('password-reset', [AuthController::class, 'passwordReset']);
 
   Route::get('list-asesories', [UserController::class, 'allAsesores']);
   Route::get('my-profile', [UserController::class, 'showMyProfile']);
@@ -61,6 +62,9 @@ Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middl
     Route::post('create-file', [DriveController::class, 'createFile']);
     Route::put('update-file/{id}', [DriveController::class, 'updateFile']);
     Route::get('data-files/{id}', [DriveController::class, 'dataByIdFile']);
+
+    Route::put('visible-all/{id}', [DriveController::class, 'visibleByAll']);
+
 });
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -76,9 +80,6 @@ Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'mi
   Route::get('list', [AdvisoryController::class, 'index']);
   Route::post('create', [AdvisoryController::class, 'store']);
   Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
-
-  //filters
-//   Route::get('list/{date1}/{date2}', [AdvisoryController::class, 'findByData']);
 });
 
 Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -173,3 +174,8 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
 
 });
+
+
+// ALTER TABLE drives
+// ADD COLUMN is_visible BOOLEAN DEFAULT FALSE AFTER file_id;
+

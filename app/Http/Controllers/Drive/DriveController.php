@@ -35,25 +35,23 @@ class DriveController extends Controller
 
     public function index()
     {
-        $user_id = Auth::user()->id;
-
-        $roleUser = DB::table('role_user')
-        ->where('user_id', $user_id)
-        ->first();
-
-        if ($user_id != $roleUser->user_id) {
-            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
-        }
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
 
         // 3.admin
-        if ($roleUser->role_id === 3 || $user_id === 1) {
-            $files = Drive::with('profile')->paginate(20);
+        if ($role_id === 3 || $user_id === 1) {
+            $files = Drive::with('profile')->orderBy('created_at', 'desc')->paginate(20);
             return response()->json(['data' => $files], 200);
         }
         // 4.user
-        if ($roleUser->role_id === 4) {
-            $files = Drive::with('profile')->where('user_id', $user_id)->paginate(20);
-            return response()->json(['data' => $files], 200);
+        if ($role_id === 4) {
+            $allFiles = Drive::with('profile')
+                             ->where('is_visible', true)
+                             ->orWhere('user_id', $user_id)
+                             ->orderByDesc('created_at')
+                             ->paginate(20);
+
+            return response()->json(['data' => $allFiles], 200);
         }
     }
 
@@ -190,6 +188,23 @@ class DriveController extends Controller
         }
 
         return response()->json(['message' => 'Sin acceso', 'status' => 500]);
+    }
+
+    public function visibleByAll($id)
+    {
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
+
+        if ($role_id === 3 || $user_id === 1) {
+            $file = Drive::find($id);
+            if (!$file) {
+                return response()->json(['message' => 'No encontrado', 'status' => 404]);
+            }
+            $file->is_visible = !$file->is_visible;
+            $file->save();
+            return response()->json(['message' => 'Ahora este archivo será visible para todos', 'status' => 200]);
+        }
+        return response()->json(['message' => 'Unauthorized access', 'status' => 403]);
     }
 }
 

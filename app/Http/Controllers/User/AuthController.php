@@ -5,13 +5,33 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
 use PhpParser\Node\Stmt\Return_;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    private function getUserRole()
+    {
+        $user_id = Auth::user()->id;
+
+        $roleUser = DB::table('role_user')
+        ->where('user_id', $user_id)
+        ->first();
+
+        if ($user_id != $roleUser->user_id) {
+            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
+        }
+
+        return [
+            "role_id" => $roleUser->role_id,
+            'user_id' => $user_id,
+            'user_dni' => $roleUser->dniuser
+        ];
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -61,6 +81,31 @@ class AuthController extends Controller
             return response()->json(['data' => $data]);
         } catch (\Exception $e) {
             return response()->json(['status' => 404]);
+        }
+    }
+
+    public function passwordReset(Request $request)
+    {
+        $user_id = $this->getUserRole()['user_id'];
+        $user_dni = $this->getUserRole()['user_dni'];
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|confirmed|min:8',
+            'dni' => 'required|string'
+        ]);
+
+        if($user_dni == $request->dni) {
+            $user = Auth::user();
+
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json(['message' => 'La contraseña actual no es válida'], 400);
+            }
+
+            $user->password = bcrypt($request->password);
+            $user->save();
+
+            return response()->json(['message' => 'Contraseña restablecida correctamente'], 200);
         }
     }
 }
