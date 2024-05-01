@@ -139,6 +139,10 @@ Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'midd
     Route::post('comercial-activities', [CreateController::class, 'postComercialActivities']);
     Route::post('office', [CreateController::class, 'createOffice']);
     Route::post('economic-sector', [CreateController::class, 'createEconomicSector']);
+    Route::post('component', [CreateController::class, 'createNewComponent']);
+    Route::post('theme', [CreateController::class, 'createNewTheme']);
+    // Route::post('economic-sector', [CreateController::class, 'createNewEconomicSector']);
+
 
 });
 
