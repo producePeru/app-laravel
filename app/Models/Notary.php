@@ -43,7 +43,7 @@ class Notary extends Model
         return $query->with([
             'city', 'province', 'district', 'user.profile'
             ])
-            // ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'asc')
             ->paginate(200);
     }
 
