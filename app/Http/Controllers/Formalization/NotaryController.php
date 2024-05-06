@@ -57,12 +57,26 @@ class NotaryController extends Controller
         }
     }
 
-    public function indexNotaryById($cityId) {
+    // Filtros...
+    public function indexNotaryById(Request $request) {
         try {
-            $formalization = Notary::withNotariesById($cityId);
-            return response()->json($formalization, 200);
+            $name = $request->input('name');
+            $cityId = $request->input('city_id');
+            $filters = [];
+            if ($name !== null) {
+                $filters['name'] = $name;
+            }
+            if ($cityId !== null) {
+                $filters['city_id'] = $cityId;
+            }
+
+            $notary = Notary::withNotariesById($filters);
+
+            return response()->json($notary, 200);
+
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al listar las notarías', 'status' => 500]);
         }
+
     }
 }

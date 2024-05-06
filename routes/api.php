@@ -31,7 +31,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
   Route::get('formalization/select-cde/{dni}/{id}', [FormalizationDigitalController::class, 'selectCde']);
 
   Route::get('notaries', [NotaryController::class, 'indexNotary']);
-  Route::get('notaries/{id}', [NotaryController::class, 'indexNotaryById']);
+  Route::get('notaries-filters', [NotaryController::class, 'indexNotaryById']);
 });
 
 
