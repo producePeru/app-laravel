@@ -50,7 +50,7 @@ class Notary extends Model
     public function scopeWithNotariesById($query, $filters)
     {
         $query = $query->with(['city', 'province', 'district', 'user.profile'])
-          ->orderBy('created_at', 'desc');
+          ->orderBy('created_at', 'asc');
 
         if (isset($filters['city_id'])) {
             $query->where('city_id', $filters['city_id']);
