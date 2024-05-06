@@ -44,13 +44,14 @@ class AuthController extends Controller
             $token = $user->createToken('AuthToken')->plainTextToken;
             $profile = $user->profile->only(['id', 'name', 'lastname', 'middlename', 'documentnumber', 'user_id']);
             $role = $user->roles;
+            $email = $user->email;
 
             // Construir un array con las vistas decodificadas
             $views = $user->views->map(function ($view) {
                 return json_decode($view->views, true);
             })->flatten();
 
-            return response()->json(['token' => $token, 'profile' => $profile, 'role' => $role, 'views' => $views], 200);
+            return response()->json(['token' => $token, 'profile' => $profile, 'email' => $email, 'role' => $role, 'views' => $views], 200);
         }
 
         return response()->json(['message' => 'Credenciales incorrectas'], 401);
