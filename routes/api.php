@@ -95,8 +95,9 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::get('digital-list', [FormalizationDigitalController::class, 'index']);
     Route::delete('delete/{id}', [FormalizationDigitalController::class, 'deleteRegister']);
     Route::put('digital/update-attended', [FormalizationDigitalController::class, 'updateAttendedStatus']);
+    
     // Chart
-    Route::get('chart', [ChartController::class, 'index']);
+    Route::get('chart-pie', [ChartController::class, 'index']);
     Route::get('by-advisors', [ChartController::class, 'countAdvisoriesByAdvisors']);
 });
 
