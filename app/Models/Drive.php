@@ -20,4 +20,9 @@ class Drive extends Model
         return $this->belongsTo(Profile::class, 'profile_id');
     }
 
+    public function driveUsers()
+    {
+        return $this->hasMany(DriveUser::class);
+    }
+
 }

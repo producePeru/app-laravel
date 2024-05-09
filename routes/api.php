@@ -65,6 +65,9 @@ Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middl
 
     Route::put('visible-all/{id}', [DriveController::class, 'visibleByAll']);
 
+    Route::get('users-selected/{idDrive}', [DriveController::class, 'usersSelectedDrive']);
+    Route::get('users', [DriveController::class, 'usersOnlyDrivers']); //lista de usuarios
+    Route::put('visible-users', [DriveController::class, 'storeOrUpdateDriveUsers']);
 });
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -182,6 +185,15 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 });
 
 
-// ALTER TABLE drives
-// ADD COLUMN is_visible BOOLEAN DEFAULT FALSE AFTER file_id;
+// CREATE TABLE drive_users (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     drive_id BIGINT UNSIGNED,
+//     user_ids JSON,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL,
+//     CONSTRAINT fk_drive_users_drive_id FOREIGN KEY (drive_id) REFERENCES drives(id)
+// );
+
+
 

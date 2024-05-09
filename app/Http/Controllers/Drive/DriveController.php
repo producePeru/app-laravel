@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DriveFile;
+use App\Models\DriveUser;
+
 
 class DriveController extends Controller
 {
@@ -46,10 +48,12 @@ class DriveController extends Controller
         // 4.user
         if ($role_id === 4) {
             $allFiles = Drive::with('profile')
-                             ->where('is_visible', true)
-                             ->orWhere('user_id', $user_id)
-                             ->orderByDesc('created_at')
-                             ->paginate(20);
+                ->where('user_id', $user_id)
+                ->orWhereHas('driveUsers', function ($query) use ($user_id) {
+                    $query->whereJsonContains('user_ids', $user_id);
+                })
+                ->orderByDesc('created_at')
+                ->paginate(20);
 
             return response()->json(['data' => $allFiles], 200);
         }
@@ -205,6 +209,62 @@ class DriveController extends Controller
             return response()->json(['message' => 'Ahora este archivo será visible para todos', 'status' => 200]);
         }
         return response()->json(['message' => 'Unauthorized access', 'status' => 403]);
+    }
+
+    // LISTA DE LOS USUARIOS DE DRIVES
+    public function usersOnlyDrivers()
+    {
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
+
+        if ($role_id === 3 || $user_id === 1) {
+            $users = DB::table('role_user')
+                ->whereIn('role_id', [3, 4])
+                ->join('profiles', 'role_user.user_id', '=', 'profiles.user_id')
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'label' => $user->name . ' ' . $user->lastname . ' ' . $user->middlename,
+                        'value' => $user->user_id
+                    ];
+                });
+
+            return $users;
+        }
+
+        return response()->json(['message' => 'Unauthorized access', 'status' => 403]);
+    }
+
+    public function storeOrUpdateDriveUsers(Request $request)
+    {
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
+        $drive_id = $request->input('drive_id');
+        $user_ids = $request->input('user_ids');
+        $drive_user = DriveUser::where('drive_id', $drive_id)->first();
+
+        if ($role_id === 3 || $user_id === 1) {
+            if (!$drive_user) {
+                $drive_user = new DriveUser();
+                $drive_user->drive_id = $drive_id;
+                $drive_user->user_ids = $user_ids;
+                $drive_user->save();
+            } else {
+                $drive_user->user_ids = $user_ids;
+                $drive_user->save();
+            }
+            return response()->json(['message' => 'Asignación procesada', 'status' => 200]);
+        }
+
+        return response()->json(['message' => 'Unauthorized access', 'status' => 403]);
+
+    }
+
+    // DE LA TABLA DRIVE_USER
+    public function usersSelectedDrive($id)
+    {
+        $driveUsers = DriveUser::where('drive_id', $id)->get();
+        return response()->json(['data' => $driveUsers], 200);
     }
 }
 
