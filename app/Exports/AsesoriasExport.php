@@ -9,16 +9,37 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithStyles
 {
-    /**
-     * @return \Illuminate\Support\Collection
-     */
+    public $dateStart;
+    public $dateEnd;
+
+    private function getUserRole()
+    {
+        $user_id = Auth::user()->id;
+
+        $roleUser = DB::table('role_user')
+        ->where('user_id', $user_id)
+        ->first();
+
+        if ($user_id != $roleUser->user_id) {
+            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
+        }
+
+        return [
+            "role_id" => $roleUser->role_id,
+            'user_id' => $user_id
+        ];
+    }
+
     public function title(): string
     {
         return 'Asesorías';
     }
+
     public function styles(Worksheet $sheet)
     {
         $sheet->getStyle('A1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00B0F0');
@@ -32,15 +53,31 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
 
     public function collection()
     {
-        $results = Advisory::allNotaries();
 
-        return $results->map(function ($item, $index) {
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
 
-            // $asesor = $item->supervisado->supervisadoUser->profile;
-            // $supervisador = $item->supervisor->supervisorUser->profile;
+
+        if ($role_id == 1) {
+            $query = Advisory::descargaExcelAsesorias([
+                'dateStart' => $this->dateStart,
+                'dateEnd' => $this->dateEnd,
+            ]);
+        }
+
+        if ($role_id != 1) {
+            $query = Advisory::ByUserId($user_id)->descargaExcelAsesorias([
+                'dateStart' => $this->dateStart,
+                'dateEnd' => $this->dateEnd,
+            ]);
+        }
+
+        $results = $query->map(function ($item, $index) {
+
             $asesor = $item->supervisado ? $item->supervisado->supervisadoUser->profile : $item->asesorsupervisor;
             $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
             $solicitante = $item->people;
+
 
             return [
                 'No' => $index + 1,
@@ -76,6 +113,8 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
                 'MODALIDAD DE ATENCION' => $item->modality->name
             ];
         });
+
+        return $results;
     }
 
 

@@ -9,13 +9,33 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 Carbon::setLocale('es');
 
 class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitle, WithStyles
 {
-    /**
-     * @return \Illuminate\Support\Collectionc
-     */
+    public $dateStart;
+    public $dateEnd;
+
+    private function getUserRole()
+    {
+        $user_id = Auth::user()->id;
+
+        $roleUser = DB::table('role_user')
+        ->where('user_id', $user_id)
+        ->first();
+
+        if ($user_id != $roleUser->user_id) {
+            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
+        }
+
+        return [
+            "role_id" => $roleUser->role_id,
+            'user_id' => $user_id
+        ];
+    }
+
     public function title(): string
     {
         return 'FormalizacionesRUC20';
@@ -33,9 +53,27 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
 
     public function collection()
     {
-        $results = Formalization20::allFormalizations20();
+        $role_id = $this->getUserRole()['role_id'];
+        $user_id = $this->getUserRole()['user_id'];
 
-        return $results->map(function ($item, $index) {
+
+        if ($role_id == 1) {
+            $query = Formalization20::allFormalizations20([
+                'dateStart' => $this->dateStart,
+                'dateEnd' => $this->dateEnd,
+            ]);
+        }
+
+        if ($role_id != 1) {
+            $query = Formalization20::ByUserId($user_id)->allFormalizations20([
+                'dateStart' => $this->dateStart,
+                'dateEnd' => $this->dateEnd,
+            ]);
+        }
+
+        // $results = Formalization20::allFormalizations20();
+
+        $results = $query->map(function ($item, $index) {
 
             $asesor = $item->supervisado ? $item->supervisado->supervisadoUser->profile : $item->asesorsupervisor;
             $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
@@ -82,6 +120,9 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
                 'MODALIDAD DE ATENCION' => $item->modality ? $item->modality->name : '-'
             ];
         });
+
+        return $results;
+
     }
 
 

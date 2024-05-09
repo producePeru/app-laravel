@@ -136,8 +136,13 @@ class Formalization20 extends Model
         return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
     }
 
-    public function scopeAllFormalizations20($query)
+    public function scopeAllFormalizations20($query, $filters)
     {
+        if ($filters['dateStart'] && $filters['dateEnd']) {
+            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' + 1 day'));
+            $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
+        }
+
         return $query->with([
             'modality',
             'people.gender:id,name',

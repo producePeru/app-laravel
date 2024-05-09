@@ -95,7 +95,7 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::get('digital-list', [FormalizationDigitalController::class, 'index']);
     Route::delete('delete/{id}', [FormalizationDigitalController::class, 'deleteRegister']);
     Route::put('digital/update-attended', [FormalizationDigitalController::class, 'updateAttendedStatus']);
-    
+
     // Chart
     Route::get('chart-pie', [ChartController::class, 'index']);
     Route::get('by-advisors', [ChartController::class, 'countAdvisoriesByAdvisors']);
@@ -117,6 +117,7 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('asesories', [DownloadFormalizationsController::class, 'exportAsesories']);
     Route::get('formalizations-ruc10', [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
     Route::get('formalizations-ruc20', [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
+
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {

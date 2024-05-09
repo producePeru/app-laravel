@@ -101,8 +101,14 @@ class Formalization10 extends Model
         return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
     }
 
-    public function scopeAllFormalizations10($query)
+    // DESCARGAR EXCEL DE FORMALIZACIONES CON RUC 10
+    public function scopeAllFormalizations10($query, $filters)
     {
+        if ($filters['dateStart'] && $filters['dateEnd']) {
+            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' + 1 day'));
+            $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
+        }
+
         return $query->with([
             'modality',
             'people.gender:id,name',

@@ -94,28 +94,53 @@ class Advisory extends Model
     }
 
 
-    public function scopeAllNotaries($query)
+    // DESCARGAR EXCEL DE ASESORIAS
+    public function scopeDescargaExcelAsesorias($query, $filters)
     {
+        if ($filters['dateStart'] && $filters['dateEnd']) {
+            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' + 1 day'));
+            $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
+        }
+
         return $query->with([
             'modality',
             'people.gender:id,name',
-
             'supervisor.supervisorUser.profile',
-
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde:id,name',
-
             'theme',
             'component',
             'city',
             'province',
             'district'
         ])
-        ->orderBy('created_at', 'desc')->get()->map(function ($item) {
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function ($item) {
             $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
             return $item;
         });
     }
+
+    // public function scopeAllNotaries($query)
+    // {
+    //     return $query->with([
+    //         'modality',
+    //         'people.gender:id,name',
+    //         'supervisor.supervisorUser.profile',
+    //         'supervisado.supervisadoUser.profile',
+    //         'supervisado.supervisadoUser.profile.cde:id,name',
+    //         'theme',
+    //         'component',
+    //         'city',
+    //         'province',
+    //         'district'
+    //     ])
+    //     ->orderBy('created_at', 'desc')->get()->map(function ($item) {
+    //         $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
+    //         return $item;
+    //     });
+    // }
 
 
     // todas las asesorias y paginadas...

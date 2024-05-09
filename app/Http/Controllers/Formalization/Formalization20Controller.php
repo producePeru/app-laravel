@@ -31,11 +31,11 @@ class Formalization20Controller extends Controller
     public function ruc20Step1(Request $request)
     {
         try {
-            $existingRecord = Formalization20::where('codesunarp', $request->codesunarp)->first();
+            // $existingRecord = Formalization20::where('codesunarp', $request->codesunarp)->first();
 
-            if ($existingRecord) {
-                return response()->json(['message' => 'Ya existe una formalización tipo RUC 20 con el codigo SUNARP', 'status' => 400]);
-            }
+            // if ($existingRecord) {
+            //     return response()->json(['message' => 'Ya existe una formalización tipo RUC 20 con el codigo SUNARP', 'status' => 400]);
+            // }
 
             $data = $request->all();
             Formalization20::create($data);
@@ -48,10 +48,10 @@ class Formalization20Controller extends Controller
     }
 
 
-    public function ruc20Step2(Request $request, $codesunarp)
+    public function ruc20Step2(Request $request, $id)
     {
         try {
-            $existingRecord = Formalization20::where('codesunarp', $codesunarp)->first();
+            $existingRecord = Formalization20::where('id', $id)->first();
 
             if ($existingRecord) {
 
@@ -86,10 +86,10 @@ class Formalization20Controller extends Controller
         }
     }
 
-    public function ruc20Step3(Request $request, $codesunarp)
+    public function ruc20Step3(Request $request, $id)
     {
         try {
-            $existingRecord = Formalization20::where('codesunarp', $codesunarp)->first();
+            $existingRecord = Formalization20::where('id', $id)->first();
 
             if ($existingRecord) {
 
