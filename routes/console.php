@@ -17,3 +17,16 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+
+// CREATE TABLE drive_users (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     drive_id BIGINT UNSIGNED,
+//     user_ids JSON,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL,
+//     CONSTRAINT fk_drive_users_drive_id FOREIGN KEY (drive_id) REFERENCES drives(id)
+// );
+
+

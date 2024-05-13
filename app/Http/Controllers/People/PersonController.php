@@ -67,6 +67,7 @@ class PersonController extends Controller
                 'city_id' => 'required|integer',
                 'province_id' => 'required|integer',
                 'district_id' => 'required|integer',
+                'address' => 'nullable|string',
                 'typedocument_id' => 'required|integer',
                 'gender_id' => 'nullable|integer',
             ]);
@@ -116,7 +117,6 @@ class PersonController extends Controller
                 ->first();
 
         if ($person) {
-
             return response()->json(['data' => $person, 'status' => 200]);
         } else {
             return response()->json(['message' => 'El usuario no existe', 'status' => 404]);

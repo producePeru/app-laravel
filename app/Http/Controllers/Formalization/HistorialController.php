@@ -152,4 +152,84 @@ class HistorialController extends Controller
     }
 
 
+
+    // HISTORIAL DE REGISTROS...
+    public function getByPeopleIdRegisters($peopleId)
+    {
+        $advisories = Advisory::
+        where('people_id', $peopleId)
+        ->with('user.profile', 'component', 'theme','modality', 'city', 'province', 'district')
+        ->get()
+        ->map(function ($advisory) {
+            return [
+                'id' => $advisory->id,
+                'createDate' => $advisory->created_at,
+                'updateDate' => $advisory->updated_at,
+                'asesor' => $advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename,
+                'component' => $advisory->component->name,
+                'theme' => $advisory->theme->name,
+                'modality' => $advisory->modality->name,
+                'city' => $advisory->city->name,
+                'province' => $advisory->province->name,
+                'district' => $advisory->district->name
+            ];
+        })->sortByDesc('created_at');
+
+
+        $formalization10 = Formalization10::
+        where('people_id', $peopleId)
+        ->with('detailprocedure', 'modality', 'economicsector', 'comercialactivity', 'city', 'province', 'district', 'user.profile')
+        ->get()
+        ->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'createDate' => $item->created_at,
+                'updateDate' => $item->updated_at,
+                'detailprocedure' => $item->detailprocedure->name,
+                'modality' => $item->modality->name,
+                'economicsector' => $item->economicsector->name,
+                'comercialactivity' => $item->comercialactivity->name,
+                'city' => $item->city->name,
+                'province' => $item->province->name,
+                'district' => $item->district->name,
+                'asesor' => $item->user->profile->name . ' ' . $item->user->profile->lastname . ' ' . $item->user->profile->middlename
+            ];
+        })->sortByDesc('created_at');
+
+
+        $formalization20 = Formalization20::
+            where('people_id', $peopleId)
+            ->with('economicsector', 'comercialactivity', 'regime', 'city', 'province', 'district', 'modality', 'notary', 'mype', 'user.profile')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'task' => $item->task,
+                    'codesunarp' => $item->codesunarp,
+                    'numbernotary' => $item->numbernotary,
+                    'address' => $item->address,
+                    'economicsector' => $item->economicsector->name,
+                    'comercialactivity' => $item->comercialactivity->name,
+                    'regime' => $item->regime->name,
+                    'city' => $item->city->name,
+                    'province' => $item->province->name,
+                    'district' => $item->district->name,
+                    'modality' => $item->modality->name,
+                    'notary' => $item->notary ? $item->notary->name : null,
+                    'mypename' => $item->mype ? $item->mype->name : null,
+                    'myperuc' => $item->mype ? $item->mype->ruc : null,
+                    'asesor' => $item->user->profile->name . ' ' . $item->user->profile->lastname . ' ' . $item->user->profile->middlename
+                ];
+            })->sortByDesc('created_at');
+
+
+        $data = [
+            'advisories' => $advisories,
+            'formalization10' => $formalization10,
+            'formalization20' => $formalization20,
+        ];
+
+
+        return response()->json(['data' => $data, 'status' => 200]);
+    }
 }

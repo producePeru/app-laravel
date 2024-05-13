@@ -33,59 +33,97 @@ class ChartController extends Controller
     }
 
 
-    public function index()
+    public function index(Request $request)
     {
-        
+
         $role_id = $this->getUserRole()['role_id'];
         $user_id = $this->getUserRole()['user_id'];
-        $advisories = 0;
-        $formalizations10 = 0;
-        $formalizations20 = 0;
-        
-        if ($role_id === 2 || $user_id === 1) {
-            $advisories = Advisory::where('user_id', $user_id)->count();
-            $formalizations10 = Formalization10::where('user_id', $user_id)->count();
-            $formalizations20 = Formalization20::where('user_id', $user_id)->count();
+        $dateStart = $request->input('dateStart');
+        $dateEnd = $request->input('dateEnd');
 
-            return response()->json([$advisories, $formalizations10, $formalizations20]);
+        $asesoriesCount = [];
+        $formalization10Count = [];
+        $formalization20Count = [];
+        $currentYear = date('Y');
 
+        for ($i = 1; $i <= 12; $i++) {
+            $asesoriesCount[$i] = 0;
+            $formalization10Count[$i] = 0;
+            $formalization20Count[$i] = 0;
         }
-        
-        
-        
-        
-        
-        // $advisories = Advisory::count();
-        // $formalizations10 = Formalization10::count();
-        // $formalizations20 = Formalization20::count();
-        // $supervisor = Supervisor::count();
-        // $asesores = SupervisorUser::distinct('supervisado_id')->count('supervisado_id');
-        // $registrados = DB::table('from_people')->where('from_id', 1)->count();
 
-        // return response()->json(['data' => [
-        //     'advisories' => $advisories,
-        //     'formalizations10' => $formalizations10,
-        //     'formalizations20' => $formalizations20,
-        //     'supervisores' => $supervisor,
-        //     'asesores' => $asesores,
-        //     'registrados' => $registrados
-        // ],  'status' => 200]);
+        if ($role_id == 1) {
+            $asesories = Advisory::descargaExcelAsesorias([
+                'dateStart' => $dateStart,
+                'dateEnd' => $dateEnd
+            ]);
+            $formalization10 = Formalization10::allFormalizations10([
+                'dateStart' => $dateStart,
+                'dateEnd' => $dateEnd,
+            ]);
+            $formalization20 = Formalization20::allFormalizations20([
+                'dateStart' => $dateStart,
+                'dateEnd' => $dateEnd,
+            ]);
+        }
 
+        if ($role_id != 1) {
+            $asesories = Advisory::ByUserId($user_id)->descargaExcelAsesorias([
+                'dateStart' => $dateStart,
+                'dateEnd' => $dateEnd
+            ]);
+            $formalization10 = Formalization10::ByUserId($user_id)->allFormalizations10([
+                'dateStart' => $dateStart,
+                'dateEnd' => $dateEnd,
+            ]);
+            $formalization20 = Formalization20::ByUserId($user_id)->allFormalizations20([
+                'dateStart' => $dateStart,
+                'dateEnd' => $dateEnd,
+            ]);
+        }
 
+        $totalAsesories = count($asesories);
+        $totalFormalization10 = count($formalization10);
+        $totalFormalization20 = count($formalization20);
 
+        foreach ($asesories as $asesory) {
+            $month = date('n', strtotime($asesory->created_at));
+            $year = date('Y', strtotime($asesory->created_at));
+            if ($year == $currentYear) {
+                $asesoriesCount[$month]++;
+            }
+        }
 
+        foreach ($formalization10 as $formalization) {
+            $month = date('n', strtotime($formalization->created_at));
+            $year = date('Y', strtotime($formalization->created_at));
+            if ($year == $currentYear) {
+                $formalization10Count[$month]++;
+            }
+        }
 
-    }
+        foreach ($formalization20 as $formalization) {
+            $month = date('n', strtotime($formalization->created_at));
+            $year = date('Y', strtotime($formalization->created_at));
+            if ($year == $currentYear) {
+                $formalization20Count[$month]++;
+            }
+        }
 
-    public function countAdvisoriesByAdvisors()
-    {
+        $asesoriesCount = array_values($asesoriesCount);
+        $formalization10Count = array_values($formalization10Count);
+        $formalization20Count = array_values($formalization20Count);
 
+        return [
+            'asesories' => $asesoriesCount,
+            'formalization10' => $formalization10Count,
+            'formalization20' => $formalization20Count,
+
+            'totalasesories' => $totalAsesories,
+            'totalFormalization10' => $totalFormalization10,
+            'totalFormalization20' => $totalFormalization20,
+            'bar' => [$totalAsesories, $totalFormalization10, $totalFormalization20]
+        ];
     }
 }
 
-// crea l funcion
-// hace referencia a la tabla advisories que su modelo es Advisory
-// que tiene los siguientes atributos
-// id, observations, component, theme y user_id
-// donde el user_id hace referencia a un id de la tabla user
-// sucede que tambien hay una tabla llamada people

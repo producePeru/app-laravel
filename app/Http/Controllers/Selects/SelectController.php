@@ -49,12 +49,14 @@ class SelectController extends Controller
     public function getCities()
     {
         $cities = City::all();
-        $data = $cities->map(function ($item) {
+
+        $data = $cities->sortBy('name')->map(function ($item) {
             return [
                 'label' => $item->name,
                 'value' => $item->id,
             ];
-        });
+        })->values();
+
         return response()->json(['data' => $data]);
     }
 
@@ -62,12 +64,13 @@ class SelectController extends Controller
     {
         $provinces = Province::where('city_id', $id)->get();
 
-        $data = $provinces->map(function ($item) {
+        $data = $provinces->sortBy('name')->map(function ($item) {
             return [
                 'label' => $item->name,
                 'value' => $item->id
             ];
-        });
+        })->values();
+
         return response()->json(['data' => $data]);
     }
 
@@ -75,12 +78,13 @@ class SelectController extends Controller
     {
         $districts = District::where('province_id', $id)->get();
 
-        $data = $districts->map(function ($item) {
+        $data = $districts->sortBy('name')->map(function ($item) {
             return [
                 'label' => $item->name,
                 'value' => $item->id
             ];
-        });
+        })->values();
+
         return response()->json(['data' => $data]);
     }
 

@@ -100,8 +100,8 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::put('digital/update-attended', [FormalizationDigitalController::class, 'updateAttendedStatus']);
 
     // Chart
-    Route::get('chart-pie', [ChartController::class, 'index']);
-    Route::get('by-advisors', [ChartController::class, 'countAdvisoriesByAdvisors']);
+    Route::get('chart', [ChartController::class, 'index']);
+    // Route::get('by-advisors', [ChartController::class, 'countAdvisoriesByAdvisors']);
 });
 
 Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -113,6 +113,9 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
     Route::get('advisories/filters', [HistorialController::class, 'filterHistorialAdvisoriesByDates']);
     Route::get('formalizations-10/filters', [HistorialController::class, 'filterHistorialFormalizations10ByDates']);
     Route::get('formalizations-20/filters', [HistorialController::class, 'filterHistorialFormalizations20ByDates']);
+
+    //registros-historial
+    Route::get('registers/{idPeople}', [HistorialController::class, 'getByPeopleIdRegisters']);
 
 });
 
@@ -183,17 +186,3 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
 
 });
-
-
-// CREATE TABLE drive_users (
-//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-//     drive_id BIGINT UNSIGNED,
-//     user_ids JSON,
-//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-//     deleted_at TIMESTAMP NULL,
-//     CONSTRAINT fk_drive_users_drive_id FOREIGN KEY (drive_id) REFERENCES drives(id)
-// );
-
-
-
