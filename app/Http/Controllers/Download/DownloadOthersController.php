@@ -10,7 +10,7 @@ class DownloadOthersController extends Controller
 {
     public function descargarAPKar()
     {
-        $archivoPath = '/apk/producear.apk';
+        $archivoPath = 'apk/producear.apk';
 
         return response()->download(storage_path('app/' . $archivoPath), 'evento.apk');
     }
