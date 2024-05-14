@@ -11,8 +11,9 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 
-class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithStyles
+class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithStyles, WithColumnWidths
 {
     public $dateStart;
     public $dateEnd;
@@ -35,6 +36,37 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
         ];
     }
 
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 6,
+            'B' => 11,
+            'C' => 27,
+            'D' => 14,
+            'E' => 14,
+            'F' => 14,
+
+            'G' => 7,
+            'H' => 10,
+            'I' => 6,
+            'J' => 11,
+            'K' => 15,
+            'L' => 15,
+            'M' => 15,
+            'N' => 10,
+            'O' => 6,
+            'P' => 10,
+            'R' => 23,
+
+            'S' => 14,
+            'T' => 14,
+            'U' => 14,
+            'V' => 10,
+            'W' => 18,
+            'X' => 23
+        ];
+    }
+
     public function title(): string
     {
         return 'Asesorías';
@@ -42,13 +74,17 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00B0F0');
-        $sheet->getStyle('B1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('C4D79B');
-        $sheet->getStyle('C1:H1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFC000');
-        $sheet->getStyle('I1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF6699');
-        $sheet->getStyle('J1:P1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF00');
-        $sheet->getStyle('Q1:V1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('B7DEE8');
-        $sheet->getStyle('W1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('92D050');
+        $sheet->getStyle('A1:F1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');
+        $sheet->getStyle('G1:Q1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('ffc000');
+        $sheet->getStyle('R1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('bdd6ee');
+        $sheet->getStyle('S1:X1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00b050');
+        $sheet->getStyle('Y1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
+
+
+        $sheet->getStyle('I1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('ffc000');
+        $sheet->getStyle('A1:F1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('S1:Z1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:Z1')->getFont()->setBold(true);
     }
 
     public function collection()
@@ -56,7 +92,6 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
 
         $role_id = $this->getUserRole()['role_id'];
         $user_id = $this->getUserRole()['user_id'];
-
 
         if ($role_id == 1) {
             $query = Advisory::descargaExcelAsesorias([
@@ -81,36 +116,36 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
 
             return [
                 'No' => $index + 1,
-                'Fecha de Asesoria' => Carbon::parse($item->created_at)->format('d/m/Y'),
-
+                'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
                 'Asesor (a) - Nombre Completo' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
-                'CDE del Asesor' => $asesor->cde->name,
-                // 'Provincia del CDE del Asesor' => $item->asesor->cde->name,
-                // 'Distrito del  CDE del Asesor' => $item->asesor->cde->name,
-                'Tipo de Documento de Identidad' => 'DNI',
-                'Numero de Documento de Identidad' => $asesor->documentnumber,
-                'Fecha de Nacimiento' => $asesor->birthday,
-                'Nombre del Pais' => 'Perú',
+                'Región del CDE del Asesor' => '-',
+                'Provincia del CDE del Asesor' => '-',
+                'Distrito del CDE del Asesor' => '-',
 
-                'Supervisor' => $supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename,
-
+                //
+                'Tipo de Documento de Identidad' => $solicitante->typedocument->name,
+                'Número de Documento de Identidad' => $solicitante->documentnumber,
+                'Nombre del país de origen' => 'Perú',
+                'Fecha de Nacimiento' => $solicitante->birthday ? $solicitante->birthday : '-',
                 'Apellido Paterno del Solicitante (socio o Gte General)' => $solicitante->lastname,
                 'Apellido Materno del Solicitante (socio o Gte General)' => $solicitante->middlename,
                 'Nombres del Solicitante (socio o Gte General)' => $solicitante->name,
                 'Genero' => $solicitante->gender->name,
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
-                'Telefono' => $solicitante->phone,
-                'Correo electronico' => $solicitante->email,
+                'Telefono' => $solicitante->phone ? $solicitante->phone : '-',
+                'Correo electronico' => $solicitante->email ? $solicitante->email : '-',
+                //
+                'SUPERVISOR' => $supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename,
 
-                'Region MYPE' => $item->city->name,
-                'Provincia MYPE' => $item->province->name,
-                'Distrito MYPE' => $item->district->name,
-
+                'Región del negocio' => $item->city->name,
+                'Provincia del Negocio' => $item->province->name,
+                'Distrito del Negocio' => $item->district->name,
+                'N_RUC' => ' ',
                 'Componente' => $item->component->name,
                 'Tema' => $item->theme->name,
-                'Observación' => $item->observations,
+                'Nro de Reserva / Observacion' => $item->observations,
 
-                'MODALIDAD DE ATENCION' => $item->modality->name
+                'Modalidad' => $item->modality->name
             ];
         });
 
@@ -122,16 +157,16 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
     {
         return [
             'No',
-            'Fecha de Asesoria',
+            'Fecha de Registro',
             'Asesor (a) - Nombre Completo',
-            'CDE del Asesor',
-            // 'Provincia del CDE del Asesor',
-            // 'Distrito del  CDE del Asesor',
+            'Región del CDE del Asesor',
+            'Provincia del CDE del Asesor',
+            'Distrito del CDE del Asesor',
+
             'Tipo de Documento de Identidad',
-            'Numero de Documento de Identidad',
+            'Número de Documento de Identidad',
+            'Nombre del país de origen',
             'Fecha de Nacimiento',
-            'Nombre del Pais',
-            'Supervisor',
             'Apellido Paterno del Solicitante (socio o Gte General)',
             'Apellido Materno del Solicitante (socio o Gte General)',
             'Nombres del Solicitante (socio o Gte General)',
@@ -139,13 +174,18 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Tiene alguna Discapacidad ? (SI / NO)',
             'Telefono',
             'Correo electronico',
-            'Region MYPE',
-            'Provincia MYPE',
-            'Distrito MYPE',
+
+            'SUPERVISOR',
+
+            'Región del negocio',
+            'Provincia del Negocio',
+            'Distrito del Negocio',
+            'N_RUC',
             'Componente',
             'Tema',
-            'Observación',
-            'MODALIDAD DE ATENCION'
+            'Nro de Reserva / Observacion',
+
+            'Modalidad'
         ];
     }
 }

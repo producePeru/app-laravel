@@ -16,6 +16,7 @@ use App\Http\Controllers\User\SupervisorController;
 use App\Http\Controllers\Drive\DriveController;
 use App\Http\Controllers\Formalization\FormalizationDigitalController;
 use App\Http\Controllers\Formalization\ChartController;
+use App\Http\Controllers\Download\DownloadOthersController;
 
 Route::post('login', [AuthController::class, 'login']);
 
@@ -32,6 +33,9 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
   Route::get('notaries', [NotaryController::class, 'indexNotary']);
   Route::get('notaries-filters', [NotaryController::class, 'indexNotaryById']);
+
+  Route::get('apk', [DownloadOthersController::class, 'descargarAPKar']);
+
 });
 
 
@@ -85,6 +89,7 @@ Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'mi
   Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
 });
 
+// FORMALIZACIÓN*
 Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
     Route::get('list-ruc-10', [Formalization10Controller::class, 'indexRuc10']);
     Route::get('list-ruc-20', [Formalization20Controller::class, 'indexRuc20']);

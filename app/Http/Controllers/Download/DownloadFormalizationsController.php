@@ -40,6 +40,15 @@ class DownloadFormalizationsController extends Controller
         $export->dateEnd = $dateEnd;
 
         return Excel::download($export, 'asesorias-pnte.xlsx');
+
+
+
+        // $query = Advisory::descargaExcelAsesorias([
+        //     'dateStart' => $request->dateStart,
+        //     'dateEnd' => $request->dateEnd,
+        // ]);
+
+        // return $query;
     }
 
 

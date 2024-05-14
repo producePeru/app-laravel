@@ -105,6 +105,7 @@ class Advisory extends Model
         return $query->with([
             'modality',
             'people.gender:id,name',
+            'people.typedocument:id,name',
             'supervisor.supervisorUser.profile',
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde:id,name',

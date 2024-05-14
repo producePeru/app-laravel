@@ -30,3 +30,20 @@ Artisan::command('inspire', function () {
 // );
 
 
+// **** FALTAN
+// ALTER TABLE advisories
+// ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at;
+
+
+// ALTER TABLE profiles
+// ADD COLUMN city_id INT UNSIGNED DEFAULT NULL AFTER user_id,
+// ADD COLUMN province_id INT UNSIGNED DEFAULT NULL AFTER city_id,
+// ADD COLUMN district_id INT UNSIGNED DEFAULT NULL AFTER province_id,
+// ADD COLUMN address VARCHAR(100) DEFAULT NULL AFTER district_id;
+
+
+
+
+
+
+
