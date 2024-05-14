@@ -12,6 +12,10 @@ class DownloadOthersController extends Controller
     {
         $archivoPath = 'apk/producear.apk';
 
-        return response()->download(storage_path('app/' . $archivoPath), 'evento.apk');
+        return response()->download(
+            storage_path('app/' . $archivoPath),
+            'nombre-archivo.apk',
+            ['Content-Type' => 'application/vnd.android.package-archive']
+        );
     }
 }
