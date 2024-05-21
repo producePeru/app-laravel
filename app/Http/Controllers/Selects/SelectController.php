@@ -105,12 +105,12 @@ class SelectController extends Controller
     {
         $cdes = Cde::all();
 
-        $data = $cdes->map(function ($item) {
+        $data = $cdes->sortBy('name')->map(function ($item) {
             return [
                 'label' => $item->name,
                 'value' => $item->id
             ];
-        });
+        })->values();
         return response()->json(['data' => $data]);
     }
 
