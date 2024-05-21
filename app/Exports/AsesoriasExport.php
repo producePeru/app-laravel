@@ -118,14 +118,14 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
                 'Asesor (a) - Nombre Completo' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
-                'Región del CDE del Asesor' => '-',
-                'Provincia del CDE del Asesor' => '-',
-                'Distrito del CDE del Asesor' => '-',
+                'Región del CDE del Asesor' => $asesor->cde ? $asesor->cde->city : '-',
+                'Provincia del CDE del Asesor' => $asesor->cde ? $asesor->cde->province : '-',
+                'Distrito del CDE del Asesor' => $asesor->cde ? $asesor->cde->district : '-',
 
                 //
                 'Tipo de Documento de Identidad' => $solicitante->typedocument->name,
                 'Número de Documento de Identidad' => $solicitante->documentnumber,
-                'Nombre del país de origen' => 'Perú',
+                'Nombre del país de origen' => 'PERÚ',
                 'Fecha de Nacimiento' => $solicitante->birthday ? $solicitante->birthday : '-',
                 'Apellido Paterno del Solicitante (socio o Gte General)' => $solicitante->lastname,
                 'Apellido Materno del Solicitante (socio o Gte General)' => $solicitante->middlename,

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -10,7 +11,11 @@ class Advisory extends Model
 {
     use HasFactory;
 
+    use SoftDeletes;
+
     protected $guarded = ['id'];
+
+    protected $dates = ['deleted_at'];
 
     protected $hidden = [
         'people_id',
@@ -108,7 +113,7 @@ class Advisory extends Model
             'people.typedocument:id,name',
             'supervisor.supervisorUser.profile',
             'supervisado.supervisadoUser.profile',
-            'supervisado.supervisadoUser.profile.cde:id,name',
+            'supervisado.supervisadoUser.profile.cde',
             'theme',
             'component',
             'city',

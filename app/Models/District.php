@@ -32,4 +32,9 @@ class District extends Model
     {
         return $this->hasMany('App\Models\Formalization20');
     }
+
+    public function profile()
+    {
+        return $this->hasMany('App\Models\Profile');
+    }
 }

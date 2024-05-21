@@ -126,6 +126,10 @@ class UserController extends Controller
             'gender_id' => 'required|integer',
             'cde_id' => 'required|integer',
             'office_id' => 'required|integer',
+            // 'city_id' => 'required|integer',
+            // 'province_id' => 'required|integer',
+            // 'district_id' => 'required|integer',
+            // 'address' => 'nullable|string',
         ]);
 
         $user->update($validatedData);

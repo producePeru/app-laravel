@@ -51,6 +51,15 @@ class Formalization20Controller extends Controller
     public function ruc20Step2(Request $request, $id)
     {
         try {
+
+            if($id == 000) {
+                $data = $request->all();
+                Formalization20::create($data);
+
+                return response()->json(['message' => 'Formalizacion tipo RUC 20 registrada correctamente', 'status' => 200]);
+            }
+
+
             $existingRecord = Formalization20::where('id', $id)->first();
 
             if ($existingRecord) {

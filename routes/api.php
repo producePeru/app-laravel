@@ -97,6 +97,7 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::post('create-ruc-10', [Formalization10Controller::class, 'storeRuc10']);
     Route::post('ruc20-step1', [Formalization20Controller::class, 'ruc20Step1']);
     Route::post('ruc20-step2/{codesunarp}', [Formalization20Controller::class, 'ruc20Step2']);
+    // Route::post('ruc20-step2', [Formalization20Controller::class, 'ruc20Step2']);
     Route::post('ruc20-step3/{codesunarp}', [Formalization20Controller::class, 'ruc20Step3']);
 
     // Formalizacion Digital

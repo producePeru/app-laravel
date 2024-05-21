@@ -41,8 +41,6 @@ class DownloadFormalizationsController extends Controller
 
         return Excel::download($export, 'asesorias-pnte.xlsx');
 
-
-
         // $query = Advisory::descargaExcelAsesorias([
         //     'dateStart' => $request->dateStart,
         //     'dateEnd' => $request->dateEnd,
@@ -62,7 +60,14 @@ class DownloadFormalizationsController extends Controller
         $export->dateEnd = $dateEnd;
 
         return Excel::download($export, 'formalizaciones_ruc10_pnte.xlsx');
-        // return Excel::download(new FormalizationRUC10Export, 'formalizaciones_ruc10_pnte.xlsx');
+        return Excel::download(new FormalizationRUC10Export, 'formalizaciones_ruc10_pnte.xlsx');
+
+        // $query = Formalization10::allFormalizations10([
+        //     'dateStart' => $request->dateStart,
+        //     'dateEnd' => $request->dateEnd,
+        // ]);
+
+        // return $query;
     }
 
 

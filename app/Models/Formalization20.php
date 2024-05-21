@@ -150,7 +150,7 @@ class Formalization20 extends Model
             'supervisor.supervisorUser.profile',
 
             'supervisado.supervisadoUser.profile',
-            'supervisado.supervisadoUser.profile.cde:id,name',
+            'supervisado.supervisadoUser.profile.cde',
 
             'mype:id,name,ruc',
             'comercialactivity',

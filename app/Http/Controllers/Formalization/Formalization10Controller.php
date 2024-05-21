@@ -27,6 +27,8 @@ class Formalization10Controller extends Controller
                 'province_id' => 'required|integer',
                 'district_id' => 'required|integer',
                 'people_id' => 'required|integer',
+                'address' => 'nullable|string',
+                'ruc' => 'nullable|string',
                 'user_id' => 'required|integer'
             ]);
 

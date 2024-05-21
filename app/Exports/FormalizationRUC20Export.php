@@ -11,9 +11,10 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 Carbon::setLocale('es');
 
-class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitle, WithStyles
+class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitle, WithStyles, WithColumnWidths
 {
     public $dateStart;
     public $dateEnd;
@@ -36,19 +37,54 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
         ];
     }
 
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 6,
+            'B' => 11,
+            'C' => 27,
+            'D' => 14,
+            'E' => 14,
+            'F' => 14,
+
+            'G' => 7,
+            'H' => 10,
+            'I' => 6,
+            'J' => 11,
+            'K' => 15,
+            'L' => 15,
+            'M' => 15,
+            'N' => 10,
+            'O' => 6,
+            'P' => 10,
+            'R' => 17,
+
+            'S' => 22,
+            'T' => 14,
+            'U' => 14,
+            'V' => 14,
+            'W' => 18,
+            'X' => 12,
+            'Y' => 15,
+            'Z' => 15,
+            'AA' => 14,
+            'AB' => 12
+        ];
+    }
+
     public function title(): string
     {
         return 'FormalizacionesRUC20';
     }
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00B0F0');
-        $sheet->getStyle('B1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('C4D79B');
-        $sheet->getStyle('C1:H1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFC000');
-        $sheet->getStyle('I1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF6699');
-        $sheet->getStyle('J1:P1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF00');
-        $sheet->getStyle('Q1:AC1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('B7DEE8');
-        $sheet->getStyle('AD1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('92D050');
+        $sheet->getStyle('A1:F1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');
+        $sheet->getStyle('G1:Q1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('833c0c');
+        $sheet->getStyle('R1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('375623');
+        $sheet->getStyle('AA1:AF1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('305496');
+
+        $sheet->getStyle('A1:AF1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AF1')->getFont()->getColor()->setARGB('FFFFFF');
     }
 
     public function collection()
@@ -81,42 +117,41 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
 
             return [
                 'No' => $index + 1,
-                'Fecha de Producto' => Carbon::parse($item->created_at)->format('d/m/Y'),
-
+                'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
                 'Asesor (a) - Nombre Completo' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
-                'CDE del Asesor' => $asesor->cde->name,
-                'Tipo de Documento de Identidad' => 'DNI',
-                'Numero de Documento de Identidad' => $asesor->documentnumber ? $asesor->documentnumber : '-',
-                'Fecha de Nacimiento' => $asesor->birthday ? $asesor->birthday : '-',
-                'Nombre del Pais' => 'Perú',
+                'Región del CDE del Asesor' => $asesor->cde ? $asesor->cde->city : '-',
+                'Provincia del CDE del Asesor' => $asesor->cde ? $asesor->cde->province : '-',
+                'Distrito del CDE del Asesor' => $asesor->cde ? $asesor->cde->district : '-',
 
-                'Supervisor' => $supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename,
-
-                'Apellido Paterno del Solicitante (socio o Gte General)' => $solicitante->lastname,
-                'Apellido Materno del Solicitante (socio o Gte General)' => $solicitante->middlename,
+                'Tipo de Documento de Identidad' => $solicitante->typedocument->name,
+                'Número de Documento de Identidad' => $solicitante->documentnumber,
+                'Nombre del País' => 'PERÚ',
+                'Fecha de Nacimiento' => $solicitante->birthday ? $solicitante->birthday : '-',
+                'Apellido Paterno del  Solicitante (socio o Gte General)' => $solicitante->lastname,
+                'Apellido Materno del  Solicitante (socio o Gte General)' => $solicitante->middlename,
                 'Nombres del Solicitante (socio o Gte General)' => $solicitante->name,
-                'Genero' => $solicitante->gender ? $solicitante->gender->name : '-',
+                'Género' => $solicitante->gender->name,
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
-                'Telefono' => $solicitante->phone,
-                'Correo electronico' => $solicitante->email,
+                'Celular' => $solicitante->phone ? $solicitante->phone : '-',
+                'Correo electrónico' => $solicitante->email ? $solicitante->email : '-',
 
 
                 'Tipo formalización' => 'PPJJ (RUC 20)',
-
-                'Region MYPE' => $item->city->name,
-                'Provincia MYPE' => $item->province->name,
-                'Distrito MYPE' => $item->district->name,
-                'Dirección MYPE' => $item->address,
-
-                'Código SUNARP' => $item->codesunarp,
-                'Número envio notaría' => $item->numbernotary,
+                'Supervisor' => $supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename,
+                'Region del negocio' => $item->city ? $item->city->name : '-',
+                'Provincia del Negocio' => $item->province ? $item->province->name : '-',
+                'Distrito del Negocio' => $item->district ? $item->district->name : '-',
+                'Direccion del Negocio' => $item->address ? $item->address : '-',
+                'N_RUC' => $item->mype ? $item->mype->ruc : '-',
                 'Sector económico' => $item->economicsector ? $item->economicsector->name : '-',
                 'Atividad comercial' => $item->comercialactivity ? $item->comercialactivity->name : '-',
-                'MYPE nombre' => $item->mype ? $item->mype->name : '-',
-                'Tipo de regimen' => strtoupper($item->regime ? $item->regime->name : '-'),
-                'Notaria' => $item->notary ? $item->notary->name : '-',
-                'RUC' => $item->mype ? $item->mype->ruc : '-',
 
+
+                'Código SUNARP' => $item->codesunarp ? $item->codesunarp : '-',
+                'Número envio notaría' => $item->numbernotary ? $item->numbernotary : '-',
+                'Nombre de Empresa Constituida' => $item->mype ? $item->mype->name : '-',
+                'Tipo de Regimen Societario' => strtoupper($item->regime ? $item->regime->name : '-'),
+                'Notaria' => $item->notary ? $item->notary->name : '-',
                 'MODALIDAD DE ATENCION' => $item->modality ? $item->modality->name : '-'
             ];
         });
@@ -130,40 +165,42 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
     {
         return [
             'No',
-            'Fecha de Producto',
+            'Fecha de Registro',
             'Asesor (a) - Nombre Completo',
-            'CDE del Asesor',
+            'Región del CDE del Asesor',
+            'Provincia del CDE del Asesor',
+            'Distrito del CDE del Asesor',
+
+
             'Tipo de Documento de Identidad',
-            'Numero de Documento de Identidad',
+            'Número de Documento de Identidad',
+            'Nombre del País',
             'Fecha de Nacimiento',
-            'Nombre del Pais',
-
-            'Supervisor',
-
-            'Apellido Paterno del Solicitante (socio o Gte General)',
-            'Apellido Materno del Solicitante (socio o Gte General)',
+            'Apellido Paterno del  Solicitante (socio o Gte General)',
+            'Apellido Materno del  Solicitante (socio o Gte General)',
             'Nombres del Solicitante (socio o Gte General)',
-            'Genero',
+            'Género',
             'Tiene alguna Discapacidad ? (SI / NO)',
-            'Telefono',
-            'Correo electronico',
+            'Celular',
+            'Correo electrónico',
+
 
             'Tipo formalización',
+            'Supervisor',
+            'Region del negocio',
+            'Provincia del Negocio',
+            'Distrito del Negocio',
+            'Direccion del Negocio',
+            'N_RUC',
+            'Sector económico',
+            'Atividad comercial',
 
-            'Region MYPE',
-            'Provincia MYPE',
-            'Distrito MYPE',
-            'Dirección MYPE',
 
             'Código SUNARP',
             'Número envio notaría',
-            'Sector económico',
-            'Atividad comercial',
-            'MYPE nombre',
-            'Tipo de regimen',
+            'Nombre de Empresa Constituida',
+            'Tipo de Regimen Societario',
             'Notaria',
-            'RUC',
-
             'MODALIDAD DE ATENCION'
         ];
     }

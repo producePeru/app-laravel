@@ -116,7 +116,7 @@ class Formalization10 extends Model
             'supervisor.supervisorUser.profile',
 
             'supervisado.supervisadoUser.profile',
-            'supervisado.supervisadoUser.profile.cde:id,name',
+            'supervisado.supervisadoUser.profile.cde',
             'detailprocedure',
             'economicsector',
             'comercialactivity',

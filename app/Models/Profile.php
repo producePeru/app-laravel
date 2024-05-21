@@ -41,6 +41,21 @@ class Profile extends Model
         return $this->belongsTo(Supervisor::class, 'user_id', 'user_id');         //inversa
     }
 
+    public function city()
+    {
+        return $this->belongsTo('App\Models\City');
+    }
+
+    public function province()
+    {
+        return $this->belongsTo('App\Models\Province');
+    }
+
+    public function district()
+    {
+        return $this->belongsTo('App\Models\District');
+    }
+
 
     protected static function booted()
     {
