@@ -35,11 +35,12 @@ Artisan::command('inspire', function () {
 // ADD COLUMN district_id INT UNSIGNED DEFAULT NULL AFTER province_id,
 // ADD COLUMN address VARCHAR(100) DEFAULT NULL AFTER district_id;
 
-// **** FALTAN
+
 // ALTER TABLE advisories
 // ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at;
 
-
+// ALTER TABLE formalizations10
+// ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at;
 
 
 

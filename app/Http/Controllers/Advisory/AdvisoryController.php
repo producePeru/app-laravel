@@ -48,9 +48,49 @@ class AdvisoryController extends Controller
         return response()->json(['message' => 'Asesoría eliminada correctamente'], 200);
     }
 
-    // public function findByData($date1, $date2)
-    // {
-    //     $advisory = Advisory::withAdvisoryRangeDate($date1, $date2);
-    //     return response()->json($advisory, 200);
-    // }
+    public function getDataAdvisoryById($id)
+    {
+        $advisory = Advisory::find($id);
+
+        if (!$advisory) {
+            return response()->json(['message' => 'No encontrado'], 404);
+        }
+
+        $advisory->makeVisible(['people_id', 'component_id', 'theme_id', 'modality_id', 'province_id', 'city_id', 'district_id']);
+
+        return response()->json(['data' => $advisory, 'status' => 200]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $advisory = Advisory::find($id);
+
+        if (!$advisory) {
+            return response()->json(['message' => 'No encontrado'], 404);
+        }
+
+        $request->validate([
+            'observations' => 'nullable|string',
+            'component_id' => 'required|integer',
+            'theme_id' => 'required|integer',
+            'modality_id' => 'required|integer',
+            'city_id' => 'required|integer',
+            'province_id' => 'required|integer',
+            'district_id' => 'required|integer',
+            'updated_by' => 'required|integer',
+        ]);
+
+        $advisory->update($request->only([
+            'observations',
+            'component_id',
+            'theme_id',
+            'modality_id',
+            'city_id',
+            'province_id',
+            'district_id',
+            'updated_by',
+        ]));
+
+        return response()->json(['message' => 'Datos actualizados correctamente', 'status' => 200]);
+    }
 }

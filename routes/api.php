@@ -87,6 +87,8 @@ Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'mi
   Route::get('list', [AdvisoryController::class, 'index']);
   Route::post('create', [AdvisoryController::class, 'store']);
   Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
+  Route::get('find/{id}', [AdvisoryController::class, 'getDataAdvisoryById']);
+  Route::put('update/{id}', [AdvisoryController::class, 'update']);
 });
 
 // FORMALIZACIÓN*
@@ -99,6 +101,10 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::post('ruc20-step2/{codesunarp}', [Formalization20Controller::class, 'ruc20Step2']);
     // Route::post('ruc20-step2', [Formalization20Controller::class, 'ruc20Step2']);
     Route::post('ruc20-step3/{codesunarp}', [Formalization20Controller::class, 'ruc20Step3']);
+
+    Route::delete('delete-ruc-10/{id}', [Formalization10Controller::class, 'destroy']);         //ACTUALIZACIONES
+    Route::get('find-ruc-10/{id}', [Formalization10Controller::class, 'getDataF10ById']);
+    Route::put('update-ruc-10/{id}', [Formalization10Controller::class, 'update']);
 
     // Formalizacion Digital
     Route::get('digital-list', [FormalizationDigitalController::class, 'index']);
