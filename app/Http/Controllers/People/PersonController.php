@@ -80,7 +80,7 @@ class PersonController extends Controller
             // Attach de la entidad From a la persona
             $person->from()->attach($request->input('from_id'), ['people_id' => $person->id, 'from_id' => $request->input('from_id')]);
 
-            return response()->json(['message' => 'Usuario creado correctamente'], 200);
+            return response()->json(['message' => 'Usuario creado correctamente', 'status' => 200]);
         }
         catch (\Illuminate\Validation\ValidationException $e) {         // DEVUELVE ERRORES DE LA VALIDACION
 
