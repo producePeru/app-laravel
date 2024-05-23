@@ -81,7 +81,15 @@ class PersonController extends Controller
             $person->from()->attach($request->input('from_id'), ['people_id' => $person->id, 'from_id' => $request->input('from_id')]);
 
             return response()->json(['message' => 'Usuario creado correctamente'], 200);
-        } catch (QueryException $e) {
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {         // DEVUELVE ERRORES DE LA VALIDACION
+
+            if (isset($e->errors()['email'])) {
+                return response()->json(['error' => $e->errors()['email'][0], 'status' => 400]);
+            }
+
+        }
+        catch (QueryException $e) {
             return response()->json(['message' => 'El usuario se registró pero la relación ha fallado', 'error' => $e], 400);
         }
     }
