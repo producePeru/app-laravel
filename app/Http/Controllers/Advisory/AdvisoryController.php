@@ -25,6 +25,7 @@ class AdvisoryController extends Controller
             'component_id' => 'required|integer',
             'theme_id' => 'required|integer',
             'modality_id' => 'required|integer',
+            'ruc' => 'required|string',
             'city_id' => 'required|integer',
             'province_id' => 'required|integer',
             'district_id' => 'required|integer'

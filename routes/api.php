@@ -46,7 +46,7 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
   Route::delete('delete/{id}', [UserController::class, 'destroy']);
   Route::put('update/{id}', [UserController::class, 'update']);
 
-  Route::get('dni-data/{num}', [AuthController::class, 'dniDataUser']);
+  Route::get('api/{type}/{num}', [AuthController::class, 'dniDataUser']);
   Route::post('logout', [AuthController::class, 'logout']);
   Route::post('password-reset', [AuthController::class, 'passwordReset']);
 

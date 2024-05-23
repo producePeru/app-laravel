@@ -61,7 +61,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'S' => 14,
             'T' => 14,
             'U' => 14,
-            'V' => 10,
+            'V' => 12,
             'W' => 18,
             'X' => 23
         ];
@@ -140,7 +140,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
                 'Región del negocio' => $item->city->name,
                 'Provincia del Negocio' => $item->province->name,
                 'Distrito del Negocio' => $item->district->name,
-                'N_RUC' => ' ',
+                'N_RUC' => $item->ruc ? $item->ruc : '-',
                 'Componente' => $item->component->name,
                 'Tema' => $item->theme->name,
                 'Nro de Reserva / Observacion' => $item->observations,

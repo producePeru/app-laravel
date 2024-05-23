@@ -64,15 +64,35 @@ class AuthController extends Controller
         return response()->json(['message' => 'Sesión cerrada correctamente'], 200);
     }
 
-    public function dniDataUser($num)
+    // public function dniDataUser($num)
+    // {
+    //     $apiUrl = "https://api.apis.net.pe/v2/reniec/dni?numero={$num}";
+
+    //     try {
+    //         $client = new Client();
+    //         $response = $client->request('GET', $apiUrl, [
+    //             'headers' => [
+    //                 'Authorization' => 'Bearer apis-token-6688.nekxM8GmGEHYD9qosrnbDWNxQlNOzaT5',
+    //                 'Accept' => 'application/json',
+    //             ],
+    //         ]);
+
+    //         $data = json_decode($response->getBody(), true);
+
+    //         return response()->json(['data' => $data]);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['status' => 404]);
+    //     }
+    // }
+
+    public function dniDataUser($type, $num)
     {
-        $apiUrl = "https://api.apis.net.pe/v2/reniec/dni?numero={$num}";
+        $apiUrl = "https://api.sunat.dev/{$type}/{$num}?apikey=432RkH8wPd8z6zCHZmf0oX0i5zGyFmbbUxGfHdvd00Cbsi2LKlrm7YDuRTcyPsCE";
 
         try {
             $client = new Client();
             $response = $client->request('GET', $apiUrl, [
                 'headers' => [
-                    'Authorization' => 'Bearer apis-token-6688.nekxM8GmGEHYD9qosrnbDWNxQlNOzaT5',
                     'Accept' => 'application/json',
                 ],
             ]);
