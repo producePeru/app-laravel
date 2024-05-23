@@ -87,7 +87,9 @@ class PersonController extends Controller
             if (isset($e->errors()['email'])) {
                 return response()->json(['error' => $e->errors()['email'][0], 'status' => 400]);
             }
-
+            if (isset($e->errors()['documentnumber'])) {
+                return response()->json(['status' => 401]);
+            }
         }
         catch (QueryException $e) {
             return response()->json(['message' => 'El usuario se registró pero la relación ha fallado', 'error' => $e], 400);
