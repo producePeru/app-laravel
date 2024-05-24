@@ -32,21 +32,29 @@ class PersonController extends Controller
         ];
     }
 
-    public function index()
+
+    public function index(Request $request)
     {
         $role_id = $this->getUserRole()['role_id'];
         $user_id = $this->getUserRole()['user_id'];
+        $filters = [
+            'documentnumber' => $request->input('numdocument'),
+        ];
 
         if ($role_id === 1 || $user_id === 1) {
-            $people = People::withProfileAndRelations();
+            $people = People::withProfileAndRelations($filters);
             return response()->json($people, 200);
         }
+
 
         if ($role_id === 2) {
             $people = People::withProfileAndUser($user_id);
             return response()->json($people, 200);
         }
     }
+
+
+
 
     public function store(Request $request)
     {

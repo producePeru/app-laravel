@@ -118,9 +118,9 @@ class User extends Authenticatable
     public function scopeWithProfileAsesories($query)
     {
         return $query->has('asesores')
-            ->with(['asesores.profile'])
+            ->with(['asesores.profile', 'asesores.profile.cde'])
             ->orderBy('created_at', 'desc')
-            ->paginate(100);
+            ->paginate(20);
     }
 
 

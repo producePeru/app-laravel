@@ -101,11 +101,21 @@ class People extends Model
     }
 
 
-    public function scopeWithProfileAndRelations($query)        //super
+    public function scopeWithProfileAndRelations($query, $filters)       //super
     {
-        return $query->with(['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile'])
-        ->orderBy('created_at', 'desc')
-        ->paginate(20);
+        // return $query->with(['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile'])
+        // ->orderBy('created_at', 'desc')
+        // ->paginate(20);
+
+        $query = $query->with(
+            ['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile']
+        )->orderBy('created_at', 'desc');
+
+        if ($filters['documentnumber'] !== null) {
+            $query->where('documentnumber', $filters['documentnumber']);
+        }
+
+        return $query->paginate(20);
     }
 
     public function scopeWithProfileAndUser($query, $userId)        //asesores
