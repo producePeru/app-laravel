@@ -24,7 +24,8 @@ use App\Models\Notary;
 use App\Models\Supervisor;
 use App\Models\DriveFile;
 use App\Models\Profile;
-
+use App\Models\AgreementOperationalStatus;
+use App\Models\AgreementStatus;
 
 class SelectController extends Controller
 {
@@ -299,6 +300,32 @@ class SelectController extends Controller
             }
         }
 
+        return response()->json(['data' => $data]);
+    }
+
+    public function getOperationalStatus()
+    {
+        $files = AgreementOperationalStatus::all();
+
+        $data = $files->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+        return response()->json(['data' => $data]);
+    }
+
+    public function getAgreementStatus()
+    {
+        $files = AgreementStatus::all();
+
+        $data = $files->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
         return response()->json(['data' => $data]);
     }
 }

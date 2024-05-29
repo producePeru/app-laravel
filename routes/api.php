@@ -17,6 +17,7 @@ use App\Http\Controllers\Drive\DriveController;
 use App\Http\Controllers\Formalization\FormalizationDigitalController;
 use App\Http\Controllers\Formalization\ChartController;
 use App\Http\Controllers\Download\DownloadOthersController;
+use App\Http\Controllers\Agreement\AgreementController;
 
 Route::post('login', [AuthController::class, 'login']);
 
@@ -171,6 +172,14 @@ Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers',
 
 });
 
+Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::get('list', [AgreementController::class, 'index']);
+
+    Route::post('create', [AgreementController::class, 'store']);
+    Route::post('create-acction', [AgreementController::class, 'storeAction']);
+
+});
+
 Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function() {
     Route::get('cities', [SelectController::class, 'getCities']);
     Route::get('provinces/{idCity}', [SelectController::class, 'getProvinces']);
@@ -191,6 +200,8 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('supervisores', [SelectController::class, 'getSupervisores']);
     Route::get('folders', [SelectController::class, 'getFolders']);
     Route::get('asesores', [SelectController::class, 'getAsesores']);
+    Route::get('operational-status', [SelectController::class, 'getOperationalStatus']);
+    Route::get('agreement-status', [SelectController::class, 'getAgreementStatus']);
 
 });
 

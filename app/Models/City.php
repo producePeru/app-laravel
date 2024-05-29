@@ -37,4 +37,9 @@ class City extends Model
     {
         return $this->hasMany('App\Models\Formalization20');
     }
+
+    public function convenios()
+    {
+        return $this->hasMany('App\Models\Agreement');
+    }
 }

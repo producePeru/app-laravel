@@ -37,4 +37,8 @@ class District extends Model
     {
         return $this->hasMany('App\Models\Profile');
     }
+    public function convenios()
+    {
+        return $this->hasMany('App\Models\Agreement');
+    }
 }
