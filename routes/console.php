@@ -43,6 +43,16 @@ Artisan::command('inspire', function () {
 // ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at;
 
 
+// *** ALTER
+// ALTER TABLE advisories
+// ADD COLUMN economicsector_id BIGINT UNSIGNED AFTER id,
+// ADD COLUMN comercialactivity_id BIGINT UNSIGNED AFTER economicsector_id;
+
+// ALTER TABLE advisories
+// ADD CONSTRAINT fk_advisories_economicsector_id FOREIGN KEY (economicsector_id) REFERENCES economicsectors(id) ON DELETE CASCADE;
+
+// ALTER TABLE advisories
+// ADD CONSTRAINT fk_advisories_comercialactivity_id FOREIGN KEY (comercialactivity_id) REFERENCES comercialactivities(id) ON DELETE CASCADE;
 
 
 

@@ -98,10 +98,11 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::get('list-ruc-20', [Formalization20Controller::class, 'indexRuc20']);
     Route::get('list-ruc-20/{idPerson}', [Formalization20Controller::class, 'allFormalizationsRuc20ByPersonId']);
     Route::post('create-ruc-10', [Formalization10Controller::class, 'storeRuc10']);
+
     Route::post('ruc20-step1', [Formalization20Controller::class, 'ruc20Step1']);
     Route::post('ruc20-step2/{codesunarp}', [Formalization20Controller::class, 'ruc20Step2']);
-    // Route::post('ruc20-step2', [Formalization20Controller::class, 'ruc20Step2']);
     Route::post('ruc20-step3/{codesunarp}', [Formalization20Controller::class, 'ruc20Step3']);
+    Route::post('create-ruc20', [Formalization20Controller::class, 'ruc20All']);
 
     Route::delete('delete-ruc-10/{id}', [Formalization10Controller::class, 'destroy']);         //ACTUALIZACIONES
     Route::get('find-ruc-10/{id}', [Formalization10Controller::class, 'getDataF10ById']);

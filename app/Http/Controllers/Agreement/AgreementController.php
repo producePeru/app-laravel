@@ -43,7 +43,7 @@ class AgreementController extends Controller
                 'province_id' => 'required|exists:provinces,id',
                 'district_id' => 'required|exists:districts,id',
                 'operationalstatus_id' => 'required|exists:operationalstatus,id',
-                'agreementstatus_id' => 'required|exists:agreementstatus,id',
+                'agreementstatus_id' => 'required|exists:agreementstatus,id',               // 🚩reference
                 'createdBy' => 'required|exists:users,id'
             ]);
 

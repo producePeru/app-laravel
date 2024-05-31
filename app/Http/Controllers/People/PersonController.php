@@ -60,7 +60,7 @@ class PersonController extends Controller
     {
         try {
             $data = $request->validate([
-                'documentnumber' => 'required|string|unique:people',
+                'documentnumber' => 'required|string',
                 'lastname' => 'required|string',
                 'middlename' => 'required|string',
                 'name' => 'required|string',

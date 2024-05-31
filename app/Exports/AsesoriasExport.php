@@ -63,7 +63,11 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'U' => 14,
             'V' => 12,
             'W' => 18,
-            'X' => 23
+            'X' => 20,
+            'Y' => 15,
+            'Z' => 20,
+            'AA' => 10,
+            'AB' => 12
         ];
     }
 
@@ -77,14 +81,14 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
         $sheet->getStyle('A1:F1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');
         $sheet->getStyle('G1:Q1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('ffc000');
         $sheet->getStyle('R1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('bdd6ee');
-        $sheet->getStyle('S1:X1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00b050');
-        $sheet->getStyle('Y1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
+        $sheet->getStyle('S1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00b050');
+        $sheet->getStyle('AA1:AB1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
 
 
         $sheet->getStyle('I1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('ffc000');
         $sheet->getStyle('A1:F1')->getFont()->getColor()->setARGB('FFFFFF');
-        $sheet->getStyle('S1:Z1')->getFont()->getColor()->setARGB('FFFFFF');
-        $sheet->getStyle('A1:Z1')->getFont()->setBold(true);
+        $sheet->getStyle('S1:AB1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:AB1')->getFont()->setBold(true);
     }
 
     public function collection()
@@ -117,34 +121,37 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             return [
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
-                'Asesor (a) - Nombre Completo' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
+                'Asesor (a) - Nombre Completo' => strtoupper($asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename),
                 'Región del CDE del Asesor' => $asesor->cde ? $asesor->cde->city : '-',
                 'Provincia del CDE del Asesor' => $asesor->cde ? $asesor->cde->province : '-',
                 'Distrito del CDE del Asesor' => $asesor->cde ? $asesor->cde->district : '-',
 
                 //
-                'Tipo de Documento de Identidad' => $solicitante->typedocument->name,
+                'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
                 'Número de Documento de Identidad' => $solicitante->documentnumber,
-                'Nombre del país de origen' => 'PERÚ',
-                'Fecha de Nacimiento' => $solicitante->birthday ? $solicitante->birthday : '-',
-                'Apellido Paterno del Solicitante (socio o Gte General)' => $solicitante->lastname,
-                'Apellido Materno del Solicitante (socio o Gte General)' => $solicitante->middlename,
-                'Nombres del Solicitante (socio o Gte General)' => $solicitante->name,
-                'Genero' => $solicitante->gender->name,
+                'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : 'OTRO',
+                'Fecha de Nacimiento' => $solicitante->birthday ? date('d/m/Y', strtotime($solicitante->birthday)) : '-',
+                'Apellido Paterno del Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
+                'Apellido Materno del Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
+                'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
+                'Genero' => $solicitante->gender->name === 'Masculino' ? 'M' : 'F',
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
                 'Telefono' => $solicitante->phone ? $solicitante->phone : '-',
-                'Correo electronico' => $solicitante->email ? $solicitante->email : '-',
+                'Correo electrónico o "NO TIENE"' => $solicitante->email ? $solicitante->email : 'NO TIENE',
+
                 //
-                'SUPERVISOR' => $supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename,
+                'SUPERVISOR' => strtoupper($supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename),
 
                 'Región del negocio' => $item->city->name,
                 'Provincia del Negocio' => $item->province->name,
                 'Distrito del Negocio' => $item->district->name,
                 'N_RUC' => $item->ruc ? $item->ruc : '-',
-                'Componente' => $item->component->name,
-                'Tema' => $item->theme->name,
-                'Nro de Reserva / Observacion' => $item->observations,
+                'Sector Económico' => $item->economicsector ?  strtoupper($item->economicsector->name) : '-',
+                'Actividad Comercial Inicial' => $item->comercialactivity ? strtoupper($item->comercialactivity->name) : '-',
+                'Componente' => strtoupper($item->component->name),
+                'Tema' => strtoupper($item->theme->name),
 
+                'Nro de Reserva / Observacion' => $item->observations ? $item->observations : '-',
                 'Modalidad' => $item->modality->name
             ];
         });
@@ -173,7 +180,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Genero',
             'Tiene alguna Discapacidad ? (SI / NO)',
             'Telefono',
-            'Correo electronico',
+            'Correo electrónico o "NO TIENE"',
 
             'SUPERVISOR',
 
@@ -181,10 +188,12 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Provincia del Negocio',
             'Distrito del Negocio',
             'N_RUC',
+            'Sector Económico',
+            'Actividad Comercial Inicial',
             'Componente',
             'Tema',
-            'Nro de Reserva / Observacion',
 
+            'Nro de Reserva / Observacion',
             'Modalidad'
         ];
     }

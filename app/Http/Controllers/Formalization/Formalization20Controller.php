@@ -120,4 +120,31 @@ class Formalization20Controller extends Controller
             return response()->json(['message' => 'Error al registrar la formalizacion tipo RUC 20', 'status' => $e]);
         }
     }
+
+    public function ruc20All(Request $request)
+    {
+        $validatedData = $request->validate([
+            'codesunarp' => 'nullable|string',
+            'numbernotary' => 'required|string',
+            'address' => 'required|string',
+            'economicsector_id' => 'required|integer',
+            'comercialactivity_id' => 'required|integer',
+            'regime_id' => 'required|integer',
+            'city_id' => 'required|integer',
+            'province_id' => 'required|integer',
+            'district_id' => 'required|integer',
+            'modality_id' => 'required|integer',
+            'notary_id' => 'required|integer',
+            'user_id' => 'required|integer',
+            'people_id' => 'required|integer',
+            'nameMype' => 'required|string',
+            'dateReception' => 'nullable|date',
+            'dateTramite' => 'nullable|date',
+            'ruc' => 'nullable|string',
+        ]);
+
+        $formalization = Formalization20::create($validatedData);
+
+        return response()->json(['message' => 'Formalización creada exitosamente', 'status' => 200]);
+    }
 }

@@ -24,4 +24,9 @@ class ComercialActivities extends Model
     {
         return $this->hasMany('App\Models\Formalization20');
     }
+
+    public function advisory()
+    {
+        return $this->hasMany('App\Models\Advisory');
+    }
 }

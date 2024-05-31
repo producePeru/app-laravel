@@ -97,6 +97,14 @@ class Advisory extends Model
     {
         return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
     }
+    public function economicsector()
+    {
+        return $this->belongsTo('App\Models\EconomicSector');
+    }
+    public function comercialactivity()
+    {
+        return $this->belongsTo('App\Models\ComercialActivities');
+    }
 
 
     // DESCARGAR EXCEL DE ASESORIAS
@@ -109,8 +117,10 @@ class Advisory extends Model
 
         return $query->with([
             'modality',
+            'comercialactivity',
+            'economicsector',
             'people.gender:id,name',
-            'people.typedocument:id,name',
+            'people.typedocument:id,avr',
             'supervisor.supervisorUser.profile',
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde',

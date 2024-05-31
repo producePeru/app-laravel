@@ -204,6 +204,7 @@ class HistorialController extends Controller
             ->map(function ($item) {
                 return [
                     'id' => $item->id,
+                    'createDate' => $item->created_at,
                     'task' => $item->task,
                     'codesunarp' => $item->codesunarp ? $item->codesunarp : '-',
                     'numbernotary' => $item->numbernotary ? $item->numbernotary : '-',
@@ -216,8 +217,8 @@ class HistorialController extends Controller
                     'district' => $item->district ? $item->district->name : '-',
                     'modality' => $item->modality ? $item->modality->name : '-',
                     'notary' => $item->notary ? $item->notary->name : '-',
-                    'mypename' => $item->mype ? $item->mype->name : '-',
-                    'myperuc' => $item->mype ? $item->mype->ruc : '-',
+                    'mypename' => $item->nameMype ? $item->nameMype : '-',
+                    'myperuc' => $item->ruc ? $item->ruc : 'EN TRÁMITE',
                     'asesor' => $item->user->profile->name . ' ' . $item->user->profile->lastname . ' ' . $item->user->profile->middlename
                 ];
             })->sortByDesc('created_at');

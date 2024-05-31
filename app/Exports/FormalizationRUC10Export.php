@@ -43,32 +43,32 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             'A' => 6,
             'B' => 11,
             'C' => 27,
-            'D' => 14,
-            'E' => 14,
-            'F' => 14,
+            'D' => 10,
+            'E' => 10,
+            'F' => 10,
 
-            'G' => 7,
+            'G' => 4,
             'H' => 10,
             'I' => 6,
             'J' => 11,
             'K' => 15,
             'L' => 15,
             'M' => 15,
-            'N' => 10,
-            'O' => 6,
+            'N' => 5,
+            'O' => 5,
             'P' => 10,
-            'R' => 17,
+            'R' => 12,
 
             'S' => 22,
-            'T' => 14,
-            'U' => 14,
-            'V' => 14,
+            'T' => 10,
+            'U' => 11,
+            'V' => 11,
             'W' => 18,
             'X' => 12,
-            'Y' => 15,
+            'Y' => 10,
             'Z' => 15,
             'AA' => 20,
-            'AB' => 10
+            'AB' => 11
         ];
     }
 
@@ -115,34 +115,36 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             return [
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
-                'Asesor (a) - Nombre Completo' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
+                'Asesor (a) - Nombre Completo' => strtoupper($asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename),
                 'Región del CDE del Asesor' => $asesor->cde ? $asesor->cde->city : '-',
                 'Provincia del CDE del Asesor' => $asesor->cde ? $asesor->cde->province : '-',
                 'Distrito del CDE del Asesor' => $asesor->cde ? $asesor->cde->district : '-',
 
 
-                'Tipo de Documento de Identidad' => $solicitante->typedocument->name,
+                'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
                 'Número de Documento de Identidad' => $solicitante->documentnumber,
-                'Nombre del País' => 'PERÚ',
+                'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : 'OTRO',
                 'Fecha de Nacimiento' => $solicitante->birthday ? $solicitante->birthday : '-',
-                'Apellido Paterno del  Solicitante (socio o Gte General)' => $solicitante->lastname,
-                'Apellido Materno del  Solicitante (socio o Gte General)' => $solicitante->middlename,
-                'Nombres del Solicitante (socio o Gte General)' => $solicitante->name,
-                'Género' => $solicitante->gender->name,
+                'Apellido Paterno del  Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
+                'Apellido Materno del  Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
+                'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
+                'Genero' => $solicitante->gender->name === 'Masculino' ? 'M' : 'F',
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
                 'Celular' => $solicitante->phone,
-                'Correo electrónico' => $solicitante->email,
+                'Correo electrónico' => strtoupper($solicitante->email),
 
 
                 'Tipo formalización' => 'PPNN (RUC 10)',
-                'Supervisor' => $supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename,
+
+                'SUPERVISOR' => strtoupper($supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename),
+
                 'Región del negocio' => $item->city->name,
                 'Provincia del Negocio' => $item->province->name,
                 'Distrito del Negocio' => $item->district->name,
-                'Direccion del Negocio' => $item->address ? $item->address : '-',
+                'Direccion del Negocio' => $item->address ? strtoupper($item->address) : '-',
                 'N_RUC' => $item->ruc ? $item->ruc : '-',
-                'Sector economico' => $item->economicsector->name,
-                'Atividad comercial' => $item->comercialactivity->name,
+                'Sector economico' => strtoupper($item->economicsector->name),
+                'Atividad comercial' => strtoupper($item->comercialactivity->name),
 
                 'Detalle del tramite PPNN (RUC 10)' => $item->detailprocedure->name,
                 'MODALIDAD DE ATENCION' => $item->modality->name
@@ -178,7 +180,7 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
 
 
             'Tipo formalización',
-            'Supervisor',
+            'SUPERVISOR',
             'Región del negocio',
             'Provincia del Negocio',
             'Distrito del Negocio',

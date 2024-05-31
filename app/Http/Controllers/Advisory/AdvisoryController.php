@@ -19,6 +19,8 @@ class AdvisoryController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'economicsector_id' => 'required|integer|exists:economicsectors,id',
+            'comercialactivity_id' => 'required|integer|exists:comercialactivities,id',
             'observations' => 'nullable|string',
             'user_id' => 'required|integer',
             'people_id' => 'required|integer',
@@ -71,6 +73,9 @@ class AdvisoryController extends Controller
         }
 
         $request->validate([
+            'economicsector_id' => 'required|integer|exists:economicsectors,id',
+            'comercialactivity_id' => 'required|integer|exists:comercialactivities,id',
+            'ruc' => 'nullable|string',
             'observations' => 'nullable|string',
             'component_id' => 'required|integer',
             'theme_id' => 'required|integer',
@@ -83,6 +88,9 @@ class AdvisoryController extends Controller
         ]);
 
         $advisory->update($request->only([
+            'economicsector_id',
+            'comercialactivity_id',
+            'ruc',
             'observations',
             'component_id',
             'theme_id',
