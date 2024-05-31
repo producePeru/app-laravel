@@ -121,10 +121,10 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             return [
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
-                'Asesor (a) - Nombre Completo' => strtoupper($asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename),
-                'Región del CDE del Asesor' => $asesor->cde ? $asesor->cde->city : '-',
-                'Provincia del CDE del Asesor' => $asesor->cde ? $asesor->cde->province : '-',
-                'Distrito del CDE del Asesor' => $asesor->cde ? $asesor->cde->district : '-',
+                'Asesor (a) - Nombre Completo' => "cd",
+                'Región del CDE del Asesor' => $asesor->cde && $asesor->cde->city,
+                'Provincia del CDE del Asesor' => $asesor->cde && $asesor->cde->province,
+                'Distrito del CDE del Asesor' => $asesor->cde && $asesor->cde->district,
 
                 //
                 'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
@@ -146,10 +146,10 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
                 'Provincia del Negocio' => $item->province->name,
                 'Distrito del Negocio' => $item->district->name,
                 'N_RUC' => $item->ruc ? $item->ruc : '-',
-                'Sector Económico' => $item->economicsector ?  strtoupper($item->economicsector->name) : '-',
-                'Actividad Comercial Inicial' => $item->comercialactivity ? strtoupper($item->comercialactivity->name) : '-',
-                'Componente' => strtoupper($item->component->name),
-                'Tema' => strtoupper($item->theme->name),
+                'Sector Económico' => $item->economicsector && strtoupper($item->economicsector->name),
+                'Actividad Comercial Inicial' => $item->comercialactivity && strtoupper($item->comercialactivity->name),
+                'Componente' => $item->component && strtoupper($item->component->name),
+                'Tema' => $item->theme->name && strtoupper($item->theme->name),
 
                 'Nro de Reserva / Observacion' => $item->observations ? $item->observations : '-',
                 'Modalidad' => $item->modality->name
