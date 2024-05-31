@@ -46,14 +46,14 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'E' => 14,
             'F' => 14,
 
-            'G' => 7,
+            'G' => 4,
             'H' => 10,
             'I' => 6,
             'J' => 11,
             'K' => 15,
             'L' => 15,
             'M' => 15,
-            'N' => 10,
+            'N' => 4,
             'O' => 6,
             'P' => 10,
             'R' => 23,
@@ -117,14 +117,22 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
             $solicitante = $item->people;
 
+            $nombreCompleto = strtoupper(
+                ($asesor->name ?? '') . ' ' .
+                ($asesor->lastname ?? '') . ' ' .
+                ($asesor->middlename ?? '')
+            );
+            $regionCDE = $asesor->cde && $asesor->cde->city ? $asesor->cde->city : null;
+            $provinciaCDE = $asesor->cde && $asesor->cde->province ? $asesor->cde->province : null;
+            $distritoCDE = $asesor->cde && $asesor->cde->district ? $asesor->cde->district : null;
 
             return [
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
-                'Asesor (a) - Nombre Completo' => 'Nombre Completo',
-                'Región del CDE del Asesor' => $asesor->cde->city,
-                'Provincia del CDE del Asesor' => $asesor->cde->province,
-                'Distrito del CDE del Asesor' => $asesor->cde->district,
+                'Asesor (a) - Nombre Completo' => trim($nombreCompleto),
+                'Región del CDE del Asesor' => $regionCDE,
+                'Provincia del CDE del Asesor' => $provinciaCDE,
+                'Distrito del CDE del Asesor' => $distritoCDE,
 
                 //
                 'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
@@ -146,10 +154,10 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
                 'Provincia del Negocio' => $item->province->name,
                 'Distrito del Negocio' => $item->district->name,
                 'N_RUC' => $item->ruc ? $item->ruc : '-',
-                'Sector Económico' => $item->economicsector && strtoupper($item->economicsector->name),
-                'Actividad Comercial Inicial' => $item->comercialactivity && strtoupper($item->comercialactivity->name),
-                'Componente' => $item->component && strtoupper($item->component->name),
-                'Tema' => $item->theme->name && strtoupper($item->theme->name),
+                'Sector Económico' => $item->economicsector ? strtoupper($item->economicsector->name) : '-',
+                'Actividad Comercial Inicial' => $item->comercialactivity ? strtoupper($item->comercialactivity->name) : '-',
+                'Componente' => $item->component ? strtoupper($item->component->name) : '-',
+                'Tema' => $item->theme->name ? strtoupper($item->theme->name) : '-',
 
                 'Nro de Reserva / Observacion' => $item->observations ? $item->observations : '-',
                 'Modalidad' => $item->modality->name

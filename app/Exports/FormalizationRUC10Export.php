@@ -124,14 +124,14 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
                 'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
                 'Número de Documento de Identidad' => $solicitante->documentnumber,
                 'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : 'OTRO',
-                'Fecha de Nacimiento' => $solicitante->birthday ? $solicitante->birthday : '-',
+                'Fecha de Nacimiento' => $solicitante->birthday ? date('d/m/Y', strtotime($solicitante->birthday)) : '-',
                 'Apellido Paterno del  Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
                 'Apellido Materno del  Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
                 'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
                 'Genero' => $solicitante->gender->name === 'Masculino' ? 'M' : 'F',
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
                 'Celular' => $solicitante->phone,
-                'Correo electrónico' => strtoupper($solicitante->email),
+                'Correo electrónico' => $solicitante->email ? strtoupper($solicitante->email) : '-',
 
 
                 'Tipo formalización' => 'PPNN (RUC 10)',
