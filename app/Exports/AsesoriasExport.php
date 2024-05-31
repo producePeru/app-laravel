@@ -121,7 +121,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             return [
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
-                'Asesor (a) - Nombre Completo' => "cd",
+                'Asesor (a) - Nombre Completo' => 'Nombre Completo',
                 'Región del CDE del Asesor' => $asesor->cde && $asesor->cde->city,
                 'Provincia del CDE del Asesor' => $asesor->cde && $asesor->cde->province,
                 'Distrito del CDE del Asesor' => $asesor->cde && $asesor->cde->district,
