@@ -147,4 +147,77 @@ class Formalization20Controller extends Controller
 
         return response()->json(['message' => 'Formalización creada exitosamente', 'status' => 200]);
     }
+
+    public function getDataF20ById($id)
+    {
+        $f20 = Formalization20::find($id);
+
+        if (!$f20) {
+            return response()->json(['message' => 'No encontrado'], 404);
+        }
+
+        return response()->json(['data' => $f20, 'status' => 200]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $f20 = Formalization20::find($id);
+
+        if (!$f20) {
+            return response()->json(['message' => 'No encontrado'], 404);
+        }
+
+        $request->validate([
+            'city_id' => 'required|integer',
+            'province_id' => 'required|integer',
+            'district_id' => 'required|integer',
+            'address' => 'nullable|string',
+            'modality_id' => 'required|integer',
+            'nameMype' => 'required|string',
+            'ruc' => 'nullable|string',
+
+            'economicsector_id' => 'required|integer',
+            'comercialactivity_id' => 'required|integer',
+            'regime_id' => 'required|integer',
+            'numbernotary' => 'nullable|string',
+            'notary_id' => 'required|integer',
+            'dateReception' => 'nullable|string',
+            'dateTramite' => 'nullable|string',
+
+            'userupdated_id' => 'required|integer',
+        ]);
+
+        $f20->update($request->only([
+            'city_id',
+            'province_id',
+            'district_id',
+            'address',
+            'modality_id',
+            'nameMype',
+            'ruc',
+            'economicsector_id',
+            'comercialactivity_id',
+            'regime_id',
+            'numbernotary',
+            'notary_id',
+            'dateReception',
+            'dateTramite',
+            'userupdated_id',
+        ]));
+
+        return response()->json(['message' => 'Datos actualizados correctamente', 'status' => 200]);
+    }
+
+    public function destroy($id)
+    {
+        $item = Formalization20::find($id);
+
+        if (!$item) {
+            return response()->json(['message' => 'No se encontró este registro'], 404);
+        }
+
+        $item->delete();
+
+        return response()->json(['message' => 'Registro eliminado correctamente'], 200);
+    }
 }

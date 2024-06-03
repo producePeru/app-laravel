@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Formalization20 extends Model
 {
@@ -11,7 +12,11 @@ class Formalization20 extends Model
 
     protected $table = 'formalizations20';
 
+    use SoftDeletes;
+
     protected $guarded = ['id'];
+
+    protected $dates = ['deleted_at'];
 
     // protected $hidden = [
     //     'city_id',

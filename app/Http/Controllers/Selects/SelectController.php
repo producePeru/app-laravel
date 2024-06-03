@@ -290,17 +290,22 @@ class SelectController extends Controller
 
         $data = collect();
 
-        foreach ($asesores as $asesor) {
-            $profile = Profile::find($asesor->user_id);
-            if ($profile) {
-                $data->push([
-                    'label' => $profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename,
-                    'value' => $profile->id
-                ]);
-            }
+    foreach ($asesores as $asesor) {
+        $profile = Profile::find($asesor->user_id);
+        if ($profile) {
+            $label = strtoupper($profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename);
+            $data->push([
+                'label' => $label,
+                'value' => $profile->id
+            ]);
         }
+    }
 
-        return response()->json(['data' => $data]);
+    // Ordena por label
+    $data = $data->sortBy('label')->values();
+
+    return response()->json(['data' => $data]);
+
     }
 
     public function getOperationalStatus()
