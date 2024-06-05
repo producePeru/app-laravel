@@ -138,7 +138,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
                 // 'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
                 // 'Número de Documento de Identidad' => $solicitante->documentnumber,
                 // 'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : 'OTRO',
-                'Fecha de Nacimiento' => $solicitante->birthday ? date('d/m/Y', strtotime($solicitante->birthday)) : '-',
+                // 'Fecha de Nacimiento' => $solicitante->birthday ? date('d/m/Y', strtotime($solicitante->birthday)) : '-',
                 'Apellido Paterno del Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
                 'Apellido Materno del Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
                 'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
