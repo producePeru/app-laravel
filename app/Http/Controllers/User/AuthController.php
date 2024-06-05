@@ -87,7 +87,7 @@ class AuthController extends Controller
 
     public function dniDataUser($type, $num)
     {
-        $apiUrl = "https://api.sunat.dev/{$type}/{$num}?apikey=C8Oi9gXqcBTiBkGbEzXiEzcNqtGCKh05pCemAQ8omMj5BXPYLbtHA00W74iVT9Gy";
+        $apiUrl = "https://api.sunat.dev/{$type}/{$num}?apikey=8FFHIKZBunh3TvTdTmeq0G2pnfC2qsv7hXZm8eoCZ4vr5EbrZ5mjmjL0fssdv0ZG";
 
         try {
             $client = new Client();

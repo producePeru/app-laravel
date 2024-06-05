@@ -48,7 +48,7 @@ class PersonController extends Controller
 
 
         if ($role_id === 2) {
-            $people = People::withProfileAndUser($user_id);
+            $people = People::withProfileAndUser($user_id, $filters);
             return response()->json($people, 200);
         }
     }

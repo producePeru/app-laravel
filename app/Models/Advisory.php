@@ -241,7 +241,7 @@ class Advisory extends Model
         //     $query->where('city_id', $filters['city_id']);
         // }
 
-        return $query->paginate(20);
+        return $query->paginate(50);
     }
 
 }

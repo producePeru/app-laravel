@@ -187,6 +187,6 @@ class Formalization10 extends Model
             $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
         }
 
-        return $query->paginate(20);
+        return $query->paginate(50);
     }
 }

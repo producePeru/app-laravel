@@ -121,14 +121,24 @@ class People extends Model
         return $query->paginate(100);
     }
 
-    public function scopeWithProfileAndUser($query, $userId)        //asesores
+    public function scopeWithProfileAndUser($query, $userId, $filters)        //asesores
     {
-        return $query->with(['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile'])
+        $query->with(['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile'])
         ->whereHas('user', function ($q) use ($userId) {
-            $q->where('users.id', $userId); // Cambio aquí
+            $q->where('users.id', $userId);
         })
-        ->orderBy('created_at', 'desc')
-        ->paginate(100);
+        ->orderBy('created_at', 'desc');
+
+        if (!empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('documentnumber', $filters['search'])
+                ->orWhere('lastname', 'LIKE', $filters['search'] . '%')
+                ->orWhere('middlename', 'LIKE', $filters['search'] . '%')
+                ->orWhere('name', 'LIKE', $filters['search'] . '%');
+        });
+    }
+
+    return $query->paginate(100);
     }
 
     protected static function booted()
