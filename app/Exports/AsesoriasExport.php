@@ -93,9 +93,11 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
 
     public function collection()
     {
+
         $userRole = getUserRole();
         $roleIdArray = $userRole['role_id'];
         $user_id = $userRole['user_id'];
+
 
         if (in_array(1, $roleIdArray) || $user_id === 1) {
             $query = Advisory::descargaExcelAsesorias([
@@ -126,19 +128,18 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             $provinciaCDE = $asesor->cde && $asesor->cde->province ? $asesor->cde->province : null;
             $distritoCDE = $asesor->cde && $asesor->cde->district ? $asesor->cde->district : null;
 
-            return [
+            return array_merge([
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
                 'Asesor (a) - Nombre Completo' => trim($nombreCompleto),
                 'Región del CDE del Asesor' => $regionCDE,
                 'Provincia del CDE del Asesor' => $provinciaCDE,
                 'Distrito del CDE del Asesor' => $distritoCDE,
-
-                //
-                // 'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
-                // 'Número de Documento de Identidad' => $solicitante->documentnumber,
-                // 'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : 'OTRO',
-                // 'Fecha de Nacimiento' => $solicitante->birthday ? date('d/m/Y', strtotime($solicitante->birthday)) : '-',
+            ], $solicitante ? [
+                'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
+                'Número de Documento de Identidad' => $solicitante->documentnumber,
+                'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : 'OTRO',
+                'Fecha de Nacimiento' => date('d/m/Y', strtotime($solicitante->birthday)),
                 'Apellido Paterno del Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
                 'Apellido Materno del Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
                 'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
@@ -146,22 +147,20 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
                 'Telefono' => $solicitante->phone ? $solicitante->phone : '-',
                 'Correo electrónico o "NO TIENE"' => $solicitante->email ? $solicitante->email : 'NO TIENE',
-
-                //
+            ] : [], [
                 'SUPERVISOR' => strtoupper($supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename),
-
-                'Región del negocio' => $item->city->name,
-                'Provincia del Negocio' => $item->province->name,
-                'Distrito del Negocio' => $item->district->name,
+                'Región del negocio' => $item->city ? $item->city->name : '-',
+                'Provincia del Negocio' => $item->province ? $item->province->name : '-',
+                'Distrito del Negocio' => $item->district ? $item->district->name : '-',
                 'N_RUC' => $item->ruc ? $item->ruc : '-',
                 'Sector Económico' => $item->economicsector ? strtoupper($item->economicsector->name) : '-',
                 'Actividad Comercial Inicial' => $item->comercialactivity ? strtoupper($item->comercialactivity->name) : '-',
                 'Componente' => $item->component ? strtoupper($item->component->name) : '-',
                 'Tema' => $item->theme->name ? strtoupper($item->theme->name) : '-',
-
                 'Nro de Reserva / Observacion' => $item->observations ? $item->observations : '-',
-                'Modalidad' => $item->modality->name
-            ];
+                'Modalidad' => $item->modality->name,
+            ]);
+
         });
 
         return $results;

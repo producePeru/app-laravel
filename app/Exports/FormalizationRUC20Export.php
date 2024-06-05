@@ -127,53 +127,46 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
             $solicitante = $item->people;
 
-            return [
+            return array_merge([
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
                 'Asesor (a) - Nombre Completo' => strtoupper($asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename),
                 'Región del CDE del Asesor' => $asesor->cde ? $asesor->cde->city : '-',
                 'Provincia del CDE del Asesor' => $asesor->cde ? $asesor->cde->province : '-',
                 'Distrito del CDE del Asesor' => $asesor->cde ? $asesor->cde->district : '-',
-
+            ], $solicitante ? [
                 'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
                 'Número de Documento de Identidad' => $solicitante->documentnumber,
                 'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : 'OTRO',
                 'Fecha de Nacimiento' => $solicitante->birthday ? date('d/m/Y', strtotime($solicitante->birthday)) : '-',
-                'Apellido Paterno del  Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
-                'Apellido Materno del  Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
+                'Apellido Paterno del Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
+                'Apellido Materno del Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
                 'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
                 'Genero' => $solicitante->gender->name === 'Masculino' ? 'M' : 'F',
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
                 'Celular' => $solicitante->phone ? $solicitante->phone : '-',
                 'Correo electrónico' => $solicitante->email ? $solicitante->email : '-',
-
-
+            ] : [], [
                 'Tipo formalización' => 'PPJJ (RUC 20)',
-
                 'Supervisor' => strtoupper($supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename),
-
                 'Region del negocio' => $item->city ? $item->city->name : '-',
                 'Provincia del Negocio' => $item->province ? $item->province->name : '-',
                 'Distrito del Negocio' => $item->district ? $item->district->name : '-',
-                'Direccion del Negocio' => $item->address ? $item->address : '-',
+                'Direccion del Negocio' => $item->address ? strtoupper($item->address) : '-',
                 'N_RUC' => $item->ruc ? $item->ruc : 'EN TRÁMITE',
-                'Sector económico' => $item->economicsector ? $item->economicsector->name : '-',
-                'Atividad comercial' => $item->comercialactivity ? $item->comercialactivity->name : '-',
-
-                'Fecha de Recepcion' =>  $item->dateReception ? date('d/m/Y', strtotime($item->dateReception)) : '-',
+                'Sector económico' => $item->economicsector ? strtoupper($item->economicsector->name) : '-',
+                'Atividad comercial' => $item->comercialactivity ? strtoupper($item->comercialactivity->name) : '-',
+                'Fecha de Recepcion' => $item->dateReception ? date('d/m/Y', strtotime($item->dateReception)) : '-',
                 'Fecha de TRAMITE en SID SUNARP o SUNAT' => $item->dateTramite ? date('d/m/Y', strtotime($item->dateTramite)) : '-',
                 'Nombre de Empresa Constituida' => strtoupper($item->nameMype),
                 'Tipo de Regimen Societario' => strtoupper($item->regime ? $item->regime->name : '-'),
                 'Nro. De Solicitud' => $item->numbernotary ? $item->numbernotary : '-',
-
-
-
                 'Código SUNARP' => $item->codesunarp ? $item->codesunarp : '-',
-                // 'Número envio notaría' => $item->numbernotary ? $item->numbernotary : '-',
-                // 'Nombre de Empresa Constituida' => $item->mype ? $item->mype->name : '-',
                 'Notaria' => $item->notary ? $item->notary->name : '-',
                 'MODALIDAD DE ATENCION' => $item->modality ? $item->modality->name : '-'
-            ];
+            ]);
+
+
         });
 
         return $results;

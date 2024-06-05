@@ -113,32 +113,28 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
             $solicitante = $item->people;
 
-            return [
+            return array_merge([
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
                 'Asesor (a) - Nombre Completo' => strtoupper($asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename),
                 'Región del CDE del Asesor' => $asesor->cde ? $asesor->cde->city : '-',
                 'Provincia del CDE del Asesor' => $asesor->cde ? $asesor->cde->province : '-',
                 'Distrito del CDE del Asesor' => $asesor->cde ? $asesor->cde->district : '-',
-
-
+            ], $solicitante ? [
                 'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
                 'Número de Documento de Identidad' => $solicitante->documentnumber,
                 'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : 'OTRO',
                 'Fecha de Nacimiento' => $solicitante->birthday ? date('d/m/Y', strtotime($solicitante->birthday)) : '-',
-                'Apellido Paterno del  Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
-                'Apellido Materno del  Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
+                'Apellido Paterno del Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
+                'Apellido Materno del Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
                 'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
                 'Genero' => $solicitante->gender->name === 'Masculino' ? 'M' : 'F',
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
-                'Celular' => $solicitante->phone,
+                'Celular' => $solicitante->phone ? $solicitante->phone : '-',
                 'Correo electrónico' => $solicitante->email ? strtoupper($solicitante->email) : '-',
-
-
+            ] : [], [
                 'Tipo formalización' => 'PPNN (RUC 10)',
-
                 'SUPERVISOR' => strtoupper($supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename),
-
                 'Región del negocio' => $item->city->name,
                 'Provincia del Negocio' => $item->province->name,
                 'Distrito del Negocio' => $item->district->name,
@@ -146,10 +142,10 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
                 'N_RUC' => $item->ruc ? $item->ruc : '-',
                 'Sector economico' => strtoupper($item->economicsector->name),
                 'Atividad comercial' => strtoupper($item->comercialactivity->name),
-
                 'Detalle del tramite PPNN (RUC 10)' => $item->detailprocedure->name,
-                'MODALIDAD DE ATENCION' => $item->modality->name
-            ];
+                'MODALIDAD DE ATENCION' => $item->modality->name,
+            ]);
+
         });
 
         return $results;
