@@ -93,18 +93,18 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
 
     public function collection()
     {
+        $userRole = getUserRole();
+        $roleIdArray = $userRole['role_id'];
+        $user_id = $userRole['user_id'];
 
-        $role_id = $this->getUserRole()['role_id'];
-        $user_id = $this->getUserRole()['user_id'];
-
-        if ($role_id == 1) {
+        if (in_array(1, $roleIdArray) || $user_id === 1) {
             $query = Advisory::descargaExcelAsesorias([
                 'dateStart' => $this->dateStart,
                 'dateEnd' => $this->dateEnd,
             ]);
         }
 
-        if ($role_id != 1) {
+        if (in_array(2, $roleIdArray)) {
             $query = Advisory::ByUserId($user_id)->descargaExcelAsesorias([
                 'dateStart' => $this->dateStart,
                 'dateEnd' => $this->dateEnd,

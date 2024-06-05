@@ -18,6 +18,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
 {
     public $dateStart;
     public $dateEnd;
+    public $idAsesor;
 
     private function getUserRole()
     {
@@ -93,18 +94,25 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
 
     public function collection()
     {
-        $role_id = $this->getUserRole()['role_id'];
-        $user_id = $this->getUserRole()['user_id'];
+        $userRole = getUserRole();
+        $roleIdArray = $userRole['role_id'];
+        $user_id = $userRole['user_id'];
 
-
-        if ($role_id == 1) {
-            $query = Formalization20::allFormalizations20([
-                'dateStart' => $this->dateStart,
-                'dateEnd' => $this->dateEnd,
-            ]);
+        if (in_array(1, $roleIdArray) || $user_id === 1) {
+            if($this->idAsesor) {
+                $query = Formalization20::ByUserId($this->idAsesor)->allFormalizations20([
+                    'dateStart' => $this->dateStart,
+                    'dateEnd' => $this->dateEnd,
+                ]);
+            } else {
+                $query = Formalization20::allFormalizations20([
+                    'dateStart' => $this->dateStart,
+                    'dateEnd' => $this->dateEnd,
+                ]);
+            }
         }
 
-        if ($role_id != 1) {
+        if (in_array(2, $roleIdArray)) {
             $query = Formalization20::ByUserId($user_id)->allFormalizations20([
                 'dateStart' => $this->dateStart,
                 'dateEnd' => $this->dateEnd,

@@ -81,12 +81,13 @@ class HistorialController extends Controller
         }
     }
 
-    // FILTROS POR FECHAS...
+
+
+
+    // TABULADOR DE ASESORIA-FORMALIZACIONES...
 
     public function filterHistorialAdvisoriesByDates(Request $request)
     {
-        $role_id = $this->getUserRole()['role_id'];
-        $user_id = $this->getUserRole()['user_id'];
         $filters = [
             'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
             'people_id' => $request->input('people_id'),
@@ -95,12 +96,15 @@ class HistorialController extends Controller
             'city_id' => $request->input('city_id')
         ];
 
-        if ($role_id === 1 || $user_id === 1) {
+        $userRole = getUserRole();                              //🚩
+        $roleIdArray = $userRole['role_id'];
+        $user_id = $userRole['user_id'];
+
+        if (in_array(1, $roleIdArray) || $user_id === 1) {
             $advisories = Advisory::withAdvisoryRangeDate($filters);
             return response()->json($advisories, 200);
         }
-
-        if ($role_id === 2) {
+        if (in_array(2, $roleIdArray)) {
             $results = Advisory::ByUserId($user_id)->withAdvisoryRangeDate($filters);
             return response()->json($results, 200);
         }
@@ -109,8 +113,8 @@ class HistorialController extends Controller
     // 10
     public function filterHistorialFormalizations10ByDates(Request $request)
     {
-        $role_id = $this->getUserRole()['role_id'];
-        $user_id = $this->getUserRole()['user_id'];
+        // $role_id = $this->getUserRole()['role_id'];
+        // $user_id = $this->getUserRole()['user_id'];
         $filters = [
             'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
             'people_id' => $request->input('people_id'),
@@ -119,11 +123,15 @@ class HistorialController extends Controller
             'city_id' => $request->input('city_id')
         ];
 
-        if ($role_id === 1 || $user_id === 1) {
+        $userRole = getUserRole();
+        $roleIdArray = $userRole['role_id'];
+        $user_id = $userRole['user_id'];
+
+        if (in_array(1, $roleIdArray) || $user_id === 1) {
             $data = Formalization10::withFormalizationRangeDate($filters);
             return response()->json($data, 200);
         }
-        if ($role_id === 2) {
+        if (in_array(2, $roleIdArray)) {
             $results = Formalization10::ByUserId($user_id)->withFormalizationRangeDate($filters);
             return response()->json($results, 200);
         }
@@ -131,8 +139,6 @@ class HistorialController extends Controller
 
     public function filterHistorialFormalizations20ByDates(Request $request)
     {
-        $role_id = $this->getUserRole()['role_id'];
-        $user_id = $this->getUserRole()['user_id'];
         $filters = [
             'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
             'people_id' => $request->input('people_id'),
@@ -141,16 +147,20 @@ class HistorialController extends Controller
             'city_id' => $request->input('city_id')
         ];
 
-        if ($role_id === 1 || $user_id === 1) {
+        $userRole = getUserRole();
+        $roleIdArray = $userRole['role_id'];
+        $user_id = $userRole['user_id'];
+
+        if (in_array(1, $roleIdArray) || $user_id === 1) {
             $data = Formalization20::withFormalizationRangeDate($filters);
             return response()->json($data, 200);
         }
-        if ($role_id === 2) {
+        if (in_array(2, $roleIdArray)) {
             $results = Formalization20::ByUserId($user_id)->withFormalizationRangeDate($filters);
             return response()->json($results, 200);
         }
     }
-
+    // TABULADOR DE ASESORIA-FORMALIZACIONES...
 
 
     // HISTORIAL DE REGISTROS...
@@ -165,7 +175,7 @@ class HistorialController extends Controller
                 'id' => $advisory->id,
                 'createDate' => $advisory->created_at,
                 'updateDate' => $advisory->updated_at,
-                'asesor' => $advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename,
+                'asesor' => strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename),
                 'component' => $advisory->component->name,
                 'theme' => $advisory->theme->name,
                 'modality' => $advisory->modality->name,
@@ -190,9 +200,10 @@ class HistorialController extends Controller
                 'economicsector' => $item->economicsector->name,
                 'comercialactivity' => $item->comercialactivity->name,
                 'city' => $item->city->name,
+                'ruc' => $item->ruc,
                 'province' => $item->province->name,
                 'district' => $item->district->name,
-                'asesor' => $item->user->profile->name . ' ' . $item->user->profile->lastname . ' ' . $item->user->profile->middlename
+                'asesor' => strtoupper($item->user->profile->name . ' ' . $item->user->profile->lastname . ' ' . $item->user->profile->middlename)
             ];
         })->sortByDesc('created_at');
 
@@ -206,7 +217,7 @@ class HistorialController extends Controller
                     'id' => $item->id,
                     'createDate' => $item->created_at,
                     'task' => $item->task,
-                    'codesunarp' => $item->codesunarp ? $item->codesunarp : '-',
+                    // 'codesunarp' => $item->codesunarp ? $item->codesunarp : '-',
                     'numbernotary' => $item->numbernotary ? $item->numbernotary : '-',
                     'address' => $item->address ? $item->address : '-',
                     'economicsector' => $item->economicsector ? $item->economicsector->name : '-',
@@ -217,8 +228,8 @@ class HistorialController extends Controller
                     'district' => $item->district ? $item->district->name : '-',
                     'modality' => $item->modality ? $item->modality->name : '-',
                     'notary' => $item->notary ? $item->notary->name : '-',
-                    'mypename' => $item->nameMype ? $item->nameMype : '-',
-                    'myperuc' => $item->ruc ? $item->ruc : 'EN TRÁMITE',
+                    'mypename' => $item->nameMype,
+                    'ruc' => $item->ruc ? $item->ruc : 'EN TRÁMITE',
                     'asesor' => $item->user->profile->name . ' ' . $item->user->profile->lastname . ' ' . $item->user->profile->middlename
                 ];
             })->sortByDesc('created_at');

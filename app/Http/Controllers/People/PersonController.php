@@ -38,10 +38,10 @@ class PersonController extends Controller
         $role_id = $this->getUserRole()['role_id'];
         $user_id = $this->getUserRole()['user_id'];
         $filters = [
-            'documentnumber' => $request->input('numdocument'),
+            'search' => $request->input('search'),
         ];
 
-        if ($role_id === 1 || $user_id === 1) {
+        if ($role_id === 1 || $user_id === 1 || $user_id === 3) {
             $people = People::withProfileAndRelations($filters);
             return response()->json($people, 200);
         }
@@ -52,7 +52,6 @@ class PersonController extends Controller
             return response()->json($people, 200);
         }
     }
-
 
     public function store(Request $request)
     {

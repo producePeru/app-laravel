@@ -89,17 +89,18 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
 
     public function collection()
     {
-        $role_id = $this->getUserRole()['role_id'];
-        $user_id = $this->getUserRole()['user_id'];
+        $userRole = getUserRole();
+        $roleIdArray = $userRole['role_id'];
+        $user_id = $userRole['user_id'];
 
-        if ($role_id == 1) {
+        if (in_array(1, $roleIdArray) || $user_id === 1) {
             $query = Formalization10::allFormalizations10([
                 'dateStart' => $this->dateStart,
                 'dateEnd' => $this->dateEnd,
             ]);
         }
 
-        if ($role_id != 1) {
+        if (in_array(2, $roleIdArray)) {
             $query = Formalization10::ByUserId($user_id)->allFormalizations10([
                 'dateStart' => $this->dateStart,
                 'dateEnd' => $this->dateEnd,

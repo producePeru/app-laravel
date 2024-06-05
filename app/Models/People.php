@@ -111,11 +111,14 @@ class People extends Model
             ['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile']
         )->orderBy('created_at', 'desc');
 
-        if ($filters['documentnumber'] !== null) {
-            $query->where('documentnumber', $filters['documentnumber']);
+        if ($filters['search'] !== null) {
+            $query->where('documentnumber', $filters['search'])
+                ->orWhere('lastname', 'LIKE', $filters['search']. '%')
+                ->orWhere('middlename', 'LIKE', $filters['search']. '%')
+                ->orWhere('name', 'LIKE', $filters['search']. '%');
         }
 
-        return $query->paginate(20);
+        return $query->paginate(100);
     }
 
     public function scopeWithProfileAndUser($query, $userId)        //asesores
@@ -125,7 +128,7 @@ class People extends Model
             $q->where('users.id', $userId); // Cambio aquí
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(20);
+        ->paginate(100);
     }
 
     protected static function booted()
@@ -134,5 +137,14 @@ class People extends Model
             $user->from()->detach();
             $user->user()->detach();
         });
+    }
+
+    public static function search($searchTerm)
+    {
+        return self::where('documentnumber', 'like', "%{$searchTerm}%")
+                    ->orWhere('lastname', 'like', "%{$searchTerm}%")
+                    ->orWhere('middlename', 'like', "%{$searchTerm}%")
+                    ->orWhere('name', 'like', "%{$searchTerm}%")
+                    ->get();
     }
 }

@@ -76,10 +76,12 @@ class DownloadFormalizationsController extends Controller
     {
         $dateStart = $request->input('dateStart');
         $dateEnd = $request->input('dateEnd');
+        $idAsesor = $request->input('idAsesor');
 
         $export = new FormalizationRUC20Export();
         $export->dateStart = $dateStart;
         $export->dateEnd = $dateEnd;
+        $export->idAsesor = $idAsesor;
 
         return Excel::download($export, 'formalizaciones_ruc20_pnte.xlsx');
         // return Excel::download(new FormalizationRUC20Export, 'formalizaciones_ruc20_pnte.xlsx');
