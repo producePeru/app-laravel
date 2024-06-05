@@ -64,31 +64,33 @@ class AuthController extends Controller
         return response()->json(['message' => 'Sesión cerrada correctamente'], 200);
     }
 
-    // public function dniDataUser($num)
-    // {
-    //     $apiUrl = "https://api.apis.net.pe/v2/reniec/dni?numero={$num}";
+    public function dniDataUser2($num)
+    {
+        $apiUrl = "https://api.apis.net.pe/v2/reniec/dni?numero={$num}";
 
-    //     try {
-    //         $client = new Client();
-    //         $response = $client->request('GET', $apiUrl, [
-    //             'headers' => [
-    //                 'Authorization' => 'Bearer apis-token-6688.nekxM8GmGEHYD9qosrnbDWNxQlNOzaT5',
-    //                 'Accept' => 'application/json',
-    //             ],
-    //         ]);
+        try {
+            $client = new Client();
+            $response = $client->request('GET', $apiUrl, [
+                'headers' => [
+                    'Authorization' => 'apis-token-8840.KxvOhP9QQt-oV3cIMWgVUP1691s4SYP8',
+                    'Accept' => 'application/json',
+                ],
+            ]);
 
-    //         $data = json_decode($response->getBody(), true);
+            $data = json_decode($response->getBody(), true);
 
-    //         return response()->json(['data' => $data]);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['status' => 404]);
-    //     }
-    // }
+            return response()->json(['data' => $data]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 404, 'error' => $e->getMessage()]);
+        }
+    }
 
     public function dniDataUser($type, $num)
     {
-        $apiUrl = "https://api.sunat.dev/{$type}/{$num}?apikey=8FFHIKZBunh3TvTdTmeq0G2pnfC2qsv7hXZm8eoCZ4vr5EbrZ5mjmjL0fssdv0ZG";
+        //
+        $token = "8FFHIKZBunh3TvTdTmeq0G2pnfC2qsv7hXZm8eoCZ4vr5EbrZ5mjmjL0fssdv0ZG";
 
+        $apiUrl = "https://api.sunat.dev/{$type}/{$num}?apikey={$token}";
         try {
             $client = new Client();
             $response = $client->request('GET', $apiUrl, [
@@ -96,9 +98,7 @@ class AuthController extends Controller
                     'Accept' => 'application/json',
                 ],
             ]);
-
             $data = json_decode($response->getBody(), true);
-
             return response()->json(['data' => $data]);
         } catch (\Exception $e) {
             return response()->json(['status' => 404]);
