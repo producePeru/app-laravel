@@ -141,6 +141,7 @@ class Formalization20Controller extends Controller
             'dateReception' => 'nullable|date',
             'dateTramite' => 'nullable|date',
             'ruc' => 'nullable|string',
+            'dni' => 'required|string',
         ]);
 
         $formalization = Formalization20::create($validatedData);

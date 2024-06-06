@@ -29,7 +29,8 @@ class Formalization10Controller extends Controller
                 'people_id' => 'required|integer',
                 'address' => 'nullable|string',
                 'ruc' => 'nullable|string',
-                'user_id' => 'required|integer'
+                'user_id' => 'required|integer',
+                'dni' => 'required|string',
             ]);
 
             Formalization10::create($data);

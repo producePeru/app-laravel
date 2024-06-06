@@ -72,7 +72,8 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'AB' => 10,
             'AC' => 25,
             'AD' => 5,
-            'AH' => 11,
+            'AE' => 10,
+            'AG' => 11,
 
         ];
     }
@@ -86,10 +87,10 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
         $sheet->getStyle('A1:F1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');
         $sheet->getStyle('G1:Q1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('833c0c');
         $sheet->getStyle('R1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('375623');
-        $sheet->getStyle('AA1:AH1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('305496');
+        $sheet->getStyle('AA1:AG1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('305496');
 
-        $sheet->getStyle('A1:AH1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AH1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:AG1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AG1')->getFont()->getColor()->setARGB('FFFFFF');
     }
 
     public function collection()
@@ -137,7 +138,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             ], $solicitante ? [
                 'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
                 'Número de Documento de Identidad' => $solicitante->documentnumber,
-                'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : 'OTRO',
+                'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : strtoupper($solicitante->country),
                 'Fecha de Nacimiento' => $solicitante->birthday ? date('d/m/Y', strtotime($solicitante->birthday)) : '-',
                 'Apellido Paterno del Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
                 'Apellido Materno del Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
@@ -161,7 +162,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
                 'Nombre de Empresa Constituida' => strtoupper($item->nameMype),
                 'Tipo de Regimen Societario' => strtoupper($item->regime ? $item->regime->name : '-'),
                 'Nro. De Solicitud' => $item->numbernotary ? $item->numbernotary : '-',
-                'Código SUNARP' => $item->codesunarp ? $item->codesunarp : '-',
+                // 'Código SUNARP' => $item->codesunarp ? $item->codesunarp : '-',
                 'Notaria' => $item->notary ? $item->notary->name : '-',
                 'MODALIDAD DE ATENCION' => $item->modality ? $item->modality->name : '-'
             ]);
@@ -214,7 +215,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'Tipo de Regimen Societario',
             'Nro. De Solicitud',
 
-            'Código SUNARP',
+            // 'Código SUNARP',
             // 'Nombre de Empresa Constituida',
             'Notaria',
             'MODALIDAD DE ATENCION'

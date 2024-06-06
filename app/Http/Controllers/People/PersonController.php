@@ -61,6 +61,7 @@ class PersonController extends Controller
                 'lastname' => 'required|string',
                 'middlename' => 'required|string',
                 'name' => 'required|string',
+                'country' => 'required|string',
                 'phone' => 'nullable|string',
                 'email' => 'nullable|email|unique:people',
                 'birthday' => 'nullable|date',

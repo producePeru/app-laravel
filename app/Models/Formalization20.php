@@ -206,7 +206,7 @@ class Formalization20 extends Model
         $query->with([
             'modality',
             'people.gender:id,name',
-            'people.typedocument:id,name',
+            'people.typedocument:id,avr',
             'supervisor.supervisorUser.profile',
             'user.profile',
             'supervisado.supervisadoUser.profile',

@@ -28,6 +28,7 @@ class AdvisoryController extends Controller
             'theme_id' => 'required|integer',
             'modality_id' => 'required|integer',
             'ruc' => 'nullable|string',
+            'dni' => 'required|string',
             'city_id' => 'required|integer',
             'province_id' => 'required|integer',
             'district_id' => 'required|integer'
@@ -84,7 +85,7 @@ class AdvisoryController extends Controller
             'city_id' => 'required|integer',
             'province_id' => 'required|integer',
             'district_id' => 'required|integer',
-            'updated_by' => 'required|integer',
+            'updated_by' => 'required|integer'
         ]);
 
         $advisory->update($request->only([

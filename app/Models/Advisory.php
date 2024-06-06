@@ -210,7 +210,7 @@ class Advisory extends Model
         $query = $query->with([
             'modality',
             'people.gender:id,name',
-            'people.typedocument:id,name',
+            'people.typedocument:id,avr',
             'supervisor.supervisorUser.profile',
             'supervisado.supervisadoUser.profile',
             'user.profile',
