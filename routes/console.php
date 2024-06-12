@@ -55,7 +55,5 @@ Artisan::command('inspire', function () {
 // ADD CONSTRAINT fk_advisories_comercialactivity_id FOREIGN KEY (comercialactivity_id) REFERENCES comercialactivities(id) ON DELETE CASCADE;
 
 
-
-
-
-
+//CORRER UNA MUGRACION
+// php artisan migrate --path=/database/migrations/2024_06_10_000000_create_users_table.php

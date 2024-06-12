@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->dateTime('date')->nullable();
-            $table->string('description', 100)->nullable();
+            $table->string('description', 250)->nullable();
 
             $table->unsignedBigInteger('agreements_id')->nullable();
 

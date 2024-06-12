@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Agreement;
 use App\Models\AgreementActions;
+use App\Models\AgreementFiles;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AgreementController extends Controller
 {
@@ -18,12 +21,29 @@ class AgreementController extends Controller
         ->orderBy('cities.name', 'asc')
         ->paginate(20);
 
-        $data->getCollection()->transform(function ($item) {        // 🚩decode
+        $data->getCollection()->transform(function ($item) {        // 🚩decode flat
             $item['initials'] = json_decode($item['initials']);
             return $item;
         });
 
         return response()->json(['data' => $data]);
+    }
+
+    public function allActionsById($id)
+    {
+        $data = AgreementActions::where('agreements_id', $id)->get()->makeHidden(['created_at', 'updated_at', 'deleted_at']); //🚩
+        return response()->json(['data' => $data, 'status' => 200]);
+    }
+
+    public function updateActionById(Request $request, $id)
+    {
+        $request->validate([
+            'description' => 'required|string|max:250',
+        ]);
+        $action = AgreementActions::findOrFail($id);
+        $action->description = $request->input('description');
+        $action->save();
+        return response()->json(['message' => 'Actualizado correctamente', 'status' => 200]);
     }
 
     public function store(Request $request)
@@ -42,9 +62,9 @@ class AgreementController extends Controller
                 'city_id' => 'required|exists:cities,id',
                 'province_id' => 'required|exists:provinces,id',
                 'district_id' => 'required|exists:districts,id',
-                'operationalstatus_id' => 'required|exists:operationalstatus,id',
-                'agreementstatus_id' => 'required|exists:agreementstatus,id',               // 🚩reference
-                'createdBy' => 'required|exists:users,id'
+                // 'operationalstatus_id' => 'required|exists:operationalstatus,id',
+                // 'agreementstatus_id' => 'required|exists:agreementstatus,id',               // 🚩reference
+                'created_id' => 'required|exists:users,id'      // usuario_creador
             ]);
 
             $validatedData['initials'] = json_encode($validatedData['initials']);
@@ -77,4 +97,66 @@ class AgreementController extends Controller
             return response()->json(['message' => 'El usuario se registró pero la relación ha fallado', 'error' => $e], 400);
         }
     }
+
+    public function deleteAgreement($id)
+    {
+        $agreement = Agreement::findOrFail($id);
+        $agreement->delete();
+        return response()->json(['message' => 'Acción eliminada exitosamente', 'status' => 200]);
+    }
+
+    public function deleteActionById($id)
+    {
+        $action = AgreementActions::findOrFail($id);
+        $action->delete();
+        return response()->json(['message' => 'Acción eliminada exitosamente', 'status' => 200]);
+    }
+
+    public function upFileAgreement(Request $request)                                                                               // SUBIR ARCHVIVOS
+    {
+        $request->validate([
+            'file' => 'required|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:20480', // Máximo 20MB
+            'agreements_id' => 'required|integer|exists:agreements,id',
+        ]);
+
+        $file = $request->file('file');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $path = $file->storeAs('filesagreements', $filename, 'public');
+
+        $filesAgreement = new AgreementFiles();
+        $filesAgreement->name = $file->getClientOriginalName();
+        $filesAgreement->path = $path;
+        $filesAgreement->agreements_id = $request->input('agreements_id');
+        $filesAgreement->save();
+
+        return response()->json(['message' => 'El archivo se ha subido correctamente', 'status' => 200]);
+    }
+
+    public function listAllFilesById($agreements_id)
+    {
+        $files = AgreementFiles::where('agreements_id', $agreements_id)->get();
+        return response()->json(['data' => $files, 'status' => 200]);
+    }
+
+    public function download($id)
+    {
+        $fileAgreement = AgreementFiles::findOrFail($id);
+
+        $filePath = 'public/' . $fileAgreement->path;
+
+        if (!Storage::exists($filePath)) {
+            return response()->json(['message' => 'File not found'], 404);
+        }
+
+        return Storage::download($filePath);
+    }
+
+    public function deleteFileById($id)
+    {
+        $action = AgreementFiles::findOrFail($id);
+        $action->delete();
+        return response()->json(['message' => 'Archivo eliminado exitosamente', 'status' => 200]);
+    }
 }
+
+

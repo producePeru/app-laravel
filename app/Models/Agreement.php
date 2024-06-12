@@ -4,17 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Agreement extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $table = 'agreements';
+
+    protected $dates = ['deleted_at'];
 
     protected $fillable = [
         'denomination', 'alliedEntity', 'homeOperations', 'address',
         'reference', 'resolution', 'initials', 'startDate','endDate',
-        'city_id', 'province_id', 'district_id', 'operationalstatus_id', 'agreementstatus_id', 'createdBy'
+        'city_id', 'province_id', 'district_id', 'operationalstatus_id', 'agreementstatus_id', 'created_id'
     ];
 
     public function estadoOperatividad()

@@ -181,10 +181,19 @@ Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers',
 
 Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
     Route::get('list', [AgreementController::class, 'index']);
+    Route::get('list/{id}', [AgreementController::class, 'allActionsById']);
+    Route::get('list-files/{id}', [AgreementController::class, 'listAllFilesById']);
 
-    Route::post('create', [AgreementController::class, 'store']);
+    Route::delete('delete-acction/{id}', [AgreementController::class, 'deleteActionById']);
+    Route::delete('delete/{id}', [AgreementController::class, 'deleteAgreement']);
+    Route::delete('delete/file/{id}', [AgreementController::class, 'deleteFileById']);
+
     Route::post('create-acction', [AgreementController::class, 'storeAction']);
+    Route::post('create', [AgreementController::class, 'store']);
+    Route::post('file', [AgreementController::class, 'upFileAgreement']);
+    Route::post('file-download/{id}', [AgreementController::class, 'download']);
 
+    Route::put('update/{id}', [AgreementController::class, 'updateActionById']);
 });
 
 Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function() {

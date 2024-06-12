@@ -28,6 +28,8 @@ return new class extends Migration
             $table->unsignedBigInteger('district_id')->nullable();
             $table->unsignedBigInteger('operationalstatus_id')->nullable();
             $table->unsignedBigInteger('agreementstatus_id')->nullable();
+            $table->unsignedBigInteger('created_id')->nullable();
+
 
             $table->timestamps();
             $table->softDeletes();
@@ -37,6 +39,7 @@ return new class extends Migration
             $table->foreign('district_id')->references('id')->on('districts');
             $table->foreign('operationalstatus_id')->references('id')->on('operationalstatus');
             $table->foreign('agreementstatus_id')->references('id')->on('agreementstatus');
+            $table->foreign('created_id')->references('id')->on('users');
         });
     }
 
