@@ -57,24 +57,29 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'M' => 15,
             'N' => 4,
             'O' => 4,
-            'P' => 10,
-            'R' => 11,
+            'P' => 4,
+            'Q' => 11,
+            'R' => 13,
 
-            'S' => 22,
-            'T' => 14,
+            'S' => 12,
+            'T' => 22,
             'U' => 14,
             'V' => 14,
-            'W' => 18,
-            'X' => 12,
-            'Y' => 15,
+            'W' => 14,
+            'X' => 18,
+            'Y' => 12,
             'Z' => 15,
-            'AA' => 10,
+            'AA' => 15,
             'AB' => 10,
-            'AC' => 25,
-            'AD' => 5,
-            'AE' => 10,
-            'AG' => 11,
-
+            'AC' => 10,
+            'AD' => 25,
+            'AE' => 5,
+            'AG' => 10,
+            'AF' => 5,
+            'AH' => 14,
+            'AI' => 12,
+            'AJ' => 10,
+            'AK' => 12,
         ];
     }
 
@@ -85,12 +90,14 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
     public function styles(Worksheet $sheet)
     {
         $sheet->getStyle('A1:F1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');
-        $sheet->getStyle('G1:Q1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('833c0c');
-        $sheet->getStyle('R1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('375623');
-        $sheet->getStyle('AA1:AG1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('305496');
+        $sheet->getStyle('G1:R1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('833c0c');
+        $sheet->getStyle('S1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('375623');
+        $sheet->getStyle('AA1:AH1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('305496');
+        $sheet->getStyle('AI1:AJ1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('c00000');
+        $sheet->getStyle('AK1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
 
-        $sheet->getStyle('A1:AG1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AG1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:AK1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AK1')->getFont()->getColor()->setARGB('FFFFFF');
     }
 
     public function collection()
@@ -145,6 +152,9 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
                 'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
                 'Genero' => $solicitante->gender->name === 'Masculino' ? 'M' : 'F',
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
+
+                '¿Tiene hijos?  (SI / NO)' => $solicitante->hasSoon,
+
                 'Celular' => $solicitante->phone ? $solicitante->phone : '-',
                 'Correo electrónico' => $solicitante->email ? $solicitante->email : '-',
             ] : [], [
@@ -161,9 +171,12 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
                 'Fecha de TRAMITE en SID SUNARP o SUNAT' => $item->dateTramite ? date('d/m/Y', strtotime($item->dateTramite)) : '-',
                 'Nombre de Empresa Constituida' => strtoupper($item->nameMype),
                 'Tipo de Regimen Societario' => strtoupper($item->regime ? $item->regime->name : '-'),
+                '¿Es una sociedad BIC? (SI / NO)' => $item->isbic,
                 'Nro. De Solicitud' => $item->numbernotary ? $item->numbernotary : '-',
                 // 'Código SUNARP' => $item->codesunarp ? $item->codesunarp : '-',
                 'Notaria' => $item->notary ? $item->notary->name : '-',
+                'Tipo de aporte de capital: Monetario/Monetario con declaración jurada/Bienes/Mixto' => $item->typecapital ? $item->typecapital->name : ' ',
+                'Monto de capital social' => $item->montocapital,
                 'MODALIDAD DE ATENCION' => $item->modality ? $item->modality->name : '-'
             ]);
 
@@ -195,6 +208,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'Nombres del Solicitante (socio o Gte General)',
             'Género',
             'Tiene alguna Discapacidad ? (SI / NO)',
+            '¿Tiene hijos?  (SI / NO)',
             'Celular',
             'Correo electrónico',
 
@@ -213,11 +227,14 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'Fecha de TRAMITE en SID SUNARP o SUNAT',
             'Nombre de Empresa Constituida',
             'Tipo de Regimen Societario',
+            '¿Es una sociedad BIC? (SI / NO)',
             'Nro. De Solicitud',
 
             // 'Código SUNARP',
             // 'Nombre de Empresa Constituida',
             'Notaria',
+            'Tipo de aporte de capital: Monetario/Monetario con declaración jurada/Bienes/Mixto',
+            'Monto de capital social',
             'MODALIDAD DE ATENCION'
         ];
     }

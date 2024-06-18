@@ -54,20 +54,22 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'L' => 15,
             'M' => 15,
             'N' => 4,
-            'O' => 6,
-            'P' => 10,
-            'R' => 23,
+            'O' => 4,
+            'P' => 4,
+            'Q' => 11,
+            'R' => 20,
 
             'S' => 14,
             'T' => 14,
             'U' => 14,
             'V' => 12,
-            'W' => 18,
-            'X' => 20,
+            'W' => 12,
+            'X' => 12,
             'Y' => 15,
             'Z' => 20,
             'AA' => 10,
-            'AB' => 12
+            'AB' => 12,
+            'AC' => 12
         ];
     }
 
@@ -79,16 +81,16 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
     public function styles(Worksheet $sheet)
     {
         $sheet->getStyle('A1:F1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');
-        $sheet->getStyle('G1:Q1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('ffc000');
-        $sheet->getStyle('R1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('bdd6ee');
-        $sheet->getStyle('S1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00b050');
-        $sheet->getStyle('AA1:AB1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
+        $sheet->getStyle('G1:R1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('ffc000');
+        $sheet->getStyle('S1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('bdd6ee');
+        $sheet->getStyle('T1:AA1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00b050');
+        $sheet->getStyle('AB1:AC1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
 
 
         $sheet->getStyle('I1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('ffc000');
         $sheet->getStyle('A1:F1')->getFont()->getColor()->setARGB('FFFFFF');
-        $sheet->getStyle('S1:AB1')->getFont()->getColor()->setARGB('FFFFFF');
-        $sheet->getStyle('A1:AB1')->getFont()->setBold(true);
+        $sheet->getStyle('S1:AD1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:AC1')->getFont()->setBold(true);
     }
 
     public function collection()
@@ -145,6 +147,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
                 'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
                 'Genero' => $solicitante->gender->name === 'Masculino' ? 'M' : 'F',
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
+                '¿Tiene hijos?  (SI / NO)' => $solicitante->hasSoon,
                 'Telefono' => $solicitante->phone ? $solicitante->phone : '-',
                 'Correo electrónico o "NO TIENE"' => $solicitante->email ? $solicitante->email : 'NO TIENE',
             ] : [], [
@@ -186,6 +189,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Nombres del Solicitante (socio o Gte General)',
             'Genero',
             'Tiene alguna Discapacidad ? (SI / NO)',
+            '¿Tiene hijos?  (SI / NO)',
             'Telefono',
             'Correo electrónico o "NO TIENE"',
 

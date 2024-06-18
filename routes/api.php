@@ -209,6 +209,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('asesores', [SelectController::class, 'getAsesores']);
     Route::get('operational-status', [SelectController::class, 'getOperationalStatus']);
     Route::get('agreement-status', [SelectController::class, 'getAgreementStatus']);
+    Route::get('type-capital', [SelectController::class, 'getTypeCapital']);
 
 });
 

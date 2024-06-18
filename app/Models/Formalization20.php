@@ -32,6 +32,11 @@ class Formalization20 extends Model
     //     // 'people_id'
     // ];
 
+    public function typecapital()
+    {
+        return $this->belongsTo('App\Models\Typecapital');
+    }
+
     public function city()
     {
         return $this->belongsTo('App\Models\City');
@@ -165,7 +170,9 @@ class Formalization20 extends Model
 
             'city',
             'province',
-            'district'
+            'district',
+            'typecapital'
+
         ])
         ->orderBy('created_at', 'desc')->get()->map(function ($item) {
             $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;

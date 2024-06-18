@@ -140,8 +140,11 @@ class Formalization20Controller extends Controller
             'nameMype' => 'required|string',
             'dateReception' => 'nullable|date',
             'dateTramite' => 'nullable|date',
-            'ruc' => 'nullable|string',
+            'ruc' => 'nullable',
             'dni' => 'required|string',
+            'typecapital_id' => 'nullable|integer',
+            'isbic' => 'nullable|string',
+            'montocapital' => 'nullable',
         ]);
 
         $formalization = Formalization20::create($validatedData);
@@ -175,8 +178,8 @@ class Formalization20Controller extends Controller
             'address' => 'nullable|string',
             'modality_id' => 'required|integer',
             'nameMype' => 'required|string',
-            'ruc' => 'nullable|string',
-
+            'ruc' => 'nullable',
+            'dni' => 'nullable',
             'economicsector_id' => 'required|integer',
             'comercialactivity_id' => 'required|integer',
             'regime_id' => 'required|integer',
@@ -186,6 +189,9 @@ class Formalization20Controller extends Controller
             'dateTramite' => 'nullable|string',
 
             'userupdated_id' => 'required|integer',
+            'typecapital_id' => 'nullable|integer',
+            'isbic' => 'nullable|string',
+            'montocapital' => 'nullable',
         ]);
 
         $f20->update($request->only([
@@ -196,6 +202,7 @@ class Formalization20Controller extends Controller
             'modality_id',
             'nameMype',
             'ruc',
+            'dni',
             'economicsector_id',
             'comercialactivity_id',
             'regime_id',
@@ -204,6 +211,9 @@ class Formalization20Controller extends Controller
             'dateReception',
             'dateTramite',
             'userupdated_id',
+            'typecapital_id',
+            'isbic',
+            'montocapital',
         ]));
 
         return response()->json(['message' => 'Datos actualizados correctamente', 'status' => 200]);

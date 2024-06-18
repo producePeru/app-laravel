@@ -56,6 +56,35 @@ Artisan::command('inspire', function () {
 
 
 
+// ALTER TABLE people
+// ADD COLUMN hasSoon CHAR(3) DEFAULT NULL AFTER sick;
 
 
 
+
+// CREATE TABLE typecapital (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     name VARCHAR(40) NOT NULL,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+// );
+
+
+
+// no
+// ALTER TABLE formalizations20
+// ADD COLUMN typecapital_id BIGINT UNSIGNED DEFAULT NULL AFTER userupdated_id;
+// ALTER TABLE formalizations20
+// ADD CONSTRAINT fk_formalizations20_typecapital_id
+// FOREIGN KEY (typecapital_id) REFERENCES typecapital(id);
+
+
+
+// ALTER TABLE formalizations20
+// ADD COLUMN isbic CHAR(2) DEFAULT NULL AFTER typecapital_id;
+
+
+
+
+// ALTER TABLE formalizations20
+// ADD COLUMN montocapital VARCHAR(10) DEFAULT NULL AFTER isbic;

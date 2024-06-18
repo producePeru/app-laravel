@@ -65,7 +65,7 @@ class PersonController extends Controller
                 'phone' => 'nullable|string',
                 'email' => 'nullable|email|unique:people',
                 'birthday' => 'nullable|date',
-                'sick' => 'nullable|integer',
+                'sick' => 'nullable|in:yes,no',
                 'facebook' => 'nullable|string',
                 'linkedin' => 'nullable|string',
                 'instagram' => 'nullable|string',
@@ -76,6 +76,7 @@ class PersonController extends Controller
                 'address' => 'nullable|string',
                 'typedocument_id' => 'required|integer',
                 'gender_id' => 'nullable|integer',
+                'hasSoon' => 'string',
             ]);
 
             $person = People::create($data);
@@ -96,6 +97,7 @@ class PersonController extends Controller
             if (isset($e->errors()['documentnumber'])) {
                 return response()->json(['status' => 401]);
             }
+            return $e;
         }
         catch (QueryException $e) {
             return response()->json(['message' => 'El usuario se registró pero la relación ha fallado', 'error' => $e], 400);
@@ -158,7 +160,8 @@ class PersonController extends Controller
             'district_id' => 'required|integer',
             'sick' => 'nullable|in:yes,no',
             'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|string'
+            'email' => 'nullable|string',
+            'hasSoon' => 'nullable|string',
         ]);
 
         $user->update($validatedData);

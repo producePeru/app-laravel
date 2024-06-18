@@ -26,6 +26,7 @@ use App\Models\DriveFile;
 use App\Models\Profile;
 use App\Models\AgreementOperationalStatus;
 use App\Models\AgreementStatus;
+use App\Models\Typecapital;
 
 class SelectController extends Controller
 {
@@ -326,6 +327,19 @@ class SelectController extends Controller
         $files = AgreementStatus::all();
 
         $data = $files->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+        return response()->json(['data' => $data]);
+    }
+
+    public function getTypeCapital()
+    {
+        $typeDocuments = Typecapital::all();
+
+        $data = $typeDocuments->map(function ($item) {
             return [
                 'label' => $item->name,
                 'value' => $item->id

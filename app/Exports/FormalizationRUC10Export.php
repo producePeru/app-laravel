@@ -56,19 +56,21 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             'M' => 15,
             'N' => 5,
             'O' => 5,
-            'P' => 10,
+            'P' => 5,
+            'Q' => 10,
             'R' => 12,
 
-            'S' => 22,
+            'S' => 13,
             'T' => 10,
             'U' => 11,
             'V' => 11,
             'W' => 18,
             'X' => 12,
-            'Y' => 10,
-            'Z' => 15,
+            'Y' => 12,
+            'Z' => 11,
             'AA' => 20,
-            'AB' => 11
+            'AB' => 11,
+            'AC' => 12
         ];
     }
 
@@ -79,12 +81,12 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
     public function styles(Worksheet $sheet)
     {
         $sheet->getStyle('A1:F1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');
-        $sheet->getStyle('G1:Q1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('833c0c');
-        $sheet->getStyle('R1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('375623');
-        $sheet->getStyle('AA1:AB1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('305496');
+        $sheet->getStyle('G1:R1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('833c0c');
+        $sheet->getStyle('S1:AA1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('375623');
+        $sheet->getStyle('AB1:AC1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('305496');
 
-        $sheet->getStyle('A1:AB1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AB1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:AC1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AC1')->getFont()->getColor()->setARGB('FFFFFF');
     }
 
     public function collection()
@@ -130,6 +132,7 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
                 'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
                 'Genero' => $solicitante->gender->name === 'Masculino' ? 'M' : 'F',
                 'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
+                '¿Tiene hijos?  (SI / NO)' => $solicitante->hasSoon,
                 'Celular' => $solicitante->phone ? $solicitante->phone : '-',
                 'Correo electrónico' => $solicitante->email ? strtoupper($solicitante->email) : '-',
             ] : [], [
@@ -172,6 +175,7 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             'Nombres del Solicitante (socio o Gte General)',
             'Género',
             'Tiene alguna Discapacidad ? (SI / NO)',
+            '¿Tiene hijos?  (SI / NO)',
             'Celular',
             'Correo electrónico',
 
