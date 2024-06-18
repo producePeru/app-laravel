@@ -9,6 +9,8 @@ use App\Models\AgreementActions;
 use App\Models\AgreementFiles;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Carbon\Carbon;
+use App\Jobs\SendEndDateNotification;
 
 class AgreementController extends Controller
 {
@@ -62,22 +64,30 @@ class AgreementController extends Controller
                 'city_id' => 'required|exists:cities,id',
                 'province_id' => 'required|exists:provinces,id',
                 'district_id' => 'required|exists:districts,id',
+                'created_id' => 'required|exists:users,id'      // usuario_creador
                 // 'operationalstatus_id' => 'required|exists:operationalstatus,id',
                 // 'agreementstatus_id' => 'required|exists:agreementstatus,id',               // 🚩reference
-                'created_id' => 'required|exists:users,id'      // usuario_creador
             ]);
 
             $validatedData['initials'] = json_encode($validatedData['initials']);
 
-
             $convenio = Agreement::create($validatedData);
+
+            if (!is_null($convenio->endDate)) {
+                // $endDate = Carbon::parse($convenio->endDate);
+                // SendEndDateNotification::dispatch($convenio)->delay($endDate->subDays(1));
+                // SendEndDateNotification::dispatch($convenio)->delay($endDate->subDays(2));
+
+                $testDelay = 10;
+                SendEndDateNotification::dispatch($convenio)->delay(now()->addSeconds($testDelay));
+            }
 
             return response()->json(['message' => 'Convenio creado con éxito', 'status' => 200]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['error:' => $e,'status' => 500]);
         }
         catch (QueryException $e) {
-            return response()->json(['message' => 'El usuario se registró pero la relación ha fallado', 'error' => $e], 400);
+            return response()->json(['message' => 'Existe un error', 'error' => $e], 400);
         }
     }
 

@@ -188,8 +188,8 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
     Route::delete('delete/{id}', [AgreementController::class, 'deleteAgreement']);
     Route::delete('delete/file/{id}', [AgreementController::class, 'deleteFileById']);
 
-    Route::post('create-acction', [AgreementController::class, 'storeAction']);
     Route::post('create', [AgreementController::class, 'store']);
+    Route::post('create-acction', [AgreementController::class, 'storeAction']);
     Route::post('file', [AgreementController::class, 'upFileAgreement']);
     Route::post('file-download/{id}', [AgreementController::class, 'download']);
 
