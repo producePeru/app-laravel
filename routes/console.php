@@ -70,8 +70,6 @@ Artisan::command('inspire', function () {
 // );
 
 
-
-// no
 // ALTER TABLE formalizations20
 // ADD COLUMN typecapital_id BIGINT UNSIGNED DEFAULT NULL AFTER userupdated_id;
 // ALTER TABLE formalizations20

@@ -72,7 +72,7 @@ class AuthController extends Controller
             $client = new Client();
             $response = $client->request('GET', $apiUrl, [
                 'headers' => [
-                    'Authorization' => 'apis-token-8840.KxvOhP9QQt-oV3cIMWgVUP1691s4SYP8',
+                    'Authorization' => 'apis-token-9093.KigwCX-La2VsNoLxJWKEA1IDc7ruXhSo',
                     'Accept' => 'application/json',
                 ],
             ]);
@@ -88,7 +88,7 @@ class AuthController extends Controller
     public function dniDataUser($type, $num)
     {
         // $token = "8FFHIKZBunh3TvTdTmeq0G2pnfC2qsv7hXZm8eoCZ4vr5EbrZ5mjmjL0fssdv0ZG";
-        $token = 'SS5XlFCtFBxyIUYjIitORpYenW875gZnsFIaSRBwc8Z0hhBOsXlb9zRmav8rAs4s';
+        $token = 'IKxniM9qDMLhbwvC2D9YMoa40BtoOegM0Q5F4slRSfWdGToEt4AaaVxS8s9APpZ9';
 
         $apiUrl = "https://api.sunat.dev/{$type}/{$num}?apikey={$token}";
         try {
