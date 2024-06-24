@@ -11,17 +11,26 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Carbon\Carbon;
 use App\Jobs\SendEndDateNotification;
+use App\Exports\AgreementExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AgreementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data = Agreement::with(
+        $order = $request->input('order', 'asc');
+
+        if (!in_array($order, ['asc', 'desc'])) {
+            $order = 'asc';
+        }
+
+        $query = Agreement::with(
             ['estadoOperatividad', 'estadoConvenio', 'region', 'provincia', 'distrito', 'acciones', 'archivosConvenios']
         )->join('cities', 'agreements.city_id', '=', 'cities.id')
-        ->select('agreements.*')                                    // 🚩id agreements
-        ->orderBy('cities.name', 'asc')
-        ->paginate(20);
+        ->select('agreements.*')
+        ->orderBy('cities.name', $order);
+
+        $data = $query->paginate(50);
 
         $data->getCollection()->transform(function ($item) {        // 🚩decode flat
             $item['initials'] = json_decode($item['initials']);
@@ -166,6 +175,14 @@ class AgreementController extends Controller
         $action = AgreementFiles::findOrFail($id);
         $action->delete();
         return response()->json(['message' => 'Archivo eliminado exitosamente', 'status' => 200]);
+    }
+
+
+
+    // DESCARGAR
+    public function exportAgreement(Request $request)
+    {
+        return Excel::download(new AgreementExport, 'agreements.xlsx');
     }
 }
 

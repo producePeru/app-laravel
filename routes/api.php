@@ -192,8 +192,10 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
     Route::post('create-acction', [AgreementController::class, 'storeAction']);
     Route::post('file', [AgreementController::class, 'upFileAgreement']);
     Route::post('file-download/{id}', [AgreementController::class, 'download']);
+    Route::post('download', [AgreementController::class, 'exportAgreement']);
 
     Route::put('update/{id}', [AgreementController::class, 'updateActionById']);
+
 });
 
 Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function() {

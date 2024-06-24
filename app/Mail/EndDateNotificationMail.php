@@ -21,12 +21,12 @@ class EndDateNotificationMail extends Mailable
         $this->agreement = $agreement;
     }
 
-    // public function envelope(): Envelope
-    // {
-    //     return new Envelope(
-    //         subject: 'End Date Notification Mail',
-    //     );
-    // }
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            subject: 'Mensaje de notificación de fin de convenio',
+        );
+    }
 
     // public function content(): Content
     // {
