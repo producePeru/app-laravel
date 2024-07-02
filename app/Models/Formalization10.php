@@ -66,6 +66,11 @@ class Formalization10 extends Model
         return $this->belongsTo('App\Models\People', 'people_id');
     }
 
+    public function sede()
+    {
+        return $this->belongsTo('App\Models\Cde', 'cde_id');
+    }
+
     public function scopeWithFormalizationAndRelations($query)
     {
         return $query->with([
@@ -122,6 +127,7 @@ class Formalization10 extends Model
 
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde',
+            'sede',
             'detailprocedure',
             'economicsector',
             'comercialactivity',

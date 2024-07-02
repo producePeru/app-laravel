@@ -31,7 +31,8 @@ class AdvisoryController extends Controller
             'dni' => 'required|string',
             'city_id' => 'required|integer',
             'province_id' => 'required|integer',
-            'district_id' => 'required|integer'
+            'district_id' => 'required|integer',
+            'cde_id' => 'required|integer',
         ]);
 
         Advisory::create($data);

@@ -116,7 +116,6 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
         }
 
         $results = $query->map(function ($item, $index) {
-
             $asesor = $item->supervisado ? $item->supervisado->supervisadoUser->profile : $item->asesorsupervisor;
             $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
             $solicitante = $item->people;
@@ -126,17 +125,26 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
                 ($asesor->lastname ?? '') . ' ' .
                 ($asesor->middlename ?? '')
             );
-            $regionCDE = $asesor->cde && $asesor->cde->city ? $asesor->cde->city : null;
-            $provinciaCDE = $asesor->cde && $asesor->cde->province ? $asesor->cde->province : null;
-            $distritoCDE = $asesor->cde && $asesor->cde->district ? $asesor->cde->district : null;
+
+            // cede
+            $regionCDE    =  $item->sede     ? $item->sede->city     : $asesor->cde->city;
+            $provinciaCDE =  $item->sede ? $item->sede->province : $asesor->cde->province;
+            $distritoCDE  =  $item->sede ? $item->sede->district : $asesor->cde->district;
+
+            // $regionCDE = $asesor->cde && $asesor->cde->city ? $asesor->cde->city : null;
+            // $provinciaCDE = $asesor->cde && $asesor->cde->province ? $asesor->cde->province : null;
+            // $distritoCDE = $asesor->cde && $asesor->cde->district ? $asesor->cde->district : null;
+
 
             return array_merge([
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
                 'Asesor (a) - Nombre Completo' => trim($nombreCompleto),
+
                 'Región del CDE del Asesor' => $regionCDE,
                 'Provincia del CDE del Asesor' => $provinciaCDE,
                 'Distrito del CDE del Asesor' => $distritoCDE,
+
             ], $solicitante ? [
                 'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
                 'Número de Documento de Identidad' => $solicitante->documentnumber,

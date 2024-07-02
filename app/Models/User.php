@@ -136,7 +136,7 @@ class User extends Authenticatable
     {
         return $query->with(['profile', 'profile.office', 'profile.cde', 'roles'])
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(50);
     }
 
 

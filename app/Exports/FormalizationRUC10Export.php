@@ -115,13 +115,20 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
             $solicitante = $item->people;
 
+             // cede
+             $regionCDE    =  $item->sede     ? $item->sede->city     : $asesor->cde->city;
+             $provinciaCDE =  $item->sede ? $item->sede->province : $asesor->cde->province;
+             $distritoCDE  =  $item->sede ? $item->sede->district : $asesor->cde->district;
+
             return array_merge([
                 'No' => $index + 1,
                 'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
                 'Asesor (a) - Nombre Completo' => strtoupper($asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename),
-                'Región del CDE del Asesor' => $asesor->cde ? $asesor->cde->city : '-',
-                'Provincia del CDE del Asesor' => $asesor->cde ? $asesor->cde->province : '-',
-                'Distrito del CDE del Asesor' => $asesor->cde ? $asesor->cde->district : '-',
+
+                'Región del CDE del Asesor' => $regionCDE,
+                'Provincia del CDE del Asesor' => $provinciaCDE,
+                'Distrito del CDE del Asesor' => $distritoCDE,
+
             ], $solicitante ? [
                 'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
                 'Número de Documento de Identidad' => $solicitante->documentnumber,

@@ -76,6 +76,10 @@ class Advisory extends Model
     {
         return $this->belongsTo('App\Models\Cde');
     }
+    public function sede()
+    {
+        return $this->belongsTo('App\Models\Cde', 'cde_id');
+    }
 
     // relacion
     public function gender()
@@ -124,6 +128,7 @@ class Advisory extends Model
             'supervisor.supervisorUser.profile',
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde',
+            'sede',
             'theme',
             'component',
             'city',
@@ -215,6 +220,7 @@ class Advisory extends Model
             'supervisado.supervisadoUser.profile',
             'user.profile',
             'supervisado.supervisadoUser.profile.cde:id,name',
+            'sede',
             'theme',
             'component',
             'city',

@@ -83,7 +83,6 @@ class HistorialController extends Controller
 
 
 
-
     // TABULADOR DE ASESORIA-FORMALIZACIONES...
 
     public function filterHistorialAdvisoriesByDates(Request $request)

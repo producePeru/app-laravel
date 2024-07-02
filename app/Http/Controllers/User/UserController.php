@@ -170,4 +170,25 @@ class UserController extends Controller
 
         return response()->json(['data' => $profile, 'status' => 200]);
     }
+
+    //🚩🚩🚩
+    public function asignViewsUser(Request $request, $id)
+    {
+        $role_user = getUserRole();
+
+        if (in_array(5, $role_user['role_id'])) {
+
+            try {
+                $view = View::updateOrCreate(
+                    ['user_id' => $id],
+                    ['views' => json_encode($validatedData)]
+                );
+                return response()->json(['message' => 'View assigned successfully', 'status' => 200]);
+            } catch (\Exception $e) {
+                return response()->json(['message' => 'Failed to assign view', 'error' => $e->getMessage()], 500);
+            }
+        } else {
+            return response()->json(['message' => 'User does not have the required role', 'status' => 403]);
+        }
+    }
 }

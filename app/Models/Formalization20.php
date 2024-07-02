@@ -95,6 +95,11 @@ class Formalization20 extends Model
         return $this->belongsTo('App\Models\People');
     }
 
+    public function sede()
+    {
+        return $this->belongsTo('App\Models\Cde', 'cde_id');
+    }
+
     public function scopeWithFormalizationAndRelations($query)
     {
         return $query->with([
@@ -156,23 +161,20 @@ class Formalization20 extends Model
         return $query->with([
             'modality',
             'people.gender:id,name',
-
             'supervisor.supervisorUser.profile',
-
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde',
+            'sede',
 
             'mype:id,name,ruc',
             'comercialactivity',
             'regime',
             'notary:id,name,price',
             'economicsector',
-
             'city',
             'province',
             'district',
             'typecapital'
-
         ])
         ->orderBy('created_at', 'desc')->get()->map(function ($item) {
             $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;

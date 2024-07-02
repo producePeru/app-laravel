@@ -31,6 +31,7 @@ class Formalization10Controller extends Controller
                 'ruc' => 'nullable|string',
                 'user_id' => 'required|integer',
                 'dni' => 'required|string',
+                'cde_id' => 'required|integer',
             ]);
 
             Formalization10::create($data);
