@@ -12,10 +12,19 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // $schedule->command('queue:restart')->everyFiveMinutes();
+        // $schedule->command('queue:work --stop-when-empty')
+        //      ->everyMinute()
+        //      ->withoutOverlapping();
+        // $schedule->command('queue:work')->everyMinute();
+
+        // Reinicia la cola cada cinco minutos para evitar posibles bloqueos
         $schedule->command('queue:restart')->everyFiveMinutes();
+
+        // Procesa la cola cada minuto, asegurándose de que no haya solapamientos y se detenga cuando esté vacía
         $schedule->command('queue:work --stop-when-empty')
-             ->everyMinute()
-             ->withoutOverlapping();
+                ->everyMinute()
+                ->withoutOverlapping();
     }
 
     /**
