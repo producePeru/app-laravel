@@ -32,7 +32,7 @@ class AdvisoryController extends Controller
             'city_id' => 'required|integer',
             'province_id' => 'required|integer',
             'district_id' => 'required|integer',
-            'cde_id' => 'required|integer',
+            'cde_id' => 'integer',
         ]);
 
         Advisory::create($data);

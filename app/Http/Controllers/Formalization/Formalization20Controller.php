@@ -145,7 +145,7 @@ class Formalization20Controller extends Controller
             'typecapital_id' => 'nullable|integer',
             'isbic' => 'nullable|string',
             'montocapital' => 'nullable',
-            'cde_id' => 'required|integer',
+            'cde_id' => 'integer',
         ]);
 
         $formalization = Formalization20::create($validatedData);
