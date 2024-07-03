@@ -181,7 +181,7 @@ class UserController extends Controller
             try {
                 $view = View::updateOrCreate(
                     ['user_id' => $id],
-                    ['views' => json_encode($validatedData)]
+                    ['views' => json_encode($request->views)]
                 );
                 return response()->json(['message' => 'View assigned successfully', 'status' => 200]);
             } catch (\Exception $e) {
@@ -189,6 +189,23 @@ class UserController extends Controller
             }
         } else {
             return response()->json(['message' => 'User does not have the required role', 'status' => 403]);
+        }
+    }
+
+    public function showViewsUser($id)
+    {
+        try {
+            $view = View::find($id);
+
+            if (!$view) {
+                return response()->json(['message' => 'View not found'], 404);
+            }
+
+            $data = json_decode($view->views, true);
+
+            return response()->json(['data' => $data, 'status' => 200]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to assign view', 'error' => $e->getMessage()], 500);
         }
     }
 }

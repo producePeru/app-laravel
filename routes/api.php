@@ -53,6 +53,7 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
   Route::post('logout', [AuthController::class, 'logout']);
   Route::post('password-reset', [AuthController::class, 'passwordReset']);
   Route::put('views/{id}', [UserController::class, 'asignViewsUser']);
+  Route::get('views/{id}', [UserController::class, 'showViewsUser']);
 
   Route::get('list-asesories', [UserController::class, 'allAsesores']);
   Route::get('my-profile', [UserController::class, 'showMyProfile']);
