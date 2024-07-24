@@ -10,6 +10,7 @@ use GuzzleHttp\Client;
 use PhpParser\Node\Stmt\Return_;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Token;
 
 class AuthController extends Controller
 {
@@ -64,45 +65,69 @@ class AuthController extends Controller
         return response()->json(['message' => 'Sesión cerrada correctamente'], 200);
     }
 
+    // ok //🚩 flag
     public function dniDataUser2($num)
     {
+
         $apiUrl = "https://api.apis.net.pe/v2/reniec/dni?numero={$num}";
 
         try {
+
+            $tokenRecord = Token::where('status', 1)->first();
+
+            if (!$tokenRecord) {
+                return response()->json(['status' => 404, 'error' => 'Token no encontrado o inactivo']);
+            }
+
             $client = new Client();
             $response = $client->request('GET', $apiUrl, [
                 'headers' => [
-                    'Authorization' => 'apis-token-9093.KigwCX-La2VsNoLxJWKEA1IDc7ruXhSo',
+                    'Authorization' => $tokenRecord->token,
                     'Accept' => 'application/json',
                 ],
             ]);
 
             $data = json_decode($response->getBody(), true);
 
-            return response()->json(['data' => $data]);
+            if($data) {
+                $tokenRecord->increment('count');
+                return response()->json(['data' => $data, 'status' => 200]);
+            } else {
+                return response()->json(['status' => 403, 'error' => 'No se encontró el DNI']);
+            }
+
+            return response()->json(['data' => $user]);
         } catch (\Exception $e) {
-            return response()->json(['status' => 404, 'error' => $e->getMessage()]);
+            $tokenRecord->increment('count_bad');
+
+            if ($e->getCode() == 429) {
+                return response()->json(['status' => 429, 'message' => 'Ha superado el límite de solicitudes permitidas. Por favor, inténtalo el próximo mes.']);
+            } else if ($e->getCode() == 401) {
+                return response()->json(['status' => 401, 'message' => 'Token Incorrecto']);
+            } else {
+                return response()->json(['error' => $e->getMessage()]);
+            }
         }
     }
 
+
     public function dniDataUser($type, $num)
     {
-        // $token = "8FFHIKZBunh3TvTdTmeq0G2pnfC2qsv7hXZm8eoCZ4vr5EbrZ5mjmjL0fssdv0ZG";
-        $token = 'IKxniM9qDMLhbwvC2D9YMoa40BtoOegM0Q5F4slRSfWdGToEt4AaaVxS8s9APpZ9';
+        // $token = 'IKxniM9qDMLhbwvC2D9YMoa40BtoOegM0Q5F4slRSfWdGToEt4AaaVxS8s9APpZ9';
 
-        $apiUrl = "https://api.sunat.dev/{$type}/{$num}?apikey={$token}";
-        try {
-            $client = new Client();
-            $response = $client->request('GET', $apiUrl, [
-                'headers' => [
-                    'Accept' => 'application/json',
-                ],
-            ]);
-            $data = json_decode($response->getBody(), true);
-            return response()->json(['data' => $data]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 404]);
-        }
+        // $apiUrl = "https://api.sunat.dev/{$type}/{$num}?apikey={$token}";
+        // try {
+        //     $client = new Client();
+        //     $response = $client->request('GET', $apiUrl, [
+        //         'headers' => [
+        //             'Accept' => 'application/json',
+        //         ],
+        //     ]);
+        //     $data = json_decode($response->getBody(), true);
+        //     return response()->json(['data' => $data]);
+        // } catch (\Exception $e) {
+        //     return response()->json(['status' => 404]);
+        // }
     }
 
     public function passwordReset(Request $request)

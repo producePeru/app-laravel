@@ -18,6 +18,7 @@ use App\Http\Controllers\Formalization\FormalizationDigitalController;
 use App\Http\Controllers\Formalization\ChartController;
 use App\Http\Controllers\Download\DownloadOthersController;
 use App\Http\Controllers\Agreement\AgreementController;
+use App\Http\Controllers\User\TokenController;
 
 Route::post('login', [AuthController::class, 'login']);
 
@@ -145,7 +146,12 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('asesories', [DownloadFormalizationsController::class, 'exportAsesories']);
     Route::get('formalizations-ruc10', [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
     Route::get('formalizations-ruc20', [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
+});
 
+Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::get('list', [TokenController::class, 'index']);
+    Route::post('create', [TokenController::class, 'store']);
+    Route::put('update-status/{id}', [TokenController::class, 'updateStatus']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {

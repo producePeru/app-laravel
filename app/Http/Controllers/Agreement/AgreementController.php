@@ -13,22 +13,40 @@ use Carbon\Carbon;
 use App\Jobs\SendEndDateNotification;
 use App\Exports\AgreementExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
 
 class AgreementController extends Controller
 {
     public function index(Request $request)
     {
         $order = $request->input('order', 'asc');
+        $search = $request->input('search', '');
+        $dateDiffOrder = $request->input('date_diff_order', 'desc');
 
         if (!in_array($order, ['asc', 'desc'])) {
             $order = 'asc';
+        }
+        if (!in_array($dateDiffOrder, ['asc', 'desc'])) {
+            $dateDiffOrder = 'desc';
         }
 
         $query = Agreement::with(
             ['estadoOperatividad', 'estadoConvenio', 'region', 'provincia', 'distrito', 'acciones', 'archivosConvenios']
         )->join('cities', 'agreements.city_id', '=', 'cities.id')
-        ->select('agreements.*')
+        ->select('agreements.*', DB::raw('DATEDIFF(agreements.endDate, agreements.startDate) as date_diff'))
+        ->orderBy('date_diff', $dateDiffOrder)
         ->orderBy('cities.name', $order);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('agreements.denomination', 'like', "%{$search}%")
+                  ->orWhere('agreements.alliedEntity', 'like', "%{$search}%")
+                  ->orWhere('agreements.address', 'like', "%{$search}%")
+                  ->orWhere('agreements.reference', 'like', "%{$search}%")
+                  ->orWhere('agreements.initials', 'like', "%{$search}%")
+                  ->orWhere('cities.name', 'like', "%{$search}%");
+            });
+        }
 
         $data = $query->paginate(50);
 
@@ -185,5 +203,3 @@ class AgreementController extends Controller
         return Excel::download(new AgreementExport, 'agreements.xlsx');
     }
 }
-
-

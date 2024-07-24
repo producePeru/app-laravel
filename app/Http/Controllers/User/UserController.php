@@ -32,11 +32,35 @@ class UserController extends Controller
         ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::withProfileAndRelations();
+        $search = $request->input('search', '');
 
-        return response()->json($users, 200);
+        $query = User::with([
+                'profile',
+                'profile.office',
+                'profile.cde',
+                'roles'
+        ])->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->whereHas('profile', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('lastname', 'like', "%{$search}%")
+                  ->orWhere('middlename', 'like', "%{$search}%")
+                  ->orWhere('documentnumber', 'like', "%{$search}%")
+                  ->orWhere('birthday', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhereHas('cde', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        $data = $query->paginate(50);
+
+        return response()->json(['data' => $data]);
     }
 
     public function store(Request $request)
