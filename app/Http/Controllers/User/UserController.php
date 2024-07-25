@@ -145,7 +145,7 @@ class UserController extends Controller
             'lastname' => 'required|string|max:255',
             'middlename' => 'nullable|string|max:255',
             'birthday' => 'nullable|date',
-            'sick' => 'required|in:yes,no',
+            // 'sick' => 'required|in:yes,no',
             'phone' => 'required|string|max:20',
             'gender_id' => 'required|integer',
             'cde_id' => 'required|integer',
@@ -179,12 +179,63 @@ class UserController extends Controller
         return response()->json(['message' => 'No tienes permisos para eliminar', 'status' => 500]);
     }
 
-    public function allAsesores()
+    public function allAsesores(Request $request)
     {
-        $users = User::withProfileAsesories();
+        $roleId = 2;
+        $perPage = 50;
+        $page = $request->input('page', 1);
 
-        return response()->json($users, 200);
+        $search = $request->input('search');
+
+        $query = DB::table('role_user')
+            ->join('users', 'role_user.user_id', '=', 'users.id')
+            ->join('profiles', 'users.id', '=', 'profiles.user_id')
+            ->join('cdes', 'profiles.cde_id', '=', 'cdes.id')
+            ->join('offices', 'profiles.office_id', '=', 'offices.id')
+            ->join('genders', 'profiles.gender_id', '=', 'genders.id')
+            ->where('role_user.role_id', $roleId)
+            ->select(
+                'profiles.id as _id',
+                'users.email',
+                'profiles.name as profile_name',
+                'profiles.lastname as profile_lastname',
+                'profiles.middlename as profile_middlename',
+                'profiles.documentnumber as profile_documentnumber',
+                'profiles.phone as profile_phone',
+                'profiles.birthday as profile_birthday',
+                'cdes.name as cde_name',
+                'offices.name as office_name',
+                'genders.name as gender',
+                'cdes.id as cde_id',
+                'genders.id as gender_id',
+                'offices.id as office_id',
+            );
+
+        // Aplicar la búsqueda
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('users.email', 'like', '%' . $search . '%')
+                ->orWhere('profiles.name', 'like', '%' . $search . '%')
+                ->orWhere('profiles.lastname', 'like', '%' . $search . '%')
+                ->orWhere('profiles.middlename', 'like', '%' . $search . '%')
+                ->orWhere('profiles.documentnumber', 'like', '%' . $search . '%')
+                ->orWhere('genders.name', 'like', '%' . $search . '%')
+                ->orWhere('cdes.name', 'like', '%' . $search . '%');
+            });
+        }
+
+        $results = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'data' => $results->items(),
+            'current_page' => $results->currentPage(),
+            'per_page' => $results->perPage(),
+            'total' => $results->total(),
+            'last_page' => $results->lastPage(),
+            'status' => 200
+        ]);
     }
+
 
     public function showMyProfile()
     {

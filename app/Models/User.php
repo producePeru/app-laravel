@@ -120,7 +120,7 @@ class User extends Authenticatable
         return $query->has('asesores')
             ->with(['asesores.profile', 'asesores.profile.cde'])
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(50);
     }
 
 

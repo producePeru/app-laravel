@@ -42,16 +42,16 @@ class TokenController extends Controller
         return response()->json(['message' => 'Registro exitoso', 'status' => 200]);
     }
 
-    // public function updateStatus($id)
-    // {
-    //     Token::query()->update(['status' => 0]);
+    public function updateStatus($id)
+    {
+        Token::query()->update(['status' => 0]);
 
-    //     $token = Token::findOrFail($id);
-    //     $token->status = 1;
-    //     $token->save();
+        $token = Token::findOrFail($id);
+        $token->status = 1;
+        $token->save();
 
-    //     return response()->json(['message' => 'Status updated successfully', 'status' => 200]);
-    // }
+        return response()->json(['message' => 'Status updated successfully', 'status' => 200]);
+    }
 
     // public function destroy($id)
     // {
