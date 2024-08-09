@@ -9,6 +9,7 @@ use App\Http\Controllers\Selects\SelectController;
 use App\Http\Controllers\Selects\CreateController;
 use App\Http\Controllers\Formalization\Formalization10Controller;
 use App\Http\Controllers\Formalization\Formalization20Controller;
+use App\Http\Controllers\Formalization\PlanActionsController;
 use App\Http\Controllers\Formalization\NotaryController;
 use App\Http\Controllers\Formalization\HistorialController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
@@ -58,6 +59,14 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
 
   Route::get('list-asesories', [UserController::class, 'allAsesores']);
   Route::get('my-profile', [UserController::class, 'showMyProfile']);
+
+
+  // REGISTRAR UN ASESOR EXTERNO NOTARIO
+  Route::post('register-user',      [UserController::class, 'registerUsers']);
+  Route::post('register-profile',   [UserController::class, 'registerProfiles']);
+  Route::post('register-roles',     [UserController::class, 'registerRoles']);
+  Route::post('register-views',     [UserController::class, 'registerViewsSeven']);
+
 });
 
 
@@ -125,6 +134,15 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     // Chart
     Route::get('chart', [ChartController::class, 'index']);
     // Route::get('by-advisors', [ChartController::class, 'countAdvisoriesByAdvisors']);
+
+
+    // NUEVA FUNCION DE SETEO
+    Route::get('plan-actions', [PlanActionsController::class, 'planActions']);
+
+    Route::post('set-ruc-advisories', [PlanActionsController::class, 'rucAdvisoriesSet']);
+    Route::post('set-ruc-ruc-10', [PlanActionsController::class, 'rucFormalizationR10Set']);
+    Route::post('set-ruc-ruc-20', [PlanActionsController::class, 'rucFormalizationR20Set']);
+
 });
 
 Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -178,7 +196,7 @@ Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'midd
     Route::post('component', [CreateController::class, 'createNewComponent']);
     Route::post('theme', [CreateController::class, 'createNewTheme']);
     // Route::post('economic-sector', [CreateController::class, 'createNewEconomicSector']);
-
+    Route::post('cde-notary', [CreateController::class, 'createCdeNotary']);            //crea automaticamente la cde del asesor externo notario
 
 });
 

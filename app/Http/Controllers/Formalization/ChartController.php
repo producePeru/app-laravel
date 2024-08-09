@@ -41,6 +41,9 @@ class ChartController extends Controller
         $dateStart = $request->input('dateStart');
         $dateEnd = $request->input('dateEnd');
 
+        $userRole = getUserRole();
+        $roleIdArray = $userRole['role_id'];
+
         $asesoriesCount = [];
         $formalization10Count = [];
         $formalization20Count = [];
@@ -52,7 +55,7 @@ class ChartController extends Controller
             $formalization20Count[$i] = 0;
         }
 
-        if ($role_id == 1) {
+        if (in_array(1, $roleIdArray)) {
             $asesories = Advisory::descargaExcelAsesorias([
                 'dateStart' => $dateStart,
                 'dateEnd' => $dateEnd
@@ -67,7 +70,8 @@ class ChartController extends Controller
             ]);
         }
 
-        if ($role_id != 1) {
+        if (in_array(2, $roleIdArray)) {
+
             $asesories = Advisory::ByUserId($user_id)->descargaExcelAsesorias([
                 'dateStart' => $dateStart,
                 'dateEnd' => $dateEnd

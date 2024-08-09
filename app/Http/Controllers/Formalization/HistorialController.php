@@ -103,7 +103,7 @@ class HistorialController extends Controller
             $advisories = Advisory::withAdvisoryRangeDate($filters);
             return response()->json($advisories, 200);
         }
-        if (in_array(2, $roleIdArray)) {
+        if (in_array(7, $roleIdArray) || in_array(7, $roleIdArray)) {
             $results = Advisory::ByUserId($user_id)->withAdvisoryRangeDate($filters);
             return response()->json($results, 200);
         }

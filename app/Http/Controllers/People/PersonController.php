@@ -41,13 +41,16 @@ class PersonController extends Controller
             'search' => $request->input('search'),
         ];
 
-        if ($role_id === 1 || $user_id === 1 || $user_id === 3) {
+        $userRole = getUserRole();
+        $roleIdArray = $userRole['role_id'];
+
+        if (in_array(1, $roleIdArray) || in_array(5, $roleIdArray)) {
             $people = People::withProfileAndRelations($filters);
             return response()->json($people, 200);
         }
 
 
-        if ($role_id === 2) {
+        if (in_array(2, $roleIdArray)) {
             $people = People::withProfileAndUser($user_id, $filters);
             return response()->json($people, 200);
         }

@@ -62,4 +62,10 @@ class Notary extends Model
 
         return $query->paginate(200);
     }
+
+    public function profiles()
+    {
+        return $this->hasMany(Profile::class, 'notary_id');
+    }
+
 }

@@ -100,6 +100,11 @@ class Formalization20 extends Model
         return $this->belongsTo('App\Models\Cde', 'cde_id');
     }
 
+    public function cde()
+    {
+        return $this->belongsTo('App\Models\Cde');
+    }
+
     public function scopeWithFormalizationAndRelations($query)
     {
         return $query->with([

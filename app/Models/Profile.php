@@ -63,4 +63,10 @@ class Profile extends Model
             $profile->user()->delete();
         });
     }
+
+    public function notary()
+    {
+        return $this->belongsTo(Notary::class, 'notary_id');
+    }
+
 }

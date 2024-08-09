@@ -101,6 +101,12 @@ class Advisory extends Model
     {
         return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
     }
+
+    public function notary()
+    {
+        return $this->belongsTo('App\Models\Profile', 'notary_id', 'user_id');
+    }
+
     public function economicsector()
     {
         return $this->belongsTo('App\Models\EconomicSector');

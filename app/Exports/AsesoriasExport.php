@@ -1,12 +1,11 @@
 <?php
 
 namespace App\Exports;
-
 use App\Models\Advisory;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Support\Facades\DB;
@@ -15,25 +14,11 @@ use Maatwebsite\Excel\Concerns\WithColumnWidths;
 
 class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithStyles, WithColumnWidths
 {
-    public $dateStart;
-    public $dateEnd;
+    protected $result;
 
-    private function getUserRole()
+    public function __construct(Collection $result)
     {
-        $user_id = Auth::user()->id;
-
-        $roleUser = DB::table('role_user')
-        ->where('user_id', $user_id)
-        ->first();
-
-        if ($user_id != $roleUser->user_id) {
-            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
-        }
-
-        return [
-            "role_id" => $roleUser->role_id,
-            'user_id' => $user_id
-        ];
+        $this->result = $result;
     }
 
     public function columnWidths(): array
@@ -95,86 +80,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
 
     public function collection()
     {
-
-        $userRole = getUserRole();
-        $roleIdArray = $userRole['role_id'];
-        $user_id = $userRole['user_id'];
-
-
-        if (in_array(1, $roleIdArray) || $user_id === 1) {
-            $query = Advisory::descargaExcelAsesorias([
-                'dateStart' => $this->dateStart,
-                'dateEnd' => $this->dateEnd,
-            ]);
-        }
-
-        if (in_array(2, $roleIdArray)) {
-            $query = Advisory::ByUserId($user_id)->descargaExcelAsesorias([
-                'dateStart' => $this->dateStart,
-                'dateEnd' => $this->dateEnd,
-            ]);
-        }
-
-        $results = $query->map(function ($item, $index) {
-            $asesor = $item->supervisado ? $item->supervisado->supervisadoUser->profile : $item->asesorsupervisor;
-            $supervisador = $item->supervisor ? $item->supervisor->supervisorUser->profile : $item->asesorsupervisor;
-            $solicitante = $item->people;
-
-            $nombreCompleto = strtoupper(
-                ($asesor->name ?? '') . ' ' .
-                ($asesor->lastname ?? '') . ' ' .
-                ($asesor->middlename ?? '')
-            );
-
-            // cede
-            $regionCDE    =  $item->sede     ? $item->sede->city     : $asesor->cde->city;
-            $provinciaCDE =  $item->sede ? $item->sede->province : $asesor->cde->province;
-            $distritoCDE  =  $item->sede ? $item->sede->district : $asesor->cde->district;
-
-            // $regionCDE = $asesor->cde && $asesor->cde->city ? $asesor->cde->city : null;
-            // $provinciaCDE = $asesor->cde && $asesor->cde->province ? $asesor->cde->province : null;
-            // $distritoCDE = $asesor->cde && $asesor->cde->district ? $asesor->cde->district : null;
-
-
-            return array_merge([
-                'No' => $index + 1,
-                'Fecha de Registro' => Carbon::parse($item->created_at)->format('d/m/Y'),
-                'Asesor (a) - Nombre Completo' => trim($nombreCompleto),
-
-                'Región del CDE del Asesor' => $regionCDE,
-                'Provincia del CDE del Asesor' => $provinciaCDE,
-                'Distrito del CDE del Asesor' => $distritoCDE,
-
-            ], $solicitante ? [
-                'Tipo de Documento de Identidad' => $solicitante->typedocument->avr,
-                'Número de Documento de Identidad' => $solicitante->documentnumber,
-                'Nombre del país de origen' => $solicitante->typedocument->avr === 'DNI' ? 'PERÚ' : strtoupper($solicitante->country),
-                'Fecha de Nacimiento' => date('d/m/Y', strtotime($solicitante->birthday)),
-                'Apellido Paterno del Solicitante (socio o Gte General)' => strtoupper($solicitante->lastname),
-                'Apellido Materno del Solicitante (socio o Gte General)' => strtoupper($solicitante->middlename),
-                'Nombres del Solicitante (socio o Gte General)' => strtoupper($solicitante->name),
-                'Genero' => $solicitante->gender->name === 'Masculino' ? 'M' : 'F',
-                'Tiene alguna Discapacidad ? (SI / NO)' => $solicitante->sick == 'no' ? 'NO' : 'SI',
-                '¿Tiene hijos?  (SI / NO)' => $solicitante->hasSoon,
-                'Telefono' => $solicitante->phone ? $solicitante->phone : '-',
-                'Correo electrónico o "NO TIENE"' => $solicitante->email ? $solicitante->email : 'NO TIENE',
-            ] : [], [
-                'SUPERVISOR' => strtoupper($supervisador->name . ' ' . $supervisador->lastname . ' ' . $supervisador->middlename),
-                'Región del negocio' => $item->city ? $item->city->name : '-',
-                'Provincia del Negocio' => $item->province ? $item->province->name : '-',
-                'Distrito del Negocio' => $item->district ? $item->district->name : '-',
-                'N_RUC' => $item->ruc ? $item->ruc : '-',
-                'Sector Económico' => $item->economicsector ? strtoupper($item->economicsector->name) : '-',
-                'Actividad Comercial Inicial' => $item->comercialactivity ? strtoupper($item->comercialactivity->name) : '-',
-                'Componente' => $item->component ? strtoupper($item->component->name) : '-',
-                'Tema' => $item->theme->name ? strtoupper($item->theme->name) : '-',
-                'Nro de Reserva / Observacion' => $item->observations ? $item->observations : '-',
-                'Modalidad' => $item->modality->name,
-            ]);
-
-        });
-
-        return $results;
+        return $this->result;
     }
 
 

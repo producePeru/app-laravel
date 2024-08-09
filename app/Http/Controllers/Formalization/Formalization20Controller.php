@@ -148,6 +148,8 @@ class Formalization20Controller extends Controller
             'cde_id' => 'integer',
         ]);
 
+
+
         $formalization = Formalization20::create($validatedData);
 
         return response()->json(['message' => 'Formalización creada exitosamente', 'status' => 200]);

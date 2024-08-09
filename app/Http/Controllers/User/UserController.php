@@ -283,4 +283,90 @@ class UserController extends Controller
             return response()->json(['message' => 'Failed to assign view', 'error' => $e->getMessage()], 500);
         }
     }
+
+    public function registerNotario(Request $request)
+    {
+
+
+
+
+
+        // Insertar en la tabla role_user
+
+
+        // Agregar vistas si el rol es 7
+        if($request->input('role_id') === 7)
+        {
+
+        }
+
+        return response()->json(['message' => 'Usuario registrado exitosamente', 'status' => 200]);
+    }
+
+
+
+    // REGISTROS POR PARTES
+
+    public function registerUsers(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'documentnumber' => 'required|string|unique:users,dni',
+                'email' => 'email|unique:users,email',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Errores de validación',
+                'errors' => $e->errors(),
+                'status' => 422
+            ], 422);
+        }
+
+        $user = User::create([
+            'email' => $request->input('email'),
+            'dni' => $request->input('documentnumber'),
+            'password' => bcrypt($request->input('password')),
+        ]);
+
+        return response()->json(['message' => 'Usuario creado', 'status' => 200, 'data' => $user]);
+    }
+
+    public function registerProfiles(Request $request)
+    {
+        Profile::create([
+            'name'          => $request->input('name'),
+            'lastname'      => $request->input('lastname'),
+            'middlename'    => $request->input('middlename'),
+            'documentnumber'=> $request->input('documentnumber'),
+            'birthday'      => $request->input('birthday'),
+            'phone'         => $request->input('phone'),
+            'gender_id'     => $request->input('gender_id'),
+            'cde_id'        => $request->input('cde_id'),
+            'office_id'     => $request->input('office_id'),
+            'user_id'       => $request->input('user_id'),
+            'notary_id'     => $request->input('notary_id')
+        ]);
+
+        return response()->json(['message' => 'Perfil creado', 'status' => 200]);
+    }
+
+    public function registerRoles(Request $request)
+    {
+        DB::table('role_user')->insert([
+            'role_id' => $request->input('role_id'),
+            'user_id' => $request->input('user_id'),
+            'dniuser' => $request->input('documentnumber'),
+        ]);
+
+        return response()->json(['message' => 'Rol creado', 'status' => 200]);
+    }
+
+    public function registerViewsSeven(Request $request)        // asesores externos notarios
+    {
+        View::create([
+            'views'     => json_encode(["home", "asesorias", "asesorias-formalizaciones", "solicitantes"]),
+            'user_id'   => $request->input('user_id')
+        ]);
+        return response()->json(['message' => 'Vista asignadas', 'status' => 200]);
+    }
 }

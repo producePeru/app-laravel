@@ -35,27 +35,60 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+
         $request->validate([
-            'email' => 'required|email',
+            'login' => 'required', // Puede ser email o dni
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $user = Auth::user();
-            $token = $user->createToken('AuthToken')->plainTextToken;
-            $profile = $user->profile->only(['id', 'name', 'lastname', 'middlename', 'documentnumber', 'user_id', 'cde_id']);
-            $role = $user->roles;
-            $email = $user->email;
+        // Determinar el tipo de login: email o dni
+        $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'dni';
 
-            // Construir un array con las vistas decodificadas
-            $views = $user->views->map(function ($view) {
-                return json_decode($view->views, true);
-            })->flatten();
+        $credentials = [
+            $loginType => $request->login,
+            'password' => $request->password,
+        ];
 
-            return response()->json(['token' => $token, 'profile' => $profile, 'email' => $email, 'role' => $role, 'views' => $views], 200);
+        // return $credentials;
+
+        try {
+            if (Auth::attempt($credentials)) {
+                $user = Auth::user();
+                $token = $user->createToken('AuthToken')->plainTextToken;
+                $profile = $user->profile->only(['id', 'name', 'lastname', 'middlename', 'documentnumber', 'user_id', 'cde_id', 'notary_id']);
+                $role = $user->roles;
+                $email = $user->email;
+
+                // Construir un array con las vistas decodificadas
+                $views = $user->views->map(function ($view) {
+                    return json_decode($view->views, true);
+                })->flatten();
+
+                return response()->json(['token' => $token, 'profile' => $profile, 'email' => $email, 'role' => $role, 'views' => $views], 200);
+            }
+
+            return response()->json(['message' => 'Credenciales incorrectas'], 401);
+        } catch (\Exception $e) {
+            // Manejar cualquier excepción
+            return response()->json(['message' => 'Ocurrió un error durante el inicio de sesión', 'error' => $e->getMessage()], 500);
         }
 
-        return response()->json(['message' => 'Credenciales incorrectas'], 401);
+        // if (Auth::attempt($request->only('email', 'password'))) {
+        //     $user = Auth::user();
+        //     $token = $user->createToken('AuthToken')->plainTextToken;
+        //     $profile = $user->profile->only(['id', 'name', 'lastname', 'middlename', 'documentnumber', 'user_id', 'cde_id']);
+        //     $role = $user->roles;
+        //     $email = $user->email;
+
+        //     // Construir un array con las vistas decodificadas
+        //     $views = $user->views->map(function ($view) {
+        //         return json_decode($view->views, true);
+        //     })->flatten();
+
+        //     return response()->json(['token' => $token, 'profile' => $profile, 'email' => $email, 'role' => $role, 'views' => $views], 200);
+        // }
+
+        // return response()->json(['message' => 'Credenciales incorrectas'], 401);
     }
 
     public function logout(Request $request)
