@@ -20,6 +20,8 @@ use App\Http\Controllers\Formalization\ChartController;
 use App\Http\Controllers\Download\DownloadOthersController;
 use App\Http\Controllers\Agreement\AgreementController;
 use App\Http\Controllers\User\TokenController;
+use App\Http\Controllers\Mype\MypeController;
+
 
 Route::post('login', [AuthController::class, 'login']);
 
@@ -136,13 +138,12 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     // Route::get('by-advisors', [ChartController::class, 'countAdvisoriesByAdvisors']);
 
 
-    // NUEVA FUNCION DE SETEO
+    // NUEVA FUNCION DE SETEO para MYPEs
     Route::get('plan-actions', [PlanActionsController::class, 'planActions']);
 
-    Route::post('set-ruc-advisories', [PlanActionsController::class, 'rucAdvisoriesSet']);
-    Route::post('set-ruc-ruc-10', [PlanActionsController::class, 'rucFormalizationR10Set']);
-    Route::post('set-ruc-ruc-20', [PlanActionsController::class, 'rucFormalizationR20Set']);
-
+    Route::put('set-ruc-advisories',   [PlanActionsController::class, 'rucAdvisoriesSet']);
+    Route::put('set-ruc-ruc-10',       [PlanActionsController::class, 'rucFormalizationR10Set']);
+    Route::put('set-ruc-ruc-20',       [PlanActionsController::class, 'rucFormalizationR20Set']);
 });
 
 Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -247,6 +248,19 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('operational-status', [SelectController::class, 'getOperationalStatus']);
     Route::get('agreement-status', [SelectController::class, 'getAgreementStatus']);
     Route::get('type-capital', [SelectController::class, 'getTypeCapital']);
+
+});
+
+// Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
+//     Route::put('mype-info', [MypeController::class, 'setInfoMype']);
+// });
+
+Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::get('list', [MypeController::class, 'index']);
+    Route::put('update/{ruc}', [MypeController::class, 'getApiInfo']);
+    Route::get('get-by-ruc/{ruc}', [MypeController::class, 'getDataByRuc']);
+    Route::put('update-by-ruc/{id}', [MypeController::class, 'updateDataByRuc']);
+    Route::post('create', [MypeController::class, 'store']);
 
 });
 

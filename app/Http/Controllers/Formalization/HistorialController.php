@@ -103,7 +103,7 @@ class HistorialController extends Controller
             $advisories = Advisory::withAdvisoryRangeDate($filters);
             return response()->json($advisories, 200);
         }
-        if (in_array(7, $roleIdArray) || in_array(7, $roleIdArray)) {
+        if (in_array(2, $roleIdArray) || in_array(7, $roleIdArray)) {
             $results = Advisory::ByUserId($user_id)->withAdvisoryRangeDate($filters);
             return response()->json($results, 200);
         }
@@ -130,7 +130,7 @@ class HistorialController extends Controller
             $data = Formalization10::withFormalizationRangeDate($filters);
             return response()->json($data, 200);
         }
-        if (in_array(2, $roleIdArray)) {
+        if (in_array(2, $roleIdArray) || in_array(7, $roleIdArray)) {
             $results = Formalization10::ByUserId($user_id)->withFormalizationRangeDate($filters);
             return response()->json($results, 200);
         }
@@ -154,7 +154,7 @@ class HistorialController extends Controller
             $data = Formalization20::withFormalizationRangeDate($filters);
             return response()->json($data, 200);
         }
-        if (in_array(2, $roleIdArray)) {
+        if (in_array(2, $roleIdArray) || in_array(7, $roleIdArray)) {
             $results = Formalization20::ByUserId($user_id)->withFormalizationRangeDate($filters);
             return response()->json($results, 200);
         }

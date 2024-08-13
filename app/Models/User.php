@@ -108,6 +108,11 @@ class User extends Authenticatable
         return $this->hasOne(SupervisorUser::class, 'supervisor_id', 'id');
     }
 
+    public function cde()
+    {
+        return $this->belongsTo('App\Models\Cde');
+    }
+
     // public function scopeWithProfileAsesories($query)
     // {
     //     return $query->has('asesores')

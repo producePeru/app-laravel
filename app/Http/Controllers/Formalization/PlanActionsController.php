@@ -71,7 +71,7 @@ class PlanActionsController extends Controller
             'data' => $dataToInsert
         ];
 
-        return response()->json(['message' => 'success']);
+        return response()->json(['message' => 'success', 'status' => 200]);
     }
 
 
@@ -109,7 +109,7 @@ class PlanActionsController extends Controller
             'data' => $dataToInsert
         ];
 
-        return response()->json(['message' => 'success']);
+        return response()->json(['message' => 'success', 'status' => 200]);
     }
 
 
@@ -146,25 +146,6 @@ class PlanActionsController extends Controller
             'data' => $dataToInsert
         ];
 
-        return response()->json(['message' => 'success']);
+        return response()->json(['message' => 'success', 'status' => 200]);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
