@@ -128,8 +128,8 @@ class MypeController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'ruc' => 'required|max:11',
-            'createdFrom' => 'required',
+            'ruc' => 'max:11',
+            'createdFrom' => 'string',
             'rasonSocial' => 'nullable|string', // Opcional
         ]);
 
