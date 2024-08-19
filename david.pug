@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 //CREAR
 public function store(Request $request)
@@ -57,16 +57,16 @@ php artisan make:model Sede
 php artisan migrate
 
 
-php artisan route:list  
+php artisan route:list
 php artisan migrate:reset
 
 
 
- 
+
 
 php artisan make:model Testin --all
 
-php artisan migrate 
+php artisan migrate
 
 php artisan make:resource TestinCollection
 php artisan make:resource TestinResource
@@ -96,7 +96,7 @@ php artisan queue:work
 
 
 
-Ojo 
+Ojo
 <FilesMatch "\.(php4|php5|php3|php2|php|phtml)$">
 SetHandler application/x-lsphp81
 </FilesMatch>
@@ -123,3 +123,19 @@ SetHandler application/x-lsphp81
 </ifmodule>
 
 y el serve.php
+
+
+
+
+
+
+
+
+
+
+
+CREAR TAREA EN COLAS
+php artisan make:job SendPdfCertificadosEmailsJob
+
+php artisan make:controller Automatic/CertificadoPDFController
+

@@ -172,4 +172,26 @@ class PersonController extends Controller
         return response()->json(['message' => 'Perfil actualizado con éxito', 'status' => 200]);
     }
 
+    public function findUserById($dni)
+    {
+        $user = People::where('documentnumber', $dni)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Not Found', 'status' => 404]);
+        }
+
+        $data = [
+            'id' => $user->id,
+            'namePerson' => $user->name.' '. $user->lastname.' '. $user->middlename,
+            'city_id' => $user->city_id,
+            'province_id' => $user->province_id,
+            'district_id' => $user->district_id,
+            'gender_id' => $user->gender_id,
+            'sick' => $user->sick
+        ];
+
+
+        return response()->json(['data' => $data, 'status' => 200]);
+    }
+
 }

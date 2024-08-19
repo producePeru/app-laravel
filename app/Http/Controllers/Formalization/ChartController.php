@@ -70,7 +70,7 @@ class ChartController extends Controller
             ]);
         }
 
-        if (in_array(2, $roleIdArray)) {
+        if (in_array(2, $roleIdArray) || in_array(7, $roleIdArray)) {
 
             $asesories = Advisory::ByUserId($user_id)->descargaExcelAsesorias([
                 'dateStart' => $dateStart,

@@ -151,4 +151,9 @@ class User extends Authenticatable
     //     return $this->hasManyThrough(Advisory::class, SupervisorUser::class, 'user_id', 'id', 'id', 'supervisado_id');
     // }
 
+    public function actionPlans()
+    {
+        return $this->hasOne(ActionPlans::class);
+    }
+
 }

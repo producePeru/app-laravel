@@ -14,6 +14,9 @@ class MypeController extends Controller
     {
         $query = Mype::query();
 
+        // Excluir registros donde el campo 'ruc' es null o vacío
+        $query->whereNotNull('ruc')->where('ruc', '<>', '');
+
         if ($request->has('search')) {
             $search = $request->input('search');
             $fields = ['ruc', 'razonSocial', 'actividadEconomica', 'departamento', 'provincia', 'distrito', 'direccion'];

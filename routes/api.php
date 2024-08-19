@@ -13,6 +13,7 @@ use App\Http\Controllers\Formalization\PlanActionsController;
 use App\Http\Controllers\Formalization\NotaryController;
 use App\Http\Controllers\Formalization\HistorialController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
+use App\Http\Controllers\Download\DownloadActionsPlanController;
 use App\Http\Controllers\User\SupervisorController;
 use App\Http\Controllers\Drive\DriveController;
 use App\Http\Controllers\Formalization\FormalizationDigitalController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Download\DownloadOthersController;
 use App\Http\Controllers\Agreement\AgreementController;
 use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\Mype\MypeController;
+use App\Http\Controllers\Automatic\CertificadoPDFController;
 
 
 Route::post('login', [AuthController::class, 'login']);
@@ -92,11 +94,13 @@ Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middl
 });
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-  Route::get('list', [PersonController::class, 'index']);
-  Route::get('found/{type}/{dni}', [PersonController::class, 'dniFoundUser']);
-  Route::post('create', [PersonController::class, 'store']);
-  Route::delete('delete/{id}', [PersonController::class, 'destroy']);
-  Route::put('update/{id}', [PersonController::class, 'update']);
+  Route::get('list',                [PersonController::class, 'index']);
+  Route::get('found/{type}/{dni}',  [PersonController::class, 'dniFoundUser']);
+  Route::post('create',             [PersonController::class, 'store']);
+  Route::delete('delete/{id}',      [PersonController::class, 'destroy']);
+  Route::put('update/{id}',         [PersonController::class, 'update']);
+  Route::get('data/{dni}',          [PersonController::class, 'findUserById']);            //busca people x id
+
 });
 
 
@@ -162,9 +166,12 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
 });
 
 Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::get('asesories', [DownloadFormalizationsController::class, 'exportAsesories']);
-    Route::get('formalizations-ruc10', [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
-    Route::get('formalizations-ruc20', [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
+    Route::get('asesories',             [DownloadFormalizationsController::class, 'exportAsesories']);
+    Route::get('formalizations-ruc10',  [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
+    Route::get('formalizations-ruc20',  [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
+
+    Route::get('actions-plans',         [DownloadActionsPlanController::class, 'exportActionPlans']);
+
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -261,6 +268,21 @@ Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('get-by-ruc/{ruc}', [MypeController::class, 'getDataByRuc']);
     Route::put('update-by-ruc/{id}', [MypeController::class, 'updateDataByRuc']);
     Route::post('create', [MypeController::class, 'store']);
+
+});
+
+Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::get('list', [PlanActionsController::class, 'index']);
+    Route::get('components/{ruc}', [PlanActionsController::class, 'listAllServicesAF']);
+    Route::post('create', [PlanActionsController::class, 'store']);
+    Route::put('edit-component', [PlanActionsController::class, 'editComponent']);
+    Route::put('edit-yes-no', [PlanActionsController::class, 'updateField']);
+
+
+});
+
+Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
+    Route::post('send-certificates', [CertificadoPDFController::class, 'sendEmailWithCertificates']);
 
 });
 

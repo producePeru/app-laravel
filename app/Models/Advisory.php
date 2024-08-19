@@ -20,7 +20,7 @@ class Advisory extends Model
     protected $hidden = [
         'people_id',
         'component_id',
-        'theme_id',
+        // 'theme_id',
         'modality_id',
         'province_id',
         'city_id',

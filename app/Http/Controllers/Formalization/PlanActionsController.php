@@ -7,11 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\Advisory;
 use App\Models\Formalization10;
 use App\Models\Formalization20;
+use App\Models\ActionPlans;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class PlanActionsController extends Controller
 {
-
 
     public function planActions()
     {
@@ -148,4 +149,255 @@ class PlanActionsController extends Controller
 
         return response()->json(['message' => 'success', 'status' => 200]);
     }
+
+    public function listAllServicesAF($ruc)
+    {
+        $advisories = Advisory::where('ruc', $ruc)->with(['component'])->orderBy('created_at', 'desc')->get();
+        $f10 = Formalization10::where('ruc', $ruc)->orderBy('created_at', 'desc')->first();
+        $f20 = Formalization20::where('ruc', $ruc)->orderBy('created_at', 'desc')->first();
+
+        $components = [
+            'component_1' => null,
+            'component_2' => null,
+            'component_3' => null,
+            'endDate' => null
+        ];
+
+        $addedComponents = []; // Arreglo auxiliar para almacenar componentes ya agregados
+
+        if ($f20) {
+            $components['component_1'] = 4;
+            $components['endDate'] = $f20->created_at;
+        } elseif ($f10) {
+            $components['component_1'] = 4;
+            $components['endDate'] = $f10->created_at;
+        }
+
+        if (!$f20 && !$f10 && $advisories->isNotEmpty()) {
+            $advisoryComponents = $advisories->take(3);
+            foreach ($advisoryComponents as $index => $advisory) {
+                if ($index == 0 && !$components['component_1']) {
+                    $components['component_1'] = $advisory->component->id;
+                    $components['endDate'] = $advisory->created_at;
+                    $addedComponents[] = $advisory->component->id;
+                } elseif ($index == 1 && !$components['component_2']) {
+                    if (!in_array($advisory->component->id, $addedComponents)) {
+                        $components['component_2'] = $advisory->component->id;
+                        $addedComponents[] = $advisory->component->id;
+                    }
+                } elseif ($index == 2 && !$components['component_3']) {
+                    if (!in_array($advisory->component->id, $addedComponents)) {
+                        $components['component_3'] = $advisory->component->id;
+                        $addedComponents[] = $advisory->component->id;
+                    }
+                }
+            }
+        } elseif ($advisories->isNotEmpty()) {
+            $advisoryComponents = $advisories->take(2);
+            foreach ($advisoryComponents as $index => $advisory) {
+                if (!in_array($advisory->component->id, $addedComponents)) {
+                    $components['component_' . ($index+2)] = $advisory->component->id;
+                    $addedComponents[] = $advisory->component->id;
+                }
+            }
+        }
+
+        return response()->json(['data' => $components, 'status' => 200]);
+    }
+
+
+    public function store(Request $request)
+    {
+        $user_role = getUserRole();
+
+        $existingActionPlan = ActionPlans::where('ruc', $request->ruc)->first();
+
+        if ($existingActionPlan) {
+            return response()->json(['message' => 'El RUC ya está en uso', 'status' => 400]);
+        }
+
+        $data = [
+            'people_id' => $request->people_id,
+            'asesor_id' => $user_role['user_id'],
+            'cde_id' => $request->cde_id,
+            'component_1' => $request->component_1,
+            'component_2' => $request->component_2,
+            'component_3' => $request->component_3,
+            'ruc' => $request->ruc,
+            'numberSessions' => (
+                ($request->component_1 ? 1 : 0) +
+                ($request->component_2 ? 1 : 0) +
+                ($request->component_3 ? 1 : 0)
+            ),
+            'startDate' => $request->startDate,
+            'endDate' => $request->endDate,
+            'totalDate' => Carbon::parse($request->startDate)->diffInDays(Carbon::parse($request->endDate))
+        ];
+
+        $actionPlan = ActionPlans::create($data);
+
+        if ($actionPlan) {
+            return response()->json(['message' => 'Plan de acción creado con éxito', 'status' => 200]);
+        } else {
+            return response()->json(['message' => 'Error al crear el action plan', 'status' => 500]);
+        }
+    }
+
+    public function index(Request $request)
+    {
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+
+        $query = ActionPlans::with([
+            'user.profile:id,user_id,name,lastname,middlename,notary_id,cde_id',
+            'cde',
+            'businessman',
+            'businessman.city:id,name',
+            'businessman.province:id,name',
+            'businessman.district:id,name',
+            'businessman.gender:id,avr',
+        ]);
+
+        if (in_array(2, $role_array) || in_array(7, $role_array)) {
+            $query->where('asesor_id', $user_role['user_id']);
+        } elseif (in_array(1, $role_array) || in_array(5, $role_array)) {
+            // AQUI DEVULEVE SIN EL FILTRO
+        } else {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+
+        // Filtros
+        if ($search = $request->input('search')) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('user.profile', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('lastname', 'like', "%{$search}%")
+                      ->orWhere('middlename', 'like', "%{$search}%");
+                })
+                ->orWhereHas('cde', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('businessman.city', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('businessman.province', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('businessman.district', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('businessman', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('lastname', 'like', "%{$search}%")
+                      ->orWhere('middlename', 'like', "%{$search}%")
+                      ->orWhere('ruc', 'like', "%{$search}%");
+                })
+                ->orWhere('component_1', 'like', "%{$search}%")
+                ->orWhere('component_2', 'like', "%{$search}%")
+                ->orWhere('component_3', 'like', "%{$search}%")
+                ->orWhere('startDate', 'like', "%{$search}%")
+                ->orWhere('endDate', 'like', "%{$search}%");
+            });
+        }
+
+
+        $query->latest();
+
+        $paginatedData = $query->paginate(50);
+
+        $data = $paginatedData->getCollection()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'centro_empresa' => $item->cde->name,
+                'asesor' => $item->user->profile->name.' '.$item->user->profile->lastname.' '.$item->user->profile->middlename,
+                'emprendedor_region' => $item->businessman->city->name,
+                'emprendedor_provincia' => $item->businessman->province->name,
+                'emprendedor_distrito' => $item->businessman->district->name,
+                'emprendedor_nombres' => $item->businessman->name.' '.$item->businessman->lastname.' '.$item->businessman->middlename,
+                'ruc' => $item->ruc,
+                'genero' => $item->businessman->gender->avr,
+                'discapacidad' => $item->businessman->sick,
+                'component_1' => $item->component_1,
+                'component_2' => $item->component_2,
+                'component_3' => $item->component_3,
+                'numberSessions' => $item->numberSessions,
+                'startDate' => $item->startDate,
+                'endDate' => $item->endDate,
+                'totalDate' => $item->totalDate,
+                'actaCompromiso' => $item->actaCompromiso,
+                'envioCorreo' => $item->envioCorreo,
+                'updated_at' => Carbon::parse($item->updated_at)->format('Y-m-d'),
+            ];
+        })->values();
+
+        return response()->json([
+            'data' => $data,
+            'pagination' => [
+                'current_page' => $paginatedData->currentPage(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total(),
+            ],
+            'status' => 200
+        ]);
+    }
+
+    public function editComponent(Request $request)
+    {
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+
+        if (!in_array(2, $role_array) && !in_array(7, $role_array)) {
+            return response()->json(['message' => 'No tienes permisos para editar este componente', 'status' => 401]);
+        }
+
+        $validatedData = $request->validate([
+            'idPlan' => 'required|integer',
+            'nameComponent' => 'required|string|in:component_1,component_2,component_3',
+            'valueComponent' => 'required|integer'
+        ]);
+
+        $actionPlan = ActionPlans::find($validatedData['idPlan']);
+
+        // Verificar si el valor ya existe en alguno de los otros componentes
+
+        if (
+            ($validatedData['nameComponent'] !== 'component_1' && $actionPlan->component_1 == $validatedData['valueComponent']) ||
+            ($validatedData['nameComponent'] !== 'component_2' && $actionPlan->component_2 == $validatedData['valueComponent']) ||
+            ($validatedData['nameComponent'] !== 'component_3' && $actionPlan->component_3 == $validatedData['valueComponent'])
+        ) {
+            return response()->json(['message' => 'El valor ya existe en otro componente. No se permiten valores duplicados en los componentes.', 'status' => 400]);
+        }
+
+        $actionPlan->{$validatedData['nameComponent']} = $validatedData['valueComponent'];
+        $actionPlan->save();
+
+        return response()->json(['message' => 'Componente actualizado exitosamente.', 'status' => 200]);
+    }
+
+    public function updateField(Request $request)
+    {
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+
+        if (!in_array(2, $role_array) && !in_array(7, $role_array)) {
+            return response()->json(['message' => 'No tienes permisos para actualizar este campo', 'status' => 401]);
+        }
+
+        $validatedData = $request->validate([
+            'idPlan' => 'required|integer',
+            'type' => 'required|string|in:actaCompromiso,envioCorreo',
+            'value' => 'required',
+        ]);
+
+        $actionPlan = ActionPlans::find($validatedData['idPlan']);
+
+        // Actualizar el campo correspondiente
+        $actionPlan->{$validatedData['type']} = $validatedData['value'];
+        $actionPlan->save();
+
+        return response()->json(['message' => ucfirst($validatedData['type']) . ' actualizado exitosamente.', 'status' => 200]);
+    }
+
 }
