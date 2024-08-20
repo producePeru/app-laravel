@@ -286,6 +286,11 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
 });
 
+Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
+    Route::post('index-calendar', [CertificadoPDFController::class, 'calendar']);
+
+});
+
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
 
