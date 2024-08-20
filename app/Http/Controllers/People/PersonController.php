@@ -50,7 +50,7 @@ class PersonController extends Controller
         }
 
 
-        if (in_array(2, $roleIdArray)) {
+        if (in_array(2, $roleIdArray) || in_array(7, $roleIdArray)) {
             $people = People::withProfileAndUser($user_id, $filters);
             return response()->json($people, 200);
         }

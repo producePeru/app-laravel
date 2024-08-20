@@ -108,15 +108,18 @@ class AgreementExport implements FromCollection, WithHeadings, WithStyles, WithC
         $sheet->getStyle('A1:P1')->getFont()->getColor()->setARGB('FFFFFF');
         $sheet->getStyle('A1:P1')->getFont()->setBold(true);
 
+
+        $sheet->getStyle('G1')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('J1')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('K1')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('M1:O1')->getAlignment()->setWrapText(true);
+
+        $sheet->getStyle('A1:P1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1:P1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+
+
         $styles = [];
         $highestRow = $sheet->getHighestRow();
-
-        for ($row = 2; $row <= $highestRow; $row++) {
-            $styles[$row] = ['fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['rgb' => ($row % 2 == 0) ? 'EEEEEE' : 'FFFFFF']
-            ]];
-        }
 
         return $styles;
     }
@@ -125,20 +128,20 @@ class AgreementExport implements FromCollection, WithHeadings, WithStyles, WithC
     {
         return [
             'A' => 6,
-            'B' => 8,
-            'C' => 8,
-            'D' => 8,
-            'E' => 14,
-            'F' => 14,
-            'G' => 10,
-            'H' => 12,
-            'I' => 12,
-            'J' => 8,
-            'K' => 15,
+            'B' => 12,
+            'C' => 12,
+            'D' => 12,
+            'E' => 16,
+            'F' => 20,
+            'G' => 13,
+            'H' => 22,
+            'I' => 17,
+            'J' => 24,
+            'K' => 29,
             'L' => 15,
-            'M' => 10,
+            'M' => 14,
             'N' => 13,
-            'O' => 10,
+            'O' => 13,
             'P' => 15
         ];
     }

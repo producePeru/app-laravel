@@ -18,7 +18,7 @@ class Agreement extends Model
     protected $fillable = [
         'denomination', 'alliedEntity', 'homeOperations', 'address',
         'reference', 'resolution', 'initials', 'startDate','endDate',
-        'city_id', 'province_id', 'district_id', 'operationalstatus_id', 'agreementstatus_id', 'created_id'
+        'city_id', 'province_id', 'district_id', 'created_id'
     ];
 
     public function estadoOperatividad()

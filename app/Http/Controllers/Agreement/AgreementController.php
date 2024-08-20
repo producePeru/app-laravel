@@ -31,7 +31,15 @@ class AgreementController extends Controller
         }
 
         $query = Agreement::with(
-            ['estadoOperatividad', 'estadoConvenio', 'region', 'provincia', 'distrito', 'acciones', 'archivosConvenios']
+            [
+                'estadoOperatividad',
+                'estadoConvenio',
+                'region',
+                'provincia',
+                'distrito',
+                'acciones',
+                'archivosConvenios'
+            ]
         )->join('cities', 'agreements.city_id', '=', 'cities.id')
         ->select('agreements.*', DB::raw('DATEDIFF(agreements.endDate, agreements.startDate) as date_diff'))
         ->orderBy('date_diff', $dateDiffOrder)
@@ -52,7 +60,27 @@ class AgreementController extends Controller
 
         $data->getCollection()->transform(function ($item) {        // 🚩decode flat
             $item['initials'] = json_decode($item['initials']);
-            return $item;
+            // return $item;
+            return [
+                'id' => $item->id,
+                'city' => $item->region->name,
+                'province' => $item->provincia->name,
+                'district' => $item->distrito->name,
+                'denomination' => $item->denomination,
+                'entity' => $item->alliedEntity,
+                'startOperations' => $item->homeOperations,
+                'address' => $item->address,
+                'references' => $item->reference,
+                // 'asesores' => $item
+                'resolution' => $item->resolution,
+                'statusOperations' => $item->estado_operatividad,
+                'statusConveny' => $item->estado_convenio,
+                'entities' => $item->initials,
+                'startDate' => $item->startDate,
+                'endDate' => $item->endDate,
+                'acciones' => $item->acciones
+            ];
+
         });
 
         return response()->json(['data' => $data]);
