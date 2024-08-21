@@ -272,12 +272,13 @@ Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middle
 });
 
 Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::get('list', [PlanActionsController::class, 'index']);
-    Route::get('components/{ruc}', [PlanActionsController::class, 'listAllServicesAF']);
-    Route::post('create', [PlanActionsController::class, 'store']);
-    Route::put('edit-component', [PlanActionsController::class, 'editComponent']);
-    Route::put('edit-yes-no', [PlanActionsController::class, 'updateField']);
-
+    Route::get('list',                  [PlanActionsController::class, 'index']);
+    Route::get('components/{ruc}',      [PlanActionsController::class, 'listAllServicesAF']);
+    Route::post('create',               [PlanActionsController::class, 'store']);
+    Route::put('edit-component',        [PlanActionsController::class, 'editComponent']);
+    Route::put('edit-yes-no',           [PlanActionsController::class, 'updateField']);
+    Route::post('update',               [PlanActionsController::class, 'update']);
+    Route::delete('delete/{id}',        [PlanActionsController::class, 'delete']);
 
 });
 

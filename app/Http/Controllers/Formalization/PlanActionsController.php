@@ -315,6 +315,7 @@ class PlanActionsController extends Controller
                 'emprendedor_provincia' => $item->businessman->province->name,
                 'emprendedor_distrito' => $item->businessman->district->name,
                 'emprendedor_nombres' => $item->businessman->name.' '.$item->businessman->lastname.' '.$item->businessman->middlename,
+                'emprendedor_dni' => $item->businessman->documentnumber,
                 'ruc' => $item->ruc,
                 'genero' => $item->businessman->gender->avr,
                 'discapacidad' => $item->businessman->sick,
@@ -398,6 +399,52 @@ class PlanActionsController extends Controller
         $actionPlan->save();
 
         return response()->json(['message' => ucfirst($validatedData['type']) . ' actualizado exitosamente.', 'status' => 200]);
+    }
+
+    public function update(Request $request)
+    {
+        $validatedData = $request->validate([
+            'people_id' => 'required|integer',
+            'cde_id' => 'required|integer',
+            'component_1' => 'required',
+            'component_2' => 'nullable',
+            'component_3' => 'nullable',
+            'ruc' => 'required|string|max:11',
+            'startDate' => 'required|date',
+            'endDate' => 'required|date',
+            'idItem' => 'required|integer',
+        ]);
+
+        $payload = [
+            'people_id' =>      $validatedData['people_id'],
+            'cde_id' =>         $validatedData['cde_id'],
+            'component_1' =>    $validatedData['component_1'],
+            'component_2' =>    $validatedData['component_2'],
+            'component_3' =>    $validatedData['component_3'],
+            'ruc' =>            $validatedData['ruc'],
+            'startDate' =>      $validatedData['startDate'],
+            'endDate' =>        $validatedData['endDate'],
+        ];
+
+        $actionPlan = ActionPlans::where('id', $validatedData['idItem'])->update($payload);
+
+        if ($actionPlan) {
+            return response()->json(['message' => 'Plan de acción actualizado', 'status' => 200]);
+        } else {
+            return response()->json(['message' => 'Action Plan not found or update failed', 'status' => 404]);
+        }
+    }
+
+    public function delete($id)
+    {
+        $actionPlan = ActionPlans::find($id);
+
+        if ($actionPlan) {
+            $actionPlan->delete();
+            return response()->json(['message' => 'Se ha eliminado el registro', 'status' => 200]);
+        } else {
+            return response()->json(['message' => 'Action Plan not found'], 404);
+        }
     }
 
 }
