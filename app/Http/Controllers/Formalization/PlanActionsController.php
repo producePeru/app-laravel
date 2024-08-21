@@ -210,11 +210,11 @@ class PlanActionsController extends Controller
     {
         $user_role = getUserRole();
 
-        $existingActionPlan = ActionPlans::where('ruc', $request->ruc)->first();
+        // $existingActionPlan = ActionPlans::where('ruc', $request->ruc)->first();
 
-        if ($existingActionPlan) {
-            return response()->json(['message' => 'El RUC ya está en uso', 'status' => 400]);
-        }
+        // if ($existingActionPlan) {
+        //     return response()->json(['message' => 'El RUC ya está en uso', 'status' => 400]);
+        // }
 
         $data = [
             'people_id' => $request->people_id,
@@ -256,6 +256,9 @@ class PlanActionsController extends Controller
             'businessman.province:id,name',
             'businessman.district:id,name',
             'businessman.gender:id,avr',
+            'component1',
+            'component2',
+            'component3'
         ]);
 
         if (in_array(2, $role_array) || in_array(7, $role_array)) {
@@ -319,16 +322,22 @@ class PlanActionsController extends Controller
                 'ruc' => $item->ruc,
                 'genero' => $item->businessman->gender->avr,
                 'discapacidad' => $item->businessman->sick,
-                'component_1' => $item->component_1,
-                'component_2' => $item->component_2,
-                'component_3' => $item->component_3,
+
+                'component_1' => $item->component1->name,
+                'component_2' => optional($item->component2)->name,
+                'component_3' => optional($item->component3)->name,
+
+                    // 'component_1' => $item->component_1,
+                    // 'component_2' => $item->component_2,
+                    // 'component_3' => $item->component_3,
+
                 'numberSessions' => $item->numberSessions,
                 'startDate' => $item->startDate,
                 'endDate' => $item->endDate,
                 'totalDate' => $item->totalDate,
                 'actaCompromiso' => $item->actaCompromiso,
                 'envioCorreo' => $item->envioCorreo,
-                'updated_at' => Carbon::parse($item->updated_at)->format('Y-m-d'),
+                'updated_at' => Carbon::parse($item->updated_at)->format('d-m-Y'),
             ];
         })->values();
 
@@ -349,32 +358,30 @@ class PlanActionsController extends Controller
         $user_role = getUserRole();
         $role_array = $user_role['role_id'];
 
-        if (!in_array(2, $role_array) && !in_array(7, $role_array)) {
-            return response()->json(['message' => 'No tienes permisos para editar este componente', 'status' => 401]);
+        if (in_array(1, $role_array) && in_array(5, $role_array)) {
+            $validatedData = $request->validate([
+                'idPlan' => 'required|integer',
+                'nameComponent' => 'required|string|in:component_1,component_2,component_3',
+                'valueComponent' => 'required|integer'
+            ]);
+
+            $actionPlan = ActionPlans::find($validatedData['idPlan']);
+
+            // Verificar si el valor ya existe en alguno de los otros componentes
+
+            if (
+                ($validatedData['nameComponent'] !== 'component_1' && $actionPlan->component_1 == $validatedData['valueComponent']) ||
+                ($validatedData['nameComponent'] !== 'component_2' && $actionPlan->component_2 == $validatedData['valueComponent']) ||
+                ($validatedData['nameComponent'] !== 'component_3' && $actionPlan->component_3 == $validatedData['valueComponent'])
+            ) {
+                return response()->json(['message' => 'El valor ya existe en otro componente. No se permiten valores duplicados en los componentes.', 'status' => 400]);
+            }
+
+            $actionPlan->{$validatedData['nameComponent']} = $validatedData['valueComponent'];
+            $actionPlan->save();
+
+            return response()->json(['message' => 'Componente actualizado exitosamente.', 'status' => 200]);
         }
-
-        $validatedData = $request->validate([
-            'idPlan' => 'required|integer',
-            'nameComponent' => 'required|string|in:component_1,component_2,component_3',
-            'valueComponent' => 'required|integer'
-        ]);
-
-        $actionPlan = ActionPlans::find($validatedData['idPlan']);
-
-        // Verificar si el valor ya existe en alguno de los otros componentes
-
-        if (
-            ($validatedData['nameComponent'] !== 'component_1' && $actionPlan->component_1 == $validatedData['valueComponent']) ||
-            ($validatedData['nameComponent'] !== 'component_2' && $actionPlan->component_2 == $validatedData['valueComponent']) ||
-            ($validatedData['nameComponent'] !== 'component_3' && $actionPlan->component_3 == $validatedData['valueComponent'])
-        ) {
-            return response()->json(['message' => 'El valor ya existe en otro componente. No se permiten valores duplicados en los componentes.', 'status' => 400]);
-        }
-
-        $actionPlan->{$validatedData['nameComponent']} = $validatedData['valueComponent'];
-        $actionPlan->save();
-
-        return response()->json(['message' => 'Componente actualizado exitosamente.', 'status' => 200]);
     }
 
     public function updateField(Request $request)
@@ -394,15 +401,21 @@ class PlanActionsController extends Controller
 
         $actionPlan = ActionPlans::find($validatedData['idPlan']);
 
-        // Actualizar el campo correspondiente
-        $actionPlan->{$validatedData['type']} = $validatedData['value'];
-        $actionPlan->save();
+        if (is_null($actionPlan->{$validatedData['type']})) {
+            $actionPlan->{$validatedData['type']} = $validatedData['value'];
+            $actionPlan->save();
 
-        return response()->json(['message' => ucfirst($validatedData['type']) . ' actualizado exitosamente.', 'status' => 200]);
+            return response()->json(['message' => ucfirst($validatedData['type']) . ' actualizado exitosamente.', 'status' => 200]);
+        } else {
+            return response()->json(['message' => 'El campo ' . $validatedData['type'] . ' ya tiene un valor y no se puede actualizar.', 'status' => 400]);
+        }
     }
 
     public function update(Request $request)
     {
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+
         $validatedData = $request->validate([
             'people_id' => 'required|integer',
             'cde_id' => 'required|integer',
@@ -426,24 +439,33 @@ class PlanActionsController extends Controller
             'endDate' =>        $validatedData['endDate'],
         ];
 
-        $actionPlan = ActionPlans::where('id', $validatedData['idItem'])->update($payload);
+        if (in_array(1, $role_array) && in_array(5, $role_array)) {
 
-        if ($actionPlan) {
-            return response()->json(['message' => 'Plan de acción actualizado', 'status' => 200]);
-        } else {
-            return response()->json(['message' => 'Action Plan not found or update failed', 'status' => 404]);
+            $actionPlan = ActionPlans::where('id', $validatedData['idItem'])->update($payload);
+
+            if ($actionPlan) {
+                return response()->json(['message' => 'Plan de acción actualizado', 'status' => 200]);
+            } else {
+                return response()->json(['message' => 'Action Plan not found or update failed', 'status' => 404]);
+            }
         }
     }
 
     public function delete($id)
     {
-        $actionPlan = ActionPlans::find($id);
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
 
-        if ($actionPlan) {
-            $actionPlan->delete();
-            return response()->json(['message' => 'Se ha eliminado el registro', 'status' => 200]);
-        } else {
-            return response()->json(['message' => 'Action Plan not found'], 404);
+        if (in_array(1, $role_array) && in_array(5, $role_array)) {
+            $actionPlan = ActionPlans::find($id);
+
+            if ($actionPlan) {
+                $actionPlan->delete();
+                return response()->json(['message' => 'Se ha eliminado el registro', 'status' => 200]);
+            } else {
+                return response()->json(['message' => 'Action Plan not found'], 404);
+            }
+
         }
     }
 

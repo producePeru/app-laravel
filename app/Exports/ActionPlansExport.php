@@ -106,7 +106,8 @@ class ActionPlansExport implements FromCollection, WithHeadings, WithTitle, With
             'DÍA FIN',
             'TOTAL DE DÍAS',
             'ACTA DE COMPROMISO',
-            'CULMINÓ EL PLAN DE ACCIÓN Y ENVIÓ CORREO'
+            'CULMINÓ EL PLAN DE ACCIÓN Y ENVIÓ CORREO',
+            'FECHA'
         ];
     }
 }
