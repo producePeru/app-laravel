@@ -332,9 +332,9 @@ class PlanActionsController extends Controller
                     // 'component_3' => $item->component_3,
 
                 'numberSessions' => $item->numberSessions,
-                'startDate' => $item->startDate,
+                'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
                 'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
-                'totalDate' => Carbon::parse($item->totalDate)->format('d-m-Y'),
+                'totalDate' => $item->totalDate,
                 'actaCompromiso' => $item->actaCompromiso,
                 'envioCorreo' => $item->envioCorreo,
                 'updated_at' => Carbon::parse($item->updated_at)->format('d-m-Y'),
