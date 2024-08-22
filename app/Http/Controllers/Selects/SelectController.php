@@ -198,23 +198,12 @@ class SelectController extends Controller
     {
         $detailProcedures = DetailProcedure::all();
 
-        // $data = $detailProcedures->map(function ($item) {
-        //     return [
-        //         'label' => $item->name,
-        //         'value' => $item->id
-        //     ];
-        // });
-        // return response()->json(['data' => $data]);
-
-        $data = $detailProcedures->reject(function ($item) {
-            return $item->id == 3;
-        })->map(function ($item) {
+        $data = $detailProcedures->map(function ($item) {
             return [
                 'label' => $item->name,
                 'value' => $item->id
             ];
         });
-
         return response()->json(['data' => $data]);
     }
 
