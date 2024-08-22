@@ -333,8 +333,8 @@ class PlanActionsController extends Controller
 
                 'numberSessions' => $item->numberSessions,
                 'startDate' => $item->startDate,
-                'endDate' => $item->endDate,
-                'totalDate' => $item->totalDate,
+                'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
+                'totalDate' => Carbon::parse($item->totalDate)->format('d-m-Y'),
                 'actaCompromiso' => $item->actaCompromiso,
                 'envioCorreo' => $item->envioCorreo,
                 'updated_at' => Carbon::parse($item->updated_at)->format('d-m-Y'),
@@ -439,7 +439,7 @@ class PlanActionsController extends Controller
             'endDate' =>        $validatedData['endDate'],
         ];
 
-        if (in_array(1, $role_array) && in_array(5, $role_array)) {
+        if (in_array(1, $role_array) || in_array(5, $role_array)) {
 
             $actionPlan = ActionPlans::where('id', $validatedData['idItem'])->update($payload);
 
@@ -456,7 +456,7 @@ class PlanActionsController extends Controller
         $user_role = getUserRole();
         $role_array = $user_role['role_id'];
 
-        if (in_array(1, $role_array) && in_array(5, $role_array)) {
+        if (in_array(1, $role_array) || in_array(5, $role_array)) {
             $actionPlan = ActionPlans::find($id);
 
             if ($actionPlan) {

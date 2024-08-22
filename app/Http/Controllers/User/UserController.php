@@ -270,19 +270,20 @@ class UserController extends Controller
     public function showViewsUser($id)
     {
         try {
-            $view = View::find($id);
+            $view = View::where('user_id', $id)->first();
 
             if (!$view) {
-                return response()->json(['message' => 'View not found'], 404);
+                return response()->json(['message' => 'Not found'], 404);
             }
 
             $data = json_decode($view->views, true);
 
             return response()->json(['data' => $data, 'status' => 200]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Failed to assign view', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to retrieve views', 'error' => $e->getMessage()], 500);
         }
     }
+
 
     public function registerNotario(Request $request)
     {
