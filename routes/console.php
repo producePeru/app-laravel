@@ -86,3 +86,35 @@ Artisan::command('inspire', function () {
 
 // ALTER TABLE formalizations20
 // ADD COLUMN montocapital VARCHAR(10) DEFAULT NULL AFTER isbic;
+
+
+// USER_
+
+// ALTER TABLE agreements
+// ADD COLUMN created_id BIGINT UNSIGNED AFTER observations;
+
+// ALTER TABLE agreements
+// ADD CONSTRAINT fk_agreements_created_id FOREIGN KEY (created_id) REFERENCES users(id) ON DELETE CASCADE;
+
+
+// /**
+//  ME EQUIVOQUE DE LLAVE FORANEA
+
+// SELECT CONSTRAINT_NAME
+// FROM information_schema.KEY_COLUMN_USAGE
+// WHERE TABLE_NAME = 'people'
+//   AND COLUMN_NAME = 'country_id';
+
+// ALTER TABLE people
+// DROP FOREIGN KEY fk_people_country_id;
+
+//*** Finalmente cambiar nombre y eliminar */
+//  **/
+
+
+
+// ALTER TABLE people
+// ADD COLUMN country_id BIGINT UNSIGNED AFTER country;
+
+// ALTER TABLE people
+// ADD CONSTRAINT fk_people_country_id FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE CASCADE;

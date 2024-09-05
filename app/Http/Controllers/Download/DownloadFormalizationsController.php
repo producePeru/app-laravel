@@ -34,12 +34,15 @@ class DownloadFormalizationsController extends Controller
             'user.profile:id,user_id,name,lastname,middlename,notary_id,cde_id',
             'user.profile.notary:id,name',
             'user.profile.cde',
-            'people:id,name,lastname,middlename,country,birthday,hasSoon,sick,phone,email,documentnumber,typedocument_id,gender_id',
+            'people:id,name,lastname,middlename,country,birthday,hasSoon,sick,phone,email,documentnumber,typedocument_id,gender_id,country_id',
             'people.typedocument:id,id,name,avr',
             'people.gender:id,id,name,avr',
             'component:id,name',
             'theme:id,name',
             'modality:id,name',
+
+            'people.pais:id,name',
+
             'city:id,name',
             'province:id,name',
             'district:id,name',
@@ -88,7 +91,9 @@ class DownloadFormalizationsController extends Controller
                 'distrito_cde' => optional($advisory->cde)->district ? optional($advisory->cde)->district : $advisory->user->profile->cde->district,
                 'tipo_documento' => $advisory->people->typedocument->avr,
                 'numero_documento' => $advisory->people->documentnumber,
-                'nombre_pais' => $advisory->people->country ? $advisory->people->country : 'PERÚ',
+
+                'nombre_pais' => $advisory->people->pais ? strtoupper($advisory->people->pais->name) : ($advisory->people->country ? strtoupper($advisory->people->country) : 'PERÚ'),
+
                 'fecha_nacimiento' => Carbon::parse($advisory->people->birthday)->format('d/m/Y'),
                 'apellido_paterno' => strtoupper($advisory->people->lastname),
                 'apellido_materno' => strtoupper($advisory->people->middlename),
@@ -116,7 +121,6 @@ class DownloadFormalizationsController extends Controller
             ];
 
         })->values(); // Convierte la colección en un array indexado
-        // return $result;
         return Excel::download(new AsesoriasExport($result), 'asesorias-pnte.xlsx');
     }
 
@@ -136,10 +140,11 @@ class DownloadFormalizationsController extends Controller
             'user.profile:id,user_id,name,lastname,middlename,notary_id,cde_id',
             'user.profile.notary:id,name',
             'user.profile.cde',
-            'people:id,name,lastname,middlename,country,birthday,hasSoon,sick,phone,email,documentnumber,typedocument_id,gender_id',
+            'people:id,name,lastname,middlename,country,birthday,hasSoon,sick,phone,email,documentnumber,typedocument_id,gender_id,country_id',
             'people.typedocument:id,id,name,avr',
             'people.gender:id,id,name,avr',
             'modality:id,name',
+            'people.pais:id,name',
             'city:id,name',
             'province:id,name',
             'district:id,name',
@@ -190,7 +195,7 @@ class DownloadFormalizationsController extends Controller
                 'distrito_cde' => optional($advisory->cde)->district ? optional($advisory->cde)->district : $advisory->user->profile->cde->district,
                 'tipo_documento' => $advisory->people->typedocument->avr,
                 'numero_documento' => $advisory->people->documentnumber,
-                'nombre_pais' => $advisory->people->country ? $advisory->people->country : 'PERÚ',
+                'nombre_pais' => $advisory->people->pais ? strtoupper($advisory->people->pais->name) : ($advisory->people->country ? strtoupper($advisory->people->country) : 'PERÚ'),
                 'fecha_nacimiento' => Carbon::parse($advisory->people->birthday)->format('d/m/Y'),
                 'apellido_paterno' => strtoupper($advisory->people->lastname),
                 'apellido_materno' => strtoupper($advisory->people->middlename),
@@ -238,10 +243,11 @@ class DownloadFormalizationsController extends Controller
             'user.profile:id,user_id,name,lastname,middlename,notary_id,cde_id',
             'user.profile.notary:id,name',
             'user.profile.cde',
-            'people:id,name,lastname,middlename,country,birthday,hasSoon,sick,phone,email,documentnumber,typedocument_id,gender_id',
+            'people:id,name,lastname,middlename,country,birthday,hasSoon,sick,phone,email,documentnumber,typedocument_id,gender_id,country_id',
             'people.typedocument:id,id,name,avr',
             'people.gender:id,id,name,avr',
             'modality:id,name',
+            'people.pais:id,name',
             'city:id,name',
             'province:id,name',
             'district:id,name',
@@ -292,7 +298,7 @@ class DownloadFormalizationsController extends Controller
                 'distrito_cde' => optional($advisory->cde)->district ? optional($advisory->cde)->district : $advisory->user->profile->cde->district,
                 'tipo_documento' => $advisory->people->typedocument->avr,
                 'numero_documento' => $advisory->people->documentnumber,
-                'nombre_pais' => $advisory->people->country ? $advisory->people->country : 'PERÚ',
+                'nombre_pais' => $advisory->people->pais ? strtoupper($advisory->people->pais->name) : ($advisory->people->country ? strtoupper($advisory->people->country) : 'PERÚ'),
                 'fecha_nacimiento' => Carbon::parse($advisory->people->birthday)->format('d/m/Y'),
                 'apellido_paterno' => strtoupper($advisory->people->lastname),
                 'apellido_materno' => strtoupper($advisory->people->middlename),

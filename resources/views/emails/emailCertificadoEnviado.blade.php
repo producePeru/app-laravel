@@ -8,7 +8,7 @@
 
 <body>
     {{-- <p>Hola {{ $email }},</p> --}}
-    <p>Estimado empresario(a)</p>
+    <p>Estimado(a) empresario(a)</p>
     <p>Reciba un cordial saludo.</p>
     <p>
         Reciba Ud. el cordial saludo del Ministerio de la Producción, quien mediante la presente le adjunta la
@@ -16,7 +16,7 @@
         le sea de utilidad, le agradecemos por su participación y lo estaremos esperando para futuros eventos.
     </p>
     <p>Sin otro particular</p>
-    <p>Agradeceremos confirmar la recepción de la constancia por este medio.</p>
+    <p>Agradeceremos confirmar la recepción del correo por este medio.</p>
     {{-- <p>Saludos cordiales.</p> --}}
     <br>
     <b>Programa Nacional Tu Empresa.</b>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Selects;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Country;
 use App\Models\City;
 use App\Models\Province;
 use App\Models\District;
@@ -46,6 +47,20 @@ class SelectController extends Controller
             "role_id" => $roleUser->role_id,
             'user_id' => $user_id
         ];
+    }
+
+    public function getCountries()
+    {
+        $cities = Country::all();
+
+        $data = $cities->sortBy('name')->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id,
+            ];
+        })->values();
+
+        return response()->json(['data' => $data]);
     }
 
     public function getCities()

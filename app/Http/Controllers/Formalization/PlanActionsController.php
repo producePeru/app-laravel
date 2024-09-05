@@ -249,7 +249,7 @@ class PlanActionsController extends Controller
         $role_array = $user_role['role_id'];
 
         $query = ActionPlans::with([
-            'user.profile:id,user_id,name,lastname,middlename,notary_id,cde_id',
+            'user.profile:id,user_id,name,lastname,middlename,notary_id,cde_id,documentnumber',
             'cde',
             'businessman',
             'businessman.city:id,name',
@@ -314,6 +314,7 @@ class PlanActionsController extends Controller
                 'id' => $item->id,
                 'centro_empresa' => $item->cde->name,
                 'asesor' => $item->user->profile->name.' '.$item->user->profile->lastname.' '.$item->user->profile->middlename,
+                'asesor_dni' => $item->user->profile->documentnumber,
                 'emprendedor_region' => $item->businessman->city->name,
                 'emprendedor_provincia' => $item->businessman->province->name,
                 'emprendedor_distrito' => $item->businessman->district->name,
@@ -389,9 +390,9 @@ class PlanActionsController extends Controller
         $user_role = getUserRole();
         $role_array = $user_role['role_id'];
 
-        if (!in_array(2, $role_array) && !in_array(7, $role_array)) {
-            return response()->json(['message' => 'No tienes permisos para actualizar este campo', 'status' => 401]);
-        }
+        // if (!in_array(2, $role_array) && !in_array(7, $role_array)) {
+        //     return response()->json(['message' => 'No tienes permisos para actualizar este campo', 'status' => 401]);
+        // }
 
         $validatedData = $request->validate([
             'idPlan' => 'required|integer',

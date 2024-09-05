@@ -16,9 +16,16 @@ class Agreement extends Model
     protected $dates = ['deleted_at'];
 
     protected $fillable = [
-        'denomination', 'alliedEntity', 'homeOperations', 'address',
-        'reference', 'resolution', 'initials', 'startDate','endDate',
-        'city_id', 'province_id', 'district_id', 'created_id'
+        'city_id',
+        'province_id',
+        'district_id',
+        'alliedEntity',
+        'homeOperations',
+        'startDate',
+        'years',
+        'endDate',
+        'observations',
+        'created_id'
     ];
 
     public function estadoOperatividad()
@@ -55,4 +62,21 @@ class Agreement extends Model
     {
         return $this->hasMany(AgreementFiles::class, 'id');
     }
+
+    // SCOPE SEARCH
+    public function scopeSearch($query, $search)
+    {
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('alliedEntity', 'like', "%{$search}%")
+                ->orWhereHas('region', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('provincia', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+    }
+
 }

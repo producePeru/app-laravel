@@ -36,7 +36,7 @@
                     </h1>
                     <p style="font-size:14px; color:#455056; margin:8px 0 0; line-height:24px;">
 
-                      El convenio con denominación <strong style="text-transform: uppercase; color: #000; font-size: 15px; display: block;"> {{ $agreement['denomination'] }} </strong>
+                      El convenio con: <strong style="text-transform: uppercase; color: #000; font-size: 15px; display: block;"> {{ $agreement['alliedEntity'] }} </strong>
                       <!-- de la región <span style="text-transform: capitalize;"> {{ $agreement['denomination'] }},</span>
                       provincia <span <span style="text-transform: capitalize;"> {{ $agreement['denomination'] }}</span>
                       del distrito de <span <span style="text-transform: capitalize;"> {{ $agreement['denomination'] }}</span> -->
@@ -52,9 +52,9 @@
                         $formattedEndDate = $endDateTime->format('d/m/Y');
                     @endphp
 
-                      <span>Fecha inicio convenio: <span>{{ $formattedStartDate }}</span>
+                      <span>Fecha inicio del convenio: <span>{{ $formattedStartDate }}</span>
                       <br>
-                      <span>Fecha fin convenio: <b style="color: #dc1c19;">{{ $formattedEndDate }}</b>
+                      <span>Fecha fin del convenio: <b style="color: #dc1c19;">{{ $formattedEndDate }}</b>
 
                       <br>
                       <br>

@@ -25,22 +25,22 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
     {
         return [
             'A' => 6,
-            'B' => 11,
+            'B' => 15,
             'C' => 27,
             'D' => 14,
             'E' => 14,
             'F' => 14,
 
-            'G' => 4,
-            'H' => 10,
-            'I' => 6,
+            'G' => 18,
+            'H' => 21,
+            'I' => 15,
             'J' => 11,
-            'K' => 15,
-            'L' => 15,
-            'M' => 15,
-            'N' => 4,
-            'O' => 4,
-            'P' => 4,
+            'K' => 27,
+            'L' => 28,
+            'M' => 22,
+            'N' => 22,
+            'O' => 21,
+            'P' => 12,
             'Q' => 11,
             'R' => 20,
 
@@ -53,7 +53,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Y' => 15,
             'Z' => 20,
             'AA' => 10,
-            'AB' => 12,
+            'AB' => 15,
             'AC' => 12
         ];
     }
@@ -76,6 +76,10 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
         $sheet->getStyle('A1:F1')->getFont()->getColor()->setARGB('FFFFFF');
         $sheet->getStyle('S1:AD1')->getFont()->getColor()->setARGB('FFFFFF');
         $sheet->getStyle('A1:AC1')->getFont()->setBold(true);
+
+        $sheet->getStyle('A1:AC1')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:AC1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+
     }
 
     public function collection()

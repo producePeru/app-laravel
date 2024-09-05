@@ -29,36 +29,36 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
     {
         return [
             'A' => 6,
-            'B' => 11,
+            'B' => 15,
             'C' => 27,
-            'D' => 10,
-            'E' => 10,
-            'F' => 10,
+            'D' => 14,
+            'E' => 14,
+            'F' => 14,
 
-            'G' => 4,
-            'H' => 10,
-            'I' => 6,
+            'G' => 18,
+            'H' => 21,
+            'I' => 15,
             'J' => 11,
-            'K' => 15,
-            'L' => 15,
-            'M' => 15,
-            'N' => 5,
-            'O' => 5,
-            'P' => 5,
-            'Q' => 10,
-            'R' => 12,
+            'K' => 28,
+            'L' => 28,
+            'M' => 22,
+            'N' => 8,
+            'O' => 21,
+            'P' => 12,
+            'Q' => 11,
+            'R' => 20,
 
-            'S' => 13,
-            'T' => 10,
-            'U' => 11,
-            'V' => 11,
+            'S' => 14,
+            'T' => 14,
+            'U' => 14,
+            'V' => 12,
             'W' => 18,
             'X' => 12,
             'Y' => 12,
             'Z' => 11,
             'AA' => 20,
             'AB' => 11,
-            'AC' => 12
+            'AC' => 14
         ];
     }
 
@@ -76,6 +76,9 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
 
         $sheet->getStyle('A1:AC1')->getFont()->setBold(true);
         $sheet->getStyle('A1:AC1')->getFont()->getColor()->setARGB('FFFFFF');
+
+        $sheet->getStyle('A1:AC1')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:AC1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
     }
 
     public function collection()

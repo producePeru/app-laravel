@@ -15,6 +15,11 @@ class People extends Model
 
     protected $dates = ['deleted_at'];
 
+    public function pais()
+    {
+        return $this->belongsTo(Country::class, 'country_id'); // Asegúrate de que 'country_id' es el nombre correcto de la columna en 'people'
+    }
+
     public function city()
     {
         return $this->belongsTo('App\Models\City');

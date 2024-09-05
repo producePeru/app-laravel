@@ -17,74 +17,46 @@ use Illuminate\Support\Facades\DB;
 
 class AgreementController extends Controller
 {
+
     public function index(Request $request)
     {
-        $order = $request->input('order', 'asc');
-        $search = $request->input('search', '');
-        $dateDiffOrder = $request->input('date_diff_order', 'desc');
+        $search = $request->input('search');
 
-        if (!in_array($order, ['asc', 'desc'])) {
-            $order = 'asc';
-        }
-        if (!in_array($dateDiffOrder, ['asc', 'desc'])) {
-            $dateDiffOrder = 'desc';
-        }
-
-        $query = Agreement::with(
-            [
-                'estadoOperatividad',
-                'estadoConvenio',
-                'region',
-                'provincia',
-                'distrito',
-                'acciones',
-                'archivosConvenios'
-            ]
-        )->join('cities', 'agreements.city_id', '=', 'cities.id')
-        ->select('agreements.*', DB::raw('DATEDIFF(agreements.endDate, agreements.startDate) as date_diff'))
-        ->orderBy('date_diff', $dateDiffOrder)
-        ->orderBy('cities.name', $order);
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('agreements.denomination', 'like', "%{$search}%")
-                  ->orWhere('agreements.alliedEntity', 'like', "%{$search}%")
-                  ->orWhere('agreements.address', 'like', "%{$search}%")
-                  ->orWhere('agreements.reference', 'like', "%{$search}%")
-                  ->orWhere('agreements.initials', 'like', "%{$search}%")
-                  ->orWhere('cities.name', 'like', "%{$search}%");
-            });
-        }
+        $query = Agreement::with([
+            'estadoOperatividad',
+            'estadoConvenio',
+            'region',
+            'provincia',
+            'distrito',
+            'acciones',
+            'archivosConvenios'
+        ])->search($search)
+        ->orderBy('created_at', 'desc');
 
         $data = $query->paginate(50);
 
-        $data->getCollection()->transform(function ($item) {        // 🚩decode flat
-            $item['initials'] = json_decode($item['initials']);
-            // return $item;
+        $data->getCollection()->transform(function ($item) {
             return [
                 'id' => $item->id,
                 'city' => $item->region->name,
+                'city_id' => $item->region->id,
                 'province' => $item->provincia->name,
+                'province_id' => $item->provincia->id,
                 'district' => $item->distrito->name,
-                'denomination' => $item->denomination,
+                'district_id' => $item->distrito->id,
                 'entity' => $item->alliedEntity,
                 'startOperations' => $item->homeOperations,
-                'address' => $item->address,
-                'references' => $item->reference,
-                // 'asesores' => $item
-                'resolution' => $item->resolution,
-                'statusOperations' => $item->estado_operatividad,
-                'statusConveny' => $item->estado_convenio,
-                'entities' => $item->initials,
                 'startDate' => $item->startDate,
+                'years' => $item->years,
                 'endDate' => $item->endDate,
-                'acciones' => $item->acciones
+                'observations' => $item->observations,
+                'archivos' => $item->archivosConvenios,
             ];
-
         });
 
         return response()->json(['data' => $data]);
     }
+
 
     public function allActionsById($id)
     {
@@ -104,37 +76,30 @@ class AgreementController extends Controller
     }
 
     public function store(Request $request)
-    {
+    {                                                                       // CREAR CONVENIOS //
         try {
             $validatedData = $request->validate([
-                'denomination' => 'required|string|max:100',
-                'alliedEntity' => 'required|string|max:100',
-                'homeOperations' => 'nullable|string|max:100',
-                'address' => 'required|string|max:80',
-                'reference' => 'required|string|max:100',
-                'resolution' => 'required|string|max:150',
-                'initials' => 'required|array',
-                'startDate' => 'nullable|date',
-                'endDate' => 'nullable|date',
                 'city_id' => 'required|exists:cities,id',
                 'province_id' => 'required|exists:provinces,id',
                 'district_id' => 'required|exists:districts,id',
+                'alliedEntity' => 'required|string|max:100',
+                'homeOperations' => 'nullable|string|max:100',
+                'startDate' => 'nullable|date',
+                'years' => 'required',
+                'endDate' => 'nullable|date',
+                'observations' => 'nullable|string',
                 'created_id' => 'required|exists:users,id'      // usuario_creador
-                // 'operationalstatus_id' => 'required|exists:operationalstatus,id',
-                // 'agreementstatus_id' => 'required|exists:agreementstatus,id',               // 🚩reference
             ]);
-
-            $validatedData['initials'] = json_encode($validatedData['initials']);
 
             $convenio = Agreement::create($validatedData);
 
             if (!is_null($convenio->endDate)) {
-                // $endDate = Carbon::parse($convenio->endDate);
-                // SendEndDateNotification::dispatch($convenio)->delay($endDate->subDays(1));
-                // SendEndDateNotification::dispatch($convenio)->delay($endDate->subDays(2));
+                $endDate = Carbon::parse($convenio->endDate);
+                SendEndDateNotification::dispatch($convenio)->delay($endDate->subDays(60));
+                SendEndDateNotification::dispatch($convenio)->delay($endDate->subDays(30));
 
-                $testDelay = 10;
-                SendEndDateNotification::dispatch($convenio)->delay(now()->addSeconds($testDelay));
+                // $testDelay = 10;
+                // SendEndDateNotification::dispatch($convenio)->delay(now()->addSeconds($testDelay));
             }
 
             return response()->json(['message' => 'Convenio creado con éxito', 'status' => 200]);
@@ -223,11 +188,51 @@ class AgreementController extends Controller
         return response()->json(['message' => 'Archivo eliminado exitosamente', 'status' => 200]);
     }
 
+    public function updateValuesAgreement(Request $request, $id)
+    {
+        $agreement = Agreement::findOrFail($id);
+
+        $agreement->update($request->all());
+
+        return response()->json(['message' => 'Datos actualizados', 'status' => 200]);
+    }
 
 
     // DESCARGAR
-    public function exportAgreement(Request $request)
+    public function exportAgreement()
     {
-        return Excel::download(new AgreementExport, 'agreements.xlsx');
+        $query = Agreement::with([
+            'estadoOperatividad',
+            'estadoConvenio',
+            'region',
+            'provincia',
+            'distrito',
+            'acciones',
+            'archivosConvenios'
+        ]);
+
+        $query->latest();
+        $data = $query->get();
+
+        $result = $data->map(function ($item, $index) {
+            return [
+                'index' => $index + 1,
+                'city' => $item->region->name,
+                'province' => $item->provincia->name,
+                'district' => $item->distrito->name,
+                'cdeAgente' => ' ',
+                'entity' => $item->alliedEntity,
+                'startOperations' => Carbon::parse($item->homeOperations)->format('d-m-Y'),
+                'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
+                'years' => $item->years,
+                'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
+                'status' => ' ',
+                'observations' => str_replace("\n", " ", $item->observations),
+            ];
+        });
+
+        // return $result;
+
+        return Excel::download(new AgreementExport($result), 'agreements.xlsx');
     }
 }

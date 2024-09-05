@@ -125,7 +125,7 @@ class Formalization20Controller extends Controller
     {
         $validatedData = $request->validate([
             'codesunarp' => 'nullable|string',
-            'numbernotary' => 'required|string',
+            'numbernotary' => 'required',
             'address' => 'required|string',
             'economicsector_id' => 'required|integer',
             'comercialactivity_id' => 'required|integer',
@@ -186,7 +186,7 @@ class Formalization20Controller extends Controller
             'economicsector_id' => 'required|integer',
             'comercialactivity_id' => 'required|integer',
             'regime_id' => 'required|integer',
-            'numbernotary' => 'nullable|string',
+            'numbernotary' => 'nullable',
             'notary_id' => 'required|integer',
             'dateReception' => 'nullable|string',
             'dateTramite' => 'nullable|string',

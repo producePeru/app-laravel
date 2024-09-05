@@ -57,6 +57,11 @@ class Advisory extends Model
         return $this->belongsTo('App\Models\People');
     }
 
+    public function country()
+    {
+        return $this->belongsTo('App\Models\Country', 'people.country_id', 'countries.id');
+    }
+
     public function city()
     {
         return $this->belongsTo('App\Models\City');

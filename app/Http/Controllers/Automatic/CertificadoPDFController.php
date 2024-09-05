@@ -32,3 +32,13 @@ class CertificadoPDFController extends Controller
         return response()->json(['message' => 'Emails are being processed.']);
     }
 }
+
+
+// {
+//     "emails": [
+//         {
+//             "correo": "jloo6778@gmail.com",
+//             "archivo": "1"
+//         }
+//     ]
+// }

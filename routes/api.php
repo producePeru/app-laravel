@@ -227,12 +227,16 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
     Route::post('create-acction', [AgreementController::class, 'storeAction']);
     Route::post('file', [AgreementController::class, 'upFileAgreement']);
     Route::post('file-download/{id}', [AgreementController::class, 'download']);
-    Route::post('download', [AgreementController::class, 'exportAgreement']);
+    Route::get('download', [AgreementController::class, 'exportAgreement']);
 
     Route::put('update/{id}', [AgreementController::class, 'updateActionById']);
+
+    Route::put('update-values/{id}', [AgreementController::class, 'updateValuesAgreement']);
+
 });
 
 Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function() {
+    Route::get('countries', [SelectController::class, 'getCountries']);
     Route::get('cities', [SelectController::class, 'getCities']);
     Route::get('provinces/{idCity}', [SelectController::class, 'getProvinces']);
     Route::get('districts/{idProv}', [SelectController::class, 'getDistricts']);
@@ -287,10 +291,10 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
 });
 
-Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
-    Route::post('index-calendar', [CertificadoPDFController::class, 'calendar']);
+// Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
+//     Route::post('index-calendar', [CertificadoPDFController::class, 'calendar']);
 
-});
+// });
 
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
