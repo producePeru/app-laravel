@@ -243,10 +243,13 @@ class PlanActionsController extends Controller
         }
     }
 
+
+    //INDEX _+++_
     public function index(Request $request)
     {
         $user_role = getUserRole();
         $role_array = $user_role['role_id'];
+        $search = $request->input('search');
 
         $query = ActionPlans::with([
             'user.profile:id,user_id,name,lastname,middlename,notary_id,cde_id,documentnumber',
@@ -259,100 +262,59 @@ class PlanActionsController extends Controller
             'component1',
             'component2',
             'component3'
-        ]);
+        ])->search($search)
+          ->orderBy('created_at', 'desc');
 
-        if (in_array(2, $role_array) || in_array(7, $role_array)) {
+        // Filtrar por roles
+        if (in_array(2, $role_array) && !in_array(1, $role_array)) {
             $query->where('asesor_id', $user_role['user_id']);
-        } elseif (in_array(1, $role_array) || in_array(5, $role_array)) {
-            // AQUI DEVULEVE SIN EL FILTRO
-        } else {
-            return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        $data = $query->paginate(50);
 
-        // Filtros
-        if ($search = $request->input('search')) {
-            $query->where(function($q) use ($search) {
-                $q->whereHas('user.profile', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('lastname', 'like', "%{$search}%")
-                      ->orWhere('middlename', 'like', "%{$search}%");
-                })
-                ->orWhereHas('cde', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('businessman.city', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('businessman.province', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('businessman.district', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('businessman', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('lastname', 'like', "%{$search}%")
-                      ->orWhere('middlename', 'like', "%{$search}%")
-                      ->orWhere('ruc', 'like', "%{$search}%");
-                })
-                ->orWhere('component_1', 'like', "%{$search}%")
-                ->orWhere('component_2', 'like', "%{$search}%")
-                ->orWhere('component_3', 'like', "%{$search}%")
-                ->orWhere('startDate', 'like', "%{$search}%")
-                ->orWhere('endDate', 'like', "%{$search}%");
-            });
-        }
-
-
-        $query->latest();
-
-        $paginatedData = $query->paginate(50);
-
-        $data = $paginatedData->getCollection()->map(function ($item) {
-            return [
-                'id' => $item->id,
-                'centro_empresa' => $item->cde->name,
-                'asesor' => $item->user->profile->name.' '.$item->user->profile->lastname.' '.$item->user->profile->middlename,
-                'asesor_dni' => $item->user->profile->documentnumber,
-                'emprendedor_region' => $item->businessman->city->name,
-                'emprendedor_provincia' => $item->businessman->province->name,
-                'emprendedor_distrito' => $item->businessman->district->name,
-                'emprendedor_nombres' => $item->businessman->name.' '.$item->businessman->lastname.' '.$item->businessman->middlename,
-                'emprendedor_dni' => $item->businessman->documentnumber,
-                'ruc' => $item->ruc,
-                'genero' => $item->businessman->gender->avr,
-                'discapacidad' => $item->businessman->sick,
-
-                'component_1' => $item->component1->name,
-                'component_2' => optional($item->component2)->name,
-                'component_3' => optional($item->component3)->name,
-
-                    // 'component_1' => $item->component_1,
-                    // 'component_2' => $item->component_2,
-                    // 'component_3' => $item->component_3,
-
-                'numberSessions' => $item->numberSessions,
-                'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
-                'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
-                'totalDate' => $item->totalDate,
-                'actaCompromiso' => $item->actaCompromiso,
-                'envioCorreo' => $item->envioCorreo,
-                'updated_at' => Carbon::parse($item->updated_at)->format('d-m-Y'),
-            ];
+        $data->getCollection()->transform(function ($item) {
+            return $this->transformActionPlan($item);
         })->values();
 
-        return response()->json([
-            'data' => $data,
-            'pagination' => [
-                'current_page' => $paginatedData->currentPage(),
-                'last_page' => $paginatedData->lastPage(),
-                'per_page' => $paginatedData->perPage(),
-                'total' => $paginatedData->total(),
-            ],
-            'status' => 200
-        ]);
+        return response()->json(['data' => $data, 'status' => 200]);
     }
+
+
+    private function transformActionPlan($item)
+    {
+        return [
+            'id' => $item->id,
+            'centro_empresa' => $item->cde->name,
+            'asesor' => $this->formatFullName($item->user->profile),
+            'asesor_dni' => $item->user->profile->documentnumber,
+            'emprendedor_region' => $item->businessman->city->name,
+            'emprendedor_provincia' => $item->businessman->province->name,
+            'emprendedor_distrito' => $item->businessman->district->name,
+            'emprendedor_nombres' => $this->formatFullName($item->businessman),
+            'emprendedor_dni' => $item->businessman->documentnumber,
+            'ruc' => $item->ruc,
+            'genero' => $item->businessman->gender->avr,
+            'discapacidad' => $item->businessman->sick,
+            'component_1' => $item->component1->name,
+            'component_2' => optional($item->component2)->name,
+            'component_3' => optional($item->component3)->name,
+            'numberSessions' => $item->numberSessions,
+            'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
+            'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
+            'totalDate' => $item->totalDate,
+            'actaCompromiso' => $item->actaCompromiso,
+            'envioCorreo' => $item->envioCorreo,
+            'updated_at' => Carbon::parse($item->updated_at)->format('d-m-Y'),
+        ];
+    }
+
+    private function formatFullName($profile)
+    {
+        return $profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename;
+    }
+
+
+
 
     public function editComponent(Request $request)
     {
