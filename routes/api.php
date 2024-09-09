@@ -23,6 +23,8 @@ use App\Http\Controllers\Agreement\AgreementController;
 use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
+use App\Http\Controllers\Event\EventsController;
+
 
 
 Route::post('login', [AuthController::class, 'login']);
@@ -276,15 +278,27 @@ Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middle
 });
 
 Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::get('list',                  [PlanActionsController::class, 'index']);
-    Route::get('components/{ruc}',      [PlanActionsController::class, 'listAllServicesAF']);
-    Route::post('create',               [PlanActionsController::class, 'store']);
-    Route::put('edit-component',        [PlanActionsController::class, 'editComponent']);
-    Route::put('edit-yes-no',           [PlanActionsController::class, 'updateField']);
-    Route::post('update',               [PlanActionsController::class, 'update']);
-    Route::delete('delete/{id}',        [PlanActionsController::class, 'delete']);
+    Route::get('list',                      [PlanActionsController::class, 'index']);
+    Route::get('components/{ruc}',          [PlanActionsController::class, 'listAllServicesAF']);
+    Route::post('create',                   [PlanActionsController::class, 'store']);
+    Route::put('edit-component',            [PlanActionsController::class, 'editComponent']);
+    Route::put('edit-yes-no',               [PlanActionsController::class, 'updateField']);
+    Route::post('update',                   [PlanActionsController::class, 'update']);
+    Route::delete('delete/{id}',            [PlanActionsController::class, 'delete']);
+});
+
+
+Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::post('create-category',          [EventsController::class, 'createCategory']);
+    Route::get('list-categories',           [EventsController::class, 'listCategories']);
+    Route::put('status-categories/{id}',    [EventsController::class, 'statusCategories']);
+
+
 
 });
+
+
+
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
     Route::post('send-certificates', [CertificadoPDFController::class, 'sendEmailWithCertificates']);

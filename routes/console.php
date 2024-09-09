@@ -118,3 +118,25 @@ Artisan::command('inspire', function () {
 
 // ALTER TABLE people
 // ADD CONSTRAINT fk_people_country_id FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE CASCADE;
+
+
+
+
+
+
+
+
+// CREATE TABLE eventcategories (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     name VARCHAR(100) NOT NULL,
+//     color VARCHAR(20) NOT NULL,
+//     status ENUM('1', '0') NOT NULL DEFAULT '0',
+//     user_id BIGINT UNSIGNED,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL,
+//     CONSTRAINT fk_eventcategories_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+// );
+
+
+
