@@ -27,7 +27,7 @@ class SendEndDateNotification implements ShouldQueue
      */
     public function handle(): void
     {
-        $recipients = ['mmelendez@produce.gob.pe', 'rsantisteban@produce.gob.pe', 'tuempresa_temp401@produce.gob.pe'];
+        $recipients = ['mmelendez@produce.gob.pe', 'rsantisteban@produce.gob.pe', 'tuempresa_temp401@produce.gob.pe', 'jsomocurcio@produce.gob.pe'];
         foreach ($recipients as $email) {
             Mail::to($email)->send(new EndDateNotificationMail($this->agreement));
         }
