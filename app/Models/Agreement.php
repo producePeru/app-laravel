@@ -24,6 +24,7 @@ class Agreement extends Model
         'startDate',
         'years',
         'endDate',
+        'external',
         'observations',
         'created_id'
     ];

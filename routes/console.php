@@ -139,4 +139,24 @@ Artisan::command('inspire', function () {
 // );
 
 
+// CREATE TABLE events (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     nameEvent VARCHAR(100) NOT NULL,
+//     startDate DATETIME NOT NULL,
+//     endDate DATETIME NOT NULL,
+//     description VARCHAR(255) NULL,
+//     linkVideo VARCHAR(255) NULL,
+//     category_id BIGINT UNSIGNED,
+//     allDay TINYINT(1) NULL default 0,
+//     repetir ENUM('week', 'month', 'year') NULL,
+//     color VARCHAR(50) NULL,
+//     user_id BIGINT UNSIGNED,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL,
+//     CONSTRAINT fk_eventcategories_category_id FOREIGN KEY (category_id) REFERENCES eventcategories(id),
+//     CONSTRAINT fk_events_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+// );
 
+// ALTER TABLE agreements
+// ADD COLUMN external TINYINT(1) NOT NULL DEFAULT 0 AFTER endDate;

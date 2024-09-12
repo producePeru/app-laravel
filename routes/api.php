@@ -23,6 +23,7 @@ use App\Http\Controllers\Agreement\AgreementController;
 use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
+use App\Http\Controllers\Automatic\SendMailAyacuchoController;
 use App\Http\Controllers\Event\EventsController;
 
 
@@ -293,7 +294,8 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     Route::get('list-categories',           [EventsController::class, 'listCategories']);
     Route::put('status-categories/{id}',    [EventsController::class, 'statusCategories']);
 
-
+    Route::post('create-event',             [EventsController::class, 'createEvent']);
+    Route::get('list',                    [EventsController::class, 'listAllEvents']);
 
 });
 
@@ -303,6 +305,7 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
     Route::post('send-certificates', [CertificadoPDFController::class, 'sendEmailWithCertificates']);
 
+    Route::post('/ayacucho', [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
 });
 
 // Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {

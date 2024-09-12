@@ -47,6 +47,7 @@ class AgreementController extends Controller
                 'entity' => $item->alliedEntity,
                 'startOperations' => $item->homeOperations,
                 'startDate' => $item->startDate,
+                'external' => $item->external,
                 'years' => $item->years,
                 'endDate' => $item->endDate,
                 'observations' => $item->observations,
@@ -87,6 +88,7 @@ class AgreementController extends Controller
                 'startDate' => 'nullable|date',
                 'years' => 'required',
                 'endDate' => 'nullable|date',
+                'external' => 'nullable',
                 'observations' => 'nullable|string',
                 'created_id' => 'required|exists:users,id'      // usuario_creador
             ]);
@@ -220,7 +222,7 @@ class AgreementController extends Controller
                 'city' => $item->region->name,
                 'province' => $item->provincia->name,
                 'district' => $item->distrito->name,
-                'cdeAgente' => ' ',
+                'cdeAgente' => $item->external == 1 ? 'Externo' : '-',
                 'entity' => $item->alliedEntity,
                 'startOperations' => Carbon::parse($item->homeOperations)->format('d-m-Y'),
                 'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
