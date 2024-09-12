@@ -222,7 +222,7 @@ class AgreementController extends Controller
                 'city' => $item->region->name,
                 'province' => $item->provincia->name,
                 'district' => $item->distrito->name,
-                'cdeAgente' => $item->external == 1 ? 'Externo' : '-',
+                'cdeAgente' => $item->external == 1 ? 'Externo' : 'PNTE',
                 'entity' => $item->alliedEntity,
                 'startOperations' => Carbon::parse($item->homeOperations)->format('d-m-Y'),
                 'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
