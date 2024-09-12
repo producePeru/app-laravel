@@ -29,10 +29,10 @@
               <!-- Title -->
               <tr>
                 <td style="padding:0 15px; text-align:center;">
-                  <h3 style="color:#444547; font-weight:600; margin:0;font-size:16px;font-family:'Rubik',sans-serif; margin-bottom: 5px;">Saludos</h3>
+                  {{-- <h3 style="color:#444547; font-weight:600; margin:0;font-size:16px;font-family:'Rubik',sans-serif; margin-bottom: 5px;">Saludos</h3> --}}
                   <h1 style="color:#1e1e2d; font-weight:600; margin:0;font-size:22px;font-family:'Rubik',sans-serif;">
-                    {{-- Estimado(a) empresario(a), --}}
-                    {{$empresa}}
+                    Estimado(a) empresario(a),
+                    {{-- {{$empresa}} --}}
                   </h1>
 
                   <p style="color:#1e1e2d; font-weight:300; margin:10px 0;line-height: 1.5; font-size:18px;font-family:'Rubik',sans-serif;">

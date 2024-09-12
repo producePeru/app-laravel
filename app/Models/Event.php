@@ -18,6 +18,7 @@ class Event extends Model
         'category_id',
         'repetir',
         'color',
+        'allDay',
         'user_id'
     ];
 

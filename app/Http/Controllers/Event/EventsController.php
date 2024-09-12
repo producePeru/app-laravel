@@ -69,7 +69,8 @@ class EventsController extends Controller
                 'linkVideo',
                 'category_id',
                 'repetir',
-                'color'
+                'color',
+                'allDay'
             );
             $data['user_id'] = $user_id;
 
@@ -84,10 +85,8 @@ class EventsController extends Controller
 
     public function listAllEvents()
     {
-        // Obtener todos los eventos
         $events = Event::listAllEvents();
 
-        // Transformar los eventos con map
         $data = $events->map(function ($item) {
             return [
                 'id' => $item->id,
@@ -95,12 +94,10 @@ class EventsController extends Controller
                 'start' => $item->startDate,
                 'end' => $item->endDate,
                 'backgroundColor' => $item->color,
-                'allDay' => 'true',
-                // 'textColor' => $item->textColor ?? null,
+                'allDay' => $item->allDay,
             ];
         });
 
-        // Retornar los datos en formato JSON
         return response()->json(['data' => $data]);
     }
 
