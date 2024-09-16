@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Event;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Event;
+use App\Models\EventRecurrence;
 use App\Models\EventCategory;
+use Carbon\Carbon;
 
 class EventsController extends Controller
 {
@@ -63,8 +65,8 @@ class EventsController extends Controller
 
             $data = $request->only(
                 'nameEvent',
-                'startDate',
-                'endDate',
+                'start',
+                'end',
                 'description',
                 'linkVideo',
                 'category_id',
@@ -72,6 +74,7 @@ class EventsController extends Controller
                 'color',
                 'allDay'
             );
+
             $data['user_id'] = $user_id;
 
             Event::create($data);
@@ -99,6 +102,88 @@ class EventsController extends Controller
         });
 
         return response()->json(['data' => $data]);
+    }
+
+
+    public function index(Request $request)
+    {
+        $month = $request->input('month');
+        $year = $request->input('year');
+
+        if (!$month || !$year) {
+            return response()->json(['message' => 'El mes y el año son requeridos'], 400);
+        }
+
+        $events = Event::all();
+        $eventsWithRepetition = [];
+
+        // Obtener la fecha actual para comparar
+        $currentDate = Carbon::now();
+
+        foreach ($events as $event) {
+            $originalStart = Carbon::parse($event->start);
+
+            // Filtrar eventos repetidos anualmente
+            if ($event->repetir === 'year') {
+                $originalMonth = $originalStart->month;
+
+                if ($originalMonth == $month) {
+                    $newEvent = clone $event;
+                    $newEvent->start = $originalStart->year($year);
+                    $newEvent->end = Carbon::parse($event->end)->year($year);
+
+                    // Solo incluir eventos si la fecha es igual o posterior a la actual
+                    if (Carbon::parse($newEvent->start) >= $currentDate) {
+                        $eventsWithRepetition[] = $newEvent;
+                    }
+                }
+            }
+
+            // Filtrar eventos repetidos mensualmente
+            if ($event->repetir === 'month') {
+                if ($originalStart->year <= $year) {
+                    $newEvent = clone $event;
+                    $newEvent->start = $originalStart->year($year)->month($month);
+                    $newEvent->end = Carbon::parse($event->end)->year($year)->month($month);
+
+                    if ($newEvent->start->month == $month && Carbon::parse($newEvent->start) >= $currentDate) {
+                        $eventsWithRepetition[] = $newEvent;
+                    }
+                }
+            }
+
+            // Filtrar eventos sin repetición
+            if ($event->repetir === null) {
+                $eventMonth = $originalStart->month;
+                $eventYear = $originalStart->year;
+
+                if ($eventMonth == $month && $eventYear == $year && $originalStart >= $currentDate) {
+                    $eventsWithRepetition[] = $event;
+                }
+            }
+        }
+
+        // Retornar los eventos filtrados
+        if (count($eventsWithRepetition) > 0) {
+            $data = array_map(function ($event) {
+                return [
+                    'id' => $event->id,
+                    'title' => $event->nameEvent,
+                    'start' => Carbon::parse($event->start)->format('Y-m-d H:i'),
+                    'end' => Carbon::parse($event->end)->format('Y-m-d H:i'),
+                    'backgroundColor' => $event->color,
+                    'repetir' => $event->repetir,
+                    'description' => $event->description,
+                    'linkVideo' => $event->linkVideo,
+                    'allDay' => $event->allDay,
+                    'category_id' => $event->category_id
+                ];
+            }, $eventsWithRepetition);
+
+            return response()->json($data);
+        } else {
+            return response()->json(['message' => 'No hay eventos para el mes y año seleccionados'], 404);
+        }
     }
 
 }

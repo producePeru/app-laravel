@@ -294,8 +294,15 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     Route::get('list-categories',           [EventsController::class, 'listCategories']);
     Route::put('status-categories/{id}',    [EventsController::class, 'statusCategories']);
 
-    Route::post('create-event',             [EventsController::class, 'createEvent']);
-    Route::get('list',                    [EventsController::class, 'listAllEvents']);
+    // Route::post('create-event',             [EventsController::class, 'createEvent']);
+    // Route::get('list',                    [EventsController::class, 'listAllEvents']);
+
+
+
+    Route::post('create-event',                    [EventsController::class, 'createEvent']);
+    Route::get('list',                    [EventsController::class, 'index']);
+
+
 
 });
 

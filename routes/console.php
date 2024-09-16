@@ -142,8 +142,8 @@ Artisan::command('inspire', function () {
 // CREATE TABLE events (
 //     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 //     nameEvent VARCHAR(100) NOT NULL,
-//     startDate DATETIME NOT NULL,
-//     endDate DATETIME NOT NULL,
+//     start DATETIME NOT NULL,
+//     end DATETIME NOT NULL,
 //     description VARCHAR(255) NULL,
 //     linkVideo VARCHAR(255) NULL,
 //     category_id BIGINT UNSIGNED,
@@ -160,3 +160,5 @@ Artisan::command('inspire', function () {
 
 // ALTER TABLE agreements
 // ADD COLUMN external TINYINT(1) NOT NULL DEFAULT 0 AFTER endDate;
+
+

@@ -11,27 +11,32 @@ class Event extends Model
 
     protected $fillable = [
         'nameEvent',
-        'startDate',
-        'endDate',
+        'start',
+        'end',
         'description',
         'linkVideo',
         'category_id',
+        'allDay',
         'repetir',
         'color',
-        'allDay',
         'user_id'
     ];
 
-    public static function listAllEvents()
-    {
-        $events = self::all();
+    // public function recurrences()
+    // {
+    //     return $this->hasMany(EventRecurrence::class);
+    // }
 
-        foreach ($events as $event) {
-            if ($event->color == 'yellow') {
-                $event->textColor = 'black';
-            }
-        }
+    // public static function listAllEvents()
+    // {
+    //     $events = self::all();
 
-        return $events;
-    }
+    //     foreach ($events as $event) {
+    //         if ($event->color == 'yellow') {
+    //             $event->textColor = 'black';
+    //         }
+    //     }
+
+    //     return $events;
+    // }
 }
