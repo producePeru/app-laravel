@@ -4,7 +4,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
+    | Cross-Origin Resource Sharing (CORS) Configuration dr!
     |--------------------------------------------------------------------------
     |
     | Here you may configure your settings for cross-origin resource sharing
