@@ -28,7 +28,9 @@ class ActionPlans extends Model
         'endDate',
         'totalDate',
         'actaCompromiso',
-        'envioCorreo'
+        'envioCorreo',
+        'status',
+        'details',
     ];
 
     public function user()
@@ -65,35 +67,35 @@ class ActionPlans extends Model
     public function scopeSearch($query, $search)
     {
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->whereHas('user.profile', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('lastname', 'like', "%{$search}%")
-                      ->orWhere('middlename', 'like', "%{$search}%");
+                        ->orWhere('lastname', 'like', "%{$search}%")
+                        ->orWhere('middlename', 'like', "%{$search}%");
                 })
-                ->orWhereHas('cde', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('businessman.city', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('businessman.province', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('businessman.district', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('businessman', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('lastname', 'like', "%{$search}%")
-                      ->orWhere('middlename', 'like', "%{$search}%")
-                      ->orWhere('ruc', 'like', "%{$search}%");
-                })
-                ->orWhere('component_1', 'like', "%{$search}%")
-                ->orWhere('component_2', 'like', "%{$search}%")
-                ->orWhere('component_3', 'like', "%{$search}%")
-                ->orWhere('startDate', 'like', "%{$search}%")
-                ->orWhere('endDate', 'like', "%{$search}%");
+                    ->orWhereHas('cde', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('businessman.city', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('businessman.province', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('businessman.district', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('businessman', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('lastname', 'like', "%{$search}%")
+                            ->orWhere('middlename', 'like', "%{$search}%")
+                            ->orWhere('ruc', 'like', "%{$search}%");
+                    })
+                    ->orWhere('component_1', 'like', "%{$search}%")
+                    ->orWhere('component_2', 'like', "%{$search}%")
+                    ->orWhere('component_3', 'like', "%{$search}%")
+                    ->orWhere('startDate', 'like', "%{$search}%")
+                    ->orWhere('endDate', 'like', "%{$search}%");
             });
         }
     }
