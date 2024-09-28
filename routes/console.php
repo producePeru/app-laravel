@@ -18,7 +18,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-
 // CREATE TABLE drive_users (
 //     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 //     drive_id BIGINT UNSIGNED,
@@ -35,13 +34,11 @@ Artisan::command('inspire', function () {
 // ADD COLUMN district_id INT UNSIGNED DEFAULT NULL AFTER province_id,
 // ADD COLUMN address VARCHAR(100) DEFAULT NULL AFTER district_id;
 
-
 // ALTER TABLE advisories
 // ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at;
 
 // ALTER TABLE formalizations10
 // ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at;
-
 
 // *** ALTER
 // ALTER TABLE advisories
@@ -54,13 +51,8 @@ Artisan::command('inspire', function () {
 // ALTER TABLE advisories
 // ADD CONSTRAINT fk_advisories_comercialactivity_id FOREIGN KEY (comercialactivity_id) REFERENCES comercialactivities(id) ON DELETE CASCADE;
 
-
-
 // ALTER TABLE people
 // ADD COLUMN hasSoon CHAR(3) DEFAULT NULL AFTER sick;
-
-
-
 
 // CREATE TABLE typecapital (
 //     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -69,24 +61,17 @@ Artisan::command('inspire', function () {
 //     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 // );
 
-
 // ALTER TABLE formalizations20
 // ADD COLUMN typecapital_id BIGINT UNSIGNED DEFAULT NULL AFTER userupdated_id;
 // ALTER TABLE formalizations20
 // ADD CONSTRAINT fk_formalizations20_typecapital_id
 // FOREIGN KEY (typecapital_id) REFERENCES typecapital(id);
 
-
-
 // ALTER TABLE formalizations20
 // ADD COLUMN isbic CHAR(2) DEFAULT NULL AFTER typecapital_id;
 
-
-
-
 // ALTER TABLE formalizations20
 // ADD COLUMN montocapital VARCHAR(10) DEFAULT NULL AFTER isbic;
-
 
 // USER_
 
@@ -95,7 +80,6 @@ Artisan::command('inspire', function () {
 
 // ALTER TABLE agreements
 // ADD CONSTRAINT fk_agreements_created_id FOREIGN KEY (created_id) REFERENCES users(id) ON DELETE CASCADE;
-
 
 // /**
 //  ME EQUIVOQUE DE LLAVE FORANEA
@@ -111,20 +95,11 @@ Artisan::command('inspire', function () {
 //*** Finalmente cambiar nombre y eliminar */
 //  **/
 
-
-
 // ALTER TABLE people
 // ADD COLUMN country_id BIGINT UNSIGNED AFTER country;
 
 // ALTER TABLE people
 // ADD CONSTRAINT fk_people_country_id FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE CASCADE;
-
-
-
-
-
-
-
 
 // CREATE TABLE eventcategories (
 //     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -137,7 +112,6 @@ Artisan::command('inspire', function () {
 //     deleted_at TIMESTAMP NULL,
 //     CONSTRAINT fk_eventcategories_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 // );
-
 
 // CREATE TABLE events (
 //     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -161,4 +135,22 @@ Artisan::command('inspire', function () {
 // ALTER TABLE agreements
 // ADD COLUMN external TINYINT(1) NOT NULL DEFAULT 0 AFTER endDate;
 
-
+// NUEVOOO
+// CREATE TABLE agreement_commitments (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     accion VARCHAR(255) NULL,
+//     date DATETIME NULL,
+//     modality VARCHAR(1) NULL,
+//     adress VARCHAR(100) NULL,
+//     participants INT NULL,
+//     file1 LONGBLOB NULL,
+//     file2 LONGBLOB NULL,
+//     file3 LONGBLOB NULL,
+//     details VARCHAR(255) NOT NULL,  -- Asegurar que no sea NULL si se requiere
+//     id_agreement BIGINT UNSIGNED,  -- Debe coincidir con el tipo de la columna id de agreements
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     FOREIGN KEY (id_agreement) REFERENCES agreements(id)
+//         ON DELETE CASCADE  -- Opcional: para eliminar en cascada cuando se borra en agreements
+//         ON UPDATE CASCADE   -- Opcional: para actualizar en cascada cuando se actualiza en agreements
+// );
