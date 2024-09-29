@@ -141,16 +141,19 @@ Artisan::command('inspire', function () {
 //     accion VARCHAR(255) NULL,
 //     date DATETIME NULL,
 //     modality VARCHAR(1) NULL,
-//     adress VARCHAR(100) NULL,
+//     address VARCHAR(100) NULL,
 //     participants INT NULL,
-//     file1 LONGBLOB NULL,
-//     file2 LONGBLOB NULL,
-//     file3 LONGBLOB NULL,
-//     details VARCHAR(255) NOT NULL,  -- Asegurar que no sea NULL si se requiere
-//     id_agreement BIGINT UNSIGNED,  -- Debe coincidir con el tipo de la columna id de agreements
+//     file1_path VARCHAR(255) DEFAULT NULL,
+//     file1_name VARCHAR(255) DEFAULT NULL,
+//     file2_path VARCHAR(255) DEFAULT NULL,
+//     file2_name VARCHAR(255) DEFAULT NULL,
+//     file3_path VARCHAR(255) DEFAULT NULL,
+//     file3_name VARCHAR(255) DEFAULT NULL,
+//     details VARCHAR(255) NOT NULL,
+//     id_agreement BIGINT UNSIGNED,
 //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 //     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 //     FOREIGN KEY (id_agreement) REFERENCES agreements(id)
 //         ON DELETE CASCADE  -- Opcional: para eliminar en cascada cuando se borra en agreements
 //         ON UPDATE CASCADE   -- Opcional: para actualizar en cascada cuando se actualiza en agreements
-// );
+//   );

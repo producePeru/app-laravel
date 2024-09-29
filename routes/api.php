@@ -43,7 +43,6 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::get('notaries-filters', [NotaryController::class, 'indexNotaryById']);
 
     Route::get('apk', [DownloadOthersController::class, 'descargarAPKar']);
-
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -68,7 +67,6 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
     Route::post('register-profile', [UserController::class, 'registerProfiles']);
     Route::post('register-roles', [UserController::class, 'registerRoles']);
     Route::post('register-views', [UserController::class, 'registerViewsSeven']);
-
 });
 
 // DRIVE - KARINA
@@ -157,7 +155,6 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
 
     //registros-historial
     Route::get('registers/{idPeople}', [HistorialController::class, 'getByPeopleIdRegisters']);
-
 });
 
 Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -166,7 +163,6 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('formalizations-ruc20', [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
 
     Route::get('actions-plans', [DownloadActionsPlanController::class, 'exportActionPlans']);
-
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -183,9 +179,7 @@ Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'midd
     Route::patch('update/{id}', [NotaryController::class, 'updateNotary']);
 });
 
-Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], function () {
-
-});
+Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], function () {});
 
 // Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers'], function() {
 //     Route::post('mype', [MypeController::class, 'store']);
@@ -205,7 +199,6 @@ Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'midd
 
 Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list', [SupervisorController::class, 'index']);
-
 });
 
 // CONVENIOS
@@ -228,6 +221,9 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
 
     Route::put('update-values/{id}', [AgreementController::class, 'updateValuesAgreement']);
 
+    // compromisos
+    Route::post('commitments', [AgreementController::class, 'createCompromission']);
+    Route::get('commitments/{id}', [AgreementController::class, 'listCompromission']);
 });
 
 Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function () {
@@ -254,7 +250,6 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('operational-status', [SelectController::class, 'getOperationalStatus']);
     Route::get('agreement-status', [SelectController::class, 'getAgreementStatus']);
     Route::get('type-capital', [SelectController::class, 'getTypeCapital']);
-
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
@@ -267,7 +262,6 @@ Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('get-by-ruc/{ruc}', [MypeController::class, 'getDataByRuc']);
     Route::put('update-by-ruc/{id}', [MypeController::class, 'updateDataByRuc']);
     Route::post('create', [MypeController::class, 'store']);
-
 });
 
 Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -292,7 +286,6 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
 
     Route::post('create-event', [EventsController::class, 'createEvent']);
     Route::get('list', [EventsController::class, 'index']);
-
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
@@ -306,6 +299,4 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
 // });
 
-Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-
-});
+Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {});
