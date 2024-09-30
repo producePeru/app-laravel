@@ -23,7 +23,7 @@ class MypesCallArray extends Mailable
     public function build()
     {
         return $this->view('emails.empresa')
-                    ->subject('CAPACITA-TEC 2024')
+                    ->subject('🌟🌟 ¡No te lo pierdas! 📆⌛')
                     ->with([
                         'empresa' => $this->empresa
                     ]);

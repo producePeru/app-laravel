@@ -20,6 +20,7 @@ use App\Http\Controllers\Formalization\FormalizationDigitalController;
 use App\Http\Controllers\Formalization\ChartController;
 use App\Http\Controllers\Download\DownloadOthersController;
 use App\Http\Controllers\Agreement\AgreementController;
+use App\Http\Controllers\Agreement\CommitmentsController;
 use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
@@ -218,25 +219,30 @@ Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers',
 
 // CONVENIOS
 Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::get('list', [AgreementController::class, 'index']);
-    Route::get('list/{id}', [AgreementController::class, 'allActionsById']);
-    Route::get('list-files/{id}', [AgreementController::class, 'listAllFilesById']);
+    Route::get('list/{entity}',                 [AgreementController::class, 'index']);
+    Route::get('list/{id}',                     [AgreementController::class, 'allActionsById']);
+    Route::get('list-files/{id}',               [AgreementController::class, 'listAllFilesById']);
+    Route::delete('delete-acction/{id}',        [AgreementController::class, 'deleteActionById']);
+    Route::delete('delete/{id}',                [AgreementController::class, 'deleteAgreement']);
+    Route::delete('delete/file/{id}',           [AgreementController::class, 'deleteFileById']);
+    Route::post('create',                       [AgreementController::class, 'store']);
+    Route::post('create-ugse',                  [AgreementController::class, 'storeUgse']);
+    Route::post('create-acction',               [AgreementController::class, 'storeAction']);
+    Route::post('file',                         [AgreementController::class, 'upFileAgreement']);
+    Route::post('file-download/{id}',           [AgreementController::class, 'download']);
+    Route::get('download',                      [AgreementController::class, 'exportAgreement']);
+    Route::put('update/{id}',                   [AgreementController::class, 'updateActionById']);
+    Route::put('update-values/{id}',            [AgreementController::class, 'updateValuesAgreement']);
+});
 
-    Route::delete('delete-acction/{id}', [AgreementController::class, 'deleteActionById']);
-    Route::delete('delete/{id}', [AgreementController::class, 'deleteAgreement']);
-    Route::delete('delete/file/{id}', [AgreementController::class, 'deleteFileById']);
-
-    Route::post('create', [AgreementController::class, 'store']);
-    Route::post('create-acction', [AgreementController::class, 'storeAction']);
-    Route::post('file', [AgreementController::class, 'upFileAgreement']);
-    Route::post('file-download/{id}', [AgreementController::class, 'download']);
-    Route::get('download', [AgreementController::class, 'exportAgreement']);
-
-    Route::put('update/{id}', [AgreementController::class, 'updateActionById']);
-
-    Route::put('update-values/{id}', [AgreementController::class, 'updateValuesAgreement']);
+// COMPROMISOS
+Route::group(['prefix' => 'commitments', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+    Route::get('list/{id}/{type}',              [CommitmentsController::class, 'index']);
+    Route::post('create',                       [CommitmentsController::class, 'store']);
+    Route::put('fulfilled/{id}',                [CommitmentsController::class, 'updateFulfilled']);
 
 });
+
 
 Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function() {
     Route::get('countries', [SelectController::class, 'getCountries']);

@@ -16,17 +16,25 @@ class Agreement extends Model
     protected $dates = ['deleted_at'];
 
     protected $fillable = [
-        'city_id',
-        'province_id',
-        'district_id',
         'alliedEntity',
         'homeOperations',
         'startDate',
-        'years',
         'endDate',
-        'external',
+        'city_id',
+        'province_id',
+        'district_id',
+        'years',
         'observations',
-        'created_id'
+        'ruc',
+        'components',
+        'aliado',
+        'aliadoPhone',
+        'focal',
+        'focalCargo',
+        'focalPhone',
+        'renovation',
+        'entity',
+        'created_id',
     ];
 
     public function estadoOperatividad()

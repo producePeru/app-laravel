@@ -162,3 +162,18 @@ Artisan::command('inspire', function () {
 // ADD COLUMN external TINYINT(1) NOT NULL DEFAULT 0 AFTER endDate;
 
 
+
+
+
+// CREATE TABLE agreements_commitments (
+//     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+//     commitment TEXT NOT NULL,
+//     fulfilled BOOLEAN NOT NULL,
+//     type ENUM('tuempresa', 'aliado') NOT NULL,
+//     id_agreement BIGINT UNSIGNED NULL,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL,  -- Campo para eliminaciones suaves (soft deletes)
+//     CONSTRAINT fk_agreement FOREIGN KEY (id_agreement) REFERENCES agreements(id) ON DELETE CASCADE
+// );
+

@@ -298,12 +298,21 @@ class PlanActionsController extends Controller
             'component_1' => $item->component1->name,
             'component_2' => optional($item->component2)->name,
             'component_3' => optional($item->component3)->name,
+
+
+            'component_1_id' => optional($item->component1)->id,
+            'component_2_id' => optional($item->component2)->id,
+            'component_3_id' => optional($item->component3)->id,
+
+
             'numberSessions' => $item->numberSessions,
             'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
             'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
             'totalDate' => $item->totalDate,
             'actaCompromiso' => $item->actaCompromiso,
             'envioCorreo' => $item->envioCorreo,
+            'status' => $item->status,
+            'details' => $item->details,
             'updated_at' => Carbon::parse($item->updated_at)->format('d-m-Y'),
         ];
     }
@@ -385,7 +394,7 @@ class PlanActionsController extends Controller
             'component_1' => 'required',
             'component_2' => 'nullable',
             'component_3' => 'nullable',
-            'ruc' => 'required|string|max:11',
+            'ruc' => 'nullable|string|max:11',
             'startDate' => 'required|date',
             'endDate' => 'required|date',
             'idItem' => 'required|integer',
@@ -430,6 +439,43 @@ class PlanActionsController extends Controller
             }
 
         }
+    }
+
+    public function changeStatus($id, $status)
+    {
+        if (! in_array($status, ['aprobado', 'observado'])) {
+            return response()->json(['error' => 'Estado no válido'], 400);
+        }
+
+        $actionPlan = ActionPlans::find($id);
+
+        if ($actionPlan) {
+            $actionPlan->status = $status;
+            $actionPlan->save();
+
+            return response()->json(['message' => 'Estado actualizado']);
+        }
+
+        return response()->json(['error' => 'Plan de acción no encontrado'], 404);
+    }
+
+    public function sendMessageDetails(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer|exists:actionsplans,id',
+            'details' => 'required|string|max:255',
+        ]);
+
+        $actionPlan = ActionPlans::find($request->id);
+
+        if ($actionPlan) {
+            $actionPlan->details = $request->details;
+            $actionPlan->save();
+
+            return response()->json(['message' => 'Se han guardado', 'status' => 200]);
+        }
+
+        return response()->json(['error' => 'Plan de acción no encontrado'], 404);
     }
 
 }
