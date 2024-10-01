@@ -3,25 +3,24 @@
 namespace App\Http\Controllers\Formalization;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\ActionPlans;
 use App\Models\Advisory;
 use App\Models\Formalization10;
 use App\Models\Formalization20;
-use App\Models\ActionPlans;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PlanActionsController extends Controller
 {
-
     public function planActions()
     {
         $advisories = DB::table('advisories')
-        ->whereNotNull('ruc')
-        ->whereRaw('LENGTH(ruc) = 11')
-        ->select('ruc')
-        ->distinct()
-        ->get();
+            ->whereNotNull('ruc')
+            ->whereRaw('LENGTH(ruc) = 11')
+            ->select('ruc')
+            ->distinct()
+            ->get();
 
         $formattedResults = $advisories->map(function ($item) {
             return [
@@ -31,120 +30,115 @@ class PlanActionsController extends Controller
         });
 
         $response = [
-            'data' => $formattedResults
+            'data' => $formattedResults,
         ];
 
         return response()->json($response);
     }
 
-
     public function rucFormalizationR20Set()
     {
         $advisories = DB::table('formalizations20')
-        ->whereNotNull('ruc')
-        ->whereRaw('LENGTH(ruc) = 11')
-        ->select('ruc', 'user_id', 'nameMype')
-        ->distinct()
-        ->get();
-
+            ->whereNotNull('ruc')
+            ->whereRaw('LENGTH(ruc) = 11')
+            ->select('ruc', 'user_id', 'nameMype')
+            ->distinct()
+            ->get();
 
         $existingRucs = DB::table('mypes')
             ->pluck('ruc')
             ->toArray();
 
         $newRucs = $advisories->filter(function ($item) use ($existingRucs) {
-            return !in_array($item->ruc, $existingRucs);
+            return ! in_array($item->ruc, $existingRucs);
         });
 
         $dataToInsert = $newRucs->map(function ($item) {
             return [
                 'name' => $item->nameMype,
                 'ruc' => $item->ruc,
-                'user_id' => $item->user_id
+                'user_id' => $item->user_id,
             ];
         })->toArray();
 
-        if (!empty($dataToInsert)) {
+        if (! empty($dataToInsert)) {
             DB::table('mypes')->insert($dataToInsert);
         }
 
         $response = [
-            'data' => $dataToInsert
+            'data' => $dataToInsert,
         ];
 
         return response()->json(['message' => 'success', 'status' => 200]);
     }
-
 
     public function rucFormalizationR10Set()
     {
         $advisories = DB::table('formalizations10')
-        ->whereNotNull('ruc')
-        ->whereRaw('LENGTH(ruc) = 11')
-        ->select('ruc', 'user_id')
-        ->distinct()
-        ->get();
-
+            ->whereNotNull('ruc')
+            ->whereRaw('LENGTH(ruc) = 11')
+            ->select('ruc', 'user_id')
+            ->distinct()
+            ->get();
 
         $existingRucs = DB::table('mypes')
             ->pluck('ruc')
             ->toArray();
 
         $newRucs = $advisories->filter(function ($item) use ($existingRucs) {
-            return !in_array($item->ruc, $existingRucs);
+            return ! in_array($item->ruc, $existingRucs);
         });
 
         $dataToInsert = $newRucs->map(function ($item) {
             return [
                 'name' => null,
                 'ruc' => $item->ruc,
-                'user_id' => $item->user_id
+                'user_id' => $item->user_id,
             ];
         })->toArray();
 
-        if (!empty($dataToInsert)) {
+        if (! empty($dataToInsert)) {
             DB::table('mypes')->insert($dataToInsert);
         }
 
         $response = [
-            'data' => $dataToInsert
+            'data' => $dataToInsert,
         ];
 
         return response()->json(['message' => 'success', 'status' => 200]);
     }
 
-
     public function rucAdvisoriesSet()
     {
         $advisories = DB::table('advisories')
-        ->whereNotNull('ruc')
-        ->whereRaw('LENGTH(ruc) = 11')
-        ->select('ruc', 'user_id')
-        ->distinct()
-        ->get();
+            ->whereNotNull('ruc')
+            ->whereRaw('LENGTH(ruc) = 11')
+            ->select('ruc', 'user_id')
+            ->distinct()
+            ->get();
 
         $existingRucs = DB::table('mypes')
             ->pluck('ruc')
             ->toArray();
 
         $newRucs = $advisories->filter(function ($item) use ($existingRucs) {
-            return !in_array($item->ruc, $existingRucs);
+            return ! in_array($item->ruc, $existingRucs);
         });
 
         $dataToInsert = $newRucs->map(function ($item) {
             return [
                 'name' => null,
                 'ruc' => $item->ruc,
-                'user_id' => $item->user_id
+                'user_id' => $item->user_id,
             ];
         })->toArray();
 
-        if (!empty($dataToInsert)) {
+        if (! empty($dataToInsert)) {
             DB::table('mypes')->insert($dataToInsert);
         }
 
         $response = [
-            'data' => $dataToInsert
+            'data' => $dataToInsert,
         ];
 
         return response()->json(['message' => 'success', 'status' => 200]);
@@ -160,7 +154,7 @@ class PlanActionsController extends Controller
             'component_1' => null,
             'component_2' => null,
             'component_3' => null,
-            'endDate' => null
+            'endDate' => null,
         ];
 
         $addedComponents = []; // Arreglo auxiliar para almacenar componentes ya agregados
@@ -173,20 +167,20 @@ class PlanActionsController extends Controller
             $components['endDate'] = $f10->created_at;
         }
 
-        if (!$f20 && !$f10 && $advisories->isNotEmpty()) {
+        if (! $f20 && ! $f10 && $advisories->isNotEmpty()) {
             $advisoryComponents = $advisories->take(3);
             foreach ($advisoryComponents as $index => $advisory) {
-                if ($index == 0 && !$components['component_1']) {
+                if ($index == 0 && ! $components['component_1']) {
                     $components['component_1'] = $advisory->component->id;
                     $components['endDate'] = $advisory->created_at;
                     $addedComponents[] = $advisory->component->id;
-                } elseif ($index == 1 && !$components['component_2']) {
-                    if (!in_array($advisory->component->id, $addedComponents)) {
+                } elseif ($index == 1 && ! $components['component_2']) {
+                    if (! in_array($advisory->component->id, $addedComponents)) {
                         $components['component_2'] = $advisory->component->id;
                         $addedComponents[] = $advisory->component->id;
                     }
-                } elseif ($index == 2 && !$components['component_3']) {
-                    if (!in_array($advisory->component->id, $addedComponents)) {
+                } elseif ($index == 2 && ! $components['component_3']) {
+                    if (! in_array($advisory->component->id, $addedComponents)) {
                         $components['component_3'] = $advisory->component->id;
                         $addedComponents[] = $advisory->component->id;
                     }
@@ -195,8 +189,8 @@ class PlanActionsController extends Controller
         } elseif ($advisories->isNotEmpty()) {
             $advisoryComponents = $advisories->take(2);
             foreach ($advisoryComponents as $index => $advisory) {
-                if (!in_array($advisory->component->id, $addedComponents)) {
-                    $components['component_' . ($index+2)] = $advisory->component->id;
+                if (! in_array($advisory->component->id, $addedComponents)) {
+                    $components['component_'.($index + 2)] = $advisory->component->id;
                     $addedComponents[] = $advisory->component->id;
                 }
             }
@@ -204,7 +198,6 @@ class PlanActionsController extends Controller
 
         return response()->json(['data' => $components, 'status' => 200]);
     }
-
 
     public function store(Request $request)
     {
@@ -231,7 +224,7 @@ class PlanActionsController extends Controller
             ),
             'startDate' => $request->startDate,
             'endDate' => $request->endDate,
-            'totalDate' => Carbon::parse($request->startDate)->diffInDays(Carbon::parse($request->endDate))
+            'totalDate' => Carbon::parse($request->startDate)->diffInDays(Carbon::parse($request->endDate)),
         ];
 
         $actionPlan = ActionPlans::create($data);
@@ -242,7 +235,6 @@ class PlanActionsController extends Controller
             return response()->json(['message' => 'Error al crear el action plan', 'status' => 500]);
         }
     }
-
 
     //INDEX _+++_
     public function index(Request $request)
@@ -261,12 +253,12 @@ class PlanActionsController extends Controller
             'businessman.gender:id,avr',
             'component1',
             'component2',
-            'component3'
+            'component3',
         ])->search($search)
-          ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc');
 
         // Filtrar por roles
-        if (in_array(2, $role_array) && !in_array(1, $role_array)) {
+        if (in_array(2, $role_array) && ! in_array(1, $role_array)) {
             $query->where('asesor_id', $user_role['user_id']);
         }
 
@@ -278,7 +270,6 @@ class PlanActionsController extends Controller
 
         return response()->json(['data' => $data, 'status' => 200]);
     }
-
 
     private function transformActionPlan($item)
     {
@@ -299,11 +290,9 @@ class PlanActionsController extends Controller
             'component_2' => optional($item->component2)->name,
             'component_3' => optional($item->component3)->name,
 
-
             'component_1_id' => optional($item->component1)->id,
             'component_2_id' => optional($item->component2)->id,
             'component_3_id' => optional($item->component3)->id,
-
 
             'numberSessions' => $item->numberSessions,
             'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
@@ -319,11 +308,8 @@ class PlanActionsController extends Controller
 
     private function formatFullName($profile)
     {
-        return $profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename;
+        return $profile->name.' '.$profile->lastname.' '.$profile->middlename;
     }
-
-
-
 
     public function editComponent(Request $request)
     {
@@ -334,7 +320,7 @@ class PlanActionsController extends Controller
             $validatedData = $request->validate([
                 'idPlan' => 'required|integer',
                 'nameComponent' => 'required|string|in:component_1,component_2,component_3',
-                'valueComponent' => 'required|integer'
+                'valueComponent' => 'required|integer',
             ]);
 
             $actionPlan = ActionPlans::find($validatedData['idPlan']);
@@ -377,9 +363,9 @@ class PlanActionsController extends Controller
             $actionPlan->{$validatedData['type']} = $validatedData['value'];
             $actionPlan->save();
 
-            return response()->json(['message' => ucfirst($validatedData['type']) . ' actualizado exitosamente.', 'status' => 200]);
+            return response()->json(['message' => ucfirst($validatedData['type']).' actualizado exitosamente.', 'status' => 200]);
         } else {
-            return response()->json(['message' => 'El campo ' . $validatedData['type'] . ' ya tiene un valor y no se puede actualizar.', 'status' => 400]);
+            return response()->json(['message' => 'El campo '.$validatedData['type'].' ya tiene un valor y no se puede actualizar.', 'status' => 400]);
         }
     }
 
@@ -401,14 +387,14 @@ class PlanActionsController extends Controller
         ]);
 
         $payload = [
-            'people_id' =>      $validatedData['people_id'],
-            'cde_id' =>         $validatedData['cde_id'],
-            'component_1' =>    $validatedData['component_1'],
-            'component_2' =>    $validatedData['component_2'],
-            'component_3' =>    $validatedData['component_3'],
-            'ruc' =>            $validatedData['ruc'],
-            'startDate' =>      $validatedData['startDate'],
-            'endDate' =>        $validatedData['endDate'],
+            'people_id' => $validatedData['people_id'],
+            'cde_id' => $validatedData['cde_id'],
+            'component_1' => $validatedData['component_1'],
+            'component_2' => $validatedData['component_2'],
+            'component_3' => $validatedData['component_3'],
+            'ruc' => $validatedData['ruc'],
+            'startDate' => $validatedData['startDate'],
+            'endDate' => $validatedData['endDate'],
         ];
 
         if (in_array(1, $role_array) || in_array(5, $role_array)) {
@@ -433,6 +419,7 @@ class PlanActionsController extends Controller
 
             if ($actionPlan) {
                 $actionPlan->delete();
+
                 return response()->json(['message' => 'Se ha eliminado el registro', 'status' => 200]);
             } else {
                 return response()->json(['message' => 'Action Plan not found'], 404);
@@ -477,5 +464,4 @@ class PlanActionsController extends Controller
 
         return response()->json(['error' => 'Plan de acción no encontrado'], 404);
     }
-
 }

@@ -105,85 +105,105 @@ class EventsController extends Controller
     }
 
 
-    public function index(Request $request)
-    {
-        $month = $request->input('month');
-        $year = $request->input('year');
 
-        if (!$month || !$year) {
-            return response()->json(['message' => 'El mes y el año son requeridos'], 400);
+
+
+    public function index(Request $request)
+{
+    $month = $request->input('month');
+    $year = $request->input('year');
+
+    if (!$month || !$year) {
+        return response()->json(['message' => 'El mes y el año son requeridos'], 400);
+    }
+
+    $events = Event::all();
+    $eventsWithRepetition = [];
+
+    // Obtener la fecha actual para comparar
+    $currentDate = Carbon::now();
+
+    foreach ($events as $event) {
+        // Parsear las fechas de inicio y fin del evento
+        $originalStart = Carbon::parse($event->start);
+        $originalEnd = Carbon::parse($event->end);
+        $createdAt = Carbon::parse($event->created_at);
+
+        // Filtrar eventos repetidos anualmente
+        if ($event->repetir === 'year') {
+            if ($originalStart->month == $month && $year >= $originalStart->year) {
+                // Clonar el evento y ajustar las fechas
+                $newEvent = clone $event;
+                $newEvent->start = $originalStart->year($year);
+                $newEvent->end = $originalEnd->year($year);
+
+                // Asegurarse de que la fecha sea mayor o igual a la fecha de creación o actual
+                if ($newEvent->start->gte($createdAt)) {
+                    $eventsWithRepetition[] = $newEvent;
+                }
+            }
         }
 
-        $events = Event::all();
-        $eventsWithRepetition = [];
+        // Filtrar eventos repetidos mensualmente
+        if ($event->repetir === 'month') {
+            if ($originalStart->year <= $year) {
+                // Evitar listar eventos en meses anteriores dentro del mismo año
+                if ($year == $originalStart->year && $month < $originalStart->month) {
+                    continue;
+                }
 
-        // Obtener la fecha actual para comparar
-        $currentDate = Carbon::now();
+                // Clonar el evento y ajustar las fechas al mes y año seleccionados
+                $newEvent = clone $event;
+                $newEvent->start = $originalStart->year($year)->month($month);
+                $newEvent->end = $originalEnd->year($year)->month($month);
 
-        foreach ($events as $event) {
-            $originalStart = Carbon::parse($event->start);
-
-            // Filtrar eventos repetidos anualmente
-            if ($event->repetir === 'year') {
-                $originalMonth = $originalStart->month;
-
-                if ($originalMonth == $month) {
-                    $newEvent = clone $event;
-                    $newEvent->start = $originalStart->year($year);
-                    $newEvent->end = Carbon::parse($event->end)->year($year);
-
-                    // Solo incluir eventos si la fecha es igual o posterior a la actual
-                    if (Carbon::parse($newEvent->start) >= $currentDate) {
-                        $eventsWithRepetition[] = $newEvent;
-                    }
+                // Asegurarse de que la fecha sea mayor o igual a la fecha de creación o actual
+                if ($newEvent->start->gte($createdAt)) {
+                    $eventsWithRepetition[] = $newEvent;
                 }
             }
+        }
 
-            // Filtrar eventos repetidos mensualmente
-            if ($event->repetir === 'month') {
-                if ($originalStart->year <= $year) {
-                    $newEvent = clone $event;
-                    $newEvent->start = $originalStart->year($year)->month($month);
-                    $newEvent->end = Carbon::parse($event->end)->year($year)->month($month);
-
-                    if ($newEvent->start->month == $month && Carbon::parse($newEvent->start) >= $currentDate) {
-                        $eventsWithRepetition[] = $newEvent;
-                    }
-                }
-            }
-
-            // Filtrar eventos sin repetición
-            if ($event->repetir === null) {
-                $eventMonth = $originalStart->month;
-                $eventYear = $originalStart->year;
-
-                if ($eventMonth == $month && $eventYear == $year && $originalStart >= $currentDate) {
+        // Filtrar eventos sin repetición
+        if ($event->repetir === null) {
+            // Solo agregar si el evento fue creado en el mismo mes y año que se selecciona
+            if ($createdAt->month == $month && $createdAt->year == $year) {
+                // Asegurarse de que el evento aún no haya pasado
+                if ($originalStart->gte($originalStart)) {
                     $eventsWithRepetition[] = $event;
                 }
             }
         }
-
-        // Retornar los eventos filtrados
-        if (count($eventsWithRepetition) > 0) {
-            $data = array_map(function ($event) {
-                return [
-                    'id' => $event->id,
-                    'title' => $event->nameEvent,
-                    'start' => Carbon::parse($event->start)->format('Y-m-d H:i'),
-                    'end' => Carbon::parse($event->end)->format('Y-m-d H:i'),
-                    'backgroundColor' => $event->color,
-                    'repetir' => $event->repetir,
-                    'description' => $event->description,
-                    'linkVideo' => $event->linkVideo,
-                    'allDay' => $event->allDay,
-                    'category_id' => $event->category_id
-                ];
-            }, $eventsWithRepetition);
-
-            return response()->json($data);
-        } else {
-            return response()->json(['message' => 'No hay eventos para el mes y año seleccionados'], 404);
-        }
     }
+
+    // Retornar los eventos filtrados
+    if (count($eventsWithRepetition) > 0) {
+        $data = array_map(function ($event) {
+            return [
+                'id' => $event->id,
+                'title' => $event->nameEvent,
+                'start' => $event->start,
+                'end' => $event->end,
+                'backgroundColor' => $event->color,
+                'repetir' => $event->repetir,
+                'description' => $event->description,
+                'linkVideo' => $event->linkVideo,
+                'allDay' => $event->allDay,
+                'category_id' => $event->category_id
+            ];
+        }, $eventsWithRepetition);
+
+        return response()->json($data);
+    } else {
+        return response()->json(['message' => 'No hay eventos para el mes y año seleccionados'], 404);
+    }
+}
+
+
+
+
+
+
+
 
 }

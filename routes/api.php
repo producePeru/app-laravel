@@ -1,85 +1,77 @@
 <?php
 
-use App\Http\Controllers\People\PersonController;
-use App\Http\Controllers\User\AuthController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Advisory\AdvisoryController;
-use App\Http\Controllers\Selects\SelectController;
-use App\Http\Controllers\Selects\CreateController;
-use App\Http\Controllers\Formalization\Formalization10Controller;
-use App\Http\Controllers\Formalization\Formalization20Controller;
-use App\Http\Controllers\Formalization\PlanActionsController;
-use App\Http\Controllers\Formalization\NotaryController;
-use App\Http\Controllers\Formalization\HistorialController;
-use App\Http\Controllers\Download\DownloadFormalizationsController;
-use App\Http\Controllers\Download\DownloadActionsPlanController;
-use App\Http\Controllers\User\SupervisorController;
-use App\Http\Controllers\Drive\DriveController;
-use App\Http\Controllers\Formalization\FormalizationDigitalController;
-use App\Http\Controllers\Formalization\ChartController;
-use App\Http\Controllers\Download\DownloadOthersController;
 use App\Http\Controllers\Agreement\AgreementController;
 use App\Http\Controllers\Agreement\CommitmentsController;
-use App\Http\Controllers\User\TokenController;
-use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
+use App\Http\Controllers\Download\DownloadActionsPlanController;
+use App\Http\Controllers\Download\DownloadFormalizationsController;
+use App\Http\Controllers\Download\DownloadOthersController;
+use App\Http\Controllers\Drive\DriveController;
 use App\Http\Controllers\Event\EventsController;
-
-
+use App\Http\Controllers\Formalization\ChartController;
+use App\Http\Controllers\Formalization\Formalization10Controller;
+use App\Http\Controllers\Formalization\Formalization20Controller;
+use App\Http\Controllers\Formalization\FormalizationDigitalController;
+use App\Http\Controllers\Formalization\HistorialController;
+use App\Http\Controllers\Formalization\NotaryController;
+use App\Http\Controllers\Formalization\PlanActionsController;
+use App\Http\Controllers\Mype\MypeController;
+use App\Http\Controllers\People\PersonController;
+use App\Http\Controllers\Selects\CreateController;
+use App\Http\Controllers\Selects\SelectController;
+use App\Http\Controllers\User\AuthController;
+use App\Http\Controllers\User\SupervisorController;
+use App\Http\Controllers\User\TokenController;
+use App\Http\Controllers\User\UserController;
+use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
 
 //testing
 Route::post('create', [UserController::class, 'store']);
 
-Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function() {
-  Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
-  Route::post('formalization-digital', [FormalizationDigitalController::class, 'formalizationDigital']);
-  Route::post('formalization-digital/exist-number', [FormalizationDigitalController::class, 'getStatusByDocumentNumber']);
+Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function () {
+    Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
+    Route::post('formalization-digital', [FormalizationDigitalController::class, 'formalizationDigital']);
+    Route::post('formalization-digital/exist-number', [FormalizationDigitalController::class, 'getStatusByDocumentNumber']);
 
-  Route::get('location-cdes', [FormalizationDigitalController::class, 'gpsCdes']);
-  Route::get('formalization/select-cde/{dni}/{id}', [FormalizationDigitalController::class, 'selectCde']);
+    Route::get('location-cdes', [FormalizationDigitalController::class, 'gpsCdes']);
+    Route::get('formalization/select-cde/{dni}/{id}', [FormalizationDigitalController::class, 'selectCde']);
 
-  Route::get('notaries', [NotaryController::class, 'indexNotary']);
-  Route::get('notaries-filters', [NotaryController::class, 'indexNotaryById']);
+    Route::get('notaries', [NotaryController::class, 'indexNotary']);
+    Route::get('notaries-filters', [NotaryController::class, 'indexNotaryById']);
 
-  Route::get('apk', [DownloadOthersController::class, 'descargarAPKar']);
-
+    Route::get('apk', [DownloadOthersController::class, 'descargarAPKar']);
 });
 
+Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('list', [UserController::class, 'index']);
+    Route::post('create', [UserController::class, 'store']);
+    Route::delete('delete/{id}', [UserController::class, 'destroy']);
+    Route::put('update/{id}', [UserController::class, 'update']);
 
+    Route::get('api/{type}/{num}', [AuthController::class, 'dniDataUser']);
+    Route::get('only-dni/{num}', [AuthController::class, 'dniDataUser2']);
 
-Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-  Route::get('list', [UserController::class, 'index']);
-  Route::post('create', [UserController::class, 'store']);
-  Route::delete('delete/{id}', [UserController::class, 'destroy']);
-  Route::put('update/{id}', [UserController::class, 'update']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('password-reset', [AuthController::class, 'passwordReset']);
+    Route::put('views/{id}', [UserController::class, 'asignViewsUser']);
+    Route::get('views/{id}', [UserController::class, 'showViewsUser']);
 
-  Route::get('api/{type}/{num}', [AuthController::class, 'dniDataUser']);
-  Route::get('only-dni/{num}', [AuthController::class, 'dniDataUser2']);
+    Route::get('list-asesories', [UserController::class, 'allAsesores']);
+    Route::get('my-profile', [UserController::class, 'showMyProfile']);
 
-  Route::post('logout', [AuthController::class, 'logout']);
-  Route::post('password-reset', [AuthController::class, 'passwordReset']);
-  Route::put('views/{id}', [UserController::class, 'asignViewsUser']);
-  Route::get('views/{id}', [UserController::class, 'showViewsUser']);
-
-  Route::get('list-asesories', [UserController::class, 'allAsesores']);
-  Route::get('my-profile', [UserController::class, 'showMyProfile']);
-
-
-  // REGISTRAR UN ASESOR EXTERNO NOTARIO
-  Route::post('register-user',      [UserController::class, 'registerUsers']);
-  Route::post('register-profile',   [UserController::class, 'registerProfiles']);
-  Route::post('register-roles',     [UserController::class, 'registerRoles']);
-  Route::post('register-views',     [UserController::class, 'registerViewsSeven']);
-
+    // REGISTRAR UN ASESOR EXTERNO NOTARIO
+    Route::post('register-user', [UserController::class, 'registerUsers']);
+    Route::post('register-profile', [UserController::class, 'registerProfiles']);
+    Route::post('register-roles', [UserController::class, 'registerRoles']);
+    Route::post('register-views', [UserController::class, 'registerViewsSeven']);
 });
-
 
 // DRIVE - KARINA
-Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list-files', [DriveController::class, 'index']);
     Route::get('download/{any}', [DriveController::class, 'downloadFile'])->where('any', '.*');
     Route::post('up-files', [DriveController::class, 'store']);
@@ -97,27 +89,26 @@ Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middl
     Route::put('visible-users', [DriveController::class, 'storeOrUpdateDriveUsers']);
 });
 
-Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-  Route::get('list',                [PersonController::class, 'index']);
-  Route::get('found/{type}/{dni}',  [PersonController::class, 'dniFoundUser']);
-  Route::post('create',             [PersonController::class, 'store']);
-  Route::delete('delete/{id}',      [PersonController::class, 'destroy']);
-  Route::put('update/{id}',         [PersonController::class, 'update']);
-  Route::get('data/{dni}',          [PersonController::class, 'findUserById']);            //busca people x id
+Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('list', [PersonController::class, 'index']);
+    Route::get('found/{type}/{dni}', [PersonController::class, 'dniFoundUser']);
+    Route::post('create', [PersonController::class, 'store']);
+    Route::delete('delete/{id}', [PersonController::class, 'destroy']);
+    Route::put('update/{id}', [PersonController::class, 'update']);
+    Route::get('data/{dni}', [PersonController::class, 'findUserById']);            //busca people x id
 
 });
 
-
-Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-  Route::get('list', [AdvisoryController::class, 'index']);
-  Route::post('create', [AdvisoryController::class, 'store']);
-  Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
-  Route::get('find/{id}', [AdvisoryController::class, 'getDataAdvisoryById']);
-  Route::put('update/{id}', [AdvisoryController::class, 'update']);
+Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('list', [AdvisoryController::class, 'index']);
+    Route::post('create', [AdvisoryController::class, 'store']);
+    Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
+    Route::get('find/{id}', [AdvisoryController::class, 'getDataAdvisoryById']);
+    Route::put('update/{id}', [AdvisoryController::class, 'update']);
 });
 
 // FORMALIZACIÓN*
-Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list-ruc-10', [Formalization10Controller::class, 'indexRuc10']);
     Route::get('list-ruc-20', [Formalization20Controller::class, 'indexRuc20']);
     Route::get('list-ruc-20/{idPerson}', [Formalization20Controller::class, 'allFormalizationsRuc20ByPersonId']);
@@ -145,17 +136,16 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::get('chart', [ChartController::class, 'index']);
     // Route::get('by-advisors', [ChartController::class, 'countAdvisoriesByAdvisors']);
 
-
     // NUEVA FUNCION DE SETEO para MYPEs
     Route::get('plan-actions', [PlanActionsController::class, 'planActions']);
 
-    Route::put('set-ruc-advisories',   [PlanActionsController::class, 'rucAdvisoriesSet']);
-    Route::put('set-ruc-ruc-10',       [PlanActionsController::class, 'rucFormalizationR10Set']);
-    Route::put('set-ruc-ruc-20',       [PlanActionsController::class, 'rucFormalizationR20Set']);
+    Route::put('set-ruc-advisories', [PlanActionsController::class, 'rucAdvisoriesSet']);
+    Route::put('set-ruc-ruc-10', [PlanActionsController::class, 'rucFormalizationR10Set']);
+    Route::put('set-ruc-ruc-20', [PlanActionsController::class, 'rucFormalizationR20Set']);
 });
 
-Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::get('advisories',        [HistorialController::class, 'historialAdvisories']);
+Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('advisories', [HistorialController::class, 'historialAdvisories']);
     Route::get('formalizations-10', [HistorialController::class, 'historialFormalizations10']);
     Route::get('formalizations-20', [HistorialController::class, 'historialFormalizations20']);
 
@@ -166,25 +156,23 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
 
     //registros-historial
     Route::get('registers/{idPeople}', [HistorialController::class, 'getByPeopleIdRegisters']);
-
 });
 
-Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::get('asesories',             [DownloadFormalizationsController::class, 'exportAsesories']);
-    Route::get('formalizations-ruc10',  [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
-    Route::get('formalizations-ruc20',  [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
+Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('asesories', [DownloadFormalizationsController::class, 'exportAsesories']);
+    Route::get('formalizations-ruc10', [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
+    Route::get('formalizations-ruc20', [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
 
-    Route::get('actions-plans',         [DownloadActionsPlanController::class, 'exportActionPlans']);
-
+    Route::get('actions-plans', [DownloadActionsPlanController::class, 'exportActionPlans']);
 });
 
-Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list', [TokenController::class, 'index']);
     Route::post('create', [TokenController::class, 'store']);
     Route::put('update-status/{id}', [TokenController::class, 'updateStatus']);
 });
 
-Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list', [NotaryController::class, 'indexNotary']);
     Route::get('list/{id}', [NotaryController::class, 'indexNotaryById']);
     Route::post('create', [NotaryController::class, 'storeNotary']);
@@ -192,16 +180,14 @@ Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'midd
     Route::patch('update/{id}', [NotaryController::class, 'updateNotary']);
 });
 
-Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], function() {
-
-});
+Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], function () {});
 
 // Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers'], function() {
 //     Route::post('mype', [MypeController::class, 'store']);
 
 // });
 
-Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::post('comercial-activities', [CreateController::class, 'postComercialActivities']);
     Route::post('office', [CreateController::class, 'createOffice']);
     Route::post('economic-sector', [CreateController::class, 'createEconomicSector']);
@@ -212,9 +198,8 @@ Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'midd
 
 });
 
-Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list', [SupervisorController::class, 'index']);
-
 });
 
 // CONVENIOS
@@ -241,6 +226,9 @@ Route::group(['prefix' => 'commitments', 'namespace' => 'App\Http\Controllers', 
     Route::post('create',                       [CommitmentsController::class, 'store']);
     Route::put('fulfilled/{id}',                [CommitmentsController::class, 'updateFulfilled']);
 
+    // compromisos
+    Route::post('commitments', [AgreementController::class, 'createCompromission']);
+    Route::get('commitments/{id}', [AgreementController::class, 'listCompromission']);
 });
 
 
@@ -268,54 +256,45 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('operational-status', [SelectController::class, 'getOperationalStatus']);
     Route::get('agreement-status', [SelectController::class, 'getAgreementStatus']);
     Route::get('type-capital', [SelectController::class, 'getTypeCapital']);
-
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
 //     Route::put('mype-info', [MypeController::class, 'setInfoMype']);
 // });
 
-Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list', [MypeController::class, 'index']);
     Route::put('update/{ruc}', [MypeController::class, 'getApiInfo']);
     Route::get('get-by-ruc/{ruc}', [MypeController::class, 'getDataByRuc']);
     Route::put('update-by-ruc/{id}', [MypeController::class, 'updateDataByRuc']);
     Route::post('create', [MypeController::class, 'store']);
-
 });
 
-Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::get('list',                      [PlanActionsController::class, 'index']);
-    Route::get('components/{ruc}',          [PlanActionsController::class, 'listAllServicesAF']);
-    Route::post('create',                   [PlanActionsController::class, 'store']);
-    Route::put('edit-component',            [PlanActionsController::class, 'editComponent']);
-    Route::put('edit-yes-no',               [PlanActionsController::class, 'updateField']);
-    Route::post('update',                   [PlanActionsController::class, 'update']);
-    Route::delete('delete/{id}',            [PlanActionsController::class, 'delete']);
+Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('list', [PlanActionsController::class, 'index']);
+    Route::get('components/{ruc}', [PlanActionsController::class, 'listAllServicesAF']);
+    Route::post('create', [PlanActionsController::class, 'store']);
+    Route::put('edit-component', [PlanActionsController::class, 'editComponent']);
+    Route::put('edit-yes-no', [PlanActionsController::class, 'updateField']);
+    Route::post('update', [PlanActionsController::class, 'update']);
+    Route::delete('delete/{id}', [PlanActionsController::class, 'delete']);
+    Route::put('status/{id}/{status}', [PlanActionsController::class, 'changeStatus']);
+    Route::put('details', [PlanActionsController::class, 'sendMessageDetails']);
 });
 
-
-Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
-    Route::post('create-category',          [EventsController::class, 'createCategory']);
-    Route::get('list-categories',           [EventsController::class, 'listCategories']);
-    Route::put('status-categories/{id}',    [EventsController::class, 'statusCategories']);
+Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::post('create-category', [EventsController::class, 'createCategory']);
+    Route::get('list-categories', [EventsController::class, 'listCategories']);
+    Route::put('status-categories/{id}', [EventsController::class, 'statusCategories']);
 
     // Route::post('create-event',             [EventsController::class, 'createEvent']);
     // Route::get('list',                    [EventsController::class, 'listAllEvents']);
 
-
-
-    Route::post('create-event',                    [EventsController::class, 'createEvent']);
-    Route::get('list',                    [EventsController::class, 'index']);
-
-
-
+    Route::post('create-event', [EventsController::class, 'createEvent']);
+    Route::get('list', [EventsController::class, 'index']);
 });
 
-
-
-
-Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
+Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
     Route::post('send-certificates', [CertificadoPDFController::class, 'sendEmailWithCertificates']);
 
     Route::post('/ayacucho', [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
@@ -326,7 +305,4 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
 // });
 
-
-Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function(){
-
-});
+Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {});
