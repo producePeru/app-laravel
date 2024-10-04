@@ -72,6 +72,30 @@ class Agreement extends Model
         return $this->hasMany(AgreementFiles::class, 'id');
     }
 
+    // Modelo Agreement
+    public function commitments()
+    {
+        return $this->hasMany(AgreementCommitments::class, 'agreement_id');
+    }
+
+    public function filesAgreements()
+    {
+        return $this->hasMany(AgreementFiles::class, 'agreements_id');
+    }
+
+    // Nuevo
+    public function compromisos()
+    {
+        return $this->hasMany(Commitment::class);
+    }
+
+    public function profile()
+    {
+        return $this->belongsTo(Profile::class, 'created_id', 'user_id');
+    }
+
+
+
     // SCOPE SEARCH
     public function scopeSearch($query, $search)
     {

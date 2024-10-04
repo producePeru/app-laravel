@@ -136,6 +136,7 @@ Artisan::command('inspire', function () {
 // ADD COLUMN external TINYINT(1) NOT NULL DEFAULT 0 AFTER endDate;
 
 // NUEVOOO
+
 // CREATE TABLE agreement_commitments (
 //     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 //     accion VARCHAR(255) NULL,
@@ -149,11 +150,40 @@ Artisan::command('inspire', function () {
 //     file2_name VARCHAR(255) DEFAULT NULL,
 //     file3_path VARCHAR(255) DEFAULT NULL,
 //     file3_name VARCHAR(255) DEFAULT NULL,
-//     details VARCHAR(255) NOT NULL,
-//     id_agreement BIGINT UNSIGNED,
+//     details VARCHAR(255) DEFAULT NULL,
+//     agreement_id BIGINT UNSIGNED,
+//     user_id BIGINT UNSIGNED,
 //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 //     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-//     FOREIGN KEY (id_agreement) REFERENCES agreements(id)
-//         ON DELETE CASCADE  -- Opcional: para eliminar en cascada cuando se borra en agreements
-//         ON UPDATE CASCADE   -- Opcional: para actualizar en cascada cuando se actualiza en agreements
-//   );
+
+//     -- Definición de claves foráneas
+//     CONSTRAINT fk_agreement_commitments_user_id FOREIGN KEY (user_id)
+//         REFERENCES users(id) ON DELETE SET NULL,
+
+//     CONSTRAINT fk_agreement_commitments_agreement_id FOREIGN KEY (agreement_id)
+//         REFERENCES agreements(id) ON DELETE CASCADE ON UPDATE CASCADE
+// );
+
+
+// CREATE TABLE commitments (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     title VARCHAR(100) NOT NULL,
+//     type VARCHAR(10) NOT NULL,
+//     description VARCHAR(255) NULL,
+//     meta INT NULL,
+//     agreement_id BIGINT UNSIGNED NULL,
+//     user_id BIGINT UNSIGNED NULL,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     CONSTRAINT fk_commitments_user_id FOREIGN KEY (user_id)
+//         REFERENCES users(id) ON DELETE SET NULL, -- Set NULL si el usuario es eliminado
+//     CONSTRAINT fk_commitments_agreement_id FOREIGN KEY (agreement_id)
+//         REFERENCES agreements(id) ON DELETE SET NULL ON UPDATE CASCADE -- Set NULL si el acuerdo es eliminado
+// );
+
+
+// ALTER TABLE agreement_commitments
+// ADD COLUMN commitment_id BIGINT UNSIGNED AFTER details;
+
+// ALTER TABLE agreement_commitments
+// ADD CONSTRAINT fk_agreement_commitments_commitment_id FOREIGN KEY (commitment_id) REFERENCES commitments(id) ON DELETE CASCADE;

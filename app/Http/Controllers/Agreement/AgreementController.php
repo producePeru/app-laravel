@@ -6,17 +6,19 @@ use App\Exports\AgreementExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendEndDateNotification;
 use App\Models\Agreement;
+use App\Models\Commitment;
 use App\Models\AgreementActions;
 use App\Models\AgreementCommitments;
 use App\Models\AgreementFiles;
 use Carbon\Carbon;
 use App\Jobs\SendEndDateNotificationUGSE;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
 
 class AgreementController extends Controller
 {
-
-
 
     public function index(Request $request, $entity)
     {
@@ -196,9 +198,15 @@ class AgreementController extends Controller
 
     public function deleteAgreement($id)
     {
-        $agreement = Agreement::findOrFail($id);
-        $agreement->delete();
-        return response()->json(['message' => 'Eliminado del registro', 'status' => 200]);
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+        $user_id = $user_role['user_id'];
+
+        if (in_array(5, $role_array) || in_array(7, $role_array) || in_array(8, $role_array)) {
+            $agreement = Agreement::findOrFail($id);
+            $agreement->delete();
+            return response()->json(['message' => 'Eliminado del registro', 'status' => 200]);
+        }
     }
 
     public function deleteActionById($id)
@@ -250,10 +258,28 @@ class AgreementController extends Controller
 
     public function deleteFileById($id)
     {
-        $action = AgreementFiles::findOrFail($id);
-        $action->delete();
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+        $user_id = $user_role['user_id'];
 
-        return response()->json(['message' => 'Archivo eliminado exitosamente', 'status' => 200]);
+        if (in_array(5, $role_array) || in_array(7, $role_array)  || in_array(8, $role_array)) {
+            $action = AgreementFiles::findOrFail($id);
+            $action->delete();
+
+            return response()->json(['message' => 'Archivo eliminado exitosamente', 'status' => 200]);
+        }
+
+        // $files = AgreementFiles::where('id', $id)
+        //         ->where('user_id', $user_id)
+        //         ->first();
+
+        // if ($files) {
+        //     $files->delete();
+        //     return response()->json(['message' => 'Commitment deleted successfully.', 'status' => 200]);
+        // } else {
+        //     return response()->json(['error' => 'You do not have permission to delete this commitment or commitment not found.'], 403);
+        // }
+
     }
 
     public function updateValuesAgreement(Request $request, $id)
@@ -303,9 +329,16 @@ class AgreementController extends Controller
         return Excel::download(new AgreementExport($result), 'agreements.xlsx');
     }
 
+
+
+    // COMPROMISOS
+
     public function createCompromission(Request $request)
     {
-        // Validar los datos de entrada
+        $user_role = getUserRole();
+
+        $user_role['user_id'];                                      // user_id
+
         $request->validate([
             'accion' => 'required|string',
             'date' => 'nullable|date',
@@ -313,7 +346,7 @@ class AgreementController extends Controller
             'address' => 'nullable|string|max:100',
             'participants' => 'nullable|integer',
             'details' => 'nullable|string',
-            'id_agreement' => 'required|exists:agreements,id',
+            'agreement_id' => 'required|exists:agreements,id',
             'file1' => 'nullable|file',
             'file2' => 'nullable|file',
             'file3' => 'nullable|file',
@@ -343,7 +376,7 @@ class AgreementController extends Controller
                 'accion' => $request->input('accion'),
                 'date' => $request->input('date'),
                 'modality' => $request->input('modality'),
-                'address' => $request->input('adress'),
+                'address' => $request->input('address'),
                 'participants' => $request->input('participants'),
                 'file1_path' => $filePaths['file1_path'] ?? null,
                 'file1_name' => $fileNames['file1_name'] ?? null,
@@ -352,7 +385,9 @@ class AgreementController extends Controller
                 'file3_path' => $filePaths['file3_path'] ?? null,
                 'file3_name' => $fileNames['file3_name'] ?? null,
                 'details' => $request->input('details'),
-                'id_agreement' => $request->input('id_agreement'),
+                'agreement_id' => $request->input('agreement_id'),
+                'user_id' => $user_role['user_id'],
+                'commitment_id' => $request->input('commitment_id'),
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al guardar los datos en la base de datos: ' . $e->getMessage(), 'status' => 500]);
@@ -361,12 +396,106 @@ class AgreementController extends Controller
         return response()->json(['message' => 'Se registro', 'status' => 200]);
     }
 
+    // ver lista de acciones x compromiso
     public function listCompromission($id)
     {
-        $data = AgreementCommitments::where('id_agreement', $id)
-            ->orderBy('created_at', 'desc') // Order by most recent
+        $data = AgreementCommitments::where('commitment_id', $id)
+            ->with(['profile:id,user_id,name,lastname,middlename'])
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return response()->json(['data' => $data, 'status' => 200]);
     }
+
+    public function downloadCompromission($path)
+    {
+        $ruta = storage_path("app/public/{$path}");
+
+        if (file_exists($ruta)) {
+            return response()->download($ruta);
+        } else {
+            return response()->json(['message' => 'Archivo no encontrado', 'status' => 404], 404);
+        }
+    }
+
+
+    // RESUMEN GENERAL DE CADA CONVENIO DE UGSE
+
+    public function resumenGeneral($id)
+    {
+        $evento = Agreement::with([
+            'profile:id,user_id,name,lastname,middlename',
+            'region',
+            'provincia',
+            'distrito',
+            'archivosConvenios',
+            'compromisos.profile:id,user_id,name,lastname,middlename',
+            'compromisos.acciones',
+            'compromisos.acciones.profile:id,user_id,name,lastname,middlename'
+
+        ])->findOrFail($id);
+
+        return response()->json($evento);
+    }
+
+    public function deleteCommitment($id)
+    {
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+        $user_id = $user_role['user_id'];
+
+        if (in_array(5, $role_array) || in_array(8, $role_array)) {
+
+            $commitment = AgreementCommitments::find($id);
+
+            if ($commitment) {
+                $commitment->delete();
+                return response()->json(['message' => 'Commitment deleted successfully.', 'status' => 200]);
+            } else {
+                return response()->json(['error' => 'Commitment not found.'], 404);
+            }
+        }
+
+        $commitment = AgreementCommitments::where('id', $id)
+                ->where('user_id', $user_id)
+                ->first();
+
+        if ($commitment) {
+            $commitment->delete();
+            return response()->json(['message' => 'Commitment deleted successfully.', 'status' => 200]);
+        } else {
+            return response()->json(['error' => 'You do not have permission to delete this commitment or commitment not found.'], 403);
+        }
+    }
+
+
+    // CONVENIOS HANNA
+
+    public function createConvenioMetas(Request $request)
+    {
+        $user_role = getUserRole();
+        $user_id = $user_role['user_id'];
+
+        $data = $request->all();
+        $data['user_id'] = $user_id;
+
+        Commitment::create($data);
+
+        return response()->json(['message' => 'Compromiso registrado', 'status' => 200]);
+    }
+
+    public function allCommitments($id)
+    {
+        $commitments = Commitment::with([
+            'profile:id,user_id,name,lastname,middlename',
+            'commitments'
+        ])
+        ->where('agreement_id', $id)
+        ->orderBy('created_at', 'desc') // Ordenar por los más recientes
+        ->get();
+
+        return response()->json(['data' => $commitments, 'status' => 200]);
+    }
+
+
 }

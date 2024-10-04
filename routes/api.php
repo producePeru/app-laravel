@@ -3,6 +3,8 @@
 use App\Http\Controllers\Advisory\AdvisoryController;
 use App\Http\Controllers\Agreement\AgreementController;
 use App\Http\Controllers\Agreement\CommitmentsController;
+use App\Http\Controllers\User\TokenController;
+// use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
 use App\Http\Controllers\Download\DownloadActionsPlanController;
@@ -23,7 +25,7 @@ use App\Http\Controllers\Selects\CreateController;
 use App\Http\Controllers\Selects\SelectController;
 use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\User\SupervisorController;
-use App\Http\Controllers\User\TokenController;
+// use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -218,7 +220,27 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
     Route::get('download',                      [AgreementController::class, 'exportAgreement']);
     Route::put('update/{id}',                   [AgreementController::class, 'updateActionById']);
     Route::put('update-values/{id}',            [AgreementController::class, 'updateValuesAgreement']);
+
+    // compromisos
+    Route::post('commitments',                  [AgreementController::class, 'createCompromission']);
+    Route::get('commitments/{id}',              [AgreementController::class, 'listCompromission']);
+    // Route::get('commitment/download/{any}',     [AgreementController::class, 'downloadCompromission']);
+
+    Route::get('commitment-download/{any}',     [AgreementController::class, 'downloadCompromission'])->where('any', '.*');
+    Route::get('general/{id}',                  [AgreementController::class, 'resumenGeneral']);
+    Route::delete('commitment-delete/{id}',     [AgreementController::class, 'deleteCommitment']);
+
+    // COMPROMISOS HANNA
+    Route::post('create-commitment',            [AgreementController::class, 'createConvenioMetas']);
+    Route::get('all-commitments/{id}',               [AgreementController::class, 'allCommitments']);
+
+
+
 });
+// Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+//     Route::get('list', [AgreementController::class, 'index']);
+//     Route::get('list/{id}', [AgreementController::class, 'allActionsById']);
+//     Route::get('list-files/{id}', [AgreementController::class, 'listAllFilesById']);
 
 // COMPROMISOS
 Route::group(['prefix' => 'commitments', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
@@ -226,13 +248,11 @@ Route::group(['prefix' => 'commitments', 'namespace' => 'App\Http\Controllers', 
     Route::post('create',                       [CommitmentsController::class, 'store']);
     Route::put('fulfilled/{id}',                [CommitmentsController::class, 'updateFulfilled']);
 
-    // compromisos
-    Route::post('commitments', [AgreementController::class, 'createCompromission']);
-    Route::get('commitments/{id}', [AgreementController::class, 'listCompromission']);
+
 });
 
 
-Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function() {
+Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function () {
     Route::get('countries', [SelectController::class, 'getCountries']);
     Route::get('cities', [SelectController::class, 'getCities']);
     Route::get('provinces/{idCity}', [SelectController::class, 'getProvinces']);
