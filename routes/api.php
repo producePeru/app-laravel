@@ -20,6 +20,7 @@ use App\Http\Controllers\Formalization\HistorialController;
 use App\Http\Controllers\Formalization\NotaryController;
 use App\Http\Controllers\Formalization\PlanActionsController;
 use App\Http\Controllers\Mype\MypeController;
+use App\Http\Controllers\PDF\PDFConveniosGeneralController;
 use App\Http\Controllers\People\PersonController;
 use App\Http\Controllers\Selects\CreateController;
 use App\Http\Controllers\Selects\SelectController;
@@ -205,7 +206,7 @@ Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers',
 });
 
 // CONVENIOS
-Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list/{entity}',                 [AgreementController::class, 'index']);
     Route::get('list/{id}',                     [AgreementController::class, 'allActionsById']);
     Route::get('list-files/{id}',               [AgreementController::class, 'listAllFilesById']);
@@ -233,9 +234,6 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
     // COMPROMISOS HANNA
     Route::post('create-commitment',            [AgreementController::class, 'createConvenioMetas']);
     Route::get('all-commitments/{id}',               [AgreementController::class, 'allCommitments']);
-
-
-
 });
 // Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 //     Route::get('list', [AgreementController::class, 'index']);
@@ -243,12 +241,10 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
 //     Route::get('list-files/{id}', [AgreementController::class, 'listAllFilesById']);
 
 // COMPROMISOS
-Route::group(['prefix' => 'commitments', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'commitments', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list/{id}/{type}',              [CommitmentsController::class, 'index']);
     Route::post('create',                       [CommitmentsController::class, 'store']);
     Route::put('fulfilled/{id}',                [CommitmentsController::class, 'updateFulfilled']);
-
-
 });
 
 
@@ -320,6 +316,10 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
     Route::post('/ayacucho', [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
 });
 
+//PDF
+Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('agreements-general/{id}', [PDFConveniosGeneralController::class, 'pdfConvenio']);
+});
 // Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
 //     Route::post('index-calendar', [CertificadoPDFController::class, 'calendar']);
 
