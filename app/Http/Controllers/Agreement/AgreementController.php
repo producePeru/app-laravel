@@ -10,7 +10,9 @@ use App\Models\AgreementActions;
 use App\Models\AgreementCommitments;
 use App\Models\AgreementFiles;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use App\Jobs\SendEndDateNotificationUGSE;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AgreementController extends Controller
@@ -35,8 +37,8 @@ class AgreementController extends Controller
             'acciones',
             'archivosConvenios',
         ])->search($search)
-        ->where('entity', $entity)
-        ->orderBy('created_at', 'desc');
+            ->where('entity', $entity)
+            ->orderBy('created_at', 'desc');
 
         $data = $query->paginate(50);
 
@@ -122,11 +124,9 @@ class AgreementController extends Controller
             }
 
             return response()->json(['message' => 'Convenio creado con éxito', 'status' => 200]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['error:' => $e,'status' => 500]);
-        }
-        catch (QueryException $e) {
+            return response()->json(['error:' => $e, 'status' => 500]);
+        } catch (QueryException $e) {
             return response()->json(['message' => 'Existe un error', 'error' => $e], 400);
         }
     }
@@ -170,7 +170,6 @@ class AgreementController extends Controller
             }
 
             return response()->json(['message' => 'Convenio creado con éxito', 'status' => 200]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['error:' => $e, 'status' => 500]);
         } catch (QueryException $e) {
