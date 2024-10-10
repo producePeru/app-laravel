@@ -14,6 +14,7 @@ use App\Exports\FormalizationRUC10Export;
 use App\Exports\FormalizationRUC20Export;
 
 use Carbon\Carbon;
+
 Carbon::setLocale('es');
 
 
@@ -99,14 +100,15 @@ class DownloadFormalizationsController extends Controller
                 'apellido_materno' => strtoupper($advisory->people->middlename),
                 'nombre' => strtoupper($advisory->people->name),
                 'genero' => $advisory->people->gender->avr,
-                'discapacidad' => strtoupper($advisory->people->sick),
+                // 'discapacidad' => strtoupper($advisory->people->sick),
+                'discapacidad' => $advisory->people->sick == 'yes' ? 'SI' : 'NO',
                 'hijos' => $advisory->people->hasSoon,
                 'telefono' => $advisory->people->phone,
                 'correo' => $advisory->people->email,
                 'supervisador' => strtoupper(
                     optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->name . ' ' .
-                    optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->lastname . ' ' .
-                    optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->middlename
+                        optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->lastname . ' ' .
+                        optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->middlename
                 ),
                 'region_negocio' => $advisory->city->name,
                 'provincia_negocio' => $advisory->province->name,
@@ -119,7 +121,6 @@ class DownloadFormalizationsController extends Controller
                 'descripcion' => $advisory->observations,
                 'modalidad' => $advisory->modality->name
             ];
-
         })->values(); // Convierte la colección en un array indexado
         return Excel::download(new AsesoriasExport($result), 'asesorias-pnte.xlsx');
     }
@@ -182,8 +183,8 @@ class DownloadFormalizationsController extends Controller
             $index++;
 
             $asesor = $advisory->user->profile->notary_id
-            ? "NOTARÍA:" .' '. strtoupper($advisory->user->profile->notary->name) . ' - ' . strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename)
-            : strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename);
+                ? "NOTARÍA:" . ' ' . strtoupper($advisory->user->profile->notary->name) . ' - ' . strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename)
+                : strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename);
 
 
             return [
@@ -201,15 +202,17 @@ class DownloadFormalizationsController extends Controller
                 'apellido_materno' => strtoupper($advisory->people->middlename),
                 'nombre' => strtoupper($advisory->people->name),
                 'genero' => $advisory->people->gender->avr,
-                'discapacidad' => strtoupper($advisory->people->sick),
+                // 'discapacidad' => strtoupper($advisory->people->sick),
+                'discapacidad' => $advisory->people->sick == 'yes' ? 'SI' : 'NO',
                 'hijos' => $advisory->people->hasSoon,
                 'telefono' => $advisory->people->phone,
                 'correo' => $advisory->people->email,
                 'tipo_servicio' => 'PPNN (RUC 10)',
                 'supervisador' =>  strtoupper(
-                optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->name .' '.
-                optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->lastname .' '.
-                optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->middlename),
+                    optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->name . ' ' .
+                        optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->lastname . ' ' .
+                        optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->middlename
+                ),
                 'region_negocio' => $advisory->city->name,
                 'provincia_negocio' => $advisory->province->name,
                 'distrito_negocio' => $advisory->district->name,
@@ -220,7 +223,6 @@ class DownloadFormalizationsController extends Controller
                 'detalle_tramite' => $advisory->detailprocedure->name,
                 'modalidad' => $advisory->modality->name
             ];
-
         })->values(); // Convierte la colección en un array indexado
         // return $result;
         return Excel::download(new FormalizationRUC10Export($result), 'asesorias-pnte.xlsx');
@@ -285,8 +287,8 @@ class DownloadFormalizationsController extends Controller
             $index++;
 
             $asesor = $advisory->user->profile->notary_id
-            ? "NOTARÍA:" .' '. strtoupper($advisory->user->profile->notary->name) . ' - ' . strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename)
-            : strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename);
+                ? "NOTARÍA:" . ' ' . strtoupper($advisory->user->profile->notary->name) . ' - ' . strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename)
+                : strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename);
 
 
             return [
@@ -304,15 +306,17 @@ class DownloadFormalizationsController extends Controller
                 'apellido_materno' => strtoupper($advisory->people->middlename),
                 'nombre' => strtoupper($advisory->people->name),
                 'genero' => $advisory->people->gender->avr,
-                'discapacidad' => strtoupper($advisory->people->sick),
+                // 'discapacidad' => strtoupper($advisory->people->sick),
+                'discapacidad' => $advisory->people->sick == 'yes' ? 'SI' : 'NO',
                 'hijos' => $advisory->people->hasSoon,
                 'telefono' => $advisory->people->phone,
                 'correo' => $advisory->people->email,
-                'tipo_servicio' => 'PPNN (RUC 20)',
+                'tipo_servicio' => 'PPJJ (RUC 20)',
                 'supervisador' =>  strtoupper(
-                optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->name .' '.
-                optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->lastname .' '.
-                optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->middlename),
+                    optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->name . ' ' .
+                        optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->lastname . ' ' .
+                        optional(optional(optional($advisory->supervisor)->supervisorUser)->profile)->middlename
+                ),
                 'region_negocio' => $advisory->city->name,
                 'provincia_negocio' => $advisory->province->name,
                 'distrito_negocio' => $advisory->district->name,
@@ -331,7 +335,6 @@ class DownloadFormalizationsController extends Controller
                 'monto_capital' => $advisory->montocapital,
                 'modalidad' => $advisory->modality->name
             ];
-
         })->values(); // Convierte la colección en un array indexado
         // return $result;
         return Excel::download(new FormalizationRUC20Export($result), 'asesorias-pnte.xlsx');
