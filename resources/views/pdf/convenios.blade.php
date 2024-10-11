@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>{{ $distrito }}</title>
+    <title>{{ $entity }}</title>
 </head>
 
 <body>
