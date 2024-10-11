@@ -27,6 +27,7 @@ use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\User\SupervisorController;
 // use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\PDF\PDFConveniosGeneralController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
@@ -232,7 +233,8 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
 
     // COMPROMISOS HANNA
     Route::post('create-commitment',            [AgreementController::class, 'createConvenioMetas']);
-    Route::get('all-commitments/{id}',               [AgreementController::class, 'allCommitments']);
+    Route::get('all-commitments/{id}',          [AgreementController::class, 'allCommitments']);
+    Route::put('update-commitment/{id}',        [AgreementController::class, 'updateCommitment']);
 
 
 
@@ -318,6 +320,10 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
     Route::post('send-certificates', [CertificadoPDFController::class, 'sendEmailWithCertificates']);
 
     Route::post('/ayacucho', [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
+});
+
+Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('agreements-general/{id}', [PDFConveniosGeneralController::class, 'pdfConvenio']);
 });
 
 // Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {

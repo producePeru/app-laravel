@@ -421,18 +421,46 @@ class AgreementController extends Controller
 
     // RESUMEN GENERAL DE CADA CONVENIO DE UGSE
 
+    // public function resumenGeneral($id)
+    // {
+    //     $evento = Agreement::with([
+    //         'profile:id,user_id,name,lastname,middlename',
+    //         'region',
+    //         'provincia',
+    //         'distrito',
+    //         'archivosConvenios',
+    //         'filesAgreements',
+    //         'compromisos.profile:id,user_id,name,lastname,middlename',
+    //         'compromisos.acciones',
+    //         'compromisos.acciones.profile:id,user_id,name,lastname,middlename'
+
+    //     ])->findOrFail($id);
+
+    //     return response()->json($evento);
+    // }
+
     public function resumenGeneral($id)
     {
+        $start = request()->query('start');
+        $end = request()->query('end');
+
+        $startDate = $start ?  $start : null;
+        $endDate = $end ?  $end : null;
+
         $evento = Agreement::with([
             'profile:id,user_id,name,lastname,middlename',
             'region',
             'provincia',
             'distrito',
             'archivosConvenios',
+            'filesAgreements',
             'compromisos.profile:id,user_id,name,lastname,middlename',
-            'compromisos.acciones',
+            'compromisos.acciones' => function ($query) use ($startDate, $endDate) {
+                if ($startDate && $endDate) {
+                    $query->whereBetween('date', [$startDate, $endDate]);
+                }
+            },
             'compromisos.acciones.profile:id,user_id,name,lastname,middlename'
-
         ])->findOrFail($id);
 
         return response()->json($evento);
@@ -495,6 +523,15 @@ class AgreementController extends Controller
         ->get();
 
         return response()->json(['data' => $commitments, 'status' => 200]);
+    }
+
+    public function updateCommitment(Request $request, $id)
+    {
+        $commitment = Commitment::findOrFail($id);
+
+        $commitment->update($request->all());
+
+        return response()->json(['message' => 'Se actualizaron los datos', 'status' => 200]);
     }
 
 
