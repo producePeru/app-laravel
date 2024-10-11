@@ -135,7 +135,7 @@ Artisan::command('inspire', function () {
 // ALTER TABLE agreements
 // ADD COLUMN external TINYINT(1) NOT NULL DEFAULT 0 AFTER endDate;
 
-// NUEVOOO
+// NUEVOOO old
 
 // CREATE TABLE agreement_commitments (
 //     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

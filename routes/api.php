@@ -236,6 +236,8 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
     Route::get('all-commitments/{id}',          [AgreementController::class, 'allCommitments']);
     Route::put('update-commitment/{id}',        [AgreementController::class, 'updateCommitment']);
 
+    // charts
+    Route::get('chart/{name}',                         [AgreementController::class, 'chatAgreement']);
 
 
 });

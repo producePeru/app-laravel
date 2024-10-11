@@ -15,8 +15,6 @@ use Illuminate\Http\Request;
 use App\Jobs\SendEndDateNotificationUGSE;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 
 class AgreementController extends Controller
@@ -532,6 +530,56 @@ class AgreementController extends Controller
 
         return response()->json(['message' => 'Se actualizaron los datos', 'status' => 200]);
     }
+
+
+    // CHART
+    public function chatAgreement($name)
+    {
+        $today = Carbon::now();
+
+        $agreements = Agreement::select('id', 'alliedEntity', 'endDate')
+            ->where('entity', $name)
+            ->get();
+
+        $labels = [];
+        $totalData = [];
+        $pointBackgroundColor = [];
+        $totalAgreements = 0;
+        $countUnderThreeMonths = 0;
+        $countUnderOneMonth = 0;
+
+        foreach ($agreements as $agreement) {
+            $endDate = Carbon::parse($agreement->endDate);
+            $daysLeft = $today->diffInDays($endDate, false);
+
+            $monthsLeft = $today->diffInMonths($endDate);
+            $totalAgreements++;  // Contador de acuerdos totales
+
+            if ($monthsLeft > 3) {
+                $color = '#1ed900'; // Verde
+            } elseif ($monthsLeft == 2) {
+                $color = '#ffc107'; // Amarillo
+                $countUnderThreeMonths++;  // Contador para acuerdos con menos de 3 meses
+            } elseif ($monthsLeft <= 1) {
+                $color = 'red';  // Rojo
+                $countUnderOneMonth++;  // Contador para acuerdos con menos de 1 mes
+            }
+
+            $labels[] = $agreement->alliedEntity;  // Nombre de la entidad aliada
+            $totalData[] = $daysLeft;              // Número de días hasta la fecha de endDate
+            $pointBackgroundColor[] = $color;      // Color basado en los meses restantes
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'totalData' => $totalData,
+            'pointBackgroundColor' => $pointBackgroundColor,
+            'total' => $totalAgreements,  // Total de acuerdos
+            'menores_a_3_meses' => $countUnderThreeMonths,  // Acuerdos con menos de 3 meses
+            'menores_a_1_mes' => $countUnderOneMonth,  // Acuerdos con menos de 1 mes
+        ]);
+    }
+
 
 
 }
