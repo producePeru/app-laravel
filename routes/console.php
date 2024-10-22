@@ -187,3 +187,31 @@ Artisan::command('inspire', function () {
 
 // ALTER TABLE agreement_commitments
 // ADD CONSTRAINT fk_agreement_commitments_commitment_id FOREIGN KEY (commitment_id) REFERENCES commitments(id) ON DELETE CASCADE;
+
+
+// NUEVO**
+// CREATE TABLE fairs (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     slug VARCHAR(100) NOT NULL UNIQUE,
+//     title VARCHAR(255) NOT NULL,
+//     description TEXT NOT NULL,
+//     metaMypes INT NOT NULL,
+//     metaSales INT NOT NULL,
+//     startDate DATETIME NOT NULL,
+//     endDate DATETIME NOT NULL,
+//     modality CHAR(1) NOT NULL,
+//     powerBy VARCHAR(20) NOT NULL,
+//     typeFair VARCHAR(5) NOT NULL,
+//     city_id BIGINT UNSIGNED NULL,
+//     province_id BIGINT UNSIGNED NULL,
+//     district_id BIGINT UNSIGNED NULL,
+//     user_id BIGINT UNSIGNED NULL,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+//     FOREIGN KEY (city_id) REFERENCES cities(id),
+//     FOREIGN KEY (province_id) REFERENCES provinces(id),
+//     FOREIGN KEY (district_id) REFERENCES districts(id),
+//     FOREIGN KEY (user_id) REFERENCES users(id)
+// );

@@ -165,8 +165,8 @@ class AgreementController extends Controller
                 // $endDate = Carbon::parse($convenio->endDate);
                 // SendEndDateNotificationUGSE::dispatch($convenio)->delay($endDate->subDays(60));
                 // SendEndDateNotificationUGSE::dispatch($convenio)->delay($endDate->subDays(30));
-                $testDelay = 10;
-                SendEndDateNotificationUGSE::dispatch($convenio)->delay(now()->addSeconds($testDelay));
+                // $testDelay = 10;
+                // SendEndDateNotificationUGSE::dispatch($convenio)->delay(now()->addSeconds($testDelay));
             }
 
             return response()->json(['message' => 'Convenio creado con éxito', 'status' => 200]);

@@ -25,6 +25,7 @@ use App\Http\Controllers\Selects\CreateController;
 use App\Http\Controllers\Selects\SelectController;
 use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\User\SupervisorController;
+use App\Http\Controllers\Fair\FairController;
 // use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
@@ -326,6 +327,12 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('agreements-general/{id}', [PDFConveniosGeneralController::class, 'pdfConvenio']);
+});
+
+Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('list',          [FairController::class, 'index']);
+    Route::post('create',       [FairController::class, 'create']);
+
 });
 
 // Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
