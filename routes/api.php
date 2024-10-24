@@ -207,7 +207,7 @@ Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers',
 });
 
 // CONVENIOS
-Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list/{entity}',                 [AgreementController::class, 'index']);
     Route::get('list/{id}',                     [AgreementController::class, 'allActionsById']);
     Route::get('list-files/{id}',               [AgreementController::class, 'listAllFilesById']);
@@ -239,8 +239,6 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
 
     // charts
     Route::get('chart/{name}',                         [AgreementController::class, 'chatAgreement']);
-
-
 });
 // Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 //     Route::get('list', [AgreementController::class, 'index']);
@@ -248,12 +246,10 @@ Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'm
 //     Route::get('list-files/{id}', [AgreementController::class, 'listAllFilesById']);
 
 // COMPROMISOS
-Route::group(['prefix' => 'commitments', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function() {
+Route::group(['prefix' => 'commitments', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list/{id}/{type}',              [CommitmentsController::class, 'index']);
     Route::post('create',                       [CommitmentsController::class, 'store']);
     Route::put('fulfilled/{id}',                [CommitmentsController::class, 'updateFulfilled']);
-
-
 });
 
 
@@ -293,6 +289,7 @@ Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('get-by-ruc/{ruc}', [MypeController::class, 'getDataByRuc']);
     Route::put('update-by-ruc/{id}', [MypeController::class, 'updateDataByRuc']);
     Route::post('create', [MypeController::class, 'store']);
+    Route::get('search-api/{ruc}', [MypeController::class, 'apiRUC']);
 });
 
 Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -330,9 +327,11 @@ Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middlew
 });
 
 Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',          [FairController::class, 'index']);
-    Route::post('create',       [FairController::class, 'create']);
+    Route::get('list',                  [FairController::class, 'index']);
+    Route::post('create',               [FairController::class, 'create']);
+    Route::get('data/{slug}',          [FairController::class, 'show']);
 
+    Route::post('first-or-new',         [MypeController::class, 'registerMype']);
 });
 
 // Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {

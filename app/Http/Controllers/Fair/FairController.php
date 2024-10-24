@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Fair;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class FairController extends Controller
 {
@@ -22,7 +23,7 @@ class FairController extends Controller
             'distrito',
             'profile:id,user_id,name,lastname,middlename'
         ])->search($search)
-        ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc');
 
         $data = $query->paginate(50);
 
@@ -40,12 +41,11 @@ class FairController extends Controller
                 'city' => $item->region->name,
                 'province' => $item->provincia->name,
                 'district' => $item->distrito->name,
-                'profile' => $item->profile->name.' '. $item->profile->lastname.' '. $item->profile->middlename,
+                'profile' => $item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename,
             ];
         });
 
         return response()->json(['data' => $data]);
-
     }
 
 
@@ -89,9 +89,27 @@ class FairController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($slug)
     {
-        //
+        $today = Carbon::now();
+
+        $fair = Fair::where('slug', $slug)->first();
+
+        if ($fair) {
+
+            if ($today->gt(Carbon::parse($fair->endDate)->endOfDay())) {
+                return response()->json(['message' => 'La feria ya no está vigente.'], 404);
+            }
+
+            return response()->json(['data' => [
+                'slug' => $fair->slug,
+                'title' => $fair->title,
+                'description' => $fair->description,
+                'modality' => $fair->modality
+            ], 'status' => 200]);
+        }
+
+        return response()->json(['message' => 'Feria no encontrada.', 'status' => 400]);
     }
 
     /**
