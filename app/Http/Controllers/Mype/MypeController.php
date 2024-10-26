@@ -217,6 +217,7 @@ class MypeController extends Controller
         return response()->json(['message' => 'Mype registrado/actualizado exitosamente.', 'id_mype' => $mype->id, 'status' => 200]);
     }
 
+    // SI EXISTE LO EDITAS SINO LO EDITAS
     public function apiRUC($numeroRUC)
     {
 

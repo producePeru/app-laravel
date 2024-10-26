@@ -48,6 +48,17 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::get('notaries-filters', [NotaryController::class, 'indexNotaryById']);
 
     Route::get('apk', [DownloadOthersController::class, 'descargarAPKar']);
+
+
+    // FERIAS EMPRESARIALES
+    Route::get('data/{slug}',           [FairController::class, 'show']);                       // TRAE LA FERIA POR SLUG
+    Route::get('search-api-ruc/{ruc}',  [MypeController::class, 'apiRUC']);                     // BUSCA DATOS A PARTIR DEL RUC
+    Route::post('first-or-new',         [MypeController::class, 'registerMype']);               // PASO 1 CREA O EDITA UNA MYPE
+    Route::get('search-api-dni/{dni}',  [PersonController::class, 'apiDNI']);                   // BUSCA DATOS A PARTIR DEL DNI
+    Route::post('create-up',            [PersonController::class, 'createUpdate']);             // PASO 2 EDITA O CREA UN USUARIO PERSON
+    Route::post('mype/{ruc}',           [FairController::class, 'updateFieldsMypeFair']);       // PASO 3 actualiza los campos faltantes de la mype
+    Route::post('postulate',            [FairController::class, 'postulateFair']);              // POSTULAR EN FERIA
+
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -94,13 +105,12 @@ Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middl
 });
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list', [PersonController::class, 'index']);
-    Route::get('found/{type}/{dni}', [PersonController::class, 'dniFoundUser']);
-    Route::post('create', [PersonController::class, 'store']);
-    Route::delete('delete/{id}', [PersonController::class, 'destroy']);
-    Route::put('update/{id}', [PersonController::class, 'update']);
-    Route::get('data/{dni}', [PersonController::class, 'findUserById']);            //busca people x id
-
+    Route::get('list',                  [PersonController::class, 'index']);
+    Route::get('found/{type}/{dni}',    [PersonController::class, 'dniFoundUser']);
+    Route::post('create',               [PersonController::class, 'store']);
+    Route::delete('delete/{id}',        [PersonController::class, 'destroy']);
+    Route::put('update/{id}',           [PersonController::class, 'update']);
+    Route::get('data/{dni}',            [PersonController::class, 'findUserById']);            //busca people x id
 });
 
 Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -289,7 +299,6 @@ Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('get-by-ruc/{ruc}', [MypeController::class, 'getDataByRuc']);
     Route::put('update-by-ruc/{id}', [MypeController::class, 'updateDataByRuc']);
     Route::post('create', [MypeController::class, 'store']);
-    Route::get('search-api/{ruc}', [MypeController::class, 'apiRUC']);
 });
 
 Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -329,10 +338,13 @@ Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middlew
 Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list',                  [FairController::class, 'index']);
     Route::post('create',               [FairController::class, 'create']);
-    Route::get('data/{slug}',          [FairController::class, 'show']);
+    Route::put('update/{id}',           [FairController::class, 'update']);
 
-    Route::post('first-or-new',         [MypeController::class, 'registerMype']);
+    Route::get('applicants/{slug}',     [FairController::class, 'fairApplicants']);      // LISTA LOS PARTICIPANTES EN LA FERIA
+
 });
+
+
 
 // Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
 //     Route::post('index-calendar', [CertificadoPDFController::class, 'calendar']);

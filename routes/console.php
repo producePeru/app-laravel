@@ -194,6 +194,7 @@ Artisan::command('inspire', function () {
 //     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 //     slug VARCHAR(100) NOT NULL UNIQUE,
 //     title VARCHAR(255) NOT NULL,
+//     subTitle VARCHAR(255) NOT NULL,
 //     description TEXT NOT NULL,
 //     metaMypes INT NOT NULL,
 //     metaSales INT NOT NULL,
@@ -215,3 +216,42 @@ Artisan::command('inspire', function () {
 //     FOREIGN KEY (district_id) REFERENCES districts(id),
 //     FOREIGN KEY (user_id) REFERENCES users(id)
 // );
+
+
+// ALTER TABLE mypes
+// ADD COLUMN hasParticipatedFair ENUM('si', 'no', 'otro') NULL AFTER img3_path,
+// ADD COLUMN hasParticipatedProduce ENUM('si', 'no', 'otro') NULL AFTER hasParticipatedFair,
+// ADD COLUMN hasPos ENUM('si', 'no') NULL AFTER hasParticipatedProduce,
+// ADD COLUMN hasYape ENUM('si', 'no') NULL AFTER hasPos,
+// ADD COLUMN hasVistualStore ENUM('si', 'no') NULL AFTER hasYape,
+// ADD COLUMN hasElectronicInvoice ENUM('si', 'no') NULL AFTER hasVistualStore,
+// ADD COLUMN hasDelivery ENUM('si', 'no') NULL AFTER hasElectronicInvoice,
+// ADD COLUMN isFormalizedPnte ENUM('si', 'no') NULL AFTER hasDelivery,
+// ADD COLUMN nameFair VARCHAR(80) NULL AFTER isFormalizedPnte,
+// ADD COLUMN nameService VARCHAR(80) NULL AFTER nameFair,
+// ADD COLUMN isIndecopi ENUM('si', 'no') NULL AFTER nameService;
+
+
+
+// CREATE TABLE fairpostulate (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     fair_id BIGINT UNSIGNED NOT NULL, -- Reference to the id in the fairs table
+//     mype_id BIGINT UNSIGNED NOT NULL, -- Reference to the id in the mypes table
+//     person_id BIGINT UNSIGNED NOT NULL, -- Reference to the id in the people table
+//     ruc VARCHAR(11) NOT NULL,
+//     dni VARCHAR(20) NOT NULL,
+//     email VARCHAR(100) NOT NULL,
+//     hasParticipatedProduce ENUM('si', 'no', 'otro') NOT NULL,
+//     nameService VARCHAR(100),
+//     hasParticipatedFair ENUM('si', 'no', 'otro') NOT NULL,
+//     nameFair VARCHAR(100),
+//     status TINYINT DEFAULT 0,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+//     FOREIGN KEY (fair_id) REFERENCES fairs(id),
+//     FOREIGN KEY (mype_id) REFERENCES mypes(id),
+//     FOREIGN KEY (person_id) REFERENCES people(id)
+// );
+

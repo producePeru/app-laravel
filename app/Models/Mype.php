@@ -20,4 +20,19 @@ class Mype extends Model
     {
         return $this->hasMany('App\Models\Formalization20');
     }
+
+    public function region()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'province_id');
+    }
+
+    public function district()
+    {
+        return $this->belongsTo(District::class, 'district_id');
+    }
 }

@@ -13,6 +13,7 @@ class Fair extends Model
     protected $fillable = [
         'slug',
         'title',
+        'subTitle',
         'description',
         'metaMypes',
         'metaSales',
@@ -24,6 +25,7 @@ class Fair extends Model
         'city_id',
         'province_id',
         'district_id',
+        'address',
         'user_id'
     ];
 

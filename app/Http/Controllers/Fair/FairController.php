@@ -5,14 +5,15 @@ namespace App\Http\Controllers\Fair;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Fair;
+use App\Models\Mype;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Mail\FeriasEmpresarialesMail;
+use App\Models\FairPostulate;
+use Illuminate\Support\Facades\Mail;
 
 class FairController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -32,15 +33,25 @@ class FairController extends Controller
                 'id' => $item->id,
                 'slug' => $item->slug,
                 'title' => $item->title,
+                'subTitle' => $item->subTitle,
                 'description' => $item->description,
                 'metaMypes' => $item->metaMypes,
                 'metaSales' => $item->metaSales,
-                'startDate' => $item->startDate,
-                'endDate' => $item->endDate,
+                'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
+                'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
+                'startDate2' => $item->startDate,
+                'endDate2' => $item->endDate,
+                'typeFair' => $item->typeFair,
+                'powerBy' => $item->powerBy,
                 'modality' => $item->modality,
                 'city' => $item->region->name,
                 'province' => $item->provincia->name,
                 'district' => $item->distrito->name,
+
+                'city_id' => $item->region->id,
+                'province_id' => $item->provincia->id,
+                'district_id' => $item->distrito->id,
+
                 'profile' => $item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename,
             ];
         });
@@ -48,10 +59,6 @@ class FairController extends Controller
         return response()->json(['data' => $data]);
     }
 
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(Request $request)
     {
         $user_role = getUserRole();
@@ -86,9 +93,6 @@ class FairController extends Controller
         //
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show($slug)
     {
         $today = Carbon::now();
@@ -98,12 +102,13 @@ class FairController extends Controller
         if ($fair) {
 
             if ($today->gt(Carbon::parse($fair->endDate)->endOfDay())) {
-                return response()->json(['message' => 'La feria ya no está vigente.'], 404);
+                return response()->json(['message' => 'La feria ya no está vigente.', 'status' => 500]);
             }
 
             return response()->json(['data' => [
                 'slug' => $fair->slug,
                 'title' => $fair->title,
+                'subTitle' => $fair->subTitle,
                 'description' => $fair->description,
                 'modality' => $fair->modality
             ], 'status' => 200]);
@@ -125,7 +130,32 @@ class FairController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // Encuentra el registro por su ID
+        $registro = Fair::findOrFail($id);
+
+        // Toma todos los datos enviados en el request
+        $data = $request->all();
+
+        // Solo regenerar el slug si el título fue actualizado
+        if (isset($data['title'])) {
+            $slug = Str::slug($data['title']);
+            $originalSlug = $slug;
+            $count = 1;
+
+            // Asegurarse de que el nuevo slug sea único
+            while (Fair::where('slug', $slug)->where('id', '!=', $id)->exists()) {
+                $slug = $originalSlug . '-' . $count;
+                $count++;
+            }
+
+            $data['slug'] = $slug;
+        }
+
+        // Actualizar los datos, incluido el slug si fue modificado
+        $registro->update($data);
+
+        // Retornar una respuesta
+        return response()->json(['message' => 'Registro actualizado con éxito', 'status' => 200]);
     }
 
     /**
@@ -134,5 +164,159 @@ class FairController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function updateFieldsMypeFair(Request $request, $ruc)
+    {
+        $mype = Mype::where('ruc', $ruc)->first();
+
+        if ($mype) {
+            $mype->hasPos = $request->input('hasPos');
+            $mype->hasYape = $request->input('hasYape');
+            $mype->hasVistualStore = $request->input('hasVistualStore');
+            $mype->isFormalizedPnte = $request->input('isFormalizedPnte');
+            $mype->hasElectronicInvoice = $request->input('hasElectronicInvoice');
+            $mype->hasDelivery = $request->input('hasDelivery');
+            $mype->isIndecopi = $request->input('isIndecopi');
+            $mype->hasParticipatedProduce = $request->input('hasParticipatedProduce');
+            $mype->nameService = $request->input('nameService');
+            $mype->hasParticipatedFair = $request->input('hasParticipatedFair');
+            $mype->nameFair = $request->input('nameFair');
+
+            // Save the updated Mype record
+            $mype->save();
+
+            return response()->json(['success' => true, 'message' => 'Fields updated successfully.']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Mype not found.'], 404);
+        }
+    }
+
+    public function postulateFair(Request $request)
+    {
+        $slug = $request->input('slug');
+
+        $fair = Fair::where('slug', $slug)->first();
+
+        if ($fair) {
+
+            $exists = FairPostulate::where([
+                'fair_id' => $fair->id,
+                'mype_id' => $request->mype_id,
+                'person_id' => $request->person_id,
+            ])->exists();
+
+            if ($exists) {
+                return response()->json(['message' => 'Ya estás registrado', 'status' => 409]); // 409 Conflict
+            }
+
+            $data = [
+                'fair_id' => $fair['id'],
+                'mype_id' => $request->mype_id,
+                'person_id' => $request->person_id,
+                'ruc' => $request->ruc,
+                'dni' => $request->dni,
+                'email' => $request->email,
+                'hasParticipatedProduce' => $request->hasParticipatedProduce,
+                'nameService' => $request->nameService,
+                'hasParticipatedFair' => $request->hasParticipatedFair,
+                'nameFair' => $request->nameFair
+            ];
+
+            FairPostulate::create($data);
+
+            Mail::to($request->email)->send(new FeriasEmpresarialesMail($fair));
+
+            return response()->json(['message' => 'Se le ha enviado un mensaje a su correo', 'status' => 200]);
+        } else {
+
+            return response()->json(['error' => 'Fair not found'], 404);
+        }
+    }
+
+
+    public function fairApplicants($slugFair)
+    {
+        $fair = Fair::where('slug', $slugFair)->first();
+
+        if (!$fair) {
+            return response()->json(['message' => 'Fair not found'], 404);
+        }
+
+        $query = FairPostulate::
+        with([
+            'mype',
+            'mype.region:id,name',
+            'mype.province:id,name',
+            'mype.district:id,name',
+            'person',
+            'person.pais:id,name',
+            'person.city:id,name',
+            'person.province:id,name',
+            'person.district:id,name',
+            'person.typedocument:id,name',
+            'person.gender:id,name'
+        ])
+        ->where('fair_id', $fair->id)
+        ->orderBy('created_at', 'desc');
+
+        $data = $query->paginate(50);
+
+        $data->getCollection()->transform(function ($item) {
+            return [
+                'id' => $item->id,
+                'status' => 0,
+                'email_send' => $item->email,
+                'created_at' => $item->created_at,
+                'ruc' => $item->mype->ruc,
+                'comercialName' => $item->mype->comercialName,
+                'socialReason' => $item->mype->socialReason,
+                'businessSector' => $item->mype->businessSector,
+                'percentageOwnPlan' => $item->mype->percentageOwnPlan,
+                'percentageMaquila' => $item->mype->percentageMaquila,
+                'capacityProdMounth' => $item->mype->capacityProdMounth,
+                'isGremio' => $item->mype->isGremio,
+                'nameGremio' => $item->mype->nameGremio,
+                'pointSale' => $item->mype->pointSale,
+                'numberPointSale' => $item->mype->numberPointSale,
+                'actividadEconomica' => $item->mype->actividadEconomica,
+                'mype_city' => $item->mype->region->name,
+                'mype_province' => $item->mype->province->name,
+                'mype_district' => $item->mype->district->name,
+                'mype_address' => $item->mype->address,
+                'web' => $item->mype->web,
+                'facebook' => $item->mype->facebook,
+                'instagram' => $item->mype->instagram,
+                'description' => $item->mype->description,
+                'filePDF_name' => $item->mype->filePDF_name,
+                'filePDF_path' => $item->mype->filePDF_path,
+                'logo_name' => $item->mype->logo_name,
+                'logo_path' => $item->mype->logo_path,
+                'img1_name' => $item->mype->img1_name,
+                'img1_path' => $item->mype->img1_path,
+                'img2_name' => $item->mype->img2_name,
+                'img2_path' => $item->mype->img2_path,
+                'img3_name' => $item->mype->img3_name,
+                'img3_path' => $item->mype->img3_path,
+
+                'documentnumber' => $item->person->documentnumber,
+                'lastname' => $item->person->lastname,
+                'middlename' => $item->person->middlename,
+                'name' => $item->person->name,
+                'phone' => $item->person->phone,
+                'email' => $item->person->email,
+                'birthdate' => $item->person->birthdate,
+                'sick' => $item->person->sick,
+                'user_country' => $item->person->pais->name,
+                'user_city' => $item->person->city->name,
+                'user_province' => $item->person->province->name,
+                'user_district' => $item->person->district->name,
+                'address' => $item->person->address,
+                'typedocument' => $item->person->typedocument->name,
+                'gender' => $item->person->gender->name,
+            ];
+        });
+
+        return response()->json(['data' => $data]);
     }
 }
