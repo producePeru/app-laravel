@@ -35,4 +35,9 @@ class Mype extends Model
     {
         return $this->belongsTo(District::class, 'district_id');
     }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
 }

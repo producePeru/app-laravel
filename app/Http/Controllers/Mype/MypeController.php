@@ -165,57 +165,59 @@ class MypeController extends Controller
 
         $mype->fill($request->all());
 
-        $storagePath = 'public/mypes';
+        $storagePath = 'mypes';
 
         // Procesar y guardar filePDF
         if ($request->hasFile('filePDF')) {
             $filePDF = $request->file('filePDF');
             $filePDFName = $filePDF->getClientOriginalName();
-            $filePDFPath = $filePDF->storeAs($storagePath, $filePDFName);
+            $filePDFPath = $filePDF->move(public_path($storagePath), $filePDFName);
             $mype->filePDF_name = $filePDFName;
-            $mype->filePDF_path = $filePDFPath;
+            $mype->filePDF_path = 'mypes/' . $filePDFName;
         }
 
         // Procesar y guardar logo
         if ($request->hasFile('logo')) {
             $logo = $request->file('logo');
             $logoName = $logo->getClientOriginalName();
-            $logoPath = $logo->storeAs($storagePath, $logoName);
+            $logoPath = $logo->move(public_path($storagePath), $logoName);
             $mype->logo_name = $logoName;
-            $mype->logo_path = $logoPath;
+            $mype->logo_path = 'mypes/' . $logoName;
         }
 
         // Procesar y guardar img1
         if ($request->hasFile('img1')) {
             $img1 = $request->file('img1');
             $img1Name = $img1->getClientOriginalName();
-            $img1Path = $img1->storeAs($storagePath, $img1Name);
+            $img1Path = $img1->move(public_path($storagePath), $img1Name);
             $mype->img1_name = $img1Name;
-            $mype->img1_path = $img1Path;
+            $mype->img1_path = 'mypes/' . $img1Name;
         }
 
         // Procesar y guardar img2
         if ($request->hasFile('img2')) {
             $img2 = $request->file('img2');
             $img2Name = $img2->getClientOriginalName();
-            $img2Path = $img2->storeAs($storagePath, $img2Name);
+            $img2Path = $img2->move(public_path($storagePath), $img2Name);
             $mype->img2_name = $img2Name;
-            $mype->img2_path = $img2Path;
+            $mype->img2_path = 'mypes/' . $img2Name;
         }
 
         // Procesar y guardar img3
         if ($request->hasFile('img3')) {
             $img3 = $request->file('img3');
             $img3Name = $img3->getClientOriginalName();
-            $img3Path = $img3->storeAs($storagePath, $img3Name);
+            $img3Path = $img3->move(public_path($storagePath), $img3Name);
             $mype->img3_name = $img3Name;
-            $mype->img3_path = $img3Path;
+            $mype->img3_path = 'mypes/' . $img3Name;
         }
 
         $mype->save();
 
         return response()->json(['message' => 'Mype registrado/actualizado exitosamente.', 'id_mype' => $mype->id, 'status' => 200]);
     }
+
+
 
     // SI EXISTE LO EDITAS SINO LO EDITAS
     public function apiRUC($numeroRUC)

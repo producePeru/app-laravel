@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use App\Mail\FeriasEmpresarialesMail;
 use App\Models\FairPostulate;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class FairController extends Controller
 {
@@ -243,12 +244,12 @@ class FairController extends Controller
             return response()->json(['message' => 'Fair not found'], 404);
         }
 
-        $query = FairPostulate::
-        with([
+        $query = FairPostulate::with([
             'mype',
             'mype.region:id,name',
             'mype.province:id,name',
             'mype.district:id,name',
+            'mype.category:id,name',
             'person',
             'person.pais:id,name',
             'person.city:id,name',
@@ -257,8 +258,8 @@ class FairController extends Controller
             'person.typedocument:id,name',
             'person.gender:id,name'
         ])
-        ->where('fair_id', $fair->id)
-        ->orderBy('created_at', 'desc');
+            ->where('fair_id', $fair->id)
+            ->orderBy('created_at', 'desc');
 
         $data = $query->paginate(50);
 
@@ -271,7 +272,7 @@ class FairController extends Controller
                 'ruc' => $item->mype->ruc,
                 'comercialName' => $item->mype->comercialName,
                 'socialReason' => $item->mype->socialReason,
-                'businessSector' => $item->mype->businessSector,
+                'businessSector' => $item->mype->category->name,
                 'percentageOwnPlan' => $item->mype->percentageOwnPlan,
                 'percentageMaquila' => $item->mype->percentageMaquila,
                 'capacityProdMounth' => $item->mype->capacityProdMounth,
@@ -289,23 +290,34 @@ class FairController extends Controller
                 'instagram' => $item->mype->instagram,
                 'description' => $item->mype->description,
                 'filePDF_name' => $item->mype->filePDF_name,
-                'filePDF_path' => $item->mype->filePDF_path,
+                'filePDF_url' => $item->mype->filePDF_path ? asset($item->mype->filePDF_path) : null,
+
+                // 'logo_name' => $item->mype->logo_name,
+                // 'logo_path' => $item->mype->logo_path,
+                // 'img1_name' => $item->mype->img1_name,
+                // 'img1_path' => $item->mype->img1_path,
+                // 'img2_name' => $item->mype->img2_name,
+                // 'img2_path' => $item->mype->img2_path,
+                // 'img3_name' => $item->mype->img3_name,
+                // 'img3_path' => $item->mype->img3_path,
+
                 'logo_name' => $item->mype->logo_name,
-                'logo_path' => $item->mype->logo_path,
+                'logo_url' => $item->mype->logo_path ? asset($item->mype->logo_path) : null,
                 'img1_name' => $item->mype->img1_name,
-                'img1_path' => $item->mype->img1_path,
+                'img1_url' => $item->mype->img1_path ? asset($item->mype->img1_path) : null,
                 'img2_name' => $item->mype->img2_name,
-                'img2_path' => $item->mype->img2_path,
+                'img2_url' => $item->mype->img2_path ? asset($item->mype->img2_path) : null,
                 'img3_name' => $item->mype->img3_name,
-                'img3_path' => $item->mype->img3_path,
+                'img3_url' => $item->mype->img3_path ? asset($item->mype->img3_path) : null,
+
 
                 'documentnumber' => $item->person->documentnumber,
-                'lastname' => $item->person->lastname,
-                'middlename' => $item->person->middlename,
+                'lastname' => $item->person->lastname . ' ' . $item->person->middlename,
+                // 'middlename' => $item->person->middlename,
                 'name' => $item->person->name,
                 'phone' => $item->person->phone,
                 'email' => $item->person->email,
-                'birthdate' => $item->person->birthdate,
+                'birthdate' => $item->person->birthday,
                 'sick' => $item->person->sick,
                 'user_country' => $item->person->pais->name,
                 'user_city' => $item->person->city->name,

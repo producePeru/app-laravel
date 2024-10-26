@@ -255,3 +255,25 @@ Artisan::command('inspire', function () {
 //     FOREIGN KEY (person_id) REFERENCES people(id)
 // );
 
+// CREATE TABLE categories (
+//     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+//     name VARCHAR(50) NOT NULL,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+// );
+// INSERT INTO categories (name) VALUES
+// ('Alimentos y bebidas'),
+// ('Artesanía'),
+// ('Cosmética orgánica'),
+// ('Cuero calzado'),
+// ('Decoración'),
+// ('Gastronomía'),
+// ('Joyería'),
+// ('Madera'),
+// ('Metalmecánica'),
+// ('Textil confecciones');
+
+// ALTER TABLE mypes
+// ADD COLUMN category_id BIGINT AFTER businessSector,
+// ADD CONSTRAINT fk_category_id
+//     FOREIGN KEY (category_id) REFERENCES categories(id);
