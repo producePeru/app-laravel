@@ -189,7 +189,7 @@ Artisan::command('inspire', function () {
 // ADD CONSTRAINT fk_agreement_commitments_commitment_id FOREIGN KEY (commitment_id) REFERENCES commitments(id) ON DELETE CASCADE;
 
 
-// NUEVO**
+
 // CREATE TABLE fairs (
 //     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 //     slug VARCHAR(100) NOT NULL UNIQUE,
@@ -298,7 +298,7 @@ Artisan::command('inspire', function () {
 // ADD CONSTRAINT fk_fairtype_id
 //     FOREIGN KEY (fairtype_id) REFERENCES fairtypes(id);
 
-
+// NUEVO**
 
 // https://www.json-pe.com/
 

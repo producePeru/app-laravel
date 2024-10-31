@@ -27,9 +27,9 @@ class FairController extends Controller
             'fairType',
             'profile:id,user_id,name,lastname,middlename'
         ])
-        ->withCount('fairPostulate')
-        ->search($search)
-        ->orderBy('created_at', 'desc');
+            ->withCount('fairPostulate')
+            ->search($search)
+            ->orderBy('created_at', 'desc');
 
 
         $data = $query->paginate(50);
@@ -68,27 +68,38 @@ class FairController extends Controller
     public function create(Request $request)
     {
         $user_role = getUserRole();
-        $user_id = $user_role['user_id'];
 
-        $data = $request->all();
+        $role_array = $user_role['role_id'];
 
-        $slug = Str::slug($data['title']);
+        if (
+            in_array(5, $role_array) ||
+            in_array(10, $role_array)
+        ) {
+            $user_role = getUserRole();
+            $user_id = $user_role['user_id'];
 
-        $originalSlug = $slug;
+            $data = $request->all();
 
-        $count = 1;
+            $slug = Str::slug($data['title']);
 
-        while (Fair::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $count;
-            $count++;
+            $originalSlug = $slug;
+
+            $count = 1;
+
+            while (Fair::where('slug', $slug)->exists()) {
+                $slug = $originalSlug . '-' . $count;
+                $count++;
+            }
+
+            $data['slug'] = $slug;
+            $data['user_id'] = $user_id;
+
+            Fair::create($data);
+
+            return response()->json(['message' => 'Feria creada con éxito', 'status' => 200]);
+        } else {
+            return response()->json(['message' => 'Sin acceso', 'status' => 500]);
         }
-
-        $data['slug'] = $slug;
-        $data['user_id'] = $user_id;
-
-        Fair::create($data);
-
-        return response()->json(['message' => 'Feria creada con éxito', 'status' => 200]);
     }
 
     /**
@@ -136,32 +147,42 @@ class FairController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // Encuentra el registro por su ID
-        $registro = Fair::findOrFail($id);
+        $user_role = getUserRole();
 
-        // Toma todos los datos enviados en el request
-        $data = $request->all();
+        $role_array = $user_role['role_id'];
 
-        // Solo regenerar el slug si el título fue actualizado
-        if (isset($data['title'])) {
-            $slug = Str::slug($data['title']);
-            $originalSlug = $slug;
-            $count = 1;
+        if (
+            in_array(5, $role_array) ||
+            in_array(10, $role_array)
+        ) {
+            // Encuentra el registro por su ID
+            $registro = Fair::findOrFail($id);
 
-            // Asegurarse de que el nuevo slug sea único
-            while (Fair::where('slug', $slug)->where('id', '!=', $id)->exists()) {
-                $slug = $originalSlug . '-' . $count;
-                $count++;
+            // Toma todos los datos enviados en el request
+            $data = $request->all();
+
+            // Solo regenerar el slug si el título fue actualizado
+            if (isset($data['title'])) {
+                $slug = Str::slug($data['title']);
+                $originalSlug = $slug;
+                $count = 1;
+
+                // Asegurarse de que el nuevo slug sea único
+                while (Fair::where('slug', $slug)->where('id', '!=', $id)->exists()) {
+                    $slug = $originalSlug . '-' . $count;
+                    $count++;
+                }
+
+                $data['slug'] = $slug;
             }
 
-            $data['slug'] = $slug;
+            // Actualizar los datos, incluido el slug si fue modificado
+            $registro->update($data);
+
+            return response()->json(['message' => 'Registro actualizado con éxito', 'status' => 200]);
+        } else {
+            return response()->json(['message' => 'Sin acceso', 'status' => 500]);
         }
-
-        // Actualizar los datos, incluido el slug si fue modificado
-        $registro->update($data);
-
-        // Retornar una respuesta
-        return response()->json(['message' => 'Registro actualizado con éxito', 'status' => 200]);
     }
 
     /**
@@ -332,31 +353,55 @@ class FairController extends Controller
     public function toggleStatus($id)
     {
 
-        $fairPostulate = FairPostulate::find($id);
+        $user_role = getUserRole();
 
-        if (!$fairPostulate) {
-            return response()->json(['message' => 'Record not found'], 404);
+        $role_array = $user_role['role_id'];
+
+        if (
+            in_array(5, $role_array) ||
+            in_array(10, $role_array)
+        ) {
+            $fairPostulate = FairPostulate::find($id);
+
+            if (!$fairPostulate) {
+                return response()->json(['message' => 'Record not found'], 404);
+            }
+
+            $fairPostulate->status = $fairPostulate->status == 0 ? 1 : 0;
+            $fairPostulate->save();
+
+            $message = $fairPostulate->status == 1
+                ? 'Empresa aprobada para la feria'
+                : 'Esta empresa no participará de la feria';
+
+            return response()->json(['message' => $message, 'status' => 200]);
+        } else {
+            return response()->json(['message' => 'Sin acceso', 'status' => 500]);
         }
-
-        $fairPostulate->status = $fairPostulate->status == 0 ? 1 : 0;
-        $fairPostulate->save();
-
-        $message = $fairPostulate->status == 1
-            ? 'Empresa aprobada para la feria'
-            : 'Esta empresa no participará de la feria';
-
-        return response()->json(['message' => $message, 'status' => 200]);
     }
 
     public function destroyParticipant($id)
     {
-        $fairPostulate = FairPostulate::find($id);
+        $user_role = getUserRole();
 
-        if ($fairPostulate) {
-            $fairPostulate->delete();
-            return response()->json(['message' => 'Participante eliminado', 'status' => 200]);
+        $role_array = $user_role['role_id'];
+
+        if (
+            in_array(5, $role_array) ||
+            in_array(10, $role_array)
+        ) {
+
+            $fairPostulate = FairPostulate::find($id);
+
+            if ($fairPostulate) {
+                $fairPostulate->delete();
+                return response()->json(['message' => 'Participante eliminado', 'status' => 200]);
+            }
+
+            return response()->json(['message' => 'Participante no encontrado'], 404);
+
+        } else {
+            return response()->json(['message' => 'Sin acceso', 'status' => 500]);
         }
-
-        return response()->json(['message' => 'Participante no encontrado'], 404);
     }
 }

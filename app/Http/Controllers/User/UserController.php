@@ -433,7 +433,7 @@ class UserController extends Controller
                 $views = ['usuarios', 'nuevo-registro', 'ferias', 'ferias-empresariales', 'ferias-inscritos'];
             }
 
-            if ($request->role_id == 11) {
+            if ($request->role_id == 11 || $request->role_id == 12) {
                 $views = ['ferias', 'ferias-empresariales', 'ferias-inscritos'];
             }
 
