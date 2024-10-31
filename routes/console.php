@@ -197,12 +197,12 @@ Artisan::command('inspire', function () {
 //     subTitle VARCHAR(255) NOT NULL,
 //     description TEXT NOT NULL,
 //     metaMypes INT NOT NULL,
-//     metaSales INT NOT NULL,
+//     metaSales INT NULL,
 //     startDate DATETIME NOT NULL,
 //     endDate DATETIME NOT NULL,
 //     modality CHAR(1) NOT NULL,
 //     powerBy VARCHAR(20) NOT NULL,
-//     typeFair VARCHAR(5) NOT NULL,
+//     typeFair VARCHAR(5) NULL,
 //     city_id BIGINT UNSIGNED NULL,
 //     province_id BIGINT UNSIGNED NULL,
 //     district_id BIGINT UNSIGNED NULL,
@@ -277,3 +277,29 @@ Artisan::command('inspire', function () {
 // ADD COLUMN category_id BIGINT AFTER businessSector,
 // ADD CONSTRAINT fk_category_id
 //     FOREIGN KEY (category_id) REFERENCES categories(id);
+
+
+// CREATE TABLE fairtypes (
+//     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+//     name VARCHAR(50) NOT NULL,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+// );
+
+// INSERT INTO fairtypes (name) VALUES
+// ('PERÚ PRODUCE EN MACROEVENTO'),
+// ('CYBER WOW'),
+// ('MUJER PRODUCE'),
+// ('PERÚ PRODUCE REGIONAL');
+
+
+// ALTER TABLE fairs
+// ADD COLUMN fairtype_id BIGINT AFTER typeFair,
+// ADD CONSTRAINT fk_fairtype_id
+//     FOREIGN KEY (fairtype_id) REFERENCES fairtypes(id);
+
+
+
+// https://www.json-pe.com/
+
+

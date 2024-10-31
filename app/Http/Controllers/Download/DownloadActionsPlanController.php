@@ -54,12 +54,12 @@ class DownloadActionsPlanController extends Controller
                 'component_2' => optional($item->component2)->name ?? '-',
                 'component_3' => optional($item->component3)->name ?? '-',
                 'numberSessions' => $item->numberSessions,
-                'startDate' => $item->startDate,
-                'endDate' => $item->endDate,
+                'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
+                'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
                 'totalDate' => $item->totalDate,
                 'actaCompromiso' => $item->actaCompromiso,
                 'envioCorreo' => $item->envioCorreo,
-                'updated_at' => Carbon::parse($item->created_at)->format('d-m-Y'),
+                'updated_at' => Carbon::parse($item->created_at)->format('d/m/Y'),
             ];
         });
 

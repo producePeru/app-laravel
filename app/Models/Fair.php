@@ -21,7 +21,7 @@ class Fair extends Model
         'endDate',
         'modality',
         'powerBy',
-        'typeFair',
+        'fairtype_id',
         'city_id',
         'province_id',
         'district_id',
@@ -49,6 +49,16 @@ class Fair extends Model
     public function profile()
     {
         return $this->belongsTo(Profile::class, 'user_id', 'user_id');
+    }
+
+    public function fairPostulate()
+    {
+        return $this->hasMany(FairPostulate::class, 'fair_id');
+    }
+
+    public function fairType()
+    {
+        return $this->belongsTo(FairType::class, 'fairtype_id');
     }
 
 

@@ -11,6 +11,7 @@ use App\Models\Supervisor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -19,8 +20,8 @@ class UserController extends Controller
         $user_id = Auth::user()->id;
 
         $roleUser = DB::table('role_user')
-        ->where('user_id', $user_id)
-        ->first();
+            ->where('user_id', $user_id)
+            ->first();
 
         if ($user_id != $roleUser->user_id) {
             return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
@@ -37,24 +38,24 @@ class UserController extends Controller
         $search = $request->input('search', '');
 
         $query = User::with([
-                'profile',
-                'profile.office',
-                'profile.cde',
-                'roles'
+            'profile',
+            'profile.office',
+            'profile.cde',
+            'roles'
         ])->orderBy('created_at', 'desc');
 
         if ($search) {
             $query->whereHas('profile', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('lastname', 'like', "%{$search}%")
-                  ->orWhere('middlename', 'like', "%{$search}%")
-                  ->orWhere('documentnumber', 'like', "%{$search}%")
-                  ->orWhere('birthday', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhereHas('cde', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                });
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('lastname', 'like', "%{$search}%")
+                    ->orWhere('middlename', 'like', "%{$search}%")
+                    ->orWhere('documentnumber', 'like', "%{$search}%")
+                    ->orWhere('birthday', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhereHas('cde', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -94,8 +95,20 @@ class UserController extends Controller
             $profile->save();
 
             $viewsByRole = [
-                1 => ["home", "asesorias", "solicitudes", "asesorias", "asesorias-formalizaciones",
-                    "solicitantes", "notarias", "asesores", "supervisores", "usuarios", "usuarios-nuevo", "usuarios-lista"], //supervisor
+                1 => [
+                    "home",
+                    "asesorias",
+                    "solicitudes",
+                    "asesorias",
+                    "asesorias-formalizaciones",
+                    "solicitantes",
+                    "notarias",
+                    "asesores",
+                    "supervisores",
+                    "usuarios",
+                    "usuarios-nuevo",
+                    "usuarios-lista"
+                ], //supervisor
                 2 => ["home", "asesorias", "asesorias-formalizaciones", "solicitantes", "notarias"], //asesor
                 3 => ["drive-mis-archivos", "drive-subir-archivo", "drive-mis-carpetas", "usuarios-nuevo"], //driver admin
                 4 => ["drive-mis-archivos", "drive-subir-archivo"], //driver user
@@ -159,7 +172,6 @@ class UserController extends Controller
         $user->update($validatedData);
 
         return response()->json(['message' => 'Perfil actualizado con éxito', 'status' => 200]);
-
     }
 
     public function destroy($id)
@@ -167,7 +179,7 @@ class UserController extends Controller
         $role_id = $this->getUserRole()['role_id'];
         $user_id = $this->getUserRole()['user_id'];
 
-        if($id == 1) {
+        if ($id == 1) {
             return response()->json(['message' => 'No tienes permisos para eliminar', 'status' => 500]);
         }
 
@@ -215,12 +227,12 @@ class UserController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('users.email', 'like', '%' . $search . '%')
-                ->orWhere('profiles.name', 'like', '%' . $search . '%')
-                ->orWhere('profiles.lastname', 'like', '%' . $search . '%')
-                ->orWhere('profiles.middlename', 'like', '%' . $search . '%')
-                ->orWhere('profiles.documentnumber', 'like', '%' . $search . '%')
-                ->orWhere('genders.name', 'like', '%' . $search . '%')
-                ->orWhere('cdes.name', 'like', '%' . $search . '%');
+                    ->orWhere('profiles.name', 'like', '%' . $search . '%')
+                    ->orWhere('profiles.lastname', 'like', '%' . $search . '%')
+                    ->orWhere('profiles.middlename', 'like', '%' . $search . '%')
+                    ->orWhere('profiles.documentnumber', 'like', '%' . $search . '%')
+                    ->orWhere('genders.name', 'like', '%' . $search . '%')
+                    ->orWhere('cdes.name', 'like', '%' . $search . '%');
             });
         }
 
@@ -288,17 +300,10 @@ class UserController extends Controller
     public function registerNotario(Request $request)
     {
 
-
-
-
-
-        // Insertar en la tabla role_user
-
+        // Insertar en la tabla role
 
         // Agregar vistas si el rol es 7
-        if($request->input('role_id') === 7)
-        {
-
+        if ($request->input('role_id') === 7) {
         }
 
         return response()->json(['message' => 'Usuario registrado exitosamente', 'status' => 200]);
@@ -338,7 +343,7 @@ class UserController extends Controller
             'name'          => $request->input('name'),
             'lastname'      => $request->input('lastname'),
             'middlename'    => $request->input('middlename'),
-            'documentnumber'=> $request->input('documentnumber'),
+            'documentnumber' => $request->input('documentnumber'),
             'birthday'      => $request->input('birthday'),
             'phone'         => $request->input('phone'),
             'gender_id'     => $request->input('gender_id'),
@@ -369,5 +374,91 @@ class UserController extends Controller
             'user_id'   => $request->input('user_id')
         ]);
         return response()->json(['message' => 'Vista asignadas', 'status' => 200]);
+    }
+
+    public function newUser(Request $request)
+    {
+
+        $user_role = getUserRole();
+
+        $role_array = $user_role['role_id'];
+
+        // 5 gold, 10 jefe de ferias
+
+        if (in_array(5, $role_array) ||
+            in_array(8, $role_array) ||
+            in_array(10, $role_array)
+        ){
+
+            $dni = $request->documentnumber;
+
+            $existingUser = User::where('dni', $dni)->first();
+
+            if ($existingUser) {
+                return response()->json(['message' => 'Este número de DNI ya se encuentra registrado', 'status' => 400]);
+            }
+
+            $user = new User();
+
+            $user->dni = $request->documentnumber;
+            $user->email = $request->email;
+            $user->password = bcrypt($request->input('password'));
+            // $user->role_id = $request->role_id ?? null;
+            $user->save();
+
+            $profile = new Profile();
+            $profile->name = $request->name ?? null;
+            $profile->lastname = $request->lastname ?? null;
+            $profile->middlename = $request->middlename ?? null;
+            $profile->documentnumber = $request->documentnumber ?? null;
+            $profile->birthday = $request->birthday ?? null;
+            $profile->sick = $request->sick ?? null;
+            $profile->phone = $request->phone ?? null;
+            $profile->gender_id = $request->gender_id ?? null;
+            $profile->cde_id = $request->cde_id ?? null;
+            $profile->office_id = $request->office_id ?? null;
+            $profile->user_id = $user->id;
+            $profile->save();
+
+
+            if ($request->role_id == 8) {
+                $views = ['convenios', 'estado-convenio-ugse', 'estado-convenio-ugse-compromisos', 'estado-convenio-ugse-detalles', 'usuarios', 'nuevo-registro'];
+            }
+
+            if ($request->role_id == 9) {
+                $views = ['convenios', 'estado-convenio-ugse', 'estado-convenio-ugse-compromisos', 'estado-convenio-ugse-detalles'];
+            }
+
+            if ($request->role_id == 10) {
+                $views = ['usuarios', 'nuevo-registro', 'ferias', 'ferias-empresariales', 'ferias-inscritos'];
+            }
+
+            if ($request->role_id == 11) {
+                $views = ['ferias', 'ferias-empresariales', 'ferias-inscritos'];
+            }
+
+            DB::table('role_user')->insert([
+                'role_id' => $request->input('role_id'),
+                'user_id' => $user->id,
+                'dniuser' => $request->input('documentnumber'),
+            ]);
+
+            $view = new View();
+            $view->views = json_encode($views);
+            $view->user_id = $user->id;
+            $view->save();
+
+            return response()->json([
+                'message' => 'Registrado correctamente',
+                'user' => $user,
+                'profile' => $profile,
+                'status' => 200
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'No tienes permiso',
+            'status' => 500
+        ]);
     }
 }

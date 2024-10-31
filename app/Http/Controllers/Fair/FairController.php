@@ -20,14 +20,20 @@ class FairController extends Controller
         $search = $request->input('search');
 
         $query = Fair::with([
+            'fairPostulate',
             'region',
             'provincia',
             'distrito',
+            'fairType',
             'profile:id,user_id,name,lastname,middlename'
-        ])->search($search)
-            ->orderBy('created_at', 'desc');
+        ])
+        ->withCount('fairPostulate')
+        ->search($search)
+        ->orderBy('created_at', 'desc');
+
 
         $data = $query->paginate(50);
+
 
         $data->getCollection()->transform(function ($item) {
             return [
@@ -37,22 +43,21 @@ class FairController extends Controller
                 'subTitle' => $item->subTitle,
                 'description' => $item->description,
                 'metaMypes' => $item->metaMypes,
+                'countMypes' => $item->fair_postulate_count,
                 'metaSales' => $item->metaSales,
                 'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
                 'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
                 'startDate2' => $item->startDate,
                 'endDate2' => $item->endDate,
-                'typeFair' => $item->typeFair,
+                'fairtype_id' => $item->fairType ? $item->fairType->id : null,
                 'powerBy' => $item->powerBy,
                 'modality' => $item->modality,
                 'city' => $item->region->name,
                 'province' => $item->provincia->name,
                 'district' => $item->distrito->name,
-
                 'city_id' => $item->region->id,
                 'province_id' => $item->provincia->id,
                 'district_id' => $item->distrito->id,
-
                 'profile' => $item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename,
             ];
         });
@@ -245,6 +250,7 @@ class FairController extends Controller
         }
 
         $query = FairPostulate::with([
+            'fair',
             'mype',
             'mype.region:id,name',
             'mype.province:id,name',
@@ -266,7 +272,8 @@ class FairController extends Controller
         $data->getCollection()->transform(function ($item) {
             return [
                 'id' => $item->id,
-                'status' => 0,
+                'fair_name' => $item->fair->title,
+                'status' => $item->status,
                 'email_send' => $item->email,
                 'created_at' => $item->created_at,
                 'ruc' => $item->mype->ruc,
@@ -292,15 +299,6 @@ class FairController extends Controller
                 'filePDF_name' => $item->mype->filePDF_name,
                 'filePDF_url' => $item->mype->filePDF_path ? asset($item->mype->filePDF_path) : null,
 
-                // 'logo_name' => $item->mype->logo_name,
-                // 'logo_path' => $item->mype->logo_path,
-                // 'img1_name' => $item->mype->img1_name,
-                // 'img1_path' => $item->mype->img1_path,
-                // 'img2_name' => $item->mype->img2_name,
-                // 'img2_path' => $item->mype->img2_path,
-                // 'img3_name' => $item->mype->img3_name,
-                // 'img3_path' => $item->mype->img3_path,
-
                 'logo_name' => $item->mype->logo_name,
                 'logo_url' => $item->mype->logo_path ? asset($item->mype->logo_path) : null,
                 'img1_name' => $item->mype->img1_name,
@@ -309,7 +307,6 @@ class FairController extends Controller
                 'img2_url' => $item->mype->img2_path ? asset($item->mype->img2_path) : null,
                 'img3_name' => $item->mype->img3_name,
                 'img3_url' => $item->mype->img3_path ? asset($item->mype->img3_path) : null,
-
 
                 'documentnumber' => $item->person->documentnumber,
                 'lastname' => $item->person->lastname . ' ' . $item->person->middlename,
@@ -330,5 +327,36 @@ class FairController extends Controller
         });
 
         return response()->json(['data' => $data]);
+    }
+
+    public function toggleStatus($id)
+    {
+
+        $fairPostulate = FairPostulate::find($id);
+
+        if (!$fairPostulate) {
+            return response()->json(['message' => 'Record not found'], 404);
+        }
+
+        $fairPostulate->status = $fairPostulate->status == 0 ? 1 : 0;
+        $fairPostulate->save();
+
+        $message = $fairPostulate->status == 1
+            ? 'Empresa aprobada para la feria'
+            : 'Esta empresa no participará de la feria';
+
+        return response()->json(['message' => $message, 'status' => 200]);
+    }
+
+    public function destroyParticipant($id)
+    {
+        $fairPostulate = FairPostulate::find($id);
+
+        if ($fairPostulate) {
+            $fairPostulate->delete();
+            return response()->json(['message' => 'Participante eliminado', 'status' => 200]);
+        }
+
+        return response()->json(['message' => 'Participante no encontrado'], 404);
     }
 }

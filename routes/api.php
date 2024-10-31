@@ -8,6 +8,7 @@ use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
 use App\Http\Controllers\Download\DownloadActionsPlanController;
+use App\Http\Controllers\Download\DownloadFairParticipantsController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\Download\DownloadOthersController;
 use App\Http\Controllers\Drive\DriveController;
@@ -62,27 +63,30 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list', [UserController::class, 'index']);
-    Route::post('create', [UserController::class, 'store']);
-    Route::delete('delete/{id}', [UserController::class, 'destroy']);
-    Route::put('update/{id}', [UserController::class, 'update']);
+    Route::get('list',              [UserController::class, 'index']);
+    Route::post('create',           [UserController::class, 'store']);
+    Route::delete('delete/{id}',    [UserController::class, 'destroy']);
+    Route::put('update/{id}',       [UserController::class, 'update']);
 
-    Route::get('api/{type}/{num}', [AuthController::class, 'dniDataUser']);
-    Route::get('only-dni/{num}', [AuthController::class, 'dniDataUser2']);
+    Route::get('api/{type}/{num}',  [AuthController::class, 'dniDataUser']);
+    Route::get('only-dni/{num}',    [AuthController::class, 'dniDataUser2']);
 
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::post('password-reset', [AuthController::class, 'passwordReset']);
-    Route::put('views/{id}', [UserController::class, 'asignViewsUser']);
-    Route::get('views/{id}', [UserController::class, 'showViewsUser']);
+    Route::post('logout',           [AuthController::class, 'logout']);
+    Route::post('password-reset',   [AuthController::class, 'passwordReset']);
+    Route::put('views/{id}',        [UserController::class, 'asignViewsUser']);
+    Route::get('views/{id}',        [UserController::class, 'showViewsUser']);
 
-    Route::get('list-asesories', [UserController::class, 'allAsesores']);
-    Route::get('my-profile', [UserController::class, 'showMyProfile']);
+    Route::get('list-asesories',    [UserController::class, 'allAsesores']);
+    Route::get('my-profile',        [UserController::class, 'showMyProfile']);
 
     // REGISTRAR UN ASESOR EXTERNO NOTARIO
-    Route::post('register-user', [UserController::class, 'registerUsers']);
+    Route::post('register-user',    [UserController::class, 'registerUsers']);
     Route::post('register-profile', [UserController::class, 'registerProfiles']);
-    Route::post('register-roles', [UserController::class, 'registerRoles']);
-    Route::post('register-views', [UserController::class, 'registerViewsSeven']);
+    Route::post('register-roles',   [UserController::class, 'registerRoles']);
+    Route::post('register-views',   [UserController::class, 'registerViewsSeven']);
+
+    Route::post('new-user-views',   [UserController::class, 'newUser']);     // REGISTRO PARA CADA USUARIO
+
 });
 
 // DRIVE - KARINA
@@ -173,11 +177,11 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
 });
 
 Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('asesories', [DownloadFormalizationsController::class, 'exportAsesories']);
-    Route::get('formalizations-ruc10', [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
-    Route::get('formalizations-ruc20', [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
-
-    Route::get('actions-plans', [DownloadActionsPlanController::class, 'exportActionPlans']);
+    Route::get('asesories',                     [DownloadFormalizationsController::class, 'exportAsesories']);
+    Route::get('formalizations-ruc10',          [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
+    Route::get('formalizations-ruc20',          [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
+    Route::get('actions-plans',                 [DownloadActionsPlanController::class, 'exportActionPlans']);
+    Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -336,12 +340,13 @@ Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middlew
 });
 
 Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',                  [FairController::class, 'index']);
-    Route::post('create',               [FairController::class, 'create']);
-    Route::put('update/{id}',           [FairController::class, 'update']);
+    Route::get('list',                      [FairController::class, 'index']);
+    Route::post('create',                   [FairController::class, 'create']);
+    Route::put('update/{id}',               [FairController::class, 'update']);
 
-    Route::get('applicants/{slug}',     [FairController::class, 'fairApplicants']);      // LISTA LOS PARTICIPANTES EN LA FERIA
-
+    Route::get('applicants/{slug}',         [FairController::class, 'fairApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
+    Route::put('status-participant/{id}',   [FairController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
+    Route::delete('delete-participant/{id}',[FairController::class, 'destroyParticipant']);       // delete PARTICIPAnte
 });
 
 
