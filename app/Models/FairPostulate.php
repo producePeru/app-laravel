@@ -58,4 +58,31 @@ class FairPostulate extends Model
         return $this->belongsTo(District::class, 'district_id');
     }
 
+    public function scopeSearch($query, $search)
+    {
+        if ($search) {
+            return $query->where('email', 'like', '%' . $search . '%')
+                ->orWhereHas('mype', function ($q) use ($search) {
+                    $q->where(function ($q) use ($search) {
+                        $q->where('comercialName', 'like', '%' . $search . '%')
+                            ->orWhere('ruc', 'like', '%' . $search . '%')
+                            ->orWhere('socialReason', 'like', '%' . $search . '%')
+                            ->orWhere('businessSector', 'like', '%' . $search . '%')
+                            ->orWhere('nameGremio', 'like', '%' . $search . '%');
+                    });
+                })
+                ->orWhereHas('person', function ($q) use ($search) {
+                    $q->where(function ($q) use ($search) {
+                        $q->where('documentnumber', 'like', '%' . $search . '%')
+                            ->orWhere('lastname', 'like', '%' . $search . '%')
+                            ->orWhere('middlename', 'like', '%' . $search . '%')
+                            ->orWhere('name', 'like', '%' . $search . '%')
+                            ->orWhere('phone', 'like', '%' . $search . '%')
+                            ->orWhere('email', 'like', '%' . $search . '%');
+                    });
+                });
+        }
+
+        return $query;
+    }
 }

@@ -262,8 +262,10 @@ class FairController extends Controller
     }
 
 
-    public function fairApplicants($slugFair)
+    public function fairApplicants(Request $request, $slugFair)
     {
+        $search = $request->input('search');
+
         $fair = Fair::where('slug', $slugFair)->first();
 
         if (!$fair) {
@@ -286,6 +288,7 @@ class FairController extends Controller
             'person.gender:id,name'
         ])
             ->where('fair_id', $fair->id)
+            ->search($search)
             ->orderBy('created_at', 'desc');
 
         $data = $query->paginate(50);
