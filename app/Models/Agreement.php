@@ -26,6 +26,7 @@ class Agreement extends Model
         'years',
         'observations',
         'ruc',
+        'external',
         'components',
         'aliado',
         'aliadoPhone',
