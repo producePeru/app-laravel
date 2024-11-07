@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Room;
 
 use App\Http\Controllers\Controller;
+use App\Models\Profile;
 use App\Models\Rooms;
 use Illuminate\Http\Request;
 
@@ -62,7 +63,6 @@ class RoomController extends Controller
     }
 
 
-
     public function store(Request $request)
     {
         $user = getUserRole();
@@ -86,7 +86,7 @@ class RoomController extends Controller
             ->where('startDate', $data['startDate'])
             ->where(function ($query) use ($data) {
                 $query->where(function ($q) use ($data) {
-                    $q->where('timeStart', '<', $data['timeEnd'])  // Verifica que el inicio no esté antes del fin de la reserva
+                    $q->where('timeStart', '<', $data['timeEnd']) // Verifica que el inicio no esté antes del fin de la reserva
                         ->where('timeEnd', '>', $data['timeStart']); // Verifica que el fin no esté después del inicio de la reserva
                 });
             })
@@ -99,12 +99,40 @@ class RoomController extends Controller
             ]);
         }
 
-        // Crear la nueva reserva si no hay conflicto de horario
-        Rooms::create($data);
+        // Obtener los datos del perfil del usuario para registered
+        $profile = Profile::where('user_id', $user_id)->first();
+        if (!$profile) {
+            return response()->json([
+                'message' => 'Perfil no encontrado para el usuario.',
+                'status' => 404
+            ]);
+        }
+
+        // Determinar el color de fondo en función de la sala
+        $backgroundColor = $data['room'] == 1 ? '#e10f00' : '#2196f3';
+
+        $room = Rooms::create($data);
+
+        // Preparar la respuesta con los datos necesarios
+        $response = [
+            'id' => $room['id'],
+            'title' => $room['title'],
+            'start' => $room['startDate'],
+            'timeStart' => $room['timeStart'],
+            'timeEnd' => $room['timeEnd'],
+            'description' => $room['description'],
+            'link' => $room['link'],
+            'unity' => $room['unity'],
+            'room' => $room['room'],
+            'backgroundColor' => $backgroundColor,
+            '_id' => $user_id,
+            'registered' => $profile->name . ' ' . $profile->lastname,
+        ];
 
         return response()->json([
             'message' => 'Sala reservada.',
-            'status' => 200
+            'status' => 200,
+            'data' => $response
         ]);
     }
 

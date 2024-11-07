@@ -36,8 +36,8 @@ class SelectController extends Controller
         $user_id = Auth::user()->id;
 
         $roleUser = DB::table('role_user')
-        ->where('user_id', $user_id)
-        ->first();
+            ->where('user_id', $user_id)
+            ->first();
 
         if ($user_id != $roleUser->user_id) {
             return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
@@ -185,7 +185,9 @@ class SelectController extends Controller
 
     public function getComponentTheme($id)
     {
-        $themes = Themecomponent::where('component_id', $id)->get();
+        $themes = Themecomponent::where('component_id', $id)
+            ->whereNotIn('id', [3, 25]) // Excluir los IDs 3 y 25
+            ->get();
 
         $data = $themes->map(function ($item) {
             return [
@@ -193,8 +195,10 @@ class SelectController extends Controller
                 'value' => $item->id
             ];
         });
+
         return response()->json(['data' => $data]);
     }
+
 
     public function getRoles()
     {
@@ -306,22 +310,21 @@ class SelectController extends Controller
 
         $data = collect();
 
-    foreach ($asesores as $asesor) {
-        $profile = Profile::find($asesor->user_id);
-        if ($profile) {
-            $label = strtoupper($profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename);
-            $data->push([
-                'label' => $label,
-                'value' => $profile->id
-            ]);
+        foreach ($asesores as $asesor) {
+            $profile = Profile::find($asesor->user_id);
+            if ($profile) {
+                $label = strtoupper($profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename);
+                $data->push([
+                    'label' => $label,
+                    'value' => $profile->id
+                ]);
+            }
         }
-    }
 
-    // Ordena por label
-    $data = $data->sortBy('label')->values();
+        // Ordena por label
+        $data = $data->sortBy('label')->values();
 
-    return response()->json(['data' => $data]);
-
+        return response()->json(['data' => $data]);
     }
 
     public function getOperationalStatus()
