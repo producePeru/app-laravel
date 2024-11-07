@@ -104,7 +104,7 @@ class AgreementController extends Controller
                 'alliedEntity'      =>      'required|string|max:100',
                 'homeOperations'    =>      'nullable',
                 'startDate'         =>      'nullable',
-                'years'             =>      'required',
+                'years'             =>      'nullable',
                 'endDate'           =>      'nullable|date',
                 'external'          =>      'nullable',
                 'observations'      =>      'nullable|string',

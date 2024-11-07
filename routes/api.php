@@ -30,6 +30,7 @@ use App\Http\Controllers\Fair\FairController;
 // use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
+use App\Http\Controllers\Room\RoomController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
@@ -350,7 +351,11 @@ Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middle
 });
 
 
-
+Route::group(['prefix' => 'room', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('list',                          [RoomController::class, 'index']);
+    Route::post('store',                        [RoomController::class, 'store']);
+    Route::delete('delete/{id}',                        [RoomController::class, 'destroy']);
+});
 // Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
 //     Route::post('index-calendar', [CertificadoPDFController::class, 'calendar']);
 

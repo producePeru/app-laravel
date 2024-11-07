@@ -303,3 +303,26 @@ Artisan::command('inspire', function () {
 // https://www.json-pe.com/
 
 
+
+
+// NUEVO---
+
+
+// CREATE TABLE rooms (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     title VARCHAR(255) NOT NULL,
+//     startDate DATE NOT NULL,
+//     timeStart TIME NOT NULL,
+//     timeEnd TIME NOT NULL,
+//     description TEXT,
+//     link VARCHAR(255),
+//     unity VARCHAR(6),
+//     room TINYINT UNSIGNED,
+//     user_id BIGINT UNSIGNED,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL,
+//     FOREIGN KEY (user_id) REFERENCES users(id)
+// );
+
+
