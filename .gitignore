@@ -2,7 +2,7 @@
 # /node_modules
 # /public/build
 # /public/hot
-# /public/storage
+/public/mypes
 # /storage/*.key
 # /vendor
 .env.local
@@ -18,7 +18,5 @@
 # /.idea
 # /.vscode
 
-# config/cors.php
-
-
-# bootstrap/app.php
+# /config/cors
+# /bootstrap/app

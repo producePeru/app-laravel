@@ -8,48 +8,82 @@
                     style="background-color: white; border: 1px solid #dcdcdc; border-radius: 10px;">
                     <tr>
                         <td style="padding: 20px; font-family: Arial, sans-serif;">
-                            <h1 style="font-size: 28px; color: #333;">Hola,</h1>
-                            <h2 style="font-size: 22px; color: #333;">Queremos recordarte que <strong>mañana, 18 de
-                                    septiembre a las 6:00 PM</strong>, iniciamos nuestro curso gratuito
-                                <strong>"Fundamentos para la Articulación al Mercado"</strong>, </h2>
-                            <h4>¡y estás invitado(a)!</h4>
-                            <p style="font-size: 18px; color: #555;">Este curso ha sido diseñado pensando en empresarios
-                                como tú, que buscan nuevas maneras de crecer y conectarse mejor con sus mercados.</p>
+                            <h1 style="font-size: 20px; color: #0FA2BA;">Hola empresario(a), </h1>
+                            <p style="font-size: 17px; color: #333;font-family: Arial, sans-serif; ">🖐Reciba Ud. el
+                                cordial saludo del Programa Nacional Tu Empresa, te invitamos a participar del siguiente
+                                taller <strong style="color: red;">GRATUITO</strong>:
+                            </p>
+                            <a
+                                href="https://docs.google.com/forms/d/e/1FAIpQLSe46hGoCyD6CpJZT5E7aIgg-w30vLblS8lGA3dbHt-gRlHgoQ/viewform">
+                                <center><img style="margin: 5px 0 5px; display: block; width:80%; "
+                                        src="https://apituempresa.soporte-pnte.com/images/cusco.jpeg" alt="cronograma">
+                            </a>
+
+                            <p style="font-size: 17px; color: #555;font-family: Arial, sans-serif; ">Este curso está
+                                creado especialmente para empresarios como tú.</p>
 
                             <table align="center" cellpadding="0" cellspacing="0" border="0" width="100%"
                                 style="margin-top: 20px;">
                                 <tr>
-                                    <td style="font-size: 18px; padding: 10px; color: #333;">
-                                        🗓 <strong>Fecha:</strong> Martes, 18 de septiembre de 2024
+                                    <td style="font-size: 17px; padding: 10px; color: #333;">
+                                        🗓 <strong>Fecha:</strong> 23, 24 y 25 octubre de 2024
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="font-size: 18px; padding: 10px; color: #333;">
-                                        🕕 <strong>Hora:</strong> 6:00 PM
+                                    <td style="font-size: 17px; padding: 10px; color: #333;">
+                                        🕕 <strong>Hora:</strong> 6:00 - 9:00 PM
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="font-size: 18px; padding: 10px; color: #333;">
-                                        📌 <strong>Modalidad:</strong> Presencial - Auditorio de la Municipalidad de San
-                                        Juan Bautista de Ayacucho
+                                    <td style="font-size: 17px; padding: 10px; color: #333;">
+                                        📌 <strong>Modalidad:</strong> Presencial - Auditorio institucional de la
+                                        Gerencia Regional de Trabajo y Promoción del Empleo de Cusco
                                     </td>
                                 </tr>
-                            </table>
+                                <tr>
+                                    <td style="font-size: 17px; padding: 10px; color: #333;">Av. Micaela Bastidas y
+                                        Alcides Vigo N° 301, Wanchaq, Cusco, Cusco.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <!--<strong>Indicaciones generales:</strong><br>
 
-                            <p style="font-size: 18px; color: #555;">Este es un espacio perfecto para aprender y
-                                compartir con otros empresarios que, al igual que tú, están comprometidos en llevar su
-                                empresa al siguiente nivel. ¡Y lo mejor de todo es que es completamente
-                                <strong>gratuito</strong>!</p>
+                                  <p>1. Asistencia de 01 (un) representante por MYPE, que asistirá los 3 días.</p>
+
+<p>2. Capacidad limitada hasta 40 (cuarenta) asistentes, asistir los 3 días.</p>
+
+<p>3. Se tomará prueba de entrada y de salida al inicio y termino del curso.</p>
+
+<p>4. Se considera nota aprobatoria mínima 12 en la prueba de salida.</p>
+
+<p>5. Se otorgará constancias de participación.</p>--><br>
+
+                                        <strong>Se otorgará constancia de participación a la MYPE:</strong><br>
+
+                                        <p>1. Que se haya registrado correctamente los 3 días de capacitación.</p>
+
+                                        <p>2. Que rinda su prueba de entrada.</p>
+
+                                        <p>3. Que desarrollen las actividades y/o el trabajo práctico asignado.</p>
+
+                                        <p>4. Que tengan nota aprobatoria mínima de 12 en la prueba de salida.</p>
+                                    </td>
+                                </tr>
+
+                            </table>
                             <br>
                             <p style="text-align: center; margin-top: 30px;">
                                 <a href="https://docs.google.com/forms/d/e/1FAIpQLSe46hGoCyD6CpJZT5E7aIgg-w30vLblS8lGA3dbHt-gRlHgoQ/viewform"
                                     style="background-color: #d93138; color: white; padding: 15px 50px; text-decoration: none; border-radius: 5px; font-size: 18px;">Regístrate</a>
                             </p>
                             <br>
-                            <p style="font-size: 18px; color: #555;">Si tienes alguna pregunta o necesitas más
-                                información, no dudes en escribirnos. ¡Estamos aquí para ayudarte!</p>
+                            <p
+                                style="font-weight:600; margin: 30px;line-height: 1.3; font-size:16px;font-family:'Rubik',sans-serif; text-align: center;">
+                                <span style="color:#1e1e2d;">Cursos libres de costo</span>
 
-                            <p style="font-size: 18px; color: #555;">Un fuerte abrazo,</p>
+                                <span style="color: #d93138;">¡¡¡Los esperamos!!!</span>
+                            </p>
                             <div>
 
 

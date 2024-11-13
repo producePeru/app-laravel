@@ -48,7 +48,7 @@ class ActionPlansExport implements FromCollection, WithHeadings, WithTitle, With
             'R' => 15,
 
             'S' => 23,
-            'T' => 12
+            'T' => 18
         ];
     }
 
@@ -107,7 +107,7 @@ class ActionPlansExport implements FromCollection, WithHeadings, WithTitle, With
             'TOTAL DE DÍAS',
             'ACTA DE COMPROMISO',
             'CULMINÓ EL PLAN DE ACCIÓN Y ENVIÓ CORREO',
-            'FECHA'
+            'FECHA DE REGISTRO'
         ];
     }
 }

@@ -24,12 +24,19 @@ class AgreementCommitments extends Model
         'file3_path',
         'file3_name',
         'details',
-        'id_agreement',
-        // 'user_id'
+        'agreement_id',
+        'user_id',
+        'commitment_id'
     ];
 
-    public function user()
+    public function profile()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Profile::class, 'user_id', 'user_id');
+    }
+
+    // nuevo
+    public function compromiso()
+    {
+        return $this->belongsTo(Commitment::class);
     }
 }

@@ -27,4 +27,4 @@ class SendMailAyacuchoController extends Controller
 //         {"empresa": "Los ositos EIRL",  "email": "jloo6778@gmail.com" },
 //         {"empresa": "Gatitos SAC", "email": "jackytamaris@gmail.com" }
 //     ]
-// }
+// }  php artisan queue:work

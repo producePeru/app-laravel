@@ -6,6 +6,7 @@ use App\Exports\AgreementExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendEndDateNotification;
 use App\Models\Agreement;
+use App\Models\Commitment;
 use App\Models\AgreementActions;
 use App\Models\AgreementCommitments;
 use App\Models\AgreementFiles;
@@ -15,10 +16,9 @@ use App\Jobs\SendEndDateNotificationUGSE;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
+
 class AgreementController extends Controller
 {
-
-
 
     public function index(Request $request, $entity)
     {
@@ -102,9 +102,9 @@ class AgreementController extends Controller
                 'province_id'       =>      'required|exists:provinces,id',
                 'district_id'       =>      'required|exists:districts,id',
                 'alliedEntity'      =>      'required|string|max:100',
-                'homeOperations'    =>      'nullable|string|max:100',
-                'startDate'         =>      'nullable|date',
-                'years'             =>      'required',
+                'homeOperations'    =>      'nullable',
+                'startDate'         =>      'nullable',
+                'years'             =>      'nullable',
                 'endDate'           =>      'nullable|date',
                 'external'          =>      'nullable',
                 'observations'      =>      'nullable|string',
@@ -165,8 +165,8 @@ class AgreementController extends Controller
                 // $endDate = Carbon::parse($convenio->endDate);
                 // SendEndDateNotificationUGSE::dispatch($convenio)->delay($endDate->subDays(60));
                 // SendEndDateNotificationUGSE::dispatch($convenio)->delay($endDate->subDays(30));
-                $testDelay = 10;
-                SendEndDateNotificationUGSE::dispatch($convenio)->delay(now()->addSeconds($testDelay));
+                // $testDelay = 10;
+                // SendEndDateNotificationUGSE::dispatch($convenio)->delay(now()->addSeconds($testDelay));
             }
 
             return response()->json(['message' => 'Convenio creado con éxito', 'status' => 200]);
@@ -195,9 +195,15 @@ class AgreementController extends Controller
 
     public function deleteAgreement($id)
     {
-        $agreement = Agreement::findOrFail($id);
-        $agreement->delete();
-        return response()->json(['message' => 'Eliminado del registro', 'status' => 200]);
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+        $user_id = $user_role['user_id'];
+
+        if (in_array(5, $role_array) || in_array(7, $role_array) || in_array(8, $role_array)) {
+            $agreement = Agreement::findOrFail($id);
+            $agreement->delete();
+            return response()->json(['message' => 'Eliminado del registro', 'status' => 200]);
+        }
     }
 
     public function deleteActionById($id)
@@ -249,10 +255,28 @@ class AgreementController extends Controller
 
     public function deleteFileById($id)
     {
-        $action = AgreementFiles::findOrFail($id);
-        $action->delete();
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+        $user_id = $user_role['user_id'];
 
-        return response()->json(['message' => 'Archivo eliminado exitosamente', 'status' => 200]);
+        if (in_array(5, $role_array) || in_array(7, $role_array)  || in_array(8, $role_array)) {
+            $action = AgreementFiles::findOrFail($id);
+            $action->delete();
+
+            return response()->json(['message' => 'Archivo eliminado exitosamente', 'status' => 200]);
+        }
+
+        // $files = AgreementFiles::where('id', $id)
+        //         ->where('user_id', $user_id)
+        //         ->first();
+
+        // if ($files) {
+        //     $files->delete();
+        //     return response()->json(['message' => 'Commitment deleted successfully.', 'status' => 200]);
+        // } else {
+        //     return response()->json(['error' => 'You do not have permission to delete this commitment or commitment not found.'], 403);
+        // }
+
     }
 
     public function updateValuesAgreement(Request $request, $id)
@@ -302,9 +326,16 @@ class AgreementController extends Controller
         return Excel::download(new AgreementExport($result), 'agreements.xlsx');
     }
 
+
+
+    // COMPROMISOS
+
     public function createCompromission(Request $request)
     {
-        // Validar los datos de entrada
+        $user_role = getUserRole();
+
+        $user_role['user_id'];                                      // user_id
+
         $request->validate([
             'accion' => 'required|string',
             'date' => 'nullable|date',
@@ -312,7 +343,7 @@ class AgreementController extends Controller
             'address' => 'nullable|string|max:100',
             'participants' => 'nullable|integer',
             'details' => 'nullable|string',
-            'id_agreement' => 'required|exists:agreements,id',
+            'agreement_id' => 'required|exists:agreements,id',
             'file1' => 'nullable|file',
             'file2' => 'nullable|file',
             'file3' => 'nullable|file',
@@ -342,7 +373,7 @@ class AgreementController extends Controller
                 'accion' => $request->input('accion'),
                 'date' => $request->input('date'),
                 'modality' => $request->input('modality'),
-                'address' => $request->input('adress'),
+                'address' => $request->input('address'),
                 'participants' => $request->input('participants'),
                 'file1_path' => $filePaths['file1_path'] ?? null,
                 'file1_name' => $fileNames['file1_name'] ?? null,
@@ -351,7 +382,9 @@ class AgreementController extends Controller
                 'file3_path' => $filePaths['file3_path'] ?? null,
                 'file3_name' => $fileNames['file3_name'] ?? null,
                 'details' => $request->input('details'),
-                'id_agreement' => $request->input('id_agreement'),
+                'agreement_id' => $request->input('agreement_id'),
+                'user_id' => $user_role['user_id'],
+                'commitment_id' => $request->input('commitment_id'),
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al guardar los datos en la base de datos: ' . $e->getMessage(), 'status' => 500]);
@@ -360,12 +393,193 @@ class AgreementController extends Controller
         return response()->json(['message' => 'Se registro', 'status' => 200]);
     }
 
+    // ver lista de acciones x compromiso
     public function listCompromission($id)
     {
-        $data = AgreementCommitments::where('id_agreement', $id)
-            ->orderBy('created_at', 'desc') // Order by most recent
+        $data = AgreementCommitments::where('commitment_id', $id)
+            ->with(['profile:id,user_id,name,lastname,middlename'])
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return response()->json(['data' => $data, 'status' => 200]);
     }
+
+    public function downloadCompromission($path)
+    {
+        $ruta = storage_path("app/public/{$path}");
+
+        if (file_exists($ruta)) {
+            return response()->download($ruta);
+        } else {
+            return response()->json(['message' => 'Archivo no encontrado', 'status' => 404], 404);
+        }
+    }
+
+
+    // RESUMEN GENERAL DE CADA CONVENIO DE UGSE
+
+    // public function resumenGeneral($id)
+    // {
+    //     $evento = Agreement::with([
+    //         'profile:id,user_id,name,lastname,middlename',
+    //         'region',
+    //         'provincia',
+    //         'distrito',
+    //         'archivosConvenios',
+    //         'filesAgreements',
+    //         'compromisos.profile:id,user_id,name,lastname,middlename',
+    //         'compromisos.acciones',
+    //         'compromisos.acciones.profile:id,user_id,name,lastname,middlename'
+
+    //     ])->findOrFail($id);
+
+    //     return response()->json($evento);
+    // }
+
+    public function resumenGeneral($id)
+    {
+        $start = request()->query('start');
+        $end = request()->query('end');
+
+        $startDate = $start ?  $start : null;
+        $endDate = $end ?  $end : null;
+
+        $evento = Agreement::with([
+            'profile:id,user_id,name,lastname,middlename',
+            'region',
+            'provincia',
+            'distrito',
+            'archivosConvenios',
+            'filesAgreements',
+            'compromisos.profile:id,user_id,name,lastname,middlename',
+            'compromisos.acciones' => function ($query) use ($startDate, $endDate) {
+                if ($startDate && $endDate) {
+                    $query->whereBetween('date', [$startDate, $endDate]);
+                }
+            },
+            'compromisos.acciones.profile:id,user_id,name,lastname,middlename'
+        ])->findOrFail($id);
+
+        return response()->json($evento);
+    }
+
+    public function deleteCommitment($id)
+    {
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+        $user_id = $user_role['user_id'];
+
+        if (in_array(5, $role_array) || in_array(8, $role_array)) {
+
+            $commitment = AgreementCommitments::find($id);
+
+            if ($commitment) {
+                $commitment->delete();
+                return response()->json(['message' => 'Commitment deleted successfully.', 'status' => 200]);
+            } else {
+                return response()->json(['error' => 'Commitment not found.'], 404);
+            }
+        }
+
+        $commitment = AgreementCommitments::where('id', $id)
+                ->where('user_id', $user_id)
+                ->first();
+
+        if ($commitment) {
+            $commitment->delete();
+            return response()->json(['message' => 'Commitment deleted successfully.', 'status' => 200]);
+        } else {
+            return response()->json(['error' => 'You do not have permission to delete this commitment or commitment not found.'], 403);
+        }
+    }
+
+
+    // CONVENIOS HANNA
+
+    public function createConvenioMetas(Request $request)
+    {
+        $user_role = getUserRole();
+        $user_id = $user_role['user_id'];
+
+        $data = $request->all();
+        $data['user_id'] = $user_id;
+
+        Commitment::create($data);
+
+        return response()->json(['message' => 'Compromiso registrado', 'status' => 200]);
+    }
+
+    public function allCommitments($id)
+    {
+        $commitments = Commitment::with([
+            'profile:id,user_id,name,lastname,middlename',
+            'commitments'
+        ])
+        ->where('agreement_id', $id)
+        ->orderBy('created_at', 'desc') // Ordenar por los más recientes
+        ->get();
+
+        return response()->json(['data' => $commitments, 'status' => 200]);
+    }
+
+    public function updateCommitment(Request $request, $id)
+    {
+        $commitment = Commitment::findOrFail($id);
+
+        $commitment->update($request->all());
+
+        return response()->json(['message' => 'Se actualizaron los datos', 'status' => 200]);
+    }
+
+
+    // CHART
+    public function chatAgreement($name)
+    {
+        $today = Carbon::now();
+
+        $agreements = Agreement::select('id', 'alliedEntity', 'endDate')
+            ->where('entity', $name)
+            ->get();
+
+        $labels = [];
+        $totalData = [];
+        $pointBackgroundColor = [];
+        $totalAgreements = 0;
+        $countUnderThreeMonths = 0;
+        $countUnderOneMonth = 0;
+
+        foreach ($agreements as $agreement) {
+            $endDate = Carbon::parse($agreement->endDate);
+            $daysLeft = $today->diffInDays($endDate, false);
+
+            $monthsLeft = $today->diffInMonths($endDate);
+            $totalAgreements++;  // Contador de acuerdos totales
+
+            if ($monthsLeft > 3) {
+                $color = '#1ed900'; // Verde
+            } elseif ($monthsLeft == 2) {
+                $color = '#ffc107'; // Amarillo
+                $countUnderThreeMonths++;  // Contador para acuerdos con menos de 3 meses
+            } elseif ($monthsLeft <= 1) {
+                $color = 'red';  // Rojo
+                $countUnderOneMonth++;  // Contador para acuerdos con menos de 1 mes
+            }
+
+            $labels[] = $agreement->alliedEntity;  // Nombre de la entidad aliada
+            $totalData[] = $daysLeft;              // Número de días hasta la fecha de endDate
+            $pointBackgroundColor[] = $color;      // Color basado en los meses restantes
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'totalData' => $totalData,
+            'pointBackgroundColor' => $pointBackgroundColor,
+            'total' => $totalAgreements,  // Total de acuerdos
+            'menores_a_3_meses' => $countUnderThreeMonths,  // Acuerdos con menos de 3 meses
+            'menores_a_1_mes' => $countUnderOneMonth,  // Acuerdos con menos de 1 mes
+        ]);
+    }
+
+
+
 }

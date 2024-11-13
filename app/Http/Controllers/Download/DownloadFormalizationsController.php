@@ -93,7 +93,7 @@ class DownloadFormalizationsController extends Controller
                 'tipo_documento' => $advisory->people->typedocument->avr,
                 'numero_documento' => $advisory->people->documentnumber,
 
-                'nombre_pais' => $advisory->people->pais ? strtoupper($advisory->people->pais->name) : ($advisory->people->country ? strtoupper($advisory->people->country) : 'PERÚ'),
+                'nombre_pais' => $advisory->people->pais ? strtoupper($advisory->people->pais->name) : ($advisory->people->country ? strtoupper($advisory->people->country) : 'PERU'),
 
                 'fecha_nacimiento' => Carbon::parse($advisory->people->birthday)->format('d/m/Y'),
                 'apellido_paterno' => strtoupper($advisory->people->lastname),
@@ -196,7 +196,7 @@ class DownloadFormalizationsController extends Controller
                 'distrito_cde' => optional($advisory->cde)->district ? optional($advisory->cde)->district : $advisory->user->profile->cde->district,
                 'tipo_documento' => $advisory->people->typedocument->avr,
                 'numero_documento' => $advisory->people->documentnumber,
-                'nombre_pais' => $advisory->people->pais ? strtoupper($advisory->people->pais->name) : ($advisory->people->country ? strtoupper($advisory->people->country) : 'PERÚ'),
+                'nombre_pais' => $advisory->people->pais ? strtoupper($advisory->people->pais->name) : ($advisory->people->country ? strtoupper($advisory->people->country) : 'PERU'),
                 'fecha_nacimiento' => Carbon::parse($advisory->people->birthday)->format('d/m/Y'),
                 'apellido_paterno' => strtoupper($advisory->people->lastname),
                 'apellido_materno' => strtoupper($advisory->people->middlename),
@@ -300,7 +300,7 @@ class DownloadFormalizationsController extends Controller
                 'distrito_cde' => optional($advisory->cde)->district ? optional($advisory->cde)->district : $advisory->user->profile->cde->district,
                 'tipo_documento' => $advisory->people->typedocument->avr,
                 'numero_documento' => $advisory->people->documentnumber,
-                'nombre_pais' => $advisory->people->pais ? strtoupper($advisory->people->pais->name) : ($advisory->people->country ? strtoupper($advisory->people->country) : 'PERÚ'),
+                'nombre_pais' => $advisory->people->pais ? strtoupper($advisory->people->pais->name) : ($advisory->people->country ? strtoupper($advisory->people->country) : 'PERU'),
                 'fecha_nacimiento' => Carbon::parse($advisory->people->birthday)->format('d/m/Y'),
                 'apellido_paterno' => strtoupper($advisory->people->lastname),
                 'apellido_materno' => strtoupper($advisory->people->middlename),
