@@ -31,6 +31,7 @@ use App\Http\Controllers\Fair\FairController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
 use App\Http\Controllers\Room\RoomController;
+use App\Http\Controllers\RutaDigital\RutaDigitalController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
@@ -304,6 +305,8 @@ Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('get-by-ruc/{ruc}', [MypeController::class, 'getDataByRuc']);
     Route::put('update-by-ruc/{id}', [MypeController::class, 'updateDataByRuc']);
     Route::post('create', [MypeController::class, 'store']);
+
+    Route::get('search-api-ruc/{ruc}',  [MypeController::class, 'apiRUC']);
 });
 
 Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -331,9 +334,11 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
-    Route::post('send-certificates', [CertificadoPDFController::class, 'sendEmailWithCertificates']);
+    Route::post('send-certificates',    [CertificadoPDFController::class, 'sendEmailWithCertificates']);
 
-    Route::post('/ayacucho', [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
+    Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
+    Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);
+
 });
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -355,6 +360,16 @@ Route::group(['prefix' => 'room', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('list',                          [RoomController::class, 'index']);
     Route::post('store',                        [RoomController::class, 'store']);
     Route::delete('delete/{id}',                        [RoomController::class, 'destroy']);
+});
+
+Route::group(['prefix' => 'ruta-digital', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('is-new/{type}/{number}',        [PersonController::class, 'isNewRecord']);
+    Route::post('businessman',                  [RutaDigitalController::class, 'businessman']);         // si existe lo creas si no lo editas
+    Route::post('mype',                         [RutaDigitalController::class, 'mype']);                // si existe lo creas si no lo editas
+    Route::post('create',                       [RutaDigitalController::class, 'store']);
+    Route::get('list',                         [RutaDigitalController::class, 'index']);
+
+
 });
 // Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
 //     Route::post('index-calendar', [CertificadoPDFController::class, 'calendar']);

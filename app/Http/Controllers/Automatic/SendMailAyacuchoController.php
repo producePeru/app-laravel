@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Automatic;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Jobs\EnviarCorreosAyacuchoJob;
+use App\Jobs\SendEmailArrayJob;
 
 class SendMailAyacuchoController extends Controller
 {
@@ -17,8 +18,24 @@ class SendMailAyacuchoController extends Controller
         }
 
         return response()->json(['message' => 'Correos enviados con éxito'], 200);
-        // return "jajajaja";
+
     }
+
+
+
+    public function sendEmailsAyacuchoArray(Request $request)
+    {
+        $correos = $request->input('correos');
+        $data = ['mensaje' => 'Este es un mensaje de prueba'];
+
+        foreach ($correos as $email) {
+            SendEmailArrayJob::dispatch($email, $data);
+        }
+
+        return response()->json(['message' => 'Correos enviados...']);
+    }
+
+
 }
 
 
@@ -28,3 +45,11 @@ class SendMailAyacuchoController extends Controller
 //         {"empresa": "Gatitos SAC", "email": "jackytamaris@gmail.com" }
 //     ]
 // }  php artisan queue:work
+
+
+// 2
+// {
+//     "correos": [
+//         "jackytamaris@gmail.com", "jloo6778@gmail.com", "ozambrano@produce.gob.pe", "tuempresa_temp265@produce.gob.pe"
+//         ]
+//   }

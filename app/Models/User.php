@@ -156,4 +156,8 @@ class User extends Authenticatable
         return $this->hasOne(ActionPlans::class);
     }
 
+    public function misupervisor()
+    {
+        return $this->hasOne(SupervisorUser::class, 'supervisado_id', 'id')->with('supervisor');
+    }
 }

@@ -11,7 +11,27 @@ class People extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $guarded = ['id'];
+    // protected $guarded = ['id'];
+
+    protected $fillable = [
+        'documentnumber',
+        'lastname',
+        'middlename',
+        'name',
+        'phone',
+        'email',
+        'birthday',
+        'sick',
+        'hasSoon',
+        'country_id',
+        'city_id',
+        'province_id',
+        'district_id',
+        'address',
+        'typedocument_id',
+        'gender_id',
+        'user_id'
+    ];
 
     protected $dates = ['deleted_at'];
 

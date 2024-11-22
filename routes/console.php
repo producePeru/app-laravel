@@ -305,7 +305,7 @@ Artisan::command('inspire', function () {
 
 
 
-// NUEVO---
+
 
 
 // CREATE TABLE rooms (
@@ -322,6 +322,45 @@ Artisan::command('inspire', function () {
 //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 //     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 //     deleted_at TIMESTAMP NULL,
+//     FOREIGN KEY (user_id) REFERENCES users(id)
+// );
+
+
+// NUEVO--- ruta digital
+
+// ALTER TABLE people
+// ADD COLUMN user_id BIGINT UNSIGNED NULL AFTER gender_id,
+// ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE;
+
+
+
+// ALTER TABLE mypes
+// ADD COLUMN comercialactivity_id BIGINT UNSIGNED NULL AFTER isIndecopi,
+// ADD CONSTRAINT fk_comercialactivity
+// FOREIGN KEY (comercialactivity_id) REFERENCES comercialactivities(id);
+
+
+// ALTER TABLE mypes
+// ADD COLUMN economicsector_id BIGINT UNSIGNED NULL AFTER comercialactivity_id,
+// ADD CONSTRAINT fk_economicsector
+// FOREIGN KEY (economicsector_id) REFERENCES economicsectors(id);
+
+
+
+// CREATE TABLE digitalroutes (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     ruc CHAR(11) NOT NULL,
+//     dni CHAR(12) NOT NULL,
+//     person_id BIGINT UNSIGNED NOT NULL,
+//     mype_id BIGINT UNSIGNED NOT NULL,
+//     user_id BIGINT UNSIGNED NOT NULL,
+//     status TINYINT(1) NOT NULL DEFAULT 0,
+//     comments TEXT NULL,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL DEFAULT NULL,
+//     FOREIGN KEY (person_id) REFERENCES people(id),
+//     FOREIGN KEY (mype_id) REFERENCES mypes(id),
 //     FOREIGN KEY (user_id) REFERENCES users(id)
 // );
 

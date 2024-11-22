@@ -68,5 +68,4 @@ class Profile extends Model
     {
         return $this->belongsTo(Notary::class, 'notary_id');
     }
-
 }

@@ -216,7 +216,7 @@ class AgreementController extends Controller
     public function upFileAgreement(Request $request)                                                                               // SUBIR ARCHVIVOS
     {
         $request->validate([
-            'file' => 'required|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:20480', // Máximo 20MB
+            'file' => 'required|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:102400', // Máximo 20MB
             'agreements_id' => 'required|integer|exists:agreements,id',
         ]);
 

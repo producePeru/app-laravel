@@ -282,4 +282,40 @@ class PersonController extends Controller
             return response()->json(['message' => 'Person created successfully.', 'id_person' => $person->id, 'status' => 200]);
         }
     }
+
+
+
+    // existe este registro
+    public function isNewRecord($type, $number)
+    {
+        $person = People::where('documentnumber', $number)
+            ->where('typedocument_id', $type)
+            ->first();
+
+        if ($person) {
+            return response()->json([
+                'data' => [
+                    'typedocument_id' => $person->typedocument_id ?? null,
+                    'documentnumber' => $person->documentnumber ?? null,
+                    'lastname' => $person->lastname ?? null,
+                    'middlename' => $person->middlename ?? null,
+                    'name' => $person->name ?? null,
+                    'country_id' => $person->country_id ?? null,
+                    'city_id' => $person->city_id ?? null,
+                    'province_id' => $person->province_id ?? null,
+                    'district_id' => $person->district_id ?? null,
+                    'address' => $person->address ?? null,
+                    'birthday' => $person->birthday ?? null,
+                    'phone' => $person->phone ?? null,
+                    'email' => $person->email ?? null,
+                    'gender_id' => $person->gender_id ?? null,
+                    'sick' => $person->sick ?? null,
+                    'hasSoon' => $person->hasSoon?? null
+                ],
+                'status' => 200]
+            );
+        } else {
+            return response()->json(['message' => 'No se encuentra registrado', 'status' => 300]);
+        }
+    }
 }
