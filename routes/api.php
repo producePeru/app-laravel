@@ -7,7 +7,9 @@ use App\Http\Controllers\User\TokenController;
 // use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
+use App\Http\Controllers\Dgtdif\SurveysController;
 use App\Http\Controllers\Download\DownloadActionsPlanController;
+use App\Http\Controllers\Download\DownloadDigitalRouterController;
 use App\Http\Controllers\Download\DownloadFairParticipantsController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\Download\DownloadOthersController;
@@ -61,6 +63,10 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::post('create-up',            [PersonController::class, 'createUpdate']);             // PASO 2 EDITA O CREA UN USUARIO PERSON
     Route::post('mype/{ruc}',           [FairController::class, 'updateFieldsMypeFair']);       // PASO 3 actualiza los campos faltantes de la mype
     Route::post('postulate',            [FairController::class, 'postulateFair']);              // POSTULAR EN FERIA
+
+    Route::post('survey',               [SurveysController::class, 'store']);              // ENCUESTAS 3° PISO
+    Route::get('surveys',          [SurveysController::class, 'index']);              // ENCUESTAS 3° PISO
+
 
 });
 
@@ -184,6 +190,7 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('formalizations-ruc20',          [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
     Route::get('actions-plans',                 [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
+    Route::get('digital-routes',                [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -346,13 +353,13 @@ Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middlew
 });
 
 Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',                      [FairController::class, 'index']);
-    Route::post('create',                   [FairController::class, 'create']);
-    Route::put('update/{id}',               [FairController::class, 'update']);
+    Route::get('list',                          [FairController::class, 'index']);
+    Route::post('create',                       [FairController::class, 'create']);
+    Route::put('update/{id}',                   [FairController::class, 'update']);
 
-    Route::get('applicants/{slug}',         [FairController::class, 'fairApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
-    Route::put('status-participant/{id}',   [FairController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
-    Route::delete('delete-participant/{id}',[FairController::class, 'destroyParticipant']);       // delete PARTICIPAnte
+    Route::get('applicants/{slug}',             [FairController::class, 'fairApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
+    Route::put('status-participant/{id}',       [FairController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
+    Route::delete('delete-participant/{id}',    [FairController::class, 'destroyParticipant']);       // delete PARTICIPAnte
 });
 
 
@@ -368,6 +375,7 @@ Route::group(['prefix' => 'ruta-digital', 'namespace' => 'App\Http\Controllers',
     Route::post('mype',                         [RutaDigitalController::class, 'mype']);                // si existe lo creas si no lo editas
     Route::post('create',                       [RutaDigitalController::class, 'store']);
     Route::get('list',                         [RutaDigitalController::class, 'index']);
+    Route::put('status/{id}',                         [RutaDigitalController::class, 'status']);
 
 
 });

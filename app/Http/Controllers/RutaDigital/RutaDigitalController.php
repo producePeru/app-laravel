@@ -175,6 +175,18 @@ class RutaDigitalController extends Controller
             return response()->json(['error' => 'Unauthorized', 'status' => 409]);
         }
 
+        // Obtener fechas de los parámetros de la URL
+        $start = $request->query('start');
+        $end = $request->query('end');
+
+        // Aplicar filtro por fechas si los parámetros están presentes
+        if ($start && $end) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($start)->startOfDay(),
+                Carbon::parse($end)->endOfDay()
+            ]);
+        }
+
 
         $data = $query->paginate(50);
 
@@ -212,10 +224,37 @@ class RutaDigitalController extends Controller
                 'district' => $item->mype->district->name,
                 'address' => $item->mype->address,
                 'comercialactivity' => $item->mype->comercialactivity->name,
-                'economicsector' => $item->mype->economicsector->name
+                'economicsector' => $item->mype->economicsector->name,
+
+                'status' => $item->status
             ];
         });
 
-        return response()->json(['data' => $data]);
+        return response()->json(['data' => $data, 'role' => in_array(1, $role_array) || in_array(5, $role_array) ? 'supervisor' : 'asesor']);
+    }
+
+    public function status($id)
+    {
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+
+        if (in_array(1, $role_array) || in_array(5, $role_array)) {
+            $digitalroute = Digitalroute::find($id);
+
+            if ($digitalroute) {
+                $digitalroute->status = $digitalroute->status === 0 ? 1 : 0;
+                $digitalroute->save();
+
+                return response()->json([
+                   'message' => 'El estado ha sido cambiado',
+                   'status' => 200
+                ]);
+            }
+
+            return response()->json([
+               'message' => 'No se encontró el registro',
+               'status' => 404
+            ]);
+        }
     }
 }
