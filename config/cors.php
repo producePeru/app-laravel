@@ -20,12 +20,9 @@ return [
     'allowed_methods' => ['*'],
 
     // 'allowed_origins' => ['*'],
-    'allowed_origins' => ['https://programa.soporte-pnte.com', 'https://programa.soporte-pnte.com'],
+    'allowed_origins' => ['https://programa.soporte-pnte.com'],
 
-    // 'allowed_origins_patterns' => [],
-    'allowed_origins_patterns' => [
-        '/^https:\/\/[a-z0-9-]+\.soporte-pnte\.com$/',  // Esto permite cualquier subdominio
-    ],
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
@@ -33,7 +30,7 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 
     'middleware' => ['cors'],
 
