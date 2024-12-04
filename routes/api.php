@@ -3,12 +3,14 @@
 use App\Http\Controllers\Advisory\AdvisoryController;
 use App\Http\Controllers\Agreement\AgreementController;
 use App\Http\Controllers\Agreement\CommitmentsController;
+use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\User\TokenController;
 // use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
 use App\Http\Controllers\Dgtdif\SurveysController;
 use App\Http\Controllers\Download\DownloadActionsPlanController;
+use App\Http\Controllers\Download\DownloadAttendanceController;
 use App\Http\Controllers\Download\DownloadDigitalRouterController;
 use App\Http\Controllers\Download\DownloadFairParticipantsController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
@@ -66,6 +68,9 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
     Route::post('survey',               [SurveysController::class, 'store']);              // ENCUESTAS 3° PISO
     Route::get('surveys',          [SurveysController::class, 'index']);              // ENCUESTAS 3° PISO
+
+    Route::get('data-attendance/{slug}',           [AttendanceController::class, 'show']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
+    Route::post('attendance-present',        [AttendanceController::class, 'userPresent']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
 
 
 });
@@ -191,6 +196,8 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('actions-plans',                 [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::get('digital-routes',                [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
+    Route::get('attendance/{slug}',                    [DownloadAttendanceController::class, 'exportAttendance']);
+
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -356,10 +363,20 @@ Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('list',                          [FairController::class, 'index']);
     Route::post('create',                       [FairController::class, 'create']);
     Route::put('update/{id}',                   [FairController::class, 'update']);
-
     Route::get('applicants/{slug}',             [FairController::class, 'fairApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
     Route::put('status-participant/{id}',       [FairController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
     Route::delete('delete-participant/{id}',    [FairController::class, 'destroyParticipant']);       // delete PARTICIPAnte
+});
+
+Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('list',                          [AttendanceController::class, 'index']);
+    Route::post('create',                       [AttendanceController::class, 'create']);
+    Route::put('update/{id}',                   [AttendanceController::class, 'update']);
+
+    Route::get('applicants/{slug}',             [AttendanceController::class, 'attendaceApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
+
+    Route::put('status-participant/{id}',       [AttendanceController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
+    Route::delete('delete-participant/{id}',    [AttendanceController::class, 'destroyParticipant']);       // delete PARTICIPAnte
 });
 
 

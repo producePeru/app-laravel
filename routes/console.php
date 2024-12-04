@@ -365,3 +365,51 @@ Artisan::command('inspire', function () {
 // );
 
 
+// hechos
+// CREATE TABLE attendancelist (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     title VARCHAR(255) NOT NULL,
+//     slug VARCHAR(100) NOT NULL UNIQUE,
+//     startDate DATETIME NOT NULL,
+//     endDate DATETIME NOT NULL,
+//     modality VARCHAR(50) NOT NULL,
+//     city_id BIGINT UNSIGNED,
+//     province_id BIGINT UNSIGNED,
+//     district_id BIGINT UNSIGNED,
+//     address VARCHAR(255),
+//     user_id BIGINT UNSIGNED,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL DEFAULT NULL,
+//     FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
+//     FOREIGN KEY (province_id) REFERENCES provinces(id) ON DELETE SET NULL,
+//     FOREIGN KEY (district_id) REFERENCES districts(id) ON DELETE SET NULL,
+//     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+// );
+
+
+// CREATE TABLE attendancelist_users (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     typedocument_id BIGINT UNSIGNED,
+//     documentnumber VARCHAR(15) NOT NULL,
+//     name VARCHAR(100) NOT NULL,
+//     lastname VARCHAR(100) NOT NULL,
+//     middlename VARCHAR(100),
+//     gender_id BIGINT UNSIGNED,
+//     sick ENUM('si', 'no') NOT NULL,
+//     email VARCHAR(150),
+//     phone VARCHAR(15),
+//     ruc VARCHAR(11),
+//     socialReason VARCHAR(100),
+//     economicsector_id BIGINT UNSIGNED,
+//     comercialactivity_id BIGINT UNSIGNED,
+//     attendancelist_id BIGINT UNSIGNED,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     FOREIGN KEY (typedocument_id) REFERENCES typedocuments(id) ON DELETE SET NULL,
+//     FOREIGN KEY (gender_id) REFERENCES genders(id) ON DELETE SET NULL,
+//     FOREIGN KEY (economicsector_id) REFERENCES economicsectors(id) ON DELETE SET NULL,
+//     FOREIGN KEY (comercialactivity_id) REFERENCES comercialactivities(id) ON DELETE SET NULL,
+//     FOREIGN KEY (attendancelist_id) REFERENCES attendancelist(id) ON DELETE CASCADE
+// );
+
