@@ -147,12 +147,12 @@ class AttendanceController extends Controller
             $user->ruc = $request->ruc;
             $user->socialReason = $request->socialReason;
             $user->economicsector_id = $request->economicsector_id;
-            $user->comercialactivity_id = $request->comercialactivity_id;
+            $user->comercialactivity = $request->comercialactivity;
             $user->attendancelist_id = $attendancelist_id;
             $user->save();
 
             return response()->json([
-                'message' => 'Usuario registrado exitosamente',
+                'message' => 'Registrado exitosamente',
                 'status' => 200,
                 'data' => $user
             ]);
@@ -178,7 +178,7 @@ class AttendanceController extends Controller
             'typedocument:id,name',
             'gender:id,name',
             'economicsector:id,name',
-            'comercialactivity:id,name',
+            // 'comercialactivity:id,name',
             'list'
         ])
             ->where('attendancelist_id', $attendance->id)
@@ -199,9 +199,10 @@ class AttendanceController extends Controller
                 'phone' => $item->phone,
                 'gender' => $item->gender->name,
                 'sick' => $item->sick,
-                'ruc' => $item->ruc,
-                'economicsector' => $item->economicsector->name,
-                'comercialactivity' => $item->comercialactivity->name
+                'ruc' => $item->ruc ? $item->ruc : '-',
+                'economicsector' => $item->economicsector ? $item->economicsector->name : '-',
+                'comercialActivity' => $item->comercialActivity,
+                // 'comercialactivity' => $item->comercialactivity->name
             ];
         });
 

@@ -24,7 +24,8 @@ class AttendanceList extends Model
         'ruc',
         'socialReason',
         'economicsector_id',
-        'comercialactivity_id',
+        // 'comercialactivity_id',
+        'comercialActivity',
         'attendancelist_id'
     ];
 
@@ -40,10 +41,10 @@ class AttendanceList extends Model
     {
         return $this->belongsTo('App\Models\EconomicSector');
     }
-    public function comercialactivity()
-    {
-        return $this->belongsTo('App\Models\ComercialActivities');
-    }
+    // public function comercialactivity()
+    // {
+    //     return $this->belongsTo('App\Models\ComercialActivities');
+    // }
     public function list()
     {
         return $this->belongsTo(Attendance::class, 'attendancelist_id');

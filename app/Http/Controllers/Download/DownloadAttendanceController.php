@@ -25,7 +25,7 @@ class DownloadAttendanceController extends Controller
             'typedocument:id,name',
             'gender:id,name,avr',
             'economicsector:id,name',
-            'comercialactivity:id,name',
+            // 'comercialactivity:id,name',
             'list'
         ])->where('attendancelist_id', $attendance->id)
         ->orderBy('created_at', 'desc');
@@ -44,9 +44,9 @@ class DownloadAttendanceController extends Controller
                 'phone' => $item->phone,
                 'gender' => $item->gender->avr,
                 'sick' => $item->sick,
-                'ruc' => $item->ruc,
-                'economicsector' => $item->economicsector->name,
-                'comercialactivity' => $item->comercialactivity->name
+                'ruc' => $item->ruc ? $item->ruc : '-',
+                'economicsector' => $item->economicsector ? $item->economicsector->name : '-',
+                'comercialActivity' => $item->comercialActivity
             ];
         });
 
