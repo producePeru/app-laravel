@@ -21,7 +21,8 @@ class AttendanceController extends Controller
             'region',
             'provincia',
             'distrito',
-            'profile:id,user_id,name,lastname,middlename'
+            'profile:id,user_id,name,lastname,middlename',
+            'asesor'
         ])
             ->withCount('attendanceList')
             ->search($search)
@@ -46,9 +47,15 @@ class AttendanceController extends Controller
                 'province' => $item->provincia->name,
                 'district' => $item->distrito->name,
                 'city_id' => $item->region->id,
+                'address' => $item->address ?? null,
                 'province_id' => $item->provincia->id,
                 'district_id' => $item->distrito->id,
-                'profile' => $item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename,
+                'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
+                'people_id' => $item->asesor->id ?? null,
+                'asesor' => $item->asesor
+                    ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
+                    : null,
+                'description' => $item->description ?? null
             ];
         });
 
@@ -87,6 +94,46 @@ class AttendanceController extends Controller
             Attendance::create($data);
 
             return response()->json(['message' => 'Evento creado con éxito', 'status' => 200]);
+        } else {
+            return response()->json(['message' => 'Sin acceso', 'status' => 500]);
+        }
+    }
+
+    public function update(Request $request, string $id)
+    {
+        $user_role = getUserRole();
+
+        $role_array = $user_role['role_id'];
+
+        if (
+            in_array(5, $role_array) ||
+            in_array(10, $role_array)
+        ) {
+            // Encuentra el registro por su ID
+            $registro = Attendance::findOrFail($id);
+
+            // Toma todos los datos enviados en el request
+            $data = $request->all();
+
+            // Solo regenerar el slug si el título fue actualizado
+            if (isset($data['title'])) {
+                $slug = Str::slug($data['title']);
+                $originalSlug = $slug;
+                $count = 1;
+
+                // Asegurarse de que el nuevo slug sea único
+                while (Attendance::where('slug', $slug)->where('id', '!=', $id)->exists()) {
+                    $slug = $originalSlug . '-' . $count;
+                    $count++;
+                }
+
+                $data['slug'] = $slug;
+            }
+
+            // Actualizar los datos, incluido el slug si fue modificado
+            $registro->update($data);
+
+            return response()->json(['message' => 'Registro actualizado con éxito', 'status' => 200]);
         } else {
             return response()->json(['message' => 'Sin acceso', 'status' => 500]);
         }

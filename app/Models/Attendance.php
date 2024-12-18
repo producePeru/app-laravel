@@ -21,7 +21,9 @@ class Attendance extends Model
         'province_id',
         'district_id',
         'address',
-        'user_id'
+        'user_id',
+        'people_id',
+        'description'
     ];
 
     public function region()
@@ -47,6 +49,11 @@ class Attendance extends Model
     public function attendanceList()
     {
         return $this->hasMany(AttendanceList::class, 'attendancelist_id');
+    }
+
+    public function asesor()
+    {
+        return $this->belongsTo(Profile::class, 'people_id', 'user_id');
     }
 
     public function scopeSearch($query, $search)

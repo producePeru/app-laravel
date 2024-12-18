@@ -136,6 +136,9 @@ Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'mi
     Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
     Route::get('find/{id}', [AdvisoryController::class, 'getDataAdvisoryById']);
     Route::put('update/{id}', [AdvisoryController::class, 'update']);
+
+    Route::put('updates-1020/{id}', [HistorialController::class, 'updateAdvisoryToFormalizations']);           // se actualizan los de ruc 10 y ruc 20 a las asesorias
+
 });
 
 // FORMALIZACIÓN*
@@ -196,7 +199,7 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('actions-plans',                 [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::get('digital-routes',                [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
-    Route::get('attendance/{slug}',                    [DownloadAttendanceController::class, 'exportAttendance']);
+    Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
 
 });
 

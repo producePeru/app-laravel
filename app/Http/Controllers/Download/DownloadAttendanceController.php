@@ -36,7 +36,7 @@ class DownloadAttendanceController extends Controller
             return [
                 'index' => $index + 1,
                 'created_at' => Carbon::parse($item->created_at)->format('d-m-Y H:i'),
-                'lastname' => $item->lastname,
+                'lastname' => $item->lastname . ' ' . $item->middlename,
                 'name' => $item->name,
                 'typedocument' => $item->typedocument->name,
                 'documentnumber' => $item->documentnumber,
