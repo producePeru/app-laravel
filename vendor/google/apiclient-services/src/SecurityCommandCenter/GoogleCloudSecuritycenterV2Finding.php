@@ -54,12 +54,20 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
    * @var string
    */
   public $createTime;
+  protected $dataAccessEventsType = GoogleCloudSecuritycenterV2DataAccessEvent::class;
+  protected $dataAccessEventsDataType = 'array';
+  protected $dataFlowEventsType = GoogleCloudSecuritycenterV2DataFlowEvent::class;
+  protected $dataFlowEventsDataType = 'array';
+  protected $dataRetentionDeletionEventsType = GoogleCloudSecuritycenterV2DataRetentionDeletionEvent::class;
+  protected $dataRetentionDeletionEventsDataType = 'array';
   protected $databaseType = GoogleCloudSecuritycenterV2Database::class;
   protected $databaseDataType = '';
   /**
    * @var string
    */
   public $description;
+  protected $diskType = GoogleCloudSecuritycenterV2Disk::class;
+  protected $diskDataType = '';
   /**
    * @var string
    */
@@ -356,6 +364,48 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
     return $this->createTime;
   }
   /**
+   * @param GoogleCloudSecuritycenterV2DataAccessEvent[]
+   */
+  public function setDataAccessEvents($dataAccessEvents)
+  {
+    $this->dataAccessEvents = $dataAccessEvents;
+  }
+  /**
+   * @return GoogleCloudSecuritycenterV2DataAccessEvent[]
+   */
+  public function getDataAccessEvents()
+  {
+    return $this->dataAccessEvents;
+  }
+  /**
+   * @param GoogleCloudSecuritycenterV2DataFlowEvent[]
+   */
+  public function setDataFlowEvents($dataFlowEvents)
+  {
+    $this->dataFlowEvents = $dataFlowEvents;
+  }
+  /**
+   * @return GoogleCloudSecuritycenterV2DataFlowEvent[]
+   */
+  public function getDataFlowEvents()
+  {
+    return $this->dataFlowEvents;
+  }
+  /**
+   * @param GoogleCloudSecuritycenterV2DataRetentionDeletionEvent[]
+   */
+  public function setDataRetentionDeletionEvents($dataRetentionDeletionEvents)
+  {
+    $this->dataRetentionDeletionEvents = $dataRetentionDeletionEvents;
+  }
+  /**
+   * @return GoogleCloudSecuritycenterV2DataRetentionDeletionEvent[]
+   */
+  public function getDataRetentionDeletionEvents()
+  {
+    return $this->dataRetentionDeletionEvents;
+  }
+  /**
    * @param GoogleCloudSecuritycenterV2Database
    */
   public function setDatabase(GoogleCloudSecuritycenterV2Database $database)
@@ -382,6 +432,20 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
   public function getDescription()
   {
     return $this->description;
+  }
+  /**
+   * @param GoogleCloudSecuritycenterV2Disk
+   */
+  public function setDisk(GoogleCloudSecuritycenterV2Disk $disk)
+  {
+    $this->disk = $disk;
+  }
+  /**
+   * @return GoogleCloudSecuritycenterV2Disk
+   */
+  public function getDisk()
+  {
+    return $this->disk;
   }
   /**
    * @param string

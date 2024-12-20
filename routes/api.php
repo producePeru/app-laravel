@@ -31,6 +31,7 @@ use App\Http\Controllers\Selects\SelectController;
 use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\User\SupervisorController;
 use App\Http\Controllers\Fair\FairController;
+use App\Http\Controllers\Google\GoogleCalendarController;
 // use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
@@ -399,9 +400,11 @@ Route::group(['prefix' => 'ruta-digital', 'namespace' => 'App\Http\Controllers',
 
 
 });
-// Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
-//     Route::post('index-calendar', [CertificadoPDFController::class, 'calendar']);
 
-// });
+
+Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::post('create-event', [GoogleCalendarController::class, 'createEvent']);
+
+});
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {});

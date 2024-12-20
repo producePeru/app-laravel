@@ -50,6 +50,18 @@ class HangoutsChat extends \Google\Service
   /** View display name, description, and other metadata for all Google Chat conversations owned by your organization. */
   const CHAT_ADMIN_SPACES_READONLY =
       "https://www.googleapis.com/auth/chat.admin.spaces.readonly";
+  /** On their own behalf, apps in Google Chat can delete conversations and spaces and remove access to associated files. */
+  const CHAT_APP_DELETE =
+      "https://www.googleapis.com/auth/chat.app.delete";
+  /** On their own behalf, apps in Google Chat can see, add, update, and remove members from conversations and spaces. */
+  const CHAT_APP_MEMBERSHIPS =
+      "https://www.googleapis.com/auth/chat.app.memberships";
+  /** On their own behalf, apps in Google Chat can create conversations and spaces and see or update their metadata (including history settings and access settings). */
+  const CHAT_APP_SPACES =
+      "https://www.googleapis.com/auth/chat.app.spaces";
+  /** On their own behalf, apps in Google Chat can create conversations and spaces. */
+  const CHAT_APP_SPACES_CREATE =
+      "https://www.googleapis.com/auth/chat.app.spaces.create";
   /** Private Service: https://www.googleapis.com/auth/chat.bot. */
   const CHAT_BOT =
       "https://www.googleapis.com/auth/chat.bot";
@@ -194,6 +206,10 @@ class HangoutsChat extends \Google\Service
                   'type' => 'string',
                   'required' => true,
                 ],
+                'useAdminAccess' => [
+                  'location' => 'query',
+                  'type' => 'boolean',
+                ],
               ],
             ],'findDirectMessage' => [
               'path' => 'v1/spaces:findDirectMessage',
@@ -212,6 +228,10 @@ class HangoutsChat extends \Google\Service
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
+                ],
+                'useAdminAccess' => [
+                  'location' => 'query',
+                  'type' => 'boolean',
                 ],
               ],
             ],'list' => [
@@ -244,6 +264,35 @@ class HangoutsChat extends \Google\Service
                   'location' => 'query',
                   'type' => 'string',
                 ],
+                'useAdminAccess' => [
+                  'location' => 'query',
+                  'type' => 'boolean',
+                ],
+              ],
+            ],'search' => [
+              'path' => 'v1/spaces:search',
+              'httpMethod' => 'GET',
+              'parameters' => [
+                'orderBy' => [
+                  'location' => 'query',
+                  'type' => 'string',
+                ],
+                'pageSize' => [
+                  'location' => 'query',
+                  'type' => 'integer',
+                ],
+                'pageToken' => [
+                  'location' => 'query',
+                  'type' => 'string',
+                ],
+                'query' => [
+                  'location' => 'query',
+                  'type' => 'string',
+                ],
+                'useAdminAccess' => [
+                  'location' => 'query',
+                  'type' => 'boolean',
+                ],
               ],
             ],'setup' => [
               'path' => 'v1/spaces:setup',
@@ -268,6 +317,10 @@ class HangoutsChat extends \Google\Service
                   'type' => 'string',
                   'required' => true,
                 ],
+                'useAdminAccess' => [
+                  'location' => 'query',
+                  'type' => 'boolean',
+                ],
               ],
             ],'delete' => [
               'path' => 'v1/{+name}',
@@ -278,6 +331,10 @@ class HangoutsChat extends \Google\Service
                   'type' => 'string',
                   'required' => true,
                 ],
+                'useAdminAccess' => [
+                  'location' => 'query',
+                  'type' => 'boolean',
+                ],
               ],
             ],'get' => [
               'path' => 'v1/{+name}',
@@ -287,6 +344,10 @@ class HangoutsChat extends \Google\Service
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
+                ],
+                'useAdminAccess' => [
+                  'location' => 'query',
+                  'type' => 'boolean',
                 ],
               ],
             ],'list' => [
@@ -318,6 +379,10 @@ class HangoutsChat extends \Google\Service
                   'location' => 'query',
                   'type' => 'boolean',
                 ],
+                'useAdminAccess' => [
+                  'location' => 'query',
+                  'type' => 'boolean',
+                ],
               ],
             ],'patch' => [
               'path' => 'v1/{+name}',
@@ -331,6 +396,10 @@ class HangoutsChat extends \Google\Service
                 'updateMask' => [
                   'location' => 'query',
                   'type' => 'string',
+                ],
+                'useAdminAccess' => [
+                  'location' => 'query',
+                  'type' => 'boolean',
                 ],
               ],
             ],

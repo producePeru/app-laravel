@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Google;
 
+use App\Http\Controllers\Controller;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\Request;
 
@@ -14,32 +15,29 @@ class GoogleCalendarController extends Controller
         $this->calendarService = $calendarService;
     }
 
-    public function redirectToGoogle()
+    public function createEvent(Request $request)
     {
-        $authUrl = $this->calendarService->getAuthUrl();
-        return redirect()->away($authUrl);
-    }
 
-    public function handleGoogleCallback(Request $request)
-    {
-        $authCode = $request->input('code');
-        $accessToken = $this->calendarService->authenticate($authCode);
+        $validated = $request->validate([
+            'summary' => 'required|string',
+            'start' => 'required|date',
+            'end' => 'required|date|after:start',
+        ]);
 
-        // Puedes guardar el token en la base de datos o en la sesión
+        $eventData = [
+            'summary' => $validated['summary'],
+            'start' => [
+                'dateTime' => $validated['start'],
+                'timeZone' => 'America/Lima',
+            ],
+            'end' => [
+                'dateTime' => $validated['end'],
+                'timeZone' => 'America/Lima',
+            ],
+        ];
 
-        return redirect('/'); // Redirige a donde quieras
-    }
+        $event = $this->calendarService->createEvent($eventData);
 
-    public function listEvents(Request $request)
-    {
-        $accessToken = $request->input('access_token');
-        $eventData = $request->input('event');
-
-        try {
-            $event = $this->calendarService->createEvent($accessToken, $eventData);
-            return response()->json($event, 201);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return response()->json($event);
     }
 }

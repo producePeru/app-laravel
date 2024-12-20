@@ -42,7 +42,7 @@ class ChromeManagement extends \Google\Service
   /** See reports about devices and Chrome browsers managed within your organization. */
   const CHROME_MANAGEMENT_REPORTS_READONLY =
       "https://www.googleapis.com/auth/chrome.management.reports.readonly";
-  /** See basic device and telemetry information collected from Chrome OS devices or users managed within your organization. */
+  /** See basic device and telemetry information collected from ChromeOS devices or users managed within your organization. */
   const CHROME_MANAGEMENT_TELEMETRY_READONLY =
       "https://www.googleapis.com/auth/chrome.management.telemetry.readonly";
 
@@ -50,6 +50,7 @@ class ChromeManagement extends \Google\Service
   public $customers_apps_android;
   public $customers_apps_chrome;
   public $customers_apps_web;
+  public $customers_profiles;
   public $customers_reports;
   public $customers_telemetry_devices;
   public $customers_telemetry_events;
@@ -216,6 +217,62 @@ class ChromeManagement extends \Google\Service
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
+                ],
+              ],
+            ],
+          ]
+        ]
+    );
+    $this->customers_profiles = new ChromeManagement\Resource\CustomersProfiles(
+        $this,
+        $this->serviceName,
+        'profiles',
+        [
+          'methods' => [
+            'delete' => [
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'DELETE',
+              'parameters' => [
+                'name' => [
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ],
+              ],
+            ],'get' => [
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'GET',
+              'parameters' => [
+                'name' => [
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ],
+              ],
+            ],'list' => [
+              'path' => 'v1/{+parent}/profiles',
+              'httpMethod' => 'GET',
+              'parameters' => [
+                'parent' => [
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ],
+                'filter' => [
+                  'location' => 'query',
+                  'type' => 'string',
+                ],
+                'orderBy' => [
+                  'location' => 'query',
+                  'type' => 'string',
+                ],
+                'pageSize' => [
+                  'location' => 'query',
+                  'type' => 'integer',
+                ],
+                'pageToken' => [
+                  'location' => 'query',
+                  'type' => 'string',
                 ],
               ],
             ],

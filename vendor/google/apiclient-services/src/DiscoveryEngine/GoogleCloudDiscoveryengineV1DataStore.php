@@ -20,6 +20,12 @@ namespace Google\Service\DiscoveryEngine;
 class GoogleCloudDiscoveryengineV1DataStore extends \Google\Collection
 {
   protected $collection_key = 'solutionTypes';
+  protected $advancedSiteSearchConfigType = GoogleCloudDiscoveryengineV1AdvancedSiteSearchConfig::class;
+  protected $advancedSiteSearchConfigDataType = '';
+  protected $billingEstimationType = GoogleCloudDiscoveryengineV1DataStoreBillingEstimation::class;
+  protected $billingEstimationDataType = '';
+  protected $cmekConfigType = GoogleCloudDiscoveryengineV1CmekConfig::class;
+  protected $cmekConfigDataType = '';
   /**
    * @var string
    */
@@ -45,14 +51,64 @@ class GoogleCloudDiscoveryengineV1DataStore extends \Google\Collection
   /**
    * @var string
    */
+  public $kmsKeyName;
+  /**
+   * @var string
+   */
   public $name;
+  protected $servingConfigDataStoreType = GoogleCloudDiscoveryengineV1DataStoreServingConfigDataStore::class;
+  protected $servingConfigDataStoreDataType = '';
   /**
    * @var string[]
    */
   public $solutionTypes;
   protected $startingSchemaType = GoogleCloudDiscoveryengineV1Schema::class;
   protected $startingSchemaDataType = '';
+  protected $workspaceConfigType = GoogleCloudDiscoveryengineV1WorkspaceConfig::class;
+  protected $workspaceConfigDataType = '';
 
+  /**
+   * @param GoogleCloudDiscoveryengineV1AdvancedSiteSearchConfig
+   */
+  public function setAdvancedSiteSearchConfig(GoogleCloudDiscoveryengineV1AdvancedSiteSearchConfig $advancedSiteSearchConfig)
+  {
+    $this->advancedSiteSearchConfig = $advancedSiteSearchConfig;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1AdvancedSiteSearchConfig
+   */
+  public function getAdvancedSiteSearchConfig()
+  {
+    return $this->advancedSiteSearchConfig;
+  }
+  /**
+   * @param GoogleCloudDiscoveryengineV1DataStoreBillingEstimation
+   */
+  public function setBillingEstimation(GoogleCloudDiscoveryengineV1DataStoreBillingEstimation $billingEstimation)
+  {
+    $this->billingEstimation = $billingEstimation;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1DataStoreBillingEstimation
+   */
+  public function getBillingEstimation()
+  {
+    return $this->billingEstimation;
+  }
+  /**
+   * @param GoogleCloudDiscoveryengineV1CmekConfig
+   */
+  public function setCmekConfig(GoogleCloudDiscoveryengineV1CmekConfig $cmekConfig)
+  {
+    $this->cmekConfig = $cmekConfig;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1CmekConfig
+   */
+  public function getCmekConfig()
+  {
+    return $this->cmekConfig;
+  }
   /**
    * @param string
    */
@@ -140,6 +196,20 @@ class GoogleCloudDiscoveryengineV1DataStore extends \Google\Collection
   /**
    * @param string
    */
+  public function setKmsKeyName($kmsKeyName)
+  {
+    $this->kmsKeyName = $kmsKeyName;
+  }
+  /**
+   * @return string
+   */
+  public function getKmsKeyName()
+  {
+    return $this->kmsKeyName;
+  }
+  /**
+   * @param string
+   */
   public function setName($name)
   {
     $this->name = $name;
@@ -150,6 +220,20 @@ class GoogleCloudDiscoveryengineV1DataStore extends \Google\Collection
   public function getName()
   {
     return $this->name;
+  }
+  /**
+   * @param GoogleCloudDiscoveryengineV1DataStoreServingConfigDataStore
+   */
+  public function setServingConfigDataStore(GoogleCloudDiscoveryengineV1DataStoreServingConfigDataStore $servingConfigDataStore)
+  {
+    $this->servingConfigDataStore = $servingConfigDataStore;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1DataStoreServingConfigDataStore
+   */
+  public function getServingConfigDataStore()
+  {
+    return $this->servingConfigDataStore;
   }
   /**
    * @param string[]
@@ -178,6 +262,20 @@ class GoogleCloudDiscoveryengineV1DataStore extends \Google\Collection
   public function getStartingSchema()
   {
     return $this->startingSchema;
+  }
+  /**
+   * @param GoogleCloudDiscoveryengineV1WorkspaceConfig
+   */
+  public function setWorkspaceConfig(GoogleCloudDiscoveryengineV1WorkspaceConfig $workspaceConfig)
+  {
+    $this->workspaceConfig = $workspaceConfig;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1WorkspaceConfig
+   */
+  public function getWorkspaceConfig()
+  {
+    return $this->workspaceConfig;
   }
 }
 
