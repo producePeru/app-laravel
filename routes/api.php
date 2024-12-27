@@ -404,7 +404,7 @@ Route::group(['prefix' => 'ruta-digital', 'namespace' => 'App\Http\Controllers',
 
 Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::post('create-event', [GoogleCalendarController::class, 'createEvent']);
-
+    Route::get('events',        [GoogleCalendarController::class, 'listEvents']);
 });
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {});
