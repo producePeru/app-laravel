@@ -305,7 +305,7 @@ Artisan::command('inspire', function () {
 
 
 
-// NUEVO---
+
 
 
 // CREATE TABLE rooms (
@@ -325,4 +325,91 @@ Artisan::command('inspire', function () {
 //     FOREIGN KEY (user_id) REFERENCES users(id)
 // );
 
+
+// NUEVO--- ruta digital
+
+// ALTER TABLE people
+// ADD COLUMN user_id BIGINT UNSIGNED NULL AFTER gender_id,
+// ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE;
+
+
+
+// ALTER TABLE mypes
+// ADD COLUMN comercialactivity_id BIGINT UNSIGNED NULL AFTER isIndecopi,
+// ADD CONSTRAINT fk_comercialactivity
+// FOREIGN KEY (comercialactivity_id) REFERENCES comercialactivities(id);
+
+
+// ALTER TABLE mypes
+// ADD COLUMN economicsector_id BIGINT UNSIGNED NULL AFTER comercialactivity_id,
+// ADD CONSTRAINT fk_economicsector
+// FOREIGN KEY (economicsector_id) REFERENCES economicsectors(id);
+
+
+
+// CREATE TABLE digitalroutes (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     ruc CHAR(11) NOT NULL,
+//     dni CHAR(12) NOT NULL,
+//     person_id BIGINT UNSIGNED NOT NULL,
+//     mype_id BIGINT UNSIGNED NOT NULL,
+//     user_id BIGINT UNSIGNED NOT NULL,
+//     status TINYINT(1) NOT NULL DEFAULT 0,
+//     comments TEXT NULL,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL DEFAULT NULL,
+//     FOREIGN KEY (person_id) REFERENCES people(id),
+//     FOREIGN KEY (mype_id) REFERENCES mypes(id),
+//     FOREIGN KEY (user_id) REFERENCES users(id)
+// );
+
+
+// hechos
+// CREATE TABLE attendancelist (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     title VARCHAR(255) NOT NULL,
+//     slug VARCHAR(100) NOT NULL UNIQUE,
+//     startDate DATETIME NOT NULL,
+//     endDate DATETIME NOT NULL,
+//     modality VARCHAR(50) NOT NULL,
+//     city_id BIGINT UNSIGNED,
+//     province_id BIGINT UNSIGNED,
+//     district_id BIGINT UNSIGNED,
+//     address VARCHAR(255),
+//     user_id BIGINT UNSIGNED,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     deleted_at TIMESTAMP NULL DEFAULT NULL,
+//     FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
+//     FOREIGN KEY (province_id) REFERENCES provinces(id) ON DELETE SET NULL,
+//     FOREIGN KEY (district_id) REFERENCES districts(id) ON DELETE SET NULL,
+//     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+// );
+
+
+// CREATE TABLE attendancelist_users (
+//     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//     typedocument_id BIGINT UNSIGNED,
+//     documentnumber VARCHAR(15) NOT NULL,
+//     name VARCHAR(100) NOT NULL,
+//     lastname VARCHAR(100) NOT NULL,
+//     middlename VARCHAR(100),
+//     gender_id BIGINT UNSIGNED,
+//     sick ENUM('si', 'no') NOT NULL,
+//     email VARCHAR(150),
+//     phone VARCHAR(15),
+//     ruc VARCHAR(11),
+//     socialReason VARCHAR(100),
+//     economicsector_id BIGINT UNSIGNED,
+//     comercialactivity_id BIGINT UNSIGNED,
+//     attendancelist_id BIGINT UNSIGNED,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//     FOREIGN KEY (typedocument_id) REFERENCES typedocuments(id) ON DELETE SET NULL,
+//     FOREIGN KEY (gender_id) REFERENCES genders(id) ON DELETE SET NULL,
+//     FOREIGN KEY (economicsector_id) REFERENCES economicsectors(id) ON DELETE SET NULL,
+//     FOREIGN KEY (comercialactivity_id) REFERENCES comercialactivities(id) ON DELETE SET NULL,
+//     FOREIGN KEY (attendancelist_id) REFERENCES attendancelist(id) ON DELETE CASCADE
+// );
 

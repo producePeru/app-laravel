@@ -17,8 +17,8 @@ class HistorialController extends Controller
         $user_id = Auth::user()->id;
 
         $roleUser = DB::table('role_user')
-        ->where('user_id', $user_id)
-        ->first();
+            ->where('user_id', $user_id)
+            ->first();
 
         if ($user_id != $roleUser->user_id) {
             return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
@@ -165,50 +165,47 @@ class HistorialController extends Controller
     // HISTORIAL DE REGISTROS...
     public function getByPeopleIdRegisters($peopleId)
     {
-        $advisories = Advisory::
-        where('people_id', $peopleId)
-        ->with('user.profile', 'component', 'theme','modality', 'city', 'province', 'district')
-        ->get()
-        ->map(function ($advisory) {
-            return [
-                'id' => $advisory->id,
-                'createDate' => $advisory->created_at,
-                'updateDate' => $advisory->updated_at,
-                'asesor' => strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename),
-                'component' => $advisory->component->name,
-                'theme' => $advisory->theme->name,
-                'modality' => $advisory->modality->name,
-                'city' => $advisory->city->name,
-                'province' => $advisory->province->name,
-                'district' => $advisory->district->name
-            ];
-        })->sortByDesc('created_at');
+        $advisories = Advisory::where('people_id', $peopleId)
+            ->with('user.profile', 'component', 'theme', 'modality', 'city', 'province', 'district')
+            ->get()
+            ->map(function ($advisory) {
+                return [
+                    'id' => $advisory->id,
+                    'createDate' => $advisory->created_at,
+                    'updateDate' => $advisory->updated_at,
+                    'asesor' => strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename),
+                    'component' => $advisory->component->name,
+                    'theme' => $advisory->theme->name,
+                    'modality' => $advisory->modality->name,
+                    'city' => $advisory->city->name,
+                    'province' => $advisory->province->name,
+                    'district' => $advisory->district->name
+                ];
+            })->sortByDesc('created_at');
 
 
-        $formalization10 = Formalization10::
-        where('people_id', $peopleId)
-        ->with('detailprocedure', 'modality', 'economicsector', 'comercialactivity', 'city', 'province', 'district', 'user.profile')
-        ->get()
-        ->map(function ($item) {
-            return [
-                'id' => $item->id,
-                'createDate' => $item->created_at,
-                'updateDate' => $item->updated_at,
-                'detailprocedure' => $item->detailprocedure->name,
-                'modality' => $item->modality->name,
-                'economicsector' => $item->economicsector->name,
-                'comercialactivity' => $item->comercialactivity->name,
-                'city' => $item->city->name,
-                'ruc' => $item->ruc,
-                'province' => $item->province->name,
-                'district' => $item->district->name,
-                'asesor' => strtoupper($item->user->profile->name . ' ' . $item->user->profile->lastname . ' ' . $item->user->profile->middlename)
-            ];
-        })->sortByDesc('created_at');
+        $formalization10 = Formalization10::where('people_id', $peopleId)
+            ->with('detailprocedure', 'modality', 'economicsector', 'comercialactivity', 'city', 'province', 'district', 'user.profile')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'createDate' => $item->created_at,
+                    'updateDate' => $item->updated_at,
+                    'detailprocedure' => $item->detailprocedure->name,
+                    'modality' => $item->modality->name,
+                    'economicsector' => $item->economicsector->name,
+                    'comercialactivity' => $item->comercialactivity->name,
+                    'city' => $item->city->name,
+                    'ruc' => $item->ruc,
+                    'province' => $item->province->name,
+                    'district' => $item->district->name,
+                    'asesor' => strtoupper($item->user->profile->name . ' ' . $item->user->profile->lastname . ' ' . $item->user->profile->middlename)
+                ];
+            })->sortByDesc('created_at');
 
 
-        $formalization20 = Formalization20::
-            where('people_id', $peopleId)
+        $formalization20 = Formalization20::where('people_id', $peopleId)
             ->with('economicsector', 'comercialactivity', 'regime', 'city', 'province', 'district', 'modality', 'notary', 'mype', 'user.profile')
             ->get()
             ->map(function ($item) {
@@ -242,5 +239,89 @@ class HistorialController extends Controller
 
 
         return response()->json(['data' => $data, 'status' => 200]);
+    }
+
+
+    // las formalizaciones de ruc 10 con componente = formalizacion componente_tema = 18
+    public function updateAdvisoryToFormalizations($type)
+    {
+
+        if ($type == 'ruc10') {
+            Formalization10::chunk(50, function ($formalizations) {
+                foreach ($formalizations as $formalization) {
+                    try {
+
+                        // Verificar si ya existe un registro con los mismos valores
+                        $exists = Advisory::where('people_id', $formalization->people_id)
+                            ->where('ruc', $formalization->ruc)
+                            ->where('user_id', $formalization->user_id)
+                            ->exists();
+
+                        if (!$exists) {
+
+                            Advisory::create([
+                                'economicsector_id' => $formalization->economicsector_id,
+                                'comercialactivity_id' => $formalization->comercialactivity_id,
+                                'observations' => null,
+                                'user_id' => $formalization->user_id,
+                                'people_id' => $formalization->people_id,
+                                'component_id' => 4,
+                                'theme_id' => 18,
+                                'modality_id' => $formalization->modality_id,
+                                'city_id' => $formalization->city_id,
+                                'province_id' => $formalization->province_id,
+                                'district_id' => $formalization->district_id,
+                                'ruc' => $formalization->ruc,
+                                'dni' => $formalization->dni,
+                                'cde_id' => $formalization->cde_id,
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+
+                        return response()->json(['message' => 'Error',  'status' => 409, 'error' => $e]);
+                    }
+                }
+            });
+
+            return response()->json(['message' => 'Actualización de asesorias actualizado RUC 10',  'status' => 200]);
+        }
+
+        if ($type == 'ruc20') {
+            Formalization20::chunk(50, function ($formalizations) {
+                foreach ($formalizations as $formalization) {
+                    try {
+
+                        $exists = Advisory::where('people_id', $formalization->people_id)
+                            ->where('economicsector_id', $formalization->economicsector_id)
+                            ->where('comercialactivity_id', $formalization->comercialactivity_id)
+                            ->exists();
+
+                        if (!$exists) {
+
+                            Advisory::create([
+                                'economicsector_id' => $formalization->economicsector_id,
+                                'comercialactivity_id' => $formalization->comercialactivity_id,
+                                'observations' => null,
+                                'user_id' => $formalization->user_id,
+                                'people_id' => $formalization->people_id,
+                                'component_id' => 4,
+                                'theme_id' => 16,
+                                'modality_id' => $formalization->modality_id,
+                                'city_id' => $formalization->city_id,
+                                'province_id' => $formalization->province_id,
+                                'district_id' => $formalization->district_id,
+                                'ruc' => $formalization->ruc,
+                                'dni' => $formalization->dni,
+                                'cde_id' => $formalization->cde_id,
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+
+                        return response()->json(['message' => 'Error',  'status' => 409, 'error' => $e]);
+                    }
+                }
+            });
+            return response()->json(['message' => 'Actualización de asesorias actualizado RUC 20',  'status' => 200]);
+        }
     }
 }

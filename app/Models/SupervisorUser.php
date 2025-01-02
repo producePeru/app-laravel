@@ -37,4 +37,8 @@ class SupervisorUser extends Model
         return $this->belongsTo('App\Models\User', 'supervisado_id');
     }
 
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id', 'id');
+    }
 }

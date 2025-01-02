@@ -3,11 +3,15 @@
 use App\Http\Controllers\Advisory\AdvisoryController;
 use App\Http\Controllers\Agreement\AgreementController;
 use App\Http\Controllers\Agreement\CommitmentsController;
+use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\User\TokenController;
 // use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
+use App\Http\Controllers\Dgtdif\SurveysController;
 use App\Http\Controllers\Download\DownloadActionsPlanController;
+use App\Http\Controllers\Download\DownloadAttendanceController;
+use App\Http\Controllers\Download\DownloadDigitalRouterController;
 use App\Http\Controllers\Download\DownloadFairParticipantsController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\Download\DownloadOthersController;
@@ -31,6 +35,7 @@ use App\Http\Controllers\Fair\FairController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
 use App\Http\Controllers\Room\RoomController;
+use App\Http\Controllers\RutaDigital\RutaDigitalController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
@@ -60,6 +65,13 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::post('create-up',            [PersonController::class, 'createUpdate']);             // PASO 2 EDITA O CREA UN USUARIO PERSON
     Route::post('mype/{ruc}',           [FairController::class, 'updateFieldsMypeFair']);       // PASO 3 actualiza los campos faltantes de la mype
     Route::post('postulate',            [FairController::class, 'postulateFair']);              // POSTULAR EN FERIA
+
+    Route::post('survey',               [SurveysController::class, 'store']);              // ENCUESTAS 3° PISO
+    Route::get('surveys',          [SurveysController::class, 'index']);              // ENCUESTAS 3° PISO
+
+    Route::get('data-attendance/{slug}',           [AttendanceController::class, 'show']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
+    Route::post('attendance-present',        [AttendanceController::class, 'userPresent']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
+
 
 });
 
@@ -124,6 +136,9 @@ Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'mi
     Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
     Route::get('find/{id}', [AdvisoryController::class, 'getDataAdvisoryById']);
     Route::put('update/{id}', [AdvisoryController::class, 'update']);
+
+    Route::put('updates-1020/{id}', [HistorialController::class, 'updateAdvisoryToFormalizations']);           // se actualizan los de ruc 10 y ruc 20 a las asesorias
+
 });
 
 // FORMALIZACIÓN*
@@ -183,6 +198,9 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('formalizations-ruc20',          [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
     Route::get('actions-plans',                 [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
+    Route::get('digital-routes',                [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
+    Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
+
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -304,6 +322,8 @@ Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('get-by-ruc/{ruc}', [MypeController::class, 'getDataByRuc']);
     Route::put('update-by-ruc/{id}', [MypeController::class, 'updateDataByRuc']);
     Route::post('create', [MypeController::class, 'store']);
+
+    Route::get('search-api-ruc/{ruc}',  [MypeController::class, 'apiRUC']);
 });
 
 Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -331,9 +351,11 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
-    Route::post('send-certificates', [CertificadoPDFController::class, 'sendEmailWithCertificates']);
+    Route::post('send-certificates',    [CertificadoPDFController::class, 'sendEmailWithCertificates']);
 
-    Route::post('/ayacucho', [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
+    Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
+    Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);
+
 });
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -341,13 +363,23 @@ Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middlew
 });
 
 Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',                      [FairController::class, 'index']);
-    Route::post('create',                   [FairController::class, 'create']);
-    Route::put('update/{id}',               [FairController::class, 'update']);
+    Route::get('list',                          [FairController::class, 'index']);
+    Route::post('create',                       [FairController::class, 'create']);
+    Route::put('update/{id}',                   [FairController::class, 'update']);
+    Route::get('applicants/{slug}',             [FairController::class, 'fairApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
+    Route::put('status-participant/{id}',       [FairController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
+    Route::delete('delete-participant/{id}',    [FairController::class, 'destroyParticipant']);       // delete PARTICIPAnte
+});
 
-    Route::get('applicants/{slug}',         [FairController::class, 'fairApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
-    Route::put('status-participant/{id}',   [FairController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
-    Route::delete('delete-participant/{id}',[FairController::class, 'destroyParticipant']);       // delete PARTICIPAnte
+Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('list',                          [AttendanceController::class, 'index']);
+    Route::post('create',                       [AttendanceController::class, 'create']);
+    Route::put('update/{id}',                   [AttendanceController::class, 'update']);
+
+    Route::get('applicants/{slug}',             [AttendanceController::class, 'attendaceApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
+
+    Route::put('status-participant/{id}',       [AttendanceController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
+    Route::delete('delete-participant/{id}',    [AttendanceController::class, 'destroyParticipant']);       // delete PARTICIPAnte
 });
 
 
@@ -355,6 +387,17 @@ Route::group(['prefix' => 'room', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('list',                          [RoomController::class, 'index']);
     Route::post('store',                        [RoomController::class, 'store']);
     Route::delete('delete/{id}',                        [RoomController::class, 'destroy']);
+});
+
+Route::group(['prefix' => 'ruta-digital', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('is-new/{type}/{number}',        [PersonController::class, 'isNewRecord']);
+    Route::post('businessman',                  [RutaDigitalController::class, 'businessman']);         // si existe lo creas si no lo editas
+    Route::post('mype',                         [RutaDigitalController::class, 'mype']);                // si existe lo creas si no lo editas
+    Route::post('create',                       [RutaDigitalController::class, 'store']);
+    Route::get('list',                         [RutaDigitalController::class, 'index']);
+    Route::put('status/{id}',                         [RutaDigitalController::class, 'status']);
+
+
 });
 // Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
 //     Route::post('index-calendar', [CertificadoPDFController::class, 'calendar']);

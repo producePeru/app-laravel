@@ -25,6 +25,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('queue:work --stop-when-empty')
                 ->everyMinute()
                 ->withoutOverlapping();
+
+        // $schedule->command('files:clean')->daily();
     }
 
     /**

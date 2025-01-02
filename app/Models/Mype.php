@@ -40,4 +40,14 @@ class Mype extends Model
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
+
+    public function comercialactivity()
+    {
+        return $this->belongsTo('App\Models\ComercialActivities');
+    }
+
+    public function economicsector()
+    {
+        return $this->belongsTo('App\Models\EconomicSector');
+    }
 }
