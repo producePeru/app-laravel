@@ -201,7 +201,6 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::get('digital-routes',                [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
     Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
-
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -356,7 +355,6 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
     Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
     Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);
-
 });
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -397,14 +395,13 @@ Route::group(['prefix' => 'ruta-digital', 'namespace' => 'App\Http\Controllers',
     Route::post('create',                       [RutaDigitalController::class, 'store']);
     Route::get('list',                         [RutaDigitalController::class, 'index']);
     Route::put('status/{id}',                         [RutaDigitalController::class, 'status']);
-
-
 });
 
 
 Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::post('create-event', [GoogleCalendarController::class, 'createEvent']);
-    Route::get('events',        [GoogleCalendarController::class, 'listEvents']);
+    Route::post('create-event',             [GoogleCalendarController::class, 'createEvent']);
+    Route::get('events-pnte',               [GoogleCalendarController::class, 'listEvents']);
+    Route::delete('delete-event-pnte/{id}',         [GoogleCalendarController::class, 'deleteEvent']);
 });
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {});
