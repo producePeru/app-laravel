@@ -100,6 +100,7 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
     Route::post('register-views',   [UserController::class, 'registerViewsSeven']);
 
     Route::post('new-user-views',   [UserController::class, 'newUser']);     // REGISTRO PARA CADA USUARIO
+    Route::post('update-password',  [AuthController::class, 'updatePassword']);     // RESETEO DE PASSWORD
 
 });
 

@@ -41,8 +41,11 @@ class Notary extends Model
     public function scopeWithNotariesAndRelations($query)
     {
         return $query->with([
-            'city', 'province', 'district', 'user.profile'
-            ])
+            'city',
+            'province',
+            'district',
+            'user.profile'
+        ])
             ->orderBy('created_at', 'asc')
             ->paginate(200);
     }
@@ -50,22 +53,41 @@ class Notary extends Model
     public function scopeWithNotariesById($query, $filters)
     {
         $query = $query->with(['city', 'province', 'district', 'user.profile'])
-          ->orderBy('created_at', 'asc');
+            ->orderBy('created_at', 'asc');
 
         if (isset($filters['city_id'])) {
             $query->where('city_id', $filters['city_id']);
         }
 
         if (isset($filters['name'])) {
-            $query->where('name', 'LIKE', $filters['name'] . '%');
+            $query->where('name', 'LIKE', '%' . $filters['name'] . '%');
+        }
+
+        // Filtrar por nombres de provincia, ciudad o distrito
+        if (isset($filters['city_name'])) {
+            $query->whereHas('city', function ($q) use ($filters) {
+                $q->where('name', 'LIKE', '%' . $filters['city_name'] . '%');
+            });
+        }
+
+        if (isset($filters['province_name'])) {
+            $query->whereHas('province', function ($q) use ($filters) {
+                $q->where('name', 'LIKE', '%' . $filters['province_name'] . '%');
+            });
+        }
+
+        if (isset($filters['district_name'])) {
+            $query->whereHas('district', function ($q) use ($filters) {
+                $q->where('name', 'LIKE', '%' . $filters['district_name'] . '%');
+            });
         }
 
         return $query->paginate(200);
     }
 
+
     public function profiles()
     {
         return $this->hasMany(Profile::class, 'notary_id');
     }
-
 }

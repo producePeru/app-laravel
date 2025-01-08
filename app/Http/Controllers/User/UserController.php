@@ -205,8 +205,10 @@ class UserController extends Controller
             ->join('cdes', 'profiles.cde_id', '=', 'cdes.id')
             ->join('offices', 'profiles.office_id', '=', 'offices.id')
             ->join('genders', 'profiles.gender_id', '=', 'genders.id')
-            ->where('role_user.role_id', $roleId)
+            ->whereIn('role_user.role_id', [1, 2, 7])                                       // 1 supervisor, 2 asesor, 7 notarios
             ->select(
+                'role_user.role_id as role_user',
+                'users.id as user_id',
                 'profiles.id as _id',
                 'users.email',
                 'profiles.name as profile_name',
@@ -385,10 +387,11 @@ class UserController extends Controller
 
         // 5 gold, 10 jefe de ferias
 
-        if (in_array(5, $role_array) ||
+        if (
+            in_array(5, $role_array) ||
             in_array(8, $role_array) ||
             in_array(10, $role_array)
-        ){
+        ) {
 
             $dni = $request->documentnumber;
 
