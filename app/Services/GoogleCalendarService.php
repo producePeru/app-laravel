@@ -2,57 +2,123 @@
 
 namespace App\Services;
 
-use Google_Client;
-use Google_Service_Calendar;
-use Google_Service_Calendar_Event;
+use Google\Client;
+use Google\Service\Calendar;
 
 class GoogleCalendarService
 {
     protected $client;
+    protected $calendar;
 
     public function __construct()
     {
-        // Configura el cliente de Google
-        $this->client = new Google_Client();
-        $this->client->setClientId(config('services.google.client_id'));
-        $this->client->setClientSecret(config('services.google.client_secret'));
-        $this->client->setRedirectUri(config('services.google.redirect'));
-        $this->client->addScope(Google_Service_Calendar::CALENDAR);
+        $this->client = new Client();
+        $this->client->setAuthConfig(config('google.credentials_file'));
+        $this->client->addScope(Calendar::CALENDAR);
+
+        $this->calendar = new Calendar($this->client);
     }
 
-    public function authenticate($authCode)
+    public function createEvent(array $eventData)
     {
-        $accessToken = $this->client->fetchAccessTokenWithAuthCode($authCode);
-        $this->client->setAccessToken($accessToken);
+        $calendarId = config('google');
 
-        return $accessToken;
+        // Depuración: Verifica el valor del calendarId
+        if (!$calendarId) {
+            throw new \Exception("El ID del calendario no se encuentra configurado correctamente.");
+        }
+
+        $event = new \Google\Service\Calendar\Event($eventData);
+        return $this->calendar->events->insert(config('google.calendar_id'), $event);
     }
 
-    public function createEvent($accessToken, $eventData)
+    public function listEvents($calendarId = null, $maxResults = 50, $pageToken = null, $search = null)
     {
-        $this->client->setAccessToken($accessToken);
+        $calendarId = $calendarId ?? config('google.calendar_id');
 
-        $service = new Google_Service_Calendar($this->client);
+        if (!$calendarId) {
+            throw new \Exception("El ID del calendario no se encuentra configurado correctamente.");
+        }
 
-        $event = new Google_Service_Calendar_Event([
-            'summary' => $eventData['summary'],
-            'location' => $eventData['location'],
-            'description' => $eventData['description'],
-            'start' => [
-                'dateTime' => $eventData['start'],
-                'timeZone' => $eventData['timeZone'],
-            ],
-            'end' => [
-                'dateTime' => $eventData['end'],
-                'timeZone' => $eventData['timeZone'],
-            ],
-        ]);
+        // Configurar parámetros para la solicitud
+        $params = [
+            'maxResults' => $maxResults,
+            'orderBy' => 'startTime',
+            'singleEvents' => true,
+        ];
 
-        return $service->events->insert('primary', $event);
+        // Agregar el token de paginación si existe
+        if ($pageToken) {
+            $params['pageToken'] = $pageToken;
+        }
+
+        // Filtrar por término de búsqueda o fecha si existe
+        if ($search) {
+            if (preg_match('/\d{2}\/\d{2}\/\d{4}/', $search)) {
+                $searchDate = \DateTime::createFromFormat('d/m/Y', $search);
+                if ($searchDate) {
+                    $params['timeMin'] = $searchDate->format('Y-m-d\TH:i:s\Z');
+                    $params['timeMax'] = $searchDate->modify('+1 day')->format('Y-m-d\TH:i:s\Z');
+                }
+            } else {
+                $params['q'] = $search;
+            }
+        }
+
+        // Obtener los eventos
+        $events = $this->calendar->events->listEvents($calendarId, $params);
+
+        // Formatear los eventos
+        $formattedEvents = [];
+
+        foreach ($events->getItems() as $event) {
+            $formattedEvents[] = [
+                'id' => $event->getId(),
+                'summary' => $event->getSummary(),
+                'start' => $event->getStart()->getDateTime() ?? $event->getStart()->getDate(),
+                'end' => $event->getEnd()->getDateTime() ?? $event->getEnd()->getDate(),
+                'description' => $event->getDescription(),
+            ];
+        }
+
+        // Ordenar los eventos por fecha de inicio descendente
+        usort($formattedEvents, function ($a, $b) {
+            return strtotime($b['start']) - strtotime($a['start']);
+        });
+
+        // Crear estructura de paginación similar a Laravel
+        $pagination = [
+            'data' => $formattedEvents,
+            'current_page' => $pageToken ? (int) $pageToken : 1,
+            'per_page' => $maxResults,
+            'next_page_token' => $events->getNextPageToken(),
+            'has_more_pages' => $events->getNextPageToken() !== null,
+            'total' => count($formattedEvents),
+        ];
+
+        return $pagination;
     }
 
-    public function getAuthUrl()
+    public function deleteEvent($eventId, $calendarId = null)
     {
-        return $this->client->createAuthUrl();
+        $calendarId = $calendarId ?? config('google.calendar_id');
+
+        if (!$calendarId) {
+            throw new \Exception("El ID del calendario no se encuentra configurado correctamente.");
+        }
+
+        if (!$eventId) {
+            throw new \Exception("El ID del evento es requerido para eliminar.");
+        }
+
+        try {
+            $this->calendar->events->delete($calendarId, $eventId);
+            return [
+                'success' => true,
+                'message' => "El evento con ID {$eventId} ha sido eliminado exitosamente."
+            ];
+        } catch (\Google_Service_Exception $e) {
+            throw new \Exception("Error al intentar eliminar el evento: " . $e->getMessage());
+        }
     }
 }

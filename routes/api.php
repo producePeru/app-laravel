@@ -7,6 +7,7 @@ use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\User\TokenController;
 // use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
+use App\Http\Controllers\Automatic\EmailSendController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
 use App\Http\Controllers\Dgtdif\SurveysController;
 use App\Http\Controllers\Download\DownloadActionsPlanController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\Selects\SelectController;
 use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\User\SupervisorController;
 use App\Http\Controllers\Fair\FairController;
+use App\Http\Controllers\Google\GoogleCalendarController;
 // use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
@@ -99,6 +101,7 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
     Route::post('register-views',   [UserController::class, 'registerViewsSeven']);
 
     Route::post('new-user-views',   [UserController::class, 'newUser']);     // REGISTRO PARA CADA USUARIO
+    Route::post('update-password',  [AuthController::class, 'updatePassword']);     // RESETEO DE PASSWORD
 
 });
 
@@ -200,7 +203,6 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::get('digital-routes',                [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
     Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
-
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -355,7 +357,7 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
     Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
     Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);
-
+    Route::post('/send-emails',         [EmailSendController::class, 'sendEmails']);            // nuevo desde home-25
 });
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -396,12 +398,13 @@ Route::group(['prefix' => 'ruta-digital', 'namespace' => 'App\Http\Controllers',
     Route::post('create',                       [RutaDigitalController::class, 'store']);
     Route::get('list',                         [RutaDigitalController::class, 'index']);
     Route::put('status/{id}',                         [RutaDigitalController::class, 'status']);
-
-
 });
-// Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function() {
-//     Route::post('index-calendar', [CertificadoPDFController::class, 'calendar']);
 
-// });
+
+Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::post('create-event',             [GoogleCalendarController::class, 'createEvent']);
+    Route::get('events-pnte',               [GoogleCalendarController::class, 'listEvents']);
+    Route::delete('delete-event-pnte/{id}',         [GoogleCalendarController::class, 'deleteEvent']);
+});
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {});

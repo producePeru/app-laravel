@@ -64,7 +64,7 @@ class AccountsCssProductInputs extends \Google\Service\Resource
    * @param CssProductInput $postBody
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string feedId Required. The primary or supplemental feed id. If
+   * @opt_param string feedId Optional. The primary or supplemental feed id. If
    * CSS Product already exists and feed id provided is different, then the CSS
    * Product will be moved to a new feed. Note: For now, CSSs do not need to
    * provide feed ids as we create feeds on the fly. We do not have supplemental
@@ -77,6 +77,35 @@ class AccountsCssProductInputs extends \Google\Service\Resource
     $params = ['parent' => $parent, 'postBody' => $postBody];
     $params = array_merge($params, $optParams);
     return $this->call('insert', [$params], CssProductInput::class);
+  }
+  /**
+   * Updates the existing Css Product input in your CSS Center account. After
+   * inserting, updating, or deleting a CSS Product input, it may take several
+   * minutes before the processed Css Product can be retrieved.
+   * (cssProductInputs.patch)
+   *
+   * @param string $name The name of the CSS Product input. Format:
+   * `accounts/{account}/cssProductInputs/{css_product_input}`
+   * @param CssProductInput $postBody
+   * @param array $optParams Optional parameters.
+   *
+   * @opt_param string updateMask The list of CSS product attributes to be
+   * updated. If the update mask is omitted, then it is treated as implied field
+   * mask equivalent to all fields that are populated (have a non-empty value).
+   * Attributes specified in the update mask without a value specified in the body
+   * will be deleted from the CSS product. Update mask can only be specified for
+   * top level fields in attributes and custom attributes. To specify the update
+   * mask for custom attributes you need to add the `custom_attribute.` prefix.
+   * Providing special "*" value for full CSS product replacement is not
+   * supported.
+   * @return CssProductInput
+   * @throws \Google\Service\Exception
+   */
+  public function patch($name, CssProductInput $postBody, $optParams = [])
+  {
+    $params = ['name' => $name, 'postBody' => $postBody];
+    $params = array_merge($params, $optParams);
+    return $this->call('patch', [$params], CssProductInput::class);
   }
 }
 

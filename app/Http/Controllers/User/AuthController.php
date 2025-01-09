@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt\Return_;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Token;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -19,8 +20,8 @@ class AuthController extends Controller
         $user_id = Auth::user()->id;
 
         $roleUser = DB::table('role_user')
-        ->where('user_id', $user_id)
-        ->first();
+            ->where('user_id', $user_id)
+            ->first();
 
         if ($user_id != $roleUser->user_id) {
             return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
@@ -122,7 +123,7 @@ class AuthController extends Controller
 
             $data = json_decode($response->getBody(), true);
 
-            if($data) {
+            if ($data) {
                 $tokenRecord->increment('count');
                 return response()->json(['data' => $data, 'status' => 200]);
             } else {
@@ -174,7 +175,7 @@ class AuthController extends Controller
             'dni' => 'required|string'
         ]);
 
-        if($user_dni == $request->dni) {
+        if ($user_dni == $request->dni) {
             $user = Auth::user();
 
             if (!Hash::check($request->current_password, $user->password)) {
@@ -186,5 +187,25 @@ class AuthController extends Controller
 
             return response()->json(['message' => 'Contraseña restablecida correctamente'], 200);
         }
+    }
+
+    public function updatePassword(Request $request)
+    {
+
+        $validated = $request->validate([
+            'id' => 'required|exists:users,id',
+            'password' => 'required|string|min:8',
+        ]);
+
+
+        $user = User::findOrFail($validated['id']);
+
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Contraseña actualizada con éxito',
+        ]);
     }
 }

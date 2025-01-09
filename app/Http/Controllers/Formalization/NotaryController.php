@@ -25,7 +25,6 @@ class NotaryController extends Controller
             Notary::create($data);
 
             return response()->json(['message' => 'Notaría registrada correctamente', 'status' => 200]);
-
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al registrar la notaría', 'status' => $e]);
         }
@@ -38,7 +37,6 @@ class NotaryController extends Controller
             $notary->delete();
 
             return response()->json(['message' => 'Notaría eliminada correctamente', 'status' => 200]);
-
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al eliminar la notaría', 'status' => 500]);
         }
@@ -51,32 +49,46 @@ class NotaryController extends Controller
             $notary->update($request->all());
 
             return response()->json(['message' => 'Notaría actualizada correctamente', 'status' => 200]);
-
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al actualizar la notaría', 'status' => 500]);
         }
     }
 
     // Filtros...
-    public function indexNotaryById(Request $request) {
+    public function indexNotaryById(Request $request)
+    {
         try {
-            $name = $request->input('name');
-            $cityId = $request->input('city_id');
-            $filters = [];
-            if ($name !== null) {
-                $filters['name'] = $name;
+            $name = $request->query('name'); // Obtener el parámetro 'name'
+            $cityId = $request->query('city_id'); // Obtener el parámetro 'city_id'
+
+            // Construir la consulta base con relaciones
+            $query = Notary::with(['city', 'province', 'district', 'user.profile']);
+
+            // Si se envía el parámetro 'name', aplicar los filtros
+            if ($name) {
+                $query->where('name', 'LIKE', '%' . $name . '%') // Filtrar por nombre del notario
+                    ->orWhereHas('city', function ($q) use ($name) {
+                        $q->where('name', 'LIKE', '%' . $name . '%'); // Filtrar por nombre de ciudad
+                    })
+                    ->orWhereHas('province', function ($q) use ($name) {
+                        $q->where('name', 'LIKE', '%' . $name . '%'); // Filtrar por nombre de provincia
+                    })
+                    ->orWhereHas('district', function ($q) use ($name) {
+                        $q->where('name', 'LIKE', '%' . $name . '%'); // Filtrar por nombre de distrito
+                    });
             }
-            if ($cityId !== null) {
-                $filters['city_id'] = $cityId;
+
+            // Si se envía el parámetro 'city_id', aplicar el filtro
+            if ($cityId) {
+                $query->where('city_id', $cityId); // Filtrar por ID de ciudad
             }
 
-            $notary = Notary::withNotariesById($filters);
+            // Obtener los resultados con paginación
+            $notaries = $query->paginate(200);
 
-            return response()->json($notary, 200);
-
+            return response()->json($notaries, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al listar las notarías', 'status' => 500]);
         }
-
     }
 }

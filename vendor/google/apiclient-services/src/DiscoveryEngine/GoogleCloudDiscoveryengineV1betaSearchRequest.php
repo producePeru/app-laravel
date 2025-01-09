@@ -55,6 +55,10 @@ class GoogleCloudDiscoveryengineV1betaSearchRequest extends \Google\Collection
    */
   public $offset;
   /**
+   * @var int
+   */
+  public $oneBoxPageSize;
+  /**
    * @var string
    */
   public $orderBy;
@@ -70,6 +74,8 @@ class GoogleCloudDiscoveryengineV1betaSearchRequest extends \Google\Collection
    * @var array[]
    */
   public $params;
+  protected $personalizationSpecType = GoogleCloudDiscoveryengineV1betaSearchRequestPersonalizationSpec::class;
+  protected $personalizationSpecDataType = '';
   /**
    * @var string
    */
@@ -84,6 +90,10 @@ class GoogleCloudDiscoveryengineV1betaSearchRequest extends \Google\Collection
    * @var string
    */
   public $regionCode;
+  /**
+   * @var string
+   */
+  public $relevanceThreshold;
   /**
    * @var bool
    */
@@ -282,6 +292,20 @@ class GoogleCloudDiscoveryengineV1betaSearchRequest extends \Google\Collection
     return $this->offset;
   }
   /**
+   * @param int
+   */
+  public function setOneBoxPageSize($oneBoxPageSize)
+  {
+    $this->oneBoxPageSize = $oneBoxPageSize;
+  }
+  /**
+   * @return int
+   */
+  public function getOneBoxPageSize()
+  {
+    return $this->oneBoxPageSize;
+  }
+  /**
    * @param string
    */
   public function setOrderBy($orderBy)
@@ -338,6 +362,20 @@ class GoogleCloudDiscoveryengineV1betaSearchRequest extends \Google\Collection
     return $this->params;
   }
   /**
+   * @param GoogleCloudDiscoveryengineV1betaSearchRequestPersonalizationSpec
+   */
+  public function setPersonalizationSpec(GoogleCloudDiscoveryengineV1betaSearchRequestPersonalizationSpec $personalizationSpec)
+  {
+    $this->personalizationSpec = $personalizationSpec;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1betaSearchRequestPersonalizationSpec
+   */
+  public function getPersonalizationSpec()
+  {
+    return $this->personalizationSpec;
+  }
+  /**
    * @param string
    */
   public function setQuery($query)
@@ -392,6 +430,20 @@ class GoogleCloudDiscoveryengineV1betaSearchRequest extends \Google\Collection
   public function getRegionCode()
   {
     return $this->regionCode;
+  }
+  /**
+   * @param string
+   */
+  public function setRelevanceThreshold($relevanceThreshold)
+  {
+    $this->relevanceThreshold = $relevanceThreshold;
+  }
+  /**
+   * @return string
+   */
+  public function getRelevanceThreshold()
+  {
+    return $this->relevanceThreshold;
   }
   /**
    * @param bool
