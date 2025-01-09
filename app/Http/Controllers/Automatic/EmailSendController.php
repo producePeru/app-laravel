@@ -30,14 +30,12 @@ class EmailSendController extends Controller
                 'status' => 200
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Error de validación
             return response()->json([
                 'message' => 'Validation error',
                 'errors' => $e->errors(),
                 'status' => 422
             ], 422);
         } catch (\Exception $e) {
-            // Error general
             return response()->json([
                 'message' => 'An error occurred while queuing emails.',
                 'error' => $e->getMessage(),
