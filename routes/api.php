@@ -7,6 +7,7 @@ use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\User\TokenController;
 // use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
+use App\Http\Controllers\Automatic\EmailSendController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
 use App\Http\Controllers\Dgtdif\SurveysController;
 use App\Http\Controllers\Download\DownloadActionsPlanController;
@@ -356,6 +357,7 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
     Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
     Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);
+    Route::post('/send-emails',         [EmailSendController::class, 'sendEmails']);            // nuevo desde home-25
 });
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
