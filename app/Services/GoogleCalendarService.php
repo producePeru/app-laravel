@@ -19,23 +19,18 @@ class GoogleCalendarService
         $this->calendar = new Calendar($this->client);
     }
 
-    public function createEvent(array $eventData)
+    public function createEvent(string $idCalendar, array $eventData)
     {
-        $calendarId = config('google');
-
-        // Depuración: Verifica el valor del calendarId
-        if (!$calendarId) {
-            throw new \Exception("El ID del calendario no se encuentra configurado correctamente.");
+        if (!$idCalendar) {
+            throw new \Exception("El ID del calendario no se encuentra configurado.");
         }
 
         $event = new \Google\Service\Calendar\Event($eventData);
-        return $this->calendar->events->insert(config('google.calendar_id'), $event);
+        return $this->calendar->events->insert($idCalendar, $event);
     }
 
-    public function listEvents($calendarId = null, $maxResults = 50, $pageToken = null, $search = null)
+    public function listEvents($calendarId, $maxResults = 50, $pageToken = null, $search = null)
     {
-        $calendarId = $calendarId ?? config('google.calendar_id');
-
         if (!$calendarId) {
             throw new \Exception("El ID del calendario no se encuentra configurado correctamente.");
         }
@@ -70,7 +65,6 @@ class GoogleCalendarService
 
         // Formatear los eventos
         $formattedEvents = [];
-
         foreach ($events->getItems() as $event) {
             $formattedEvents[] = [
                 'id' => $event->getId(),
@@ -98,6 +92,7 @@ class GoogleCalendarService
 
         return $pagination;
     }
+
 
     public function deleteEvent($eventId, $calendarId = null)
     {

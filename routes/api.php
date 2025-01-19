@@ -402,9 +402,9 @@ Route::group(['prefix' => 'ruta-digital', 'namespace' => 'App\Http\Controllers',
 
 
 Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::post('create-event',             [GoogleCalendarController::class, 'createEvent']);
-    Route::get('events-pnte',               [GoogleCalendarController::class, 'listEvents']);
-    Route::delete('delete-event-pnte/{id}',         [GoogleCalendarController::class, 'deleteEvent']);
+    Route::post('create-event',                     [GoogleCalendarController::class, 'createEvent']);
+    Route::get('events-pnte/{type}',                       [GoogleCalendarController::class, 'listEvents']);
+    Route::delete('delete-event-pnte/{id}/{type}',         [GoogleCalendarController::class, 'deleteEvent']);
 });
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {});

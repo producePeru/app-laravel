@@ -20,9 +20,10 @@ class GoogleCalendarController extends Controller
     {
         try {
             $validated = $request->validate([
+                'type' => 'required|string',
                 'summary' => 'required|string',
                 'start' => 'required|date',
-                'end' => 'required|date|after:start',
+                'end' => 'required|date',
                 'allDay' => 'required|boolean', // Determina si es todo el día (1 o 0)
                 'description' => 'nullable|string', // 'nullable' para permitir valores opcionales
             ]);
@@ -56,8 +57,14 @@ class GoogleCalendarController extends Controller
                 ];
             }
 
-            // Crear el evento utilizando el servicio
-            $event = $this->calendarService->createEvent($eventData);
+            $idCalendar = match ($validated['type']) {
+                'rooms' => "88b1022cca25012285652fcfcc1c9af8c2ea7d7ef31005e32b14b61c2604f8e3@group.calendar.google.com",
+                'events' => "7bec50060b58f4543de7386bdbdde4f931e7486f03dabd54e332258c82744b6c@group.calendar.google.com",
+                default => throw new \Exception("Tipo no válido para idCalendar"),
+            };
+
+
+            $event = $this->calendarService->createEvent($idCalendar, $eventData);
 
             return response()->json(['status' => 200, 'message' => 'Evento creado', 'event' => $event]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -80,23 +87,43 @@ class GoogleCalendarController extends Controller
 
 
 
-    public function listEvents(Request $request)
+    public function listEvents(Request $request, $type)
     {
         try {
+
+            $idCalendar = match ($type) {
+                'rooms' => "88b1022cca25012285652fcfcc1c9af8c2ea7d7ef31005e32b14b61c2604f8e3@group.calendar.google.com",
+                'events' => "7bec50060b58f4543de7386bdbdde4f931e7486f03dabd54e332258c82744b6c@group.calendar.google.com",
+                default => throw new \Exception("Tipo no válido: $type"),
+            };
+
             $search = $request->input('search');
             $pageToken = $request->input('pageToken');
-            $events = $this->calendarService->listEvents(null, 50, $pageToken, $search);
+
+            $events = $this->calendarService->listEvents($idCalendar, 50, $pageToken, $search);
+
             return response()->json($events);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function deleteEvent($eventId)
+
+
+
+    public function deleteEvent($eventId, $type)
     {
         try {
-            $response = $this->calendarService->deleteEvent($eventId);
-            return response()->json(['status' => 200, 'message' => 'Evento eliminado', 'response' => $response]);
+
+            $idCalendar = match ($type) {
+                'room' => "88b1022cca25012285652fcfcc1c9af8c2ea7d7ef31005e32b14b61c2604f8e3@group.calendar.google.com",
+                'event' => "7bec50060b58f4543de7386bdbdde4f931e7486f03dabd54e332258c82744b6c@group.calendar.google.com",
+                default => throw new \Exception("Tipo no válido: $type"),
+            };
+
+            $response = $this->calendarService->deleteEvent($eventId, $idCalendar);
+
+            return response()->json(['status' => 200, 'message' => 'Registro eliminado', 'response' => $response]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
