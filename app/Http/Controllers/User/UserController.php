@@ -109,7 +109,7 @@ class UserController extends Controller
                     "usuarios-nuevo",
                     "usuarios-lista"
                 ], //supervisor
-                2 => ["home", "asesorias", "asesorias-formalizaciones", "solicitantes", "notarias"], //asesor
+                2 => ["home", "asesorias", "asesorias-listado", "asesorias-formalizaciones", "solicitantes", "notarias"], //asesor
                 3 => ["drive-mis-archivos", "drive-subir-archivo", "drive-mis-carpetas", "usuarios-nuevo"], //driver admin
                 4 => ["drive-mis-archivos", "drive-subir-archivo"], //driver user
             ];
@@ -205,7 +205,7 @@ class UserController extends Controller
             ->join('cdes', 'profiles.cde_id', '=', 'cdes.id')
             ->join('offices', 'profiles.office_id', '=', 'offices.id')
             ->join('genders', 'profiles.gender_id', '=', 'genders.id')
-            ->whereIn('role_user.role_id', [1, 2, 7])                                       // 1 supervisor, 2 asesor, 7 notarios
+            ->whereIn('role_user.role_id', [1, 2, 7, 13])                                       // 1 supervisor, 2 asesor, 7 notarios
             ->select(
                 'role_user.role_id as role_user',
                 'users.id as user_id',
@@ -223,7 +223,7 @@ class UserController extends Controller
                 'cdes.id as cde_id',
                 'genders.id as gender_id',
                 'offices.id as office_id',
-            );
+            )->orderBy('profiles.created_at', 'desc');
 
         // Aplicar la búsqueda
         if ($search) {
@@ -352,7 +352,8 @@ class UserController extends Controller
             'cde_id'        => $request->input('cde_id'),
             'office_id'     => $request->input('office_id'),
             'user_id'       => $request->input('user_id'),
-            'notary_id'     => $request->input('notary_id')
+            'notary_id'     => $request->input('notary_id'),
+            'agentname'     => $request->input('agentname'),
         ]);
 
         return response()->json(['message' => 'Perfil creado', 'status' => 200]);
@@ -372,7 +373,7 @@ class UserController extends Controller
     public function registerViewsSeven(Request $request)        // asesores externos notarios
     {
         View::create([
-            'views'     => json_encode(["home", "asesorias", "asesorias-formalizaciones", "solicitantes"]),
+            'views'     => json_encode(["home", "asesorias", "asesorias-formalizaciones", "asesorias-listado","solicitantes"]),
             'user_id'   => $request->input('user_id')
         ]);
         return response()->json(['message' => 'Vista asignadas', 'status' => 200]);

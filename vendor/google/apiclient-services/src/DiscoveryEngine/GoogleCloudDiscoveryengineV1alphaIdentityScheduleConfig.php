@@ -19,11 +19,27 @@ namespace Google\Service\DiscoveryEngine;
 
 class GoogleCloudDiscoveryengineV1alphaIdentityScheduleConfig extends \Google\Model
 {
+  protected $nextSyncTimeType = GoogleTypeDateTime::class;
+  protected $nextSyncTimeDataType = '';
   /**
    * @var string
    */
   public $refreshInterval;
 
+  /**
+   * @param GoogleTypeDateTime
+   */
+  public function setNextSyncTime(GoogleTypeDateTime $nextSyncTime)
+  {
+    $this->nextSyncTime = $nextSyncTime;
+  }
+  /**
+   * @return GoogleTypeDateTime
+   */
+  public function getNextSyncTime()
+  {
+    return $this->nextSyncTime;
+  }
   /**
    * @param string
    */
