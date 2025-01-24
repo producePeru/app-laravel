@@ -15,6 +15,7 @@ class AttendanceController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $year = $request->input('year');
 
         $query = Attendance::with([
             'attendanceList',
@@ -26,6 +27,9 @@ class AttendanceController extends Controller
         ])
             ->withCount('attendanceList')
             ->search($search)
+            ->when($year, function ($q) use ($year) {
+                $q->whereYear('created_at', $year);
+            })
             ->orderBy('created_at', 'desc');
 
 
@@ -55,7 +59,8 @@ class AttendanceController extends Controller
                 'asesor' => $item->asesor
                     ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
                     : null,
-                'description' => $item->description ?? null
+                'description' => $item->description ?? null,
+                'created_at' => Carbon::parse($item->created_at)->format('d-m-Y')
             ];
         });
 
@@ -107,7 +112,7 @@ class AttendanceController extends Controller
 
         if (
             in_array(5, $role_array) ||
-            in_array(10, $role_array)
+            in_array(1, $role_array)
         ) {
             // Encuentra el registro por su ID
             $registro = Attendance::findOrFail($id);
@@ -138,6 +143,21 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Sin acceso', 'status' => 500]);
         }
     }
+
+    public function delete($id)
+    {
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+
+        if (in_array(5, $role_array) || in_array(1, $role_array)) {
+            $registro = Attendance::findOrFail($id);
+            $registro->delete();
+            return response()->json(['message' => 'Registro eliminado con éxito', 'status' => 200]);
+        } else {
+            return response()->json(['message' => 'Sin acceso', 'status' => 403]);
+        }
+    }
+
 
     public function show($slug)
     {
@@ -229,7 +249,7 @@ class AttendanceController extends Controller
             'list'
         ])
             ->where('attendancelist_id', $attendance->id)
-            ->search($search)
+            ->searchApplicants($search)
             ->orderBy('created_at', 'desc');
 
         $data = $query->paginate(50);

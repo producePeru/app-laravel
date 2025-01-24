@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 class Attendance extends Model
 {
     use HasFactory;
+
+    use SoftDeletes;
 
     protected $table = 'attendancelist';
 
@@ -59,20 +61,8 @@ class Attendance extends Model
     public function scopeSearch($query, $search)
     {
         if ($search) {
-            return $query->where('title', 'like', '%' . $search . '%')
-                ->orWhere('description', 'like', '%' . $search . '%')
-                ->orWhere('typeFair', 'like', '%' . $search . '%')
-                ->orWhereHas('region', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
-                })
-                ->orWhereHas('provincia', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
-                })
-                ->orWhereHas('profile', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
-                });
+            return $query->where('title', 'like', '%' . $search . '%');
         }
         return $query;
     }
-
 }

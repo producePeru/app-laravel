@@ -68,4 +68,20 @@ class AttendanceList extends Model
         }
         return $query;
     }
+
+
+    public function scopeSearchApplicants($query, $search)
+    {
+        if ($search) {
+            return $query->where(function ($q) use ($search) {
+                $q->whereRaw("CONCAT(name, ' ', lastname, ' ', middlename) LIKE ?", ['%' . $search . '%'])
+                    ->orWhere('documentnumber', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('ruc', 'like', '%' . $search . '%')
+                    ->orWhere('socialReason', 'like', '%' . $search . '%');
+            });
+        }
+
+        return $query;
+    }
 }

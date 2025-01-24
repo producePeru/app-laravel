@@ -88,6 +88,7 @@ class UserController extends Controller
             $profile->birthday = $request->birthday;
             $profile->sick = $request->sick;
             $profile->phone = $request->phone;
+            $profile->email = $request->email;
             $profile->user_id = $user->id;
             $profile->gender_id = $request->gender_id;
             $profile->cde_id = $request->cde_id;

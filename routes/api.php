@@ -187,9 +187,9 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
     Route::get('formalizations-20', [HistorialController::class, 'historialFormalizations20']);
 
     //filters
-    Route::get('advisories/filters', [HistorialController::class, 'filterHistorialAdvisoriesByDates']);
-    Route::get('formalizations-10/filters', [HistorialController::class, 'filterHistorialFormalizations10ByDates']);
-    Route::get('formalizations-20/filters', [HistorialController::class, 'filterHistorialFormalizations20ByDates']);
+    Route::get('advisories/filters',                [HistorialController::class, 'filterHistorialAdvisoriesByDates']);
+    Route::get('formalizations-10/filters',         [HistorialController::class, 'filterHistorialFormalizations10ByDates']);
+    Route::get('formalizations-20/filters',         [HistorialController::class, 'filterHistorialFormalizations20ByDates']);
 
     //registros-historial
     Route::get('registers/{idPeople}', [HistorialController::class, 'getByPeopleIdRegisters']);
@@ -227,14 +227,14 @@ Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], func
 // });
 
 Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::post('comercial-activities', [CreateController::class, 'postComercialActivities']);
-    Route::post('office', [CreateController::class, 'createOffice']);
-    Route::post('economic-sector', [CreateController::class, 'createEconomicSector']);
-    Route::post('component', [CreateController::class, 'createNewComponent']);
-    Route::post('theme', [CreateController::class, 'createNewTheme']);
+    Route::post('comercial-activities',         [CreateController::class, 'postComercialActivities']);
+    Route::post('office',                       [CreateController::class, 'createOffice']);
+    Route::post('economic-sector',              [CreateController::class, 'createEconomicSector']);
+    Route::post('component',                    [CreateController::class, 'createNewComponent']);
+    Route::post('theme',                        [CreateController::class, 'createNewTheme']);
     // Route::post('economic-sector', [CreateController::class, 'createNewEconomicSector']);
-    Route::post('cde-notary', [CreateController::class, 'createCdeNotary']);            //crea automaticamente la cde del asesor externo notario
-
+    Route::post('cde-notary',                   [CreateController::class, 'createCdeNotary']);            //crea automaticamente la cde del asesor externo notario
+    Route::post('cde',                          [CreateController::class, 'createCde']);
 });
 
 Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -377,9 +377,8 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
     Route::get('list',                          [AttendanceController::class, 'index']);
     Route::post('create',                       [AttendanceController::class, 'create']);
     Route::put('update/{id}',                   [AttendanceController::class, 'update']);
-
+    Route::delete('delete/{id}',                [AttendanceController::class, 'delete']);
     Route::get('applicants/{slug}',             [AttendanceController::class, 'attendaceApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
-
     Route::put('status-participant/{id}',       [AttendanceController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
     Route::delete('delete-participant/{id}',    [AttendanceController::class, 'destroyParticipant']);       // delete PARTICIPAnte
 });

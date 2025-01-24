@@ -125,7 +125,24 @@ class CreateController extends Controller
         }
 
         return response()->json($cde->id);
-
     }
 
+    public function createCde(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string',
+            'city' => 'required|string',
+            'province' => 'required|string',
+            'district' => 'required|string',
+            'address' => 'required|string',
+        ]);
+
+        $cde = Cde::create($data);
+
+        return response()->json([
+            'message' => 'Creado correctamente',
+            'status' => 200,
+            'id' => $cde->id,
+        ]);
+    }
 }

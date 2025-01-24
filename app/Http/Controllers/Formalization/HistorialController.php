@@ -92,7 +92,8 @@ class HistorialController extends Controller
             'people_id' => $request->input('people_id'),
             'dateStart' => $request->input('dateStart'),
             'dateEnd' => $request->input('dateEnd'),
-            'city_id' => $request->input('city_id')
+            'city_id' => $request->input('city_id'),
+            'year' => $request->year
         ];
 
         $userRole = getUserRole();                              //🚩
@@ -119,7 +120,8 @@ class HistorialController extends Controller
             'people_id' => $request->input('people_id'),
             'dateStart' => $request->input('dateStart'),
             'dateEnd' => $request->input('dateEnd'),
-            'city_id' => $request->input('city_id')
+            'city_id' => $request->input('city_id'),
+            'year' => $request->year
         ];
 
         $userRole = getUserRole();
@@ -143,7 +145,8 @@ class HistorialController extends Controller
             'people_id' => $request->input('people_id'),
             'dateStart' => $request->input('dateStart'),
             'dateEnd' => $request->input('dateEnd'),
-            'city_id' => $request->input('city_id')
+            'city_id' => $request->input('city_id'),
+            'year' => $request->year
         ];
 
         $userRole = getUserRole();
