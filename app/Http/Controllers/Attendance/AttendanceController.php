@@ -69,78 +69,69 @@ class AttendanceController extends Controller
 
     public function create(Request $request)
     {
-        $user_role = getUserRole();
+        try {
 
-        $role_array = $user_role['role_id'];
-
-        if (
-            in_array(5, $role_array) ||
-            in_array(1, $role_array)
-        ) {
             $user_role = getUserRole();
-            $user_id = $user_role['user_id'];
+            $role_array = $user_role['role_id'];
 
-            $data = $request->all();
+            if (
+                in_array(5, $role_array) ||
+                in_array(1, $role_array)
+            ) {
 
-            $slug = Str::slug($data['title']);
+                $user_role = getUserRole();
+                $user_id = $user_role['user_id'];
 
-            $originalSlug = $slug;
+                $data = $request->all();
 
-            $count = 1;
+                $slug = Str::slug($data['title']);
 
-            while (Attendance::where('slug', $slug)->exists()) {
-                $slug = $originalSlug . '-' . $count;
-                $count++;
+                if (Attendance::where('slug', $slug)->exists()) {
+                    $slug .= '-' . now()->format('His');
+                }
+
+                $data['slug'] = $slug;
+                $data['user_id'] = $user_id;
+
+                Attendance::create($data);
+
+                return response()->json(['message' => 'Evento creado con éxito', 'status' => 200]);
             }
-
-            $data['slug'] = $slug;
-            $data['user_id'] = $user_id;
-
-            Attendance::create($data);
-
-            return response()->json(['message' => 'Evento creado con éxito', 'status' => 200]);
-        } else {
-            return response()->json(['message' => 'Sin acceso', 'status' => 500]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error de registro', 'status' => 500, 'error' => $e], 500);
         }
     }
 
     public function update(Request $request, string $id)
     {
-        $user_role = getUserRole();
+        try {
+            $user_role = getUserRole();
+            $role_array = $user_role['role_id'];
 
-        $role_array = $user_role['role_id'];
+            if (
+                in_array(5, $role_array) ||
+                in_array(1, $role_array)
+            ) {
 
-        if (
-            in_array(5, $role_array) ||
-            in_array(1, $role_array)
-        ) {
-            // Encuentra el registro por su ID
-            $registro = Attendance::findOrFail($id);
+                $registro = Attendance::findOrFail($id);
+                $data = $request->all();
 
-            // Toma todos los datos enviados en el request
-            $data = $request->all();
+                if (isset($data['title'])) {
+                    $slug = Str::slug($data['title']);
 
-            // Solo regenerar el slug si el título fue actualizado
-            if (isset($data['title'])) {
-                $slug = Str::slug($data['title']);
-                $originalSlug = $slug;
-                $count = 1;
+                    if (Attendance::where('slug', $slug)->exists()) {
+                        $slug .= '-' . now()->format('His');
+                    }
 
-                // Asegurarse de que el nuevo slug sea único
-                while (Attendance::where('slug', $slug)->where('id', '!=', $id)->exists()) {
-                    $slug = $originalSlug . '-' . $count;
-                    $count++;
+                    $data['slug'] = $slug;
                 }
 
-                $data['slug'] = $slug;
+                $registro->update($data);
+
+                return response()->json(['message' => 'Registro actualizado con éxito', 'status' => 200]);
             }
-
-            // Actualizar los datos, incluido el slug si fue modificado
-            $registro->update($data);
-
-            return response()->json(['message' => 'Registro actualizado con éxito', 'status' => 200]);
-        } else {
-            return response()->json(['message' => 'Sin acceso', 'status' => 500]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error de registro', 'status' => 500, 'error' => $e], 500);
         }
     }
 
