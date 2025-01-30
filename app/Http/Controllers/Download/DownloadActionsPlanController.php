@@ -9,6 +9,7 @@ use App\Models\ActionPlans;
 
 use App\Exports\ActionPlansExport;
 use Carbon\Carbon;
+
 Carbon::setLocale('es');
 
 class DownloadActionsPlanController extends Controller
@@ -18,48 +19,36 @@ class DownloadActionsPlanController extends Controller
         $user_role = getUserRole();
         $role_array = $user_role['role_id'];
 
-        $query = ActionPlans::with([
-            'user.profile:id,user_id,name,lastname,middlename,notary_id,cde_id,documentnumber',
-            'cde',
-            'businessman',
-            'businessman.city:id,name',
-            'businessman.province:id,name',
-            'businessman.district:id,name',
-            'businessman.gender:id,avr',
-            'component1'
-        ]);
+        $data = collect($request->all());
+
 
         if (in_array(2, $role_array) || in_array(7, $role_array)) {
-            $query->where('asesor_id', $user_role['user_id']);
+            $data = $data->where('asesor_dni', $user_role['user_id']);
         }
-
-        $query->latest();
-
-        $data = $query->get();
 
         $result = $data->map(function ($item, $index) {
             return [
                 'index' => $index + 1,
-                'centro_empresa' => $item->cde->name,
-                'asesor' => $item->user->profile->name.' '.$item->user->profile->lastname.' '.$item->user->profile->middlename,
-                // 'asesor DNI' => $item->user->profile->documentnumber,
-                'emprendedor_region' => $item->businessman->city->name,
-                'emprendedor_provincia' => $item->businessman->province->name,
-                'emprendedor_distrito' => $item->businessman->district->name,
-                'emprendedor_nombres' => $item->businessman->name.' '.$item->businessman->lastname.' '.$item->businessman->middlename,
-                'ruc' => optional($item)->ruc ?? 'En trámite',
-                'genero' => $item->businessman->gender->avr,
-                'discapacidad' => $item->businessman->sick,
-                'component_1' => optional($item->component1)->name ?? '-',
-                'component_2' => optional($item->component2)->name ?? '-',
-                'component_3' => optional($item->component3)->name ?? '-',
-                'numberSessions' => $item->numberSessions,
-                'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
-                'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
-                'totalDate' => $item->totalDate,
-                'actaCompromiso' => $item->actaCompromiso,
-                'envioCorreo' => $item->envioCorreo,
-                'updated_at' => Carbon::parse($item->created_at)->format('d/m/Y'),
+                'centro_empresa' => $item['centro_empresa'] ?? '',
+                'asesor' => $item['asesor'] ?? '',
+                'emprendedor_region' => $item['emprendedor_region'] ?? '',
+                'emprendedor_provincia' => $item['emprendedor_provincia'] ?? '',
+                'emprendedor_distrito' => $item['emprendedor_distrito'] ?? '',
+                'emprendedor_nombres' => $item['emprendedor_nombres'] ?? '',
+                // 'emprendedor_dni' => $item['emprendedor_dni'] ?? '',
+                'ruc' => $item['ruc'] ?? 'En trámite',
+                'genero' => $item['genero'] ?? '',
+                'discapacidad' => $item['discapacidad'] ?? '',
+                'component_1' => $item['component_1'] ?? '-',
+                'component_2' => $item['component_2'] ?? '-',
+                'component_3' => $item['component_3'] ?? '-',
+                'numberSessions' => $item['numberSessions'] ?? 0,
+                'startDate' => isset($item['startDate']) ? Carbon::parse($item['startDate'])->format('d/m/Y') : '',
+                'endDate' => isset($item['endDate']) ? Carbon::parse($item['endDate'])->format('d/m/Y') : '',
+                'totalDate' => $item['totalDate'] ?? 0,
+                'actaCompromiso' => $item['actaCompromiso'] ?? null,
+                'envioCorreo' => $item['envioCorreo'] ?? null,
+                'updated_at' => isset($item['updated_at']) ? Carbon::parse($item['updated_at'])->format('d/m/Y') : ''
             ];
         });
 
@@ -70,4 +59,3 @@ class DownloadActionsPlanController extends Controller
 }
 
 // php artisan make:export ActionPlansExport
-

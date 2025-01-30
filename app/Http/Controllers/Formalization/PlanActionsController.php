@@ -190,7 +190,7 @@ class PlanActionsController extends Controller
             $advisoryComponents = $advisories->take(2);
             foreach ($advisoryComponents as $index => $advisory) {
                 if (! in_array($advisory->component->id, $addedComponents)) {
-                    $components['component_'.($index + 2)] = $advisory->component->id;
+                    $components['component_' . ($index + 2)] = $advisory->component->id;
                     $addedComponents[] = $advisory->component->id;
                 }
             }
@@ -242,6 +242,7 @@ class PlanActionsController extends Controller
         $user_role = getUserRole();
         $role_array = $user_role['role_id'];
         $search = $request->input('search');
+        $year = $request->input('year');
 
         $query = ActionPlans::with([
             'user.profile:id,user_id,name,lastname,middlename,notary_id,cde_id,documentnumber',
@@ -254,7 +255,12 @@ class PlanActionsController extends Controller
             'component1',
             'component2',
             'component3',
-        ])->search($search)
+
+        ])
+            ->when($year, function ($q) use ($year) {
+                $q->whereYear('created_at', $year);
+            })
+            ->search($search)
             ->orderBy('created_at', 'desc');
 
         // Filtrar por roles
@@ -270,6 +276,45 @@ class PlanActionsController extends Controller
 
         return response()->json(['data' => $data, 'status' => 200]);
     }
+
+    public function allWithoutPagination(Request $request)
+    {
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+        $search = $request->input('search');
+        $year = $request->input('year');
+
+        $query = ActionPlans::with([
+            'user.profile:id,user_id,name,lastname,middlename,notary_id,cde_id,documentnumber',
+            'cde',
+            'businessman',
+            'businessman.city:id,name',
+            'businessman.province:id,name',
+            'businessman.district:id,name',
+            'businessman.gender:id,avr',
+            'component1',
+            'component2',
+            'component3',
+        ])
+            ->when($year, function ($q) use ($year) {
+                $q->whereYear('created_at', $year);
+            })
+            ->search($search)
+            ->orderBy('created_at', 'desc');
+
+        if (in_array(2, $role_array) && !in_array(1, $role_array)) {
+            $query->where('asesor_id', $user_role['user_id']);
+        }
+
+        $data = $query->get();
+
+        $transformedData = $data->map(function ($item) {
+            return $this->transformActionPlan($item);
+        })->values();
+
+        return response()->json(['data' => $transformedData, 'status' => 200]);
+    }
+
 
     private function transformActionPlan($item)
     {
@@ -308,7 +353,7 @@ class PlanActionsController extends Controller
 
     private function formatFullName($profile)
     {
-        return $profile->name.' '.$profile->lastname.' '.$profile->middlename;
+        return $profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename;
     }
 
     public function editComponent(Request $request)
@@ -363,9 +408,9 @@ class PlanActionsController extends Controller
             $actionPlan->{$validatedData['type']} = $validatedData['value'];
             $actionPlan->save();
 
-            return response()->json(['message' => ucfirst($validatedData['type']).' actualizado exitosamente.', 'status' => 200]);
+            return response()->json(['message' => ucfirst($validatedData['type']) . ' actualizado exitosamente.', 'status' => 200]);
         } else {
-            return response()->json(['message' => 'El campo '.$validatedData['type'].' ya tiene un valor y no se puede actualizar.', 'status' => 400]);
+            return response()->json(['message' => 'El campo ' . $validatedData['type'] . ' ya tiene un valor y no se puede actualizar.', 'status' => 400]);
         }
     }
 
@@ -424,7 +469,6 @@ class PlanActionsController extends Controller
             } else {
                 return response()->json(['message' => 'Action Plan not found'], 404);
             }
-
         }
     }
 

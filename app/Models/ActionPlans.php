@@ -68,34 +68,16 @@ class ActionPlans extends Model
     {
         if ($search) {
             $query->where(function ($q) use ($search) {
+                // Buscar por nombre completo (empieza con)
                 $q->whereHas('user.profile', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('lastname', 'like', "%{$search}%")
-                        ->orWhere('middlename', 'like', "%{$search}%");
+                    $q->whereRaw("CONCAT(name, ' ', lastname, ' ', middlename) LIKE ?", ["{$search}%"]);
                 })
-                    ->orWhereHas('cde', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('businessman.city', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('businessman.province', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('businessman.district', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('businessman', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%")
-                            ->orWhere('lastname', 'like', "%{$search}%")
-                            ->orWhere('middlename', 'like', "%{$search}%")
-                            ->orWhere('ruc', 'like', "%{$search}%");
-                    })
-                    ->orWhere('component_1', 'like', "%{$search}%")
-                    ->orWhere('component_2', 'like', "%{$search}%")
-                    ->orWhere('component_3', 'like', "%{$search}%")
-                    ->orWhere('startDate', 'like', "%{$search}%")
-                    ->orWhere('endDate', 'like', "%{$search}%");
+                // Buscar por número de documento (documentnumber)
+                ->orWhereHas('user.profile', function ($q) use ($search) {
+                    $q->where('documentnumber', 'like', "%{$search}%");
+                })
+                // Buscar por RUC
+                ->orWhere('ruc', 'like', "%{$search}%");
             });
         }
     }

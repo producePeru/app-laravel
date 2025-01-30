@@ -199,9 +199,10 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('asesories',                     [DownloadFormalizationsController::class, 'exportAsesories']);
     Route::get('formalizations-ruc10',          [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
     Route::get('formalizations-ruc20',          [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
-    Route::get('actions-plans',                 [DownloadActionsPlanController::class, 'exportActionPlans']);
+    Route::post('actions-plans',                [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
-    Route::get('digital-routes',                [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
+    Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
+    Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportDigitalRouter']);
     Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
 });
 
@@ -329,15 +330,16 @@ Route::group(['prefix' => 'mype', 'namespace' => 'App\Http\Controllers', 'middle
 });
 
 Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list', [PlanActionsController::class, 'index']);
-    Route::get('components/{ruc}', [PlanActionsController::class, 'listAllServicesAF']);
-    Route::post('create', [PlanActionsController::class, 'store']);
-    Route::put('edit-component', [PlanActionsController::class, 'editComponent']);
-    Route::put('edit-yes-no', [PlanActionsController::class, 'updateField']);
-    Route::post('update', [PlanActionsController::class, 'update']);
-    Route::delete('delete/{id}', [PlanActionsController::class, 'delete']);
-    Route::put('status/{id}/{status}', [PlanActionsController::class, 'changeStatus']);
-    Route::put('details', [PlanActionsController::class, 'sendMessageDetails']);
+    Route::get('list',                      [PlanActionsController::class, 'index']);
+    Route::get('list-all',                  [PlanActionsController::class, 'allWithoutPagination']);
+    Route::get('components/{ruc}',          [PlanActionsController::class, 'listAllServicesAF']);
+    Route::post('create',                   [PlanActionsController::class, 'store']);
+    Route::put('edit-component',            [PlanActionsController::class, 'editComponent']);
+    Route::put('edit-yes-no',               [PlanActionsController::class, 'updateField']);
+    Route::post('update',                   [PlanActionsController::class, 'update']);
+    Route::delete('delete/{id}',            [PlanActionsController::class, 'delete']);
+    Route::put('status/{id}/{status}',      [PlanActionsController::class, 'changeStatus']);
+    Route::put('details',                   [PlanActionsController::class, 'sendMessageDetails']);
 });
 
 Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -375,6 +377,7 @@ Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middle
 
 Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list',                          [AttendanceController::class, 'index']);
+    Route::get('list-all',                      [AttendanceController::class, 'allWithoutPagination']);
     Route::post('create',                       [AttendanceController::class, 'create']);
     Route::put('update/{id}',                   [AttendanceController::class, 'update']);
     Route::delete('delete/{id}',                [AttendanceController::class, 'delete']);
@@ -395,8 +398,9 @@ Route::group(['prefix' => 'ruta-digital', 'namespace' => 'App\Http\Controllers',
     Route::post('businessman',                  [RutaDigitalController::class, 'businessman']);         // si existe lo creas si no lo editas
     Route::post('mype',                         [RutaDigitalController::class, 'mype']);                // si existe lo creas si no lo editas
     Route::post('create',                       [RutaDigitalController::class, 'store']);
-    Route::get('list',                         [RutaDigitalController::class, 'index']);
-    Route::put('status/{id}',                         [RutaDigitalController::class, 'status']);
+    Route::get('list',                          [RutaDigitalController::class, 'index']);
+    Route::get('list-all',                      [RutaDigitalController::class, 'allWithoutPagination']);
+    Route::put('status/{id}',                   [RutaDigitalController::class, 'status']);
 });
 
 

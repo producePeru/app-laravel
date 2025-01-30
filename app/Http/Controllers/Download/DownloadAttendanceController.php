@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Download;
 
 use App\Exports\AttendanceExport;
+use App\Exports\AttendanceListExport;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
@@ -12,6 +13,47 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class DownloadAttendanceController extends Controller
 {
+
+    public function exportDigitalRouter(Request $request)
+    {
+        $user_role = getUserRole();
+        $role_array = $user_role['role_id'];
+
+        $data = collect($request->all());
+
+        if (in_array(1, $role_array) || in_array(5, $role_array)) {
+
+        } elseif (in_array(2, $role_array) || in_array(7, $role_array)) {
+
+            $data = $data->where('asesor_dni', $user_role['user_id']);
+
+        } else {
+            return response()->json(['error' => 'Unauthorized', 'status' => 409]);
+        }
+
+        $result = $data->map(function ($item, $index) {
+
+            return [
+                'index' => $index + 1,
+                'title' => $item['title'],
+                'attendance_list_count' => $item['attendance_list_count'],
+                'startDate' => $item['startDate'],
+                'endDate' => $item['endDate'],
+                'modality' => $item['modality'] == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
+                'city' => $item['city'],
+                'province' => $item['province'],
+                'district' => $item['district'],
+                'asesor' => $item['asesor'],
+                'profile_creater' => $item['profile'],
+                'description' => $item['description'],
+                'created_at' => $item['created_at']
+
+            ];
+        });
+
+        return Excel::download(new AttendanceListExport($result), 'attendances.xlsx');
+
+    }
     public function exportAttendance($slug)
     {
 

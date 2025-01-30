@@ -16,6 +16,7 @@ class AttendanceController extends Controller
     {
         $search = $request->input('search');
         $year = $request->input('year');
+        $orderBy = $request->input('order_by'); // 'desc' por defecto si no se envía
 
         $query = Attendance::with([
             'attendanceList',
@@ -29,13 +30,18 @@ class AttendanceController extends Controller
             ->search($search)
             ->when($year, function ($q) use ($year) {
                 $q->whereYear('created_at', $year);
-            })
-            ->orderBy('created_at', 'desc');
+            });
 
+
+        if (in_array($orderBy, ['asc', 'desc'])) {
+            $query->orderBy('attendance_list_count', $orderBy);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
 
         $data = $query->paginate(50);
 
-
+        // Transformar los datos
         $data->getCollection()->transform(function ($item) {
             return [
                 'id' => $item->id,
@@ -66,6 +72,70 @@ class AttendanceController extends Controller
 
         return response()->json(['data' => $data]);
     }
+
+
+
+    public function allWithoutPagination(Request $request)
+    {
+
+        $search = $request->input('search');
+        $year = $request->input('year');
+        $orderBy = $request->input('order_by');
+
+        $query = Attendance::with([
+            'attendanceList',
+            'region',
+            'provincia',
+            'distrito',
+            'profile:id,user_id,name,lastname,middlename',
+            'asesor'
+        ])
+            ->withCount('attendanceList')
+            ->search($search)
+            ->when($year, function ($q) use ($year) {
+                $q->whereYear('created_at', $year);
+            });
+
+        if (in_array($orderBy, ['asc', 'desc'])) {
+            $query->orderBy('attendance_list_count', $orderBy);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $data = $query->get();
+
+        // Transformar los datos
+        $transformedData = $data->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'attendance_list_count' => $item->attendance_list_count,
+                'slug' => $item->slug,
+                'title' => $item->title,
+                'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
+                'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
+                'startDate2' => $item->startDate,
+                'endDate2' => $item->endDate,
+                'modality' => $item->modality,
+                'city' => $item->region->name,
+                'province' => $item->provincia->name,
+                'district' => $item->distrito->name,
+                'city_id' => $item->region->id,
+                'address' => $item->address ?? null,
+                'province_id' => $item->provincia->id,
+                'district_id' => $item->distrito->id,
+                'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
+                'people_id' => $item->asesor->id ?? null,
+                'asesor' => $item->asesor
+                    ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
+                    : null,
+                'description' => $item->description ?? null,
+                'created_at' => Carbon::parse($item->created_at)->format('d-m-Y')
+            ];
+        });
+
+        return response()->json(['data' => $transformedData]);
+    }
+
 
     public function create(Request $request)
     {
