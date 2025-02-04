@@ -63,13 +63,13 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::get('data/{slug}',           [FairController::class, 'show']);                       // TRAE LA FERIA POR SLUG
     Route::get('search-api-ruc/{ruc}',  [MypeController::class, 'apiRUC']);                     // BUSCA DATOS A PARTIR DEL RUC
     Route::post('first-or-new',         [MypeController::class, 'registerMype']);               // PASO 1 CREA O EDITA UNA MYPE
-    Route::get('search-api-dni/{dni}',  [PersonController::class, 'apiDNI']);                   // BUSCA DATOS A PARTIR DEL DNI
+    Route::get('search-api-dni/{dni}',  [PersonController::class, 'apiDNI']);                   // BUSCA DATOS A PARTIR DEL DNI ***
     Route::post('create-up',            [PersonController::class, 'createUpdate']);             // PASO 2 EDITA O CREA UN USUARIO PERSON
     Route::post('mype/{ruc}',           [FairController::class, 'updateFieldsMypeFair']);       // PASO 3 actualiza los campos faltantes de la mype
     Route::post('postulate',            [FairController::class, 'postulateFair']);              // POSTULAR EN FERIA
 
     Route::post('survey',               [SurveysController::class, 'store']);              // ENCUESTAS 3° PISO
-    Route::get('surveys',          [SurveysController::class, 'index']);              // ENCUESTAS 3° PISO
+    Route::get('surveys',               [SurveysController::class, 'index']);              // ENCUESTAS 3° PISO
 
     Route::get('data-attendance/{slug}',           [AttendanceController::class, 'show']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
     Route::post('attendance-present',        [AttendanceController::class, 'userPresent']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
@@ -213,11 +213,11 @@ Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middl
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list', [NotaryController::class, 'indexNotary']);
-    Route::get('list/{id}', [NotaryController::class, 'indexNotaryById']);
-    Route::post('create', [NotaryController::class, 'storeNotary']);
-    Route::delete('delete/{id}', [NotaryController::class, 'deleteNotary']);
-    Route::patch('update/{id}', [NotaryController::class, 'updateNotary']);
+    Route::get('list',                      [NotaryController::class, 'indexNotary']);
+    Route::get('list/{id}',                 [NotaryController::class, 'indexNotaryById']);
+    Route::post('create',                   [NotaryController::class, 'storeNotary']);
+    Route::delete('delete/{id}',            [NotaryController::class, 'deleteNotary']);
+    Route::patch('update/{id}',             [NotaryController::class, 'updateNotary']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], function () {});
