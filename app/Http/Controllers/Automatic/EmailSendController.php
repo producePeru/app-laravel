@@ -15,18 +15,20 @@ class EmailSendController extends Controller
             $validatedData = $request->validate([
                 'emails' => 'required|array|min:1',
                 'message' => 'required|string',
+                'mailer' => 'nullable|string|in:gmail,office365',
             ]);
 
             $emails = $validatedData['emails'];
             $message = $validatedData['message'];
+            $mailer = 'office365';
 
             // Procesar cada correo y enviarlo a la cola
             foreach ($emails as $email) {
-                ProcessEmailQueue::dispatch($email, $message);
+                ProcessEmailQueue::dispatch($email, $message, $mailer);
             }
 
             return response()->json([
-                'message' => 'Emails queued for sending.',
+                'message' => 'Los correos se han enviado correctamente.',
                 'status' => 200
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
