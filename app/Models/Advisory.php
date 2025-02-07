@@ -249,16 +249,20 @@ class Advisory extends Model
             $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
         }
 
+        if (!empty($filters['year'])) {
+            $query->whereYear('created_at', $filters['year']);
+        }
 
-        // if ($filters['people_id'] !== null) {
-        //     $query->where('people_id', $filters['people_id']);
-        // }
-
-        // if ($filters['city_id'] !== null) {
-        //     $query->where('city_id', $filters['city_id']);
-        // }
-
-        return $query->paginate(50);
+        return $query->paginate(150);
     }
 
 }
+
+
+// if ($filters['people_id'] !== null) {
+//     $query->where('people_id', $filters['people_id']);
+// }
+
+// if ($filters['city_id'] !== null) {
+//     $query->where('city_id', $filters['city_id']);
+// }

@@ -215,7 +215,9 @@ class SelectController extends Controller
 
     public function getProcedures()
     {
-        $detailProcedures = DetailProcedure::all();
+        // $detailProcedures = DetailProcedure::all();
+
+        $detailProcedures = DetailProcedure::where('id', 1)->get();
 
         $data = $detailProcedures->map(function ($item) {
             return [

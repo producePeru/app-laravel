@@ -27,6 +27,8 @@ class DownloadFormalizationsController extends Controller
         $role_array = $user_role['role_id'];
         $dateStart = $request->input('dateStart');
         $dateEnd = $request->input('dateEnd');
+        $idAsesor = $request->input('idAsesor');        // Nuevo parámetro
+        $year = $request->input('year');                // Nuevo parámetro
 
         // Inicializar la consulta
         $advisories = Advisory::with([
@@ -60,6 +62,14 @@ class DownloadFormalizationsController extends Controller
             } catch (\Exception $e) {
                 return response()->json(['error' => 'Invalid date format'], 400);
             }
+        }
+
+        if ($year) {
+            $advisories = $advisories->whereYear('created_at', $year);
+        }
+
+        if ($idAsesor) {
+            $advisories = $advisories->where('user_id', $idAsesor);
         }
 
         // Filtrar por roles

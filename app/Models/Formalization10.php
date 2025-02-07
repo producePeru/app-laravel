@@ -198,6 +198,10 @@ class Formalization10 extends Model
             $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
         }
 
+        if (!empty($filters['year'])) {
+            $query->whereYear('created_at', $filters['year']);
+        }
+
         return $query->paginate(50);
     }
 }
