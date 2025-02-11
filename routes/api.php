@@ -75,6 +75,9 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::post('attendance-present',        [AttendanceController::class, 'userPresent']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
 
 
+    // EVENTOS SR CARLOS
+    Route::get('dots/{month}',                  [EventsController::class, 'getEvents']);
+    Route::get('events-day/{day}',                  [EventsController::class, 'getEventsByDate']);
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -351,7 +354,14 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     // Route::get('list',                    [EventsController::class, 'listAllEvents']);
 
     Route::post('create-event', [EventsController::class, 'createEvent']);
-    Route::get('list', [EventsController::class, 'index']);
+    // Route::get('list', [EventsController::class, 'index']);
+
+    // eventos sr carlos
+    Route::post('create',   [EventsController::class, 'store']);
+    Route::get('list',      [EventsController::class, 'index']);
+
+
+
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {

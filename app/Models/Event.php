@@ -10,16 +10,14 @@ class Event extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nameEvent',
+        'office',
+        'title',
+        'date',
+        'allDay',
         'start',
         'end',
         'description',
-        'linkVideo',
-        'category_id',
-        'allDay',
-        'repetir',
-        'color',
-        'user_id'
+        'nameUser'
     ];
 
     // public function recurrences()
