@@ -70,7 +70,6 @@ return [
                 'name' => env('MAIL_FROM_NAME_OFFICE365'),
             ],
         ],
-
         'ses' => [
             'transport' => 'ses',
         ],
