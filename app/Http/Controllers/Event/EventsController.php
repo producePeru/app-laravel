@@ -200,6 +200,8 @@ class EventsController extends Controller
 
     public function store(Request $request)
     {
+        $user_role = getUserRole();
+        $user_id = $user_role['user_id'];
         $data = $request->all();
 
         Event::create($data);
@@ -328,5 +330,21 @@ class EventsController extends Controller
         }
 
         return response()->json(['data' => $events, 'status' => 200]);
+    }
+
+    public function deleteEventById($idEvent)
+    {
+        $user_role = getUserRole();
+        $user_id = $user_role['user_id'];
+
+
+        $event = Event::find($idEvent);
+
+        if ($event) {
+            $event->delete();
+            return response()->json(['message' => 'El evento ha sido eliminado', 'status' => 200]);
+        } else {
+            return response()->json(['error' => 'El evento no pudo ser encontrado', 'status' => 404]);
+        }
     }
 }
