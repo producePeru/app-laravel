@@ -77,7 +77,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
     // EVENTOS SR CARLOS
     Route::get('dots/{month}',                  [EventsController::class, 'getEvents']);
-    Route::get('events-day/{day}',                  [EventsController::class, 'getEventsByDate']);
+    Route::get('events-day/{day}',              [EventsController::class, 'getEventsByDate']);
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -359,6 +359,7 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     // eventos sr carlos
     Route::post('create',   [EventsController::class, 'store']);
     Route::get('list',      [EventsController::class, 'index']);
+    Route::delete('delete/{id}',                  [EventsController::class, 'deleteEventById']);
 
 
 

@@ -17,7 +17,8 @@ class Event extends Model
         'start',
         'end',
         'description',
-        'nameUser'
+        'nameUser',
+        'user_id'
     ];
 
     // public function recurrences()
