@@ -357,11 +357,13 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     // Route::get('list', [EventsController::class, 'index']);
 
     // eventos sr carlos
-    Route::post('create',   [EventsController::class, 'store']);
-    Route::get('list',      [EventsController::class, 'index']);
-    Route::delete('delete/{id}',                  [EventsController::class, 'deleteEventById']);
+    Route::post('create',                       [EventsController::class, 'store']);
+    Route::get('list',                          [EventsController::class, 'index']);
+    Route::delete('delete/{id}',                [EventsController::class, 'deleteEventById']);
 
-
+    // eventos sra dianita
+    Route::get('rooms',                               [EventsController::class, 'listRooms']);
+    Route::post('reserve-room',                       [EventsController::class, 'storeRoom']);
 
 });
 
@@ -419,6 +421,11 @@ Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers', 'midd
     Route::post('create-event',                     [GoogleCalendarController::class, 'createEvent']);
     Route::get('events-pnte/{type}',                       [GoogleCalendarController::class, 'listEvents']);
     Route::delete('delete-event-pnte/{id}/{type}',         [GoogleCalendarController::class, 'deleteEvent']);
+});
+
+Route::group(['prefix' => 'restrict', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::post('restrict-ips',                 [GoogleCalendarController::class, 'store']);
+    Route::delete('restrict-ips/{id}',          [GoogleCalendarController::class, 'destroy']);
 });
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {});

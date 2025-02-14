@@ -18,6 +18,7 @@ class Rooms extends Model
         'link',
         'unity',
         'room',
+        'allDay',
         'user_id'
     ];
 

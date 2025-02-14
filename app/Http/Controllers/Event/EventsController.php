@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\EventRecurrence;
 use App\Models\EventCategory;
+use App\Models\Rooms;
 use Carbon\Carbon;
 
 class EventsController extends Controller
@@ -345,6 +346,63 @@ class EventsController extends Controller
             return response()->json(['message' => 'El evento ha sido eliminado', 'status' => 200]);
         } else {
             return response()->json(['error' => 'El evento no pudo ser encontrado', 'status' => 404]);
+        }
+    }
+
+
+
+    // dianita sala de reuniones
+    public function listRooms()
+    {
+        $rooms = Rooms::all();
+
+        return response()->json([
+            'data' => $rooms,
+           'status' => 200
+        ]);
+    }
+
+    public function storeRoom(Request $request)
+    {
+        try {
+            $user = getUserRole();
+            $user_id = $user['user_id'];
+
+            $requestData = $request->all();
+            $requestData['user_id'] = $user_id;
+
+            // if (!empty($requestData['startDate'])) {
+            //     $requestData['startDate'] = Carbon::parse($requestData['startDate'])->format('Y-m-d H:i:s');
+            // }
+
+            if (!empty($request->id)) {
+                $room = Rooms::find($request->id);
+
+                if ($room) {
+                    $room->update($requestData);
+
+                    return response()->json([
+                        'message' => 'Sala de reuniones actualizada correctamente.',
+                        'data' => $room
+                    ], 200);
+                }
+
+                return response()->json(['message' => 'Sala no encontrada.'], 404);
+            }
+
+
+            $room = Rooms::create($requestData);
+
+            return response()->json([
+                'message' => 'Sala de reuniones creada correctamente.',
+                'data' => $room
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al procesar la solicitud.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }
