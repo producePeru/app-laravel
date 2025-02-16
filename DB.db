@@ -16,3 +16,27 @@ CREATE TABLE events (
 );
 
 
+CREATE TABLE qrNotaries (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    typedocument_id BIGINT UNSIGNED,
+    documentnumber VARCHAR(11),
+    nationality VARCHAR(50),
+    name VARCHAR(80),
+    lastname VARCHAR(80),
+    middlename VARCHAR(80),
+    phone VARCHAR(9),
+    email VARCHAR(150),
+    economicsector_id BIGINT UNSIGNED,
+    motivo VARCHAR(8),
+    notary VARCHAR(150),
+    califica TINYINT(2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+
+    -- Claves foráneas
+    FOREIGN KEY (typedocument_id) REFERENCES typedocuments(id),
+    FOREIGN KEY (economicsector_id) REFERENCES economicsectors(id)
+);
+
+
