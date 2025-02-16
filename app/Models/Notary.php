@@ -9,9 +9,23 @@ class Notary extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $table = 'notaries';
 
-    protected $hidden = ['city_id', 'province_id', 'district_id', 'user_id', 'created_at', 'updated_at'];
+    protected $fillable = [
+        'address',
+        'biometrico',
+        'city_id',
+        'district_id',
+        'gastos',
+        'infocontacto',
+        'name',
+        'province_id',
+        'sociointerveniente',
+        'tarifanormal',
+        'tarifasocial',
+        'user_id',
+        'status'
+    ];
 
     public function city()
     {
@@ -36,18 +50,6 @@ class Notary extends Model
     public function user()
     {
         return $this->belongsTo('App\Models\User');
-    }
-
-    public function scopeWithNotariesAndRelations($query)
-    {
-        return $query->with([
-            'city',
-            'province',
-            'district',
-            'user.profile'
-        ])
-            ->orderBy('created_at', 'asc')
-            ->paginate(200);
     }
 
     public function scopeWithNotariesById($query, $filters)
@@ -90,4 +92,29 @@ class Notary extends Model
     {
         return $this->hasMany(Profile::class, 'notary_id');
     }
+
+    public function getGastosAttribute($value)
+    {
+        return json_decode($value, true);
+    }
+
+    public function scopeWithNotariesAndRelations($query, $cityId = null)
+    {
+        return $query->where('status', '!=', 0) // Excluir notarías inactivas
+            ->when($cityId, function ($query) use ($cityId) {
+                return $query->where('city_id', $cityId); // Aplicar filtro si 'city' existe
+            })
+            ->with([
+                'city',
+                'province',
+                'district',
+                'user.profile'
+            ])
+            ->orderBy('city_id', 'asc')
+            ->paginate(50);
+    }
 }
+
+
+// ALTER TABLE notaries
+// ADD COLUMN status TINYINT(1) NOT NULL DEFAULT 1 AFTER user_id;

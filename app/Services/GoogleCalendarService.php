@@ -72,6 +72,7 @@ class GoogleCalendarService
                 'start' => $event->getStart()->getDateTime() ?? $event->getStart()->getDate(),
                 'end' => $event->getEnd()->getDateTime() ?? $event->getEnd()->getDate(),
                 'description' => $event->getDescription(),
+                'color' => $event->colorId
             ];
         }
 

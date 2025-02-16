@@ -34,18 +34,42 @@ return [
     */
 
     'mailers' => [
-        'smtp' => [
-            'transport' => 'smtp',
-            'url' => env('MAIL_URL'),
-            'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
-            'port' => env('MAIL_PORT', 587),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN'),
+        // 'smtp' => [
+        //     'transport' => 'smtp',
+        //     'url' => env('MAIL_URL'),
+        //     'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
+        //     'port' => env('MAIL_PORT', 587),
+        //     'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+        //     'username' => env('MAIL_USERNAME'),
+        //     'password' => env('MAIL_PASSWORD'),
+        //     'timeout' => null,
+        //     'local_domain' => env('MAIL_EHLO_DOMAIN'),
+        // ],
+        'gmail' => [
+            'transport' => env('MAIL_MAILER_GMAIL', 'smtp'),
+            'host' => env('MAIL_HOST_GMAIL'),
+            'port' => env('MAIL_PORT_GMAIL'),
+            'username' => env('MAIL_USERNAME_GMAIL'),
+            'password' => env('MAIL_PASSWORD_GMAIL'),
+            'encryption' => env('MAIL_ENCRYPTION_GMAIL'),
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS_GMAIL'),
+                'name' => env('MAIL_FROM_NAME_GMAIL'),
+            ],
         ],
 
+        'office365' => [
+            'transport' => env('MAIL_MAILER_OFFICE365', 'smtp'),
+            'host' => env('MAIL_HOST_OFFICE365'),
+            'port' => env('MAIL_PORT_OFFICE365'),
+            'username' => env('MAIL_USERNAME_OFFICE365'),
+            'password' => env('MAIL_PASSWORD_OFFICE365'),
+            'encryption' => env('MAIL_ENCRYPTION_OFFICE365'),
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS_OFFICE365'),
+                'name' => env('MAIL_FROM_NAME_OFFICE365'),
+            ],
+        ],
         'ses' => [
             'transport' => 'ses',
         ],

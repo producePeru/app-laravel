@@ -217,7 +217,9 @@ class SelectController extends Controller
     {
         // $detailProcedures = DetailProcedure::all();
 
-        $detailProcedures = DetailProcedure::where('id', 1)->get();
+        // $detailProcedures = DetailProcedure::where('id', 1)->get();
+
+        $detailProcedures = DetailProcedure::whereIn('id', [1, 3])->get();
 
         $data = $detailProcedures->map(function ($item) {
             return [

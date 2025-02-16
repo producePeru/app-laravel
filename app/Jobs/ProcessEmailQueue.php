@@ -16,6 +16,7 @@ class ProcessEmailQueue implements ShouldQueue
 
     public $email;
     public $messageContent;
+    public $mailer;
 
     /**
      * Create a new job instance.
@@ -23,10 +24,11 @@ class ProcessEmailQueue implements ShouldQueue
      * @param string $email
      * @param string $messageContent
      */
-    public function __construct($email, $messageContent)
+    public function __construct($email, $messageContent, $mailer)
     {
         $this->email = $email;
         $this->messageContent = $messageContent;
+        $this->mailer = $mailer;
     }
 
     /**
@@ -36,6 +38,6 @@ class ProcessEmailQueue implements ShouldQueue
      */
     public function handle()
     {
-        Mail::to($this->email)->send(new EmailService($this->messageContent));
+        Mail::mailer($this->mailer)->to($this->email)->send(new EmailService($this->messageContent));
     }
 }

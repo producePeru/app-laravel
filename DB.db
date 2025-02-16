@@ -1,0 +1,18 @@
+CREATE TABLE events (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    office VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    date DATE NOT NULL,
+    allDay TINYINT(1) NOT NULL,
+    start TIME,
+    end TIME,
+    description VARCHAR(255),
+    nameUser VARCHAR(100),
+    user_id BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
