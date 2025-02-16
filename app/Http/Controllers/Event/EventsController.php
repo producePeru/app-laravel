@@ -200,14 +200,20 @@ class EventsController extends Controller
 
     public function store(Request $request)
     {
+
         $user_role = getUserRole();
-        $user_id = $user_role['user_id'];
+        $user_id   = $user_role['user_id'];
         $data = $request->all();
+        $data['user_id'] = $user_id;
 
         Event::create($data);
 
-        return response()->json(['message' => 'Se ha registrado el evento', 'status' => 200]);
+        return response()->json([
+            'message' => 'Se ha registrado el evento',
+            'status'  => 200
+        ]);
     }
+
 
     public function index()
     {
