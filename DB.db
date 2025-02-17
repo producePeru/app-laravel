@@ -19,7 +19,7 @@ CREATE TABLE events (
 CREATE TABLE qrNotaries (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     typedocument_id BIGINT UNSIGNED,
-    documentnumber VARCHAR(11),
+    documentnumber VARCHAR(20),
     nationality VARCHAR(50),
     name VARCHAR(80),
     lastname VARCHAR(80),

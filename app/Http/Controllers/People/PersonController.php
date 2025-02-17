@@ -199,59 +199,67 @@ class PersonController extends Controller
     // BUSCA POR EL API
     public function apiDNI($numeroDOC)
     {
-        $person = People::where('documentnumber', $numeroDOC)->first();
+        try {
+            $person = People::where('documentnumber', $numeroDOC)->first();
 
-        if (!$person) {
-            $apiUrl = "https://api.apis.net.pe/v2/reniec/dni?numero={$numeroDOC}";
+            if (!$person) {
+                $apiUrl = "https://api.apis.net.pe/v2/reniec/dni?numero={$numeroDOC}";
 
-            try {
-                $tokenRecord = Token::where('status', 1)->first();
+                try {
+                    $tokenRecord = Token::where('status', 1)->first();
 
-                if (!$tokenRecord) {
-                    return response()->json(['status' => 404, 'message' => 'Token no encontrado o inactivo']);
+                    if (!$tokenRecord) {
+                        return response()->json(['status' => 404, 'message' => 'Token no encontrado o inactivo']);
+                    }
+
+                    $client = new Client();
+                    $response = $client->request('GET', $apiUrl, [
+                        'headers' => [
+                            'Authorization' => $tokenRecord->token,
+                            'Accept' => 'application/json',
+                        ],
+                    ]);
+
+                    $responseData = json_decode($response->getBody(), true);
+
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Información obtenida',
+                        'data' => [
+                            'name' => $responseData['nombres'] ?? null,
+                            'lastname' => $responseData['apellidoPaterno'] ?? null,
+                            'middlename' => $responseData['apellidoMaterno'] ?? null,
+                            'gender_id' => null,
+                            'sick' => null
+                        ]
+                    ]);
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'error' => 'No se pudo obtener información del MYPE',
+                        'status' => 500,
+                        'error' => $e->getMessage()
+                    ], 500);
                 }
-
-                $client = new Client();
-                $response = $client->request('GET', $apiUrl, [
-                    'headers' => [
-                        'Authorization' => $tokenRecord->token,
-                        'Accept' => 'application/json',
-                    ],
-                ]);
-
-                $responseData = json_decode($response->getBody(), true);
-
+            } else {
+                // Si se encuentra
                 return response()->json([
                     'status' => 200,
-                    'message' => 'Información obtenida',
+                    'message' => 'Usuario',
                     'data' => [
-                        'name' => $responseData['nombres'] ?? null,
-                        'lastname' => $responseData['apellidoPaterno'] ?? null,
-                        'middlename' => $responseData['apellidoMaterno'] ?? null,
-                        'gender_id' => null,
-                        'sick' => null
+                        'name' => $person->name ?? null,
+                        'lastname' => $person->lastname ?? null,
+                        'middlename' => $person->middlename ?? null,
+                        'gender_id' => $person->gender_id ?? null,
+                        'sick' => $person->sick ?? null
                     ]
                 ]);
-            } catch (\Exception $e) {
-                return response()->json([
-                    'error' => 'No se pudo obtener información del MYPE',
-                    'status' => 500,
-                    'error' => $e->getMessage()
-                ], 500);
             }
-        } else {
-            // Si se encuentra
+        } catch (\Throwable $th) {
             return response()->json([
-                'status' => 200,
-                'message' => 'Usuario',
-                'data' => [
-                    'name' => $person->name ?? null,
-                    'lastname' => $person->lastname ?? null,
-                    'middlename' => $person->middlename ?? null,
-                    'gender_id' => $person->gender_id ?? null,
-                    'sick' => $person->sick ?? null
-                ]
-            ]);
+                'message' => 'Error al procesar la solicitud',
+                'error' => $th->getMessage(),
+                'status' => 500
+            ], 500);
         }
     }
 
@@ -293,26 +301,28 @@ class PersonController extends Controller
             ->first();
 
         if ($person) {
-            return response()->json([
-                'data' => [
-                    'typedocument_id' => $person->typedocument_id ?? null,
-                    'documentnumber' => $person->documentnumber ?? null,
-                    'lastname' => $person->lastname ?? null,
-                    'middlename' => $person->middlename ?? null,
-                    'name' => $person->name ?? null,
-                    'country_id' => $person->country_id ?? null,
-                    'city_id' => $person->city_id ?? null,
-                    'province_id' => $person->province_id ?? null,
-                    'district_id' => $person->district_id ?? null,
-                    'address' => $person->address ?? null,
-                    'birthday' => $person->birthday ?? null,
-                    'phone' => $person->phone ?? null,
-                    'email' => $person->email ?? null,
-                    'gender_id' => $person->gender_id ?? null,
-                    'sick' => $person->sick ?? null,
-                    'hasSoon' => $person->hasSoon?? null
-                ],
-                'status' => 200]
+            return response()->json(
+                [
+                    'data' => [
+                        'typedocument_id' => $person->typedocument_id ?? null,
+                        'documentnumber' => $person->documentnumber ?? null,
+                        'lastname' => $person->lastname ?? null,
+                        'middlename' => $person->middlename ?? null,
+                        'name' => $person->name ?? null,
+                        'country_id' => $person->country_id ?? null,
+                        'city_id' => $person->city_id ?? null,
+                        'province_id' => $person->province_id ?? null,
+                        'district_id' => $person->district_id ?? null,
+                        'address' => $person->address ?? null,
+                        'birthday' => $person->birthday ?? null,
+                        'phone' => $person->phone ?? null,
+                        'email' => $person->email ?? null,
+                        'gender_id' => $person->gender_id ?? null,
+                        'sick' => $person->sick ?? null,
+                        'hasSoon' => $person->hasSoon ?? null
+                    ],
+                    'status' => 200
+                ]
             );
         } else {
             return response()->json(['message' => 'No se encuentra registrado', 'status' => 300]);

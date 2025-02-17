@@ -33,6 +33,7 @@ use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\User\SupervisorController;
 use App\Http\Controllers\Fair\FairController;
 use App\Http\Controllers\Google\GoogleCalendarController;
+use App\Http\Controllers\Notary\QRNotaryController;
 // use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
@@ -78,6 +79,9 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     // EVENTOS SR CARLOS
     Route::get('dots/{month}',                  [EventsController::class, 'getEvents']);
     Route::get('events-day/{day}',              [EventsController::class, 'getEventsByDate']);
+
+    Route::post('valorization-notary',  [QRNotaryController::class, 'store']);              // VALORIZACION DE NOTARIOS
+
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -360,9 +364,6 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     Route::post('create',   [EventsController::class, 'store']);
     Route::get('list',      [EventsController::class, 'index']);
     Route::delete('delete/{id}',                  [EventsController::class, 'deleteEventById']);
-
-
-
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
