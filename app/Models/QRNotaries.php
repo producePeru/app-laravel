@@ -25,4 +25,22 @@ class QRNotaries extends Model
         'notary',
         'califica'
     ];
+
+    public function typedocument()
+    {
+        return $this->belongsTo(Typedocument::class);
+    }
+
+    public function economicsector()
+    {
+        return $this->belongsTo(EconomicSector::class);
+    }
+
+    public function scopeSearch($query, $search)
+    {
+        if ($search) {
+            return $query->where('documentnumber', 'like', '%' . $search . '%');
+        }
+        return $query;
+    }
 }

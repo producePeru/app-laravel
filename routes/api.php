@@ -211,6 +211,7 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
     Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportDigitalRouter']);
     Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
+    Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -368,7 +369,6 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     // eventos sra dianita
     Route::get('rooms',                               [EventsController::class, 'listRooms']);
     Route::post('reserve-room',                       [EventsController::class, 'storeRoom']);
-
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
@@ -401,6 +401,10 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
     Route::get('applicants/{slug}',             [AttendanceController::class, 'attendaceApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
     Route::put('status-participant/{id}',       [AttendanceController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
     Route::delete('delete-participant/{id}',    [AttendanceController::class, 'destroyParticipant']);       // delete PARTICIPAnte
+
+
+    Route::get('list-vote',                     [QRNotaryController::class, 'index']);          // votación notarias...
+    Route::get('list-vote-all',                 [QRNotaryController::class, 'allWithoutPagination']);
 });
 
 
