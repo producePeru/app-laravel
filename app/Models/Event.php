@@ -10,14 +10,16 @@ class Event extends Model
     use HasFactory;
 
     protected $fillable = [
-        'office',
+        'id_pnte',
         'title',
+        'organiza',
+        'numMypes',
         'date',
-        'allDay',
         'start',
         'end',
         'description',
         'nameUser',
+        'link',
         'user_id'
     ];
 

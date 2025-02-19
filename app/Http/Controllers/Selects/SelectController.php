@@ -27,6 +27,7 @@ use App\Models\DriveFile;
 use App\Models\Profile;
 use App\Models\AgreementOperationalStatus;
 use App\Models\AgreementStatus;
+use App\Models\OfficePnte;
 use App\Models\Typecapital;
 
 class SelectController extends Controller
@@ -367,6 +368,22 @@ class SelectController extends Controller
                 'value' => $item->id
             ];
         });
+        return response()->json(['data' => $data]);
+    }
+
+    public function getOfficesPnte()
+    {
+        $typeDocuments = OfficePnte::orderBy('name', 'asc')->get();
+
+        $data = $typeDocuments->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id,
+                'color' => $item->color,
+                'avr' => $item->avr
+            ];
+        });
+
         return response()->json(['data' => $data]);
     }
 }

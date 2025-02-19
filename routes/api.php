@@ -77,7 +77,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
 
     // EVENTOS SR CARLOS
-    Route::get('dots/{month}',                  [EventsController::class, 'getEvents']);
+    Route::get('dots/{month}',                  [EventsController::class, 'getEventsDots']);
     Route::get('events-day/{day}',              [EventsController::class, 'getEventsByDate']);
 
     Route::post('valorization-notary',  [QRNotaryController::class, 'store']);              // VALORIZACION DE NOTARIOS
@@ -321,6 +321,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('operational-status', [SelectController::class, 'getOperationalStatus']);
     Route::get('agreement-status', [SelectController::class, 'getAgreementStatus']);
     Route::get('type-capital', [SelectController::class, 'getTypeCapital']);
+    Route::get('pnte-offices', [SelectController::class, 'getOfficesPnte']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {

@@ -12,6 +12,7 @@ class CertificadoPDFController extends Controller
     {
         $emails = $request->input('emails');
         $groupedEmails = [];
+        $mailer = 'office365';
 
         // Agrupar destinatarios por archivo PDF
         foreach ($emails as $emailData) {
@@ -26,7 +27,7 @@ class CertificadoPDFController extends Controller
 
         // Enviar trabajos agrupados
         foreach ($groupedEmails as $pdfFile => $recipients) {
-            SendPdfCertificadosEmailsJob::dispatch($recipients, $pdfFile);
+            SendPdfCertificadosEmailsJob::dispatch($recipients, $pdfFile, $mailer);
         }
 
         return response()->json(['message' => 'Emails are being processed.']);

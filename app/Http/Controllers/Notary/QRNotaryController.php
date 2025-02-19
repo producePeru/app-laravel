@@ -33,23 +33,22 @@ class QRNotaryController extends Controller
     {
         $search = $request->input('search');
         $year = $request->input('year');
+        $no_paginate = $request->input('noPaginate');
 
-        $query = QRNotaries::with([
-            'typedocument',
-            'economicsector'
-        ])
+        $query = QRNotaries::with(['typedocument', 'economicsector'])
             ->search($search)
             ->when($year, function ($q) use ($year) {
                 $q->whereYear('created_at', $year);
-            });
+            })
+            ->orderBy('created_at', 'desc');
 
         $query->orderBy('created_at', 'desc');
 
-        $data = $query->paginate(50);
+        $data = $no_paginate ? $query->get() : $query->paginate(50);
 
-        $data->getCollection()->transform(function ($item) {
+        $dataCollection = collect($data->items() ?? $data)->map(function ($item, $idx) use ($no_paginate) {
             return [
-                'id' => $item->id,
+                'id' => $no_paginate ? $idx + 1 : $item->id,
                 'typedocument_id' => optional($item->typedocument)->id,
                 'typedocument_name' => optional($item->typedocument)->avr,
                 'documentnumber' => $item->documentnumber,
@@ -68,6 +67,16 @@ class QRNotaryController extends Controller
             ];
         });
 
-        return response()->json(['data' => $data]);
+        return response()->json([
+            'data' => $no_paginate ? $dataCollection : [
+                'current_page' => $data->currentPage(),
+                'total' => $data->total(),
+                'per_page' => $data->perPage(),
+                'last_page' => $data->lastPage(),
+                'from' => $data->firstItem(),
+                'to' => $data->lastItem(),
+                'data' => $dataCollection
+            ]
+        ]);
     }
 }

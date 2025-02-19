@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Attendance extends Model
 {
     use HasFactory;
@@ -55,7 +56,7 @@ class Attendance extends Model
 
     public function asesor()
     {
-        return $this->belongsTo(Profile::class, 'people_id', 'user_id');
+        return $this->belongsTo(Profile::class, 'people_id');
     }
 
     public function scopeSearch($query, $search)

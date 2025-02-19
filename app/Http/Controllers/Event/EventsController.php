@@ -9,6 +9,7 @@ use App\Models\EventRecurrence;
 use App\Models\EventCategory;
 use App\Models\Rooms;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class EventsController extends Controller
 {
@@ -101,9 +102,6 @@ class EventsController extends Controller
 
         return response()->json(['data' => $data]);
     }
-
-
-
 
 
     public function index2(Request $request)
@@ -201,7 +199,6 @@ class EventsController extends Controller
 
     public function store(Request $request)
     {
-
         $user_role = getUserRole();
         $user_id   = $user_role['user_id'];
         $data = $request->all();
@@ -223,7 +220,7 @@ class EventsController extends Controller
         return response()->json(['data' => $events, 'status' => 200]);
     }
 
-    public function getEvents(Request $request, $yearMonth)
+    public function getEventsDots(Request $request, $yearMonth)
     {
         // Validar el formato de la fecha (YYYY-MM)
         if (!preg_match('/^\d{4}-\d{2}$/', $yearMonth)) {
@@ -231,11 +228,12 @@ class EventsController extends Controller
         }
 
         $officeMap = [
-            'FERIAS'        => 'ferias',
-            'Ruta Digital'  => 'rd',
-            'UGGER'         => 'uger',
-            'UGSE'          => 'ugse',
-            'UGO'           => 'ugo'
+            'dte'       => 1,
+            'ferias'    => 2,
+            'ftm'       => 3,
+            'mp'        => 4,
+            'pte'       => 5,
+            'rd'        => 6
         ];
 
         $filterOffices = array_values(array_filter(array_map(
@@ -248,24 +246,25 @@ class EventsController extends Controller
         }
 
         $colors = [
-            'ferias' => 'red',
-            'rd'     => 'orange',
-            'uger'   => 'green',
-            'ugse'   => 'blue',
-            'ugo'    => 'yellow'
+            1   =>  'gray',
+            2   =>  'red',
+            3   =>  'orange',
+            4   =>  'yellow',
+            5   =>  'green',
+            6   =>  'blue'
         ];
 
         $startDate = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
         $endDate = Carbon::createFromFormat('Y-m', $yearMonth)->endOfMonth();
 
         $events = Event::whereBetween('date', [$startDate, $endDate])
-            ->whereIn('office', $filterOffices)
+            ->whereIn('id_pnte', $filterOffices)
             ->get();
 
         $formattedEvents = [];
 
         foreach ($events as $event) {
-            $office = strtolower($event->office);
+            $office = strtolower($event->id_pnte);
 
             if (isset($colors[$office])) {
                 $color = $colors[$office];
@@ -287,57 +286,130 @@ class EventsController extends Controller
         ]);
     }
 
+    // public function getEventsByDate(Request $request, $date)
+    // {
+
+    //     if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+    //         return response()->json(['error' => 'Formato de fecha inválido. Usa YYYY-MM-DD.'], 400);
+    //     }
+
+    //     $officeMap = [
+    //         'dte'    => 1,
+    //         'ferias' => 2,
+    //         'ftm'    => 3,
+    //         'mp'     => 4,
+    //         'pte'    => 5,
+    //         'rd'     => 6
+    //     ];
+
+    //     $requestedOffices = $request->query('office', []);
+    //     $idPnte = $request->query('id_pnte', null); // Obtener id_pnte si existe
+
+    //     // Si "office" es un string, convertirlo a un array
+    //     if (!is_array($requestedOffices)) {
+    //         $requestedOffices = [$requestedOffices];
+    //     }
+
+    //     // Si no se envió "office" o "id_pnte", devolver array vacío
+    //     if (empty($requestedOffices) || empty($idPnte)) {
+    //         return response()->json(['message' => 'No events.', 'status' => 200, 'data' => []]);
+    //     }
+
+    //     // Mapear los valores permitidos y validar que todos sean correctos
+    //     $filterOffices = array_values(array_filter(array_map(
+    //         fn($param) => $officeMap[$param] ?? null,
+    //         $requestedOffices
+    //     )));
+
+
+    //     // Consulta base para obtener eventos por fecha
+    //     $query = Event::whereDate('date', $date);
+
+    //     // Aplicar filtro por "id_pnte"
+    //     $query->where('id_pnte', $idPnte);
+
+    //     // Obtener los eventos procesados
+    //     $events = $query->get()->map(function ($event) {
+    //         return [
+    //             'id_pnte'       => $event->id_pnte,
+    //             'title'         => $event->title,
+    //             'organiza'      => $event->organiza,
+    //             'numMypes'      => $event->numMypes,
+    //             'date'          => $event->date,
+    //             'allDay'        => $event->allDay,
+    //             'start'         => Carbon::parse($event->start)->format('h:i A'),
+    //             'end'           => Carbon::parse($event->end)->format('h:i A'),
+    //             'description'   => Str::limit($event->description, 100, '...'),
+    //             'descripionAll' => $event->description,
+    //             'nameUser'      => $event->nameUser,
+    //             'link'          => $event->link
+    //         ];
+    //     });
+
+    //     // Retornar eventos si hay, o un mensaje con array vacío si no hay eventos
+    //     return response()->json([
+    //         'message' => $events->isEmpty() ? 'No hay eventos para esta fecha.' : 'Eventos encontrados.',
+    //         'status'  => 200,
+    //         'data'    => $events
+    //     ]);
+    // }
+
+
     public function getEventsByDate(Request $request, $date)
     {
-        // Validar el formato de la fecha (YYYY-MM-DD)
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-            return response()->json(['error' => 'Formato de fecha inválido. Usa YYYY-MM-DD.'], 400);
-        }
-
-        // Mapeo de valores permitidos para "office"
         $officeMap = [
-            'FERIAS'        => 'ferias',
-            'Ruta Digital'  => 'rd',
-            'UGGER'         => 'uger',
-            'UGSE'          => 'ugse',
-            'UGO'           => 'ugo'
+            'dte'    => 1,
+            'ferias' => 2,
+            'ftm'    => 3,
+            'mp'     => 4,
+            'pte'    => 5,
+            'rd'     => 6
         ];
 
-        // Obtener los valores pasados en la URL y mapearlos a los identificadores internos
-        $filterOffices = array_values(array_filter(array_map(
-            fn($param) => $officeMap[$param] ?? null,
-            $request->query()
-        )));
+        $officeKeys = $request->query();
 
-        // Consulta base para obtener eventos por fecha
-        $query = Event::whereDate('date', $date);
-
-        // Aplicar filtro por "office" si se enviaron parámetros
-        if (!empty($filterOffices)) {
-            $query->whereIn('office', $filterOffices);
+        if (empty($officeKeys)) {
+            return response()->json([
+                'message' => 'No se recibieron parámetros válidos.',
+                'status'  => 200,
+                'data'    => []
+            ]);
         }
 
-        // Obtener los eventos procesados
+        $officeIds = collect($officeKeys)->map(function ($key) use ($officeMap) {
+            return $officeMap[$key] ?? null;
+        })->filter()->values();
+
+        $query = Event::whereDate('date', $date);
+
+        if ($officeIds->isNotEmpty()) {
+            $query->whereIn('id_pnte', $officeIds);
+        }
+
         $events = $query->get()->map(function ($event) {
             return [
-                'office'      => $event->office,
-                'title'       => $event->title,
-                'date'        => $event->date,
-                'allDay'      => $event->allDay,
-                'start'       => Carbon::parse($event->start)->format('h:i A'),
-                'end'         => Carbon::parse($event->end)->format('h:i A'),
-                'description' => $event->description,
-                'nameUser'    => $event->nameUser,
+                'id_pnte'       => $event->id_pnte,
+                'title'         => $event->title,
+                'organiza'      => $event->organiza,
+                'numMypes'      => $event->numMypes,
+                'date'          => $event->date,
+                'allDay'        => $event->allDay,
+                'start'         => Carbon::parse($event->start)->format('h:i A'),
+                'end'           => Carbon::parse($event->end)->format('h:i A'),
+                'description'   => Str::limit($event->description, 100, '...'),
+                'descripionAll' => $event->description,
+                'nameUser'      => $event->nameUser,
+                'link'          => $event->link
             ];
         });
 
-        // Si no hay eventos, devolver un array vacío sin error
-        if ($events->isEmpty()) {
-            return response()->json(['message' => 'No hay eventos para esta fecha.', 'status' => 200, 'data' => []]);
-        }
-
-        return response()->json(['data' => $events, 'status' => 200]);
+        return response()->json([
+            'message' => $events->isEmpty() ? 'No hay eventos para esta fecha.' : 'Eventos encontrados.',
+            'status'  => 200,
+            'data'    => $events
+        ]);
     }
+
 
     public function deleteEventById($idEvent)
     {
@@ -364,7 +436,7 @@ class EventsController extends Controller
 
         return response()->json([
             'data' => $rooms,
-           'status' => 200
+            'status' => 200
         ]);
     }
 
@@ -403,7 +475,6 @@ class EventsController extends Controller
                 'message' => 'Sala de reuniones creada correctamente.',
                 'data' => $room
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al procesar la solicitud.',

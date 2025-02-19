@@ -1,19 +1,4 @@
-//- CREATE TABLE events (
-//-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-//-     office VARCHAR(50) NOT NULL,
-//-     title VARCHAR(255) NOT NULL,
-//-     date DATE NOT NULL,
-//-     allDay TINYINT(1) NOT NULL,
-//-     start TIME,
-//-     end TIME,
-//-     description VARCHAR(255),
-//-     nameUser VARCHAR(100),
-//-     user_id BIGINT UNSIGNED NOT NULL,
-//-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-//-     deleted_at TIMESTAMP NULL,
-//-     FOREIGN KEY (user_id) REFERENCES users(id)
-//- );
+
 
 
 CREATE TABLE restrict_ips (
@@ -28,3 +13,44 @@ CREATE TABLE restrict_ips (
 php artisan make:model RestrictIp
 php artisan make:controller Restrict/RestrictIpController --api
 
+
+
+//- CREATE TABLE eventsoffice (
+//-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//-     name VARCHAR(50) NOT NULL,
+//-     office VARCHAR(10) NOT NULL,
+//-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//-     deleted_at TIMESTAMP NULL
+//- );
+
+
+
+//- ALTER TABLE events
+//- ADD COLUMN pnte_id BIGINT UNSIGNED NULL AFTER user_id,
+//- ADD CONSTRAINT fk_pnte_id FOREIGN KEY (pnte_id) REFERENCES eventsoffice(id) ON DELETE SET NULL ON UPDATE CASCADE;
+
+
+//- CREATE TABLE events (
+//-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+//-     id_pnte BIGINT UNSIGNED NOT NULL,
+//-     title VARCHAR(255) NOT NULL,
+//-     organiza VARCHAR(150) NULL,
+//-     numMypes VARCHAR(10) NULL,
+//-     date DATE NOT NULL,
+//-     start TIME NULL,
+//-     end TIME NULL,
+//-     description VARCHAR(255) NULL,
+//-     nameUser VARCHAR(100) NULL,
+//-     link VARCHAR(150) NULL,
+
+//-     user_id BIGINT UNSIGNED NOT NULL,
+//-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//-     deleted_at TIMESTAMP NULL,
+
+//-     -- Claves foráneas
+//-     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+//-     FOREIGN KEY (id_pnte) REFERENCES eventsoffice(id) ON DELETE CASCADE
+//- );
