@@ -399,7 +399,8 @@ class EventsController extends Controller
                 'description'   => Str::limit($event->description, 100, '...'),
                 'descripionAll' => $event->description,
                 'nameUser'      => $event->nameUser,
-                'link'          => $event->link
+                'link'          => $event->link,
+                'resultado'     => $event->resultado
             ];
         });
 

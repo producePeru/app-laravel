@@ -84,9 +84,8 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
 });
 
-Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers', 'middleware' => ['restrict.ip']], function () {
-
-    // EVENTOS SR CARLOS
+// EVENTOS SR CARLOS   'middleware' => ['restrict.ip']
+Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], function () {
     Route::get('dots/{month}',                  [EventsController::class, 'getEventsDots']);
     Route::get('events-day/{day}',              [EventsController::class, 'getEventsByDate']);
 });

@@ -12,17 +12,18 @@ class RestrictAccessByIP
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Obtener la IP del usuario
         $ip = $request->header('X-Forwarded-For') ?? $request->ip();
 
         Log::info('Intento de acceso desde IP: ' . $ip);
 
-        // Verificar si la IP está permitida en la tabla restrict_ips
-        $isAllowed = DB::table('restrict_ips')->where('ip', $ip)->exists();
+        $isAllowed = DB::table('restrict_ips')
+            ->where('ip', $ip)
+            ->where('access', 'eventos')
+            ->exists();
 
         if (!$isAllowed) {
             return response()->json([
-                'message' => 'Acceso denegado: tu IP no está autorizada.'
+                'message' => 'Acceso denegado.'
             ], 403);
         }
 
