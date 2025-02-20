@@ -76,12 +76,19 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::post('attendance-present',        [AttendanceController::class, 'userPresent']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
 
 
-    // EVENTOS SR CARLOS
-    Route::get('dots/{month}',                  [EventsController::class, 'getEventsDots']);
-    Route::get('events-day/{day}',              [EventsController::class, 'getEventsByDate']);
+    // // EVENTOS SR CARLOS
+    // Route::get('dots/{month}',                  [EventsController::class, 'getEventsDots']);
+    // Route::get('events-day/{day}',              [EventsController::class, 'getEventsByDate']);
 
     Route::post('valorization-notary',  [QRNotaryController::class, 'store']);              // VALORIZACION DE NOTARIOS
 
+});
+
+Route::middleware(['restrict.ip'])->group(function () {
+    Route::prefix('pnte')->namespace('App\Http\Controllers')->group(function () {
+        Route::get('dots/{month}', [EventsController::class, 'getEventsDots']);
+        Route::get('events-day/{day}', [EventsController::class, 'getEventsByDate']);
+    });
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -366,6 +373,7 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     Route::post('create',                       [EventsController::class, 'store']);
     Route::get('list',                          [EventsController::class, 'index']);
     Route::delete('delete/{id}',                [EventsController::class, 'deleteEventById']);
+    Route::put('update/{id}',                        [EventsController::class, 'update']);
 
     // eventos sra dianita
     Route::get('rooms',                               [EventsController::class, 'listRooms']);

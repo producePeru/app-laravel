@@ -20,7 +20,8 @@ class Event extends Model
         'description',
         'nameUser',
         'link',
-        'user_id'
+        'user_id',
+        'resultado'
     ];
 
     // public function recurrences()

@@ -482,4 +482,28 @@ class EventsController extends Controller
             ], 500);
         }
     }
+
+    public function update(Request $request, $id)
+    {
+        try {
+
+            $request->validate([
+                'resultado' => 'required|string'
+            ]);
+
+            $event = Event::findOrFail($id);
+
+            $event->update($request->only(['resultado']));
+
+            return response()->json([
+                'message' => 'Evento actualizado correctamente',
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al procesar la solicitud.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
