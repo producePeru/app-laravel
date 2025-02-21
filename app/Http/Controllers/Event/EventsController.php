@@ -228,7 +228,6 @@ class EventsController extends Controller
 
     public function getEventsDots(Request $request, $yearMonth)
     {
-        // Validar el formato de la fecha (YYYY-MM)
         if (!preg_match('/^\d{4}-\d{2}$/', $yearMonth)) {
             return response()->json(['error' => 'Formato de fecha inválido. Usa YYYY-MM.'], 400);
         }
@@ -239,7 +238,8 @@ class EventsController extends Controller
             'ftm'       => 3,
             'mp'        => 4,
             'pte'       => 5,
-            'rd'        => 6
+            'rd'        => 6,
+            'ougse'     => 7,
         ];
 
         $filterOffices = array_values(array_filter(array_map(
@@ -257,7 +257,8 @@ class EventsController extends Controller
             3   =>  'orange',
             4   =>  'yellow',
             5   =>  'green',
-            6   =>  'blue'
+            6   =>  'blue',
+            7   =>  'purple',
         ];
 
         $startDate = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
@@ -369,7 +370,8 @@ class EventsController extends Controller
             'ftm'    => 3,
             'mp'     => 4,
             'pte'    => 5,
-            'rd'     => 6
+            'rd'     => 6,
+            'ougse' => 7,
         ];
 
         $officeKeys = $request->query();
@@ -395,7 +397,7 @@ class EventsController extends Controller
         $events = $query->get()->map(function ($event) {
             return [
                 'id_pnte'       => $event->id_pnte,
-                'title'         => $event->title,
+                'title'         => Str::limit($event->title, 60, '...'),
                 'organiza'      => $event->organiza,
                 'numMypes'      => $event->numMypes,
                 'date'          => $event->date,
