@@ -100,7 +100,10 @@ class Notary extends Model
 
     public function scopeWithNotariesAndRelations($query, $cityId = null)
     {
-        return $query->where('status', '!=', 0) // Excluir notarías inactivas
+        return $query->where(function ($query) {
+            $query->where('status', '!=', 0)
+                ->orWhereNull('status'); // Permite los registros con status NULL
+        })
             ->when($cityId, function ($query) use ($cityId) {
                 return $query->where('city_id', $cityId); // Aplicar filtro si 'city' existe
             })
