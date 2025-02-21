@@ -338,7 +338,7 @@ class SelectController extends Controller
     {
         $userIds = Advisory::distinct()->pluck('user_id');
 
-        $profiles = Profile::whereIn('id', $userIds)->get();
+        $profiles = Profile::whereIn('user_id', $userIds)->get();
 
         $data = collect();
 
@@ -347,13 +347,13 @@ class SelectController extends Controller
 
             $data->push([
                 'label' => $label,
-                'value' => $profile->id,
+                'value' => $profile->user_id,
             ]);
         }
 
         $sortedData = $data->sortBy('label')->values();
 
-        return response()->json($sortedData);
+        return response()->json(['data' => $sortedData, 'status' => 200]);
     }
 
     public function getOperationalStatus()
