@@ -328,6 +328,8 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('agreement-status', [SelectController::class, 'getAgreementStatus']);
     Route::get('type-capital', [SelectController::class, 'getTypeCapital']);
     Route::get('pnte-offices', [SelectController::class, 'getOfficesPnte']);
+
+    Route::get('asesores-report', [SelectController::class, 'getAsesoresReporte']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {

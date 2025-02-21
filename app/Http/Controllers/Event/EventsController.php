@@ -217,8 +217,14 @@ class EventsController extends Controller
     {
         $events = Event::orderBy('created_at', 'desc')->paginate(50);
 
+        $events->getCollection()->transform(function ($event) {
+            $event->description = strip_tags($event->description);
+            return $event;
+        });
+
         return response()->json(['data' => $events, 'status' => 200]);
     }
+
 
     public function getEventsDots(Request $request, $yearMonth)
     {
@@ -400,7 +406,9 @@ class EventsController extends Controller
                 'descripionAll' => $event->description,
                 'nameUser'      => $event->nameUser,
                 'link'          => $event->link,
-                'resultado'     => $event->resultado
+                'resultado'     => $event->resultado,
+
+                'descriptionparse' => Str::limit(strip_tags($event->description), 100, '...'),
             ];
         });
 
