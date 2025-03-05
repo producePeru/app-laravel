@@ -142,6 +142,9 @@ class DownloadFormalizationsController extends Controller
         $role_array = $user_role['role_id'];
         $dateStart = $request->input('dateStart');
         $dateEnd = $request->input('dateEnd');
+        $idAsesor = $request->input('idAsesor');        // Nuevo parámetro
+        $year = $request->input('year');                // Nuevo parámetro
+
 
         $data = Formalization10::with([
             'economicsector:id,name',
@@ -172,6 +175,14 @@ class DownloadFormalizationsController extends Controller
             } catch (\Exception $e) {
                 return response()->json(['error' => 'Invalid date format'], 400);
             }
+        }
+
+        if ($year) {
+            $data = $data->whereYear('created_at', $year);
+        }
+
+        if ($idAsesor) {
+            $data = $data->where('user_id', $idAsesor);
         }
 
         // Filtrar por roles
@@ -246,6 +257,8 @@ class DownloadFormalizationsController extends Controller
         $role_array = $user_role['role_id'];
         $dateStart = $request->input('dateStart');
         $dateEnd = $request->input('dateEnd');
+        $idAsesor = $request->input('idAsesor');        // Nuevo parámetro
+        $year = $request->input('year');                // Nuevo parámetro
 
         $data = Formalization20::with([
             'regime:id,name',
@@ -276,6 +289,14 @@ class DownloadFormalizationsController extends Controller
             } catch (\Exception $e) {
                 return response()->json(['error' => 'Invalid date format'], 400);
             }
+        }
+
+        if ($year) {
+            $data = $data->whereYear('created_at', $year);
+        }
+
+        if ($idAsesor) {
+            $data = $data->where('user_id', $idAsesor);
         }
 
         // Filtrar por roles

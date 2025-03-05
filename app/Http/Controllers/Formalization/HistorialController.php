@@ -9,6 +9,7 @@ use App\Models\Formalization10;
 use App\Models\Formalization20;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class HistorialController extends Controller
 {
@@ -85,36 +86,118 @@ class HistorialController extends Controller
 
     // TABULADOR DE ASESORIA-FORMALIZACIONES...
 
+
+
+    // public function filterHistorialAdvisoriesByDates(Request $request)
+    // {
+    //     $filters = [
+    //         'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
+    //         'people_id' => $request->input('people_id'),
+    //         'dateStart' => $request->input('dateStart'),
+    //         'dateEnd' => $request->input('dateEnd'),
+    //         'city_id' => $request->input('city_id'),
+    //         'year' => $request->year
+    //     ];
+
+    //     $userRole = getUserRole();                              //🚩
+    //     $roleIdArray = $userRole['role_id'];
+    //     $user_id = $userRole['user_id'];
+
+    //     if (in_array(1, $roleIdArray) || $user_id === 1) {
+    //         $advisories = Advisory::withAdvisoryRangeDate($filters);
+    //         return response()->json($advisories, 200);
+    //     }
+    //     if (in_array(2, $roleIdArray) || in_array(7, $roleIdArray)) {
+    //         $results = Advisory::ByUserId($user_id)->withAdvisoryRangeDate($filters);
+    //         return response()->json($results, 200);
+    //     }
+    // }
+
     public function filterHistorialAdvisoriesByDates(Request $request)
     {
         $filters = [
-            'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
-            'people_id' => $request->input('people_id'),
+            'asesor'    => $request->input('asesor'),
+            'name'      => $request->input('name'),
             'dateStart' => $request->input('dateStart'),
-            'dateEnd' => $request->input('dateEnd'),
-            'city_id' => $request->input('city_id'),
-            'year' => $request->year
+            'dateEnd'   => $request->input('dateEnd'),
+            'year'      => $request->input('year')
         ];
 
-        $userRole = getUserRole();                              //🚩
-        $roleIdArray = $userRole['role_id'];
-        $user_id = $userRole['user_id'];
+        $userRole = getUserRole();
+        $roleIds  = $userRole['role_id'];
+        $userId   = $userRole['user_id'];
 
-        if (in_array(1, $roleIdArray) || $user_id === 1) {
-            $advisories = Advisory::withAdvisoryRangeDate($filters);
-            return response()->json($advisories, 200);
+        $query = Advisory::query();
+
+        if (in_array(1, $roleIds) || $userId === 1) {
+            $advisories = $query->withAdvisoryRangeDate($filters);
+        } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
+            $advisories = $query->ByUserId($userId)->withAdvisoryRangeDate($filters);
+        } else {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
-        if (in_array(2, $roleIdArray) || in_array(7, $roleIdArray)) {
-            $results = Advisory::ByUserId($user_id)->withAdvisoryRangeDate($filters);
-            return response()->json($results, 200);
-        }
+
+        $mappedAdvisories = $advisories->getCollection()->transform(function ($advisory) {
+            return [
+                'id'                    => $advisory->id,
+                'date'                  => $advisory->created_at->format('d/m/Y'),
+                'asesor'                => isset($advisory->user->profile) ? strtoupper($advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename . ' ' . $advisory->user->profile->name) : null,
+                'asesor_cde_city'       => $advisory->sede->city ?? null,
+                'asesor_cde_province'   => $advisory->sede->province ?? null,
+                'asesor_cde_district'   => $advisory->sede->district ?? null,
+
+                'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
+                'emp_document_number'   => $advisory->people->documentnumber ?? null,
+                'emp_country'           => isset($advisory->people->pais->name) ? strtoupper($advisory->people->pais->name) : 'PERU',
+                'emp_birth'             => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->format('d/m/Y') : null,
+                'emp_age'               => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->age : null,
+                'emp_lastname'          => $advisory->people->lastname,
+                'emp_middlename'        => $advisory->people->middlename,
+                'emp_name'              => $advisory->people->name,
+                'emp_gender'            => $advisory->people->gender->name == 'FEMENINO' ? 'F' : 'M',
+                'emp_discapabilities'   => $advisory->people->sick ? strtoupper($advisory->people->sick) : null,
+                'emp_soons'             => $advisory->people->hasSoon ?? null,
+                'emp_phone'             => $advisory->people->phone,
+                'emp_email'             => $advisory->people->email ? strtolower($advisory->people->email) : '-',
+
+                'supervisor'            => isset($advisory->supervisor->supervisorUser->profile) ? strtoupper($advisory->supervisor->supervisorUser->profile->lastname . ' ' . $advisory->supervisor->supervisorUser->profile->middlename . ' ' . $advisory->supervisor->supervisorUser->profile->name) : null,
+
+                'city'                  => $advisory->city->name ?? null,
+                'province'              => $advisory->province->name ?? null,
+                'district'              => $advisory->district->name ?? null,
+                'ruc'                   => $advisory->ruc ?? null,
+                'econimic_service'      => $advisory->economicsector->name ?? null,
+                'activity_comercial'    => $advisory->comercialactivity->name ?? null,
+                'component'             => $advisory->component->name ?? null,
+                'theme'                 => strtoupper($advisory->theme->name) ?? null,
+                'observations'          => $advisory->observations ?? null,
+                'modality'              => $advisory->modality->name ?? null
+            ];
+        });
+
+        $advisories->setCollection($mappedAdvisories);
+
+        return response()->json(['data' => $advisories, 'status' => 200]);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // 10
     public function filterHistorialFormalizations10ByDates(Request $request)
     {
-        // $role_id = $this->getUserRole()['role_id'];
-        // $user_id = $this->getUserRole()['user_id'];
         $filters = [
             'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
             'people_id' => $request->input('people_id'),
@@ -326,5 +409,101 @@ class HistorialController extends Controller
             });
             return response()->json(['message' => 'Actualización de asesorias actualizado RUC 20',  'status' => 200]);
         }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // NUEVO DATATABLES
+
+    public function indexDataTableAdvisories(Request $request)
+    {
+        $perPage = $request->input('length', 10);
+        $page = ($request->input('start', 0) / $perPage) + 1;
+
+        // Búsqueda global
+        $search = $request->input('search.value');
+        $query = Advisory::with([
+            'economicsector',
+            'comercialactivity',
+            'user.profile',
+            'people',
+            'component',
+            'theme',
+            'modality',
+            'city',
+            'province',
+            'district',
+            'cde'
+        ]);
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('ruc', 'like', "%{$search}%")
+                    ->orWhere('dni', 'like', "%{$search}%")
+
+                    ->orWhereHas('economicsector', fn($q) => $q->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('comercialactivity', fn($q) => $q->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('user.profile', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('lastname', 'like', "%{$search}%")
+                            ->orWhere('middlename', 'like', "%{$search}%");
+                    })
+
+                    // ->orWhereHas('people', fn($q) => $q->where('name', 'like', "%{$search}%") . orWhere('lastname', 'like', "%{$search}%"))
+                    ->orWhereHas('component', fn($q) => $q->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('theme', fn($q) => $q->where('name', 'like', "%{$search}%"))
+
+                    ->orWhereHas('city', fn($q) => $q->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('province', fn($q) => $q->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('district', fn($q) => $q->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('cde', fn($q) => $q->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        // Ordenación
+        $orderColumnIndex = $request->input('order.0.column', 0);
+        $orderDirection = $request->input('order.0.dir', 'asc');
+        $columns = ["id", "ruc", "dni", "observations"];
+        $orderColumn = $columns[$orderColumnIndex] ?? "id";
+        $query->orderBy($orderColumn, $orderDirection);
+
+        // Paginación
+        if ($perPage == -1) {
+            $perPage = $query->count();
+        }
+        $advisories = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            "draw" => intval($request->input('draw')),
+            "recordsTotal" => Advisory::count(),
+            "recordsFiltered" => $advisories->total(),
+            "data" => collect($advisories->items())->map(function ($advisory) {
+                return [
+                    "id" => $advisory->id,
+                    'created_at' => Carbon::parse($advisory->created_at)->format('d/m/Y H:i A'),
+                    'asesor' => $advisory->user->profile->name,
+
+
+
+
+
+                    "ruc" => $advisory->ruc,
+                    "dni" => $advisory->dni,
+                    "observations" => $advisory->observations,
+                    "modality_name" => optional($advisory->modality)->name, // Solo devuelve el nombre de la modalidad
+                ];
+            })
+        ]);
     }
 }

@@ -120,7 +120,7 @@ class Formalization20 extends Model
             'mype:id,name,ruc',
             'people:id,name,lastname,middlename,documentnumber,email,phone',
             'userupdater.profile'
-            ])
+        ])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
     }
@@ -141,7 +141,7 @@ class Formalization20 extends Model
 
     public function scopeByUserId($query, $userId)
     {
-        return $query->whereHas('user', function($q) use ($userId) {
+        return $query->whereHas('user', function ($q) use ($userId) {
             $q->where('id', $userId);
         });
     }
@@ -181,10 +181,10 @@ class Formalization20 extends Model
             'district',
             'typecapital'
         ])
-        ->orderBy('created_at', 'desc')->get()->map(function ($item) {
-            $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
-            return $item;
-        });
+            ->orderBy('created_at', 'desc')->get()->map(function ($item) {
+                $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
+                return $item;
+            });
     }
 
     // todas las formalizaciones tipo 20
@@ -210,8 +210,8 @@ class Formalization20 extends Model
             'province',
             'district'
         ])
-        ->orderBy('created_at', 'desc')
-        ->paginate(20);
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
     }
 
     //filters
@@ -244,6 +244,6 @@ class Formalization20 extends Model
             $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
         }
 
-        return $query->paginate(50);
+        return $query->paginate(150);
     }
 }

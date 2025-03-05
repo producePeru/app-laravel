@@ -32,6 +32,7 @@ use App\Http\Controllers\Selects\SelectController;
 use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\User\SupervisorController;
 use App\Http\Controllers\Fair\FairController;
+use App\Http\Controllers\Formalization\ReportController;
 use App\Http\Controllers\Google\GoogleCalendarController;
 use App\Http\Controllers\Notary\QRNotaryController;
 // use App\Http\Controllers\User\TokenController;
@@ -200,12 +201,17 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
     Route::get('formalizations-20', [HistorialController::class, 'historialFormalizations20']);
 
     //filters
-    Route::get('advisories/filters',                [HistorialController::class, 'filterHistorialAdvisoriesByDates']);
+    Route::get('advisories/filters',                [HistorialController::class, 'filterHistorialAdvisoriesByDates']);                  //1
     Route::get('formalizations-10/filters',         [HistorialController::class, 'filterHistorialFormalizations10ByDates']);
     Route::get('formalizations-20/filters',         [HistorialController::class, 'filterHistorialFormalizations20ByDates']);
 
     //registros-historial
     Route::get('registers/{idPeople}', [HistorialController::class, 'getByPeopleIdRegisters']);
+
+
+
+    // datatables
+    Route::get('advisories-filters',                [HistorialController::class, 'indexDataTableAdvisories']);
 });
 
 Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -447,3 +453,11 @@ Route::group(['prefix' => 'restrict', 'namespace' => 'App\Http\Controllers', 'mi
 });
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {});
+
+
+
+
+// REFORMA
+Route::group(['prefix' => 'report', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('advisories',                 [ReportController::class, 'advisiories']);
+});
