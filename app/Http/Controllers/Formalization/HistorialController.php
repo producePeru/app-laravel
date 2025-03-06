@@ -195,11 +195,11 @@ class HistorialController extends Controller
             'modality'              => $advisory->modality->name ?? null,
 
             // ids
-            'econimic_sector_id'    => $advisory->economicsector->id,
-            'activity_comercial_id' => $advisory->comercialactivity->id,
-            'component_id'             => $advisory->component->id,
-            'theme_id'              => $advisory->theme->id,
-            'modality_id'           => $advisory->modality->id,
+            'econimic_sector_id'    => $advisory->economicsector->id ?? null,
+            'activity_comercial_id' => $advisory->comercialactivity->id ?? null,
+            'component_id'             => $advisory->component->id ?? null,
+            'theme_id'              => $advisory->theme->id ?? null,
+            'modality_id'           => $advisory->modality->id ?? null,
             'city_id'               => $advisory->city->id ?? null,
             'province_id'           => $advisory->province->id ?? null,
             'district_id'           => $advisory->district->id ?? null,
@@ -358,10 +358,10 @@ class HistorialController extends Controller
             'modality'              => $f10->modality->name ?? null,
 
             // ids
-            'econimic_sector_id'    => $f10->economicsector->id,
-            'activity_comercial_id' => $f10->comercialactivity->id,
-            'detailprocedure_id'    => $f10->detailprocedure->id,
-            'modality_id'           => $f10->modality->id,
+            'econimic_sector_id'    => $f10->economicsector->id ?? null,
+            'activity_comercial_id' => $f10->comercialactivity->id ?? null,
+            'detailprocedure_id'    => $f10->detailprocedure->id ?? null,
+            'modality_id'           => $f10->modality->id ?? null,
             'city_id'               => $f10->city->id ?? null,
             'province_id'           => $f10->province->id ?? null,
             'district_id'           => $f10->district->id ?? null,
@@ -457,12 +457,12 @@ class HistorialController extends Controller
 
 
             // ids
-            'regime_id'             => $f20->regime->id,
-            'econimic_sector_id'    => $f20->economicsector->id,
-            'activity_comercial_id' => $f20->comercialactivity->id,
-            'notary_id'             => $f20->notary->id,
-            'typecapital_id'        => $f20->typecapital->id,
-            'modality_id'           => $f20->modality->id,
+            'regime_id'             => $f20->regime->id ?? null,
+            'econimic_sector_id'    => $f20->economicsector->id ?? null,
+            'activity_comercial_id' => $f20->comercialactivity->id ?? null,
+            'notary_id'             => $f20->notary->id ?? null,
+            'typecapital_id'        => $f20->typecapital->id ?? null,
+            'modality_id'           => $f20->modality->id ?? null,
             'city_id'               => $f20->city->id ?? null,
             'province_id'           => $f20->province->id ?? null,
             'district_id'           => $f20->district->id ?? null,
