@@ -287,7 +287,7 @@ class Advisory extends Model
 
         if (!empty($filters['name'])) {
             $query->whereHas('people', function ($q) use ($filters) {
-                $q->where('documentnumber', $filters['name']);
+                $q->where('documentnumber', 'like', '%' . $filters['name'] . '%');
             });
         }
 
@@ -299,7 +299,5 @@ class Advisory extends Model
         if (!empty($filters['year'])) {
             $query->whereYear('created_at', $filters['year']);
         }
-
-        return $query->paginate(150);
     }
 }

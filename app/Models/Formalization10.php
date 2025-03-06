@@ -189,25 +189,23 @@ class Formalization10 extends Model
             'district'
         ])->orderBy('created_at', 'desc');
 
-        if ($filters['user_id'] !== null) {
-            $query->whereIn('user_id', $filters['user_id']);
+        if (!empty($filters['asesor'])) {
+            $query->where('user_id', $filters['asesor']);
         }
 
-        // if ($filters['dateStart'] && $filters['dateEnd']) {
-        //     $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' + 1 day'));
-        //     $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
-        // }
+        if (!empty($filters['name'])) {
+            $query->whereHas('people', function ($q) use ($filters) {
+                $q->where('documentnumber', 'like', '%' . $filters['name'] . '%');
+            });
+        }
 
-        if ($filters['dateStart'] && $filters['dateEnd']) {
-            $endDate = date('Y-m-d', strtotime($filters['dateEnd']));
-            $endDate = date('Y-m-d', strtotime($endDate . ' + 1 day'));
+        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' +1 day'));
             $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
         }
 
         if (!empty($filters['year'])) {
             $query->whereYear('created_at', $filters['year']);
         }
-
-        return $query->paginate(150);
     }
 }

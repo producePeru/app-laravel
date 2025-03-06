@@ -215,9 +215,9 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
 });
 
 Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('asesories',                     [DownloadFormalizationsController::class, 'exportAsesories']);
-    Route::get('formalizations-ruc10',          [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
-    Route::get('formalizations-ruc20',          [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
+    Route::post('asesories',                    [DownloadFormalizationsController::class, 'exportAsesories']);
+    Route::post('formalizations-ruc10',         [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
+    Route::post('formalizations-ruc20',         [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
     Route::post('actions-plans',                [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);

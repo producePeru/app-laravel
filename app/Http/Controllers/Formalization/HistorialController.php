@@ -113,6 +113,8 @@ class HistorialController extends Controller
     //     }
     // }
 
+
+    // ULTIMO 2025 ***
     public function filterHistorialAdvisoriesByDates(Request $request)
     {
         $filters = [
@@ -120,8 +122,10 @@ class HistorialController extends Controller
             'name'      => $request->input('name'),
             'dateStart' => $request->input('dateStart'),
             'dateEnd'   => $request->input('dateEnd'),
-            'year'      => $request->input('year')
+            'year'      => $request->input('year'),
         ];
+
+        $paginate = $request->boolean('paginate', true);
 
         $userRole = getUserRole();
         $roleIds  = $userRole['role_id'];
@@ -130,68 +134,145 @@ class HistorialController extends Controller
         $query = Advisory::query();
 
         if (in_array(1, $roleIds) || $userId === 1) {
-            $advisories = $query->withAdvisoryRangeDate($filters);
+            $query->withAdvisoryRangeDate($filters);
         } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
-            $advisories = $query->ByUserId($userId)->withAdvisoryRangeDate($filters);
+            $query->ByUserId($userId)->withAdvisoryRangeDate($filters);
         } else {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $mappedAdvisories = $advisories->getCollection()->transform(function ($advisory) {
-            return [
-                'id'                    => $advisory->id,
-                'date'                  => $advisory->created_at->format('d/m/Y'),
-                'asesor'                => isset($advisory->user->profile) ? strtoupper($advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename . ' ' . $advisory->user->profile->name) : null,
-                'asesor_cde_city'       => $advisory->sede->city ?? null,
-                'asesor_cde_province'   => $advisory->sede->province ?? null,
-                'asesor_cde_district'   => $advisory->sede->district ?? null,
+        if ($paginate) {
+            $advisories = $query->paginate(150)->through(function ($advisory) {
+                return $this->mapAdvisory($advisory);
+            });
+        } else {
+            $advisories = $query->get()->map(function ($advisory) {
+                return $this->mapAdvisory($advisory);
+            });
+        }
 
-                'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
-                'emp_document_number'   => $advisory->people->documentnumber ?? null,
-                'emp_country'           => isset($advisory->people->pais->name) ? strtoupper($advisory->people->pais->name) : 'PERU',
-                'emp_birth'             => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->format('d/m/Y') : null,
-                'emp_age'               => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->age : null,
-                'emp_lastname'          => $advisory->people->lastname,
-                'emp_middlename'        => $advisory->people->middlename,
-                'emp_name'              => $advisory->people->name,
-                'emp_gender'            => $advisory->people->gender->name == 'FEMENINO' ? 'F' : 'M',
-                'emp_discapabilities'   => $advisory->people->sick ? strtoupper($advisory->people->sick) : null,
-                'emp_soons'             => $advisory->people->hasSoon ?? null,
-                'emp_phone'             => $advisory->people->phone,
-                'emp_email'             => $advisory->people->email ? strtolower($advisory->people->email) : '-',
-
-                'supervisor'            => isset($advisory->supervisor->supervisorUser->profile) ? strtoupper($advisory->supervisor->supervisorUser->profile->lastname . ' ' . $advisory->supervisor->supervisorUser->profile->middlename . ' ' . $advisory->supervisor->supervisorUser->profile->name) : null,
-
-                'city'                  => $advisory->city->name ?? null,
-                'province'              => $advisory->province->name ?? null,
-                'district'              => $advisory->district->name ?? null,
-                'ruc'                   => $advisory->ruc ?? null,
-                'econimic_service'      => $advisory->economicsector->name ?? null,
-                'activity_comercial'    => $advisory->comercialactivity->name ?? null,
-                'component'             => $advisory->component->name ?? null,
-                'theme'                 => strtoupper($advisory->theme->name) ?? null,
-                'observations'          => $advisory->observations ?? null,
-                'modality'              => $advisory->modality->name ?? null
-            ];
-        });
-
-        $advisories->setCollection($mappedAdvisories);
-
-        return response()->json(['data' => $advisories, 'status' => 200]);
+        return response()->json([
+            'data'   => $advisories,
+            'status' => 200
+        ]);
     }
 
+    private function mapAdvisory($advisory)
+    {
+        return [
+            'id'                    => $advisory->id,
+            'date'                  => $advisory->created_at->format('d/m/Y'),
+            'asesor'                => isset($advisory->user->profile) ? strtoupper($advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename . ' ' . $advisory->user->profile->name) : null,
+            'asesor_cde_city'       => $advisory->sede->city ?? null,
+            'asesor_cde_province'   => $advisory->sede->province ?? null,
+            'asesor_cde_district'   => $advisory->sede->district ?? null,
 
+            'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
+            'emp_document_number'   => $advisory->people->documentnumber ?? null,
+            'emp_country'           => isset($advisory->people->pais->name) ? strtoupper($advisory->people->pais->name) : 'PERU',
+            'emp_birth'             => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->format('d/m/Y') : null,
+            'emp_age'               => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->age : null,
+            'emp_lastname'          => $advisory->people->lastname,
+            'emp_middlename'        => $advisory->people->middlename,
+            'emp_name'              => $advisory->people->name,
+            'emp_gender'            => $advisory->people->gender->name == 'FEMENINO' ? 'F' : 'M',
+            'emp_discapabilities'   => $advisory->people->sick ? strtoupper($advisory->people->sick) : null,
+            'emp_soons'             => $advisory->people->hasSoon ?? null,
+            'emp_phone'             => $advisory->people->phone,
+            'emp_email'             => $advisory->people->email ? strtolower($advisory->people->email) : '-',
 
+            'supervisor'            => isset($advisory->supervisor->supervisorUser->profile) ? strtoupper($advisory->supervisor->supervisorUser->profile->lastname . ' ' . $advisory->supervisor->supervisorUser->profile->middlename . ' ' . $advisory->supervisor->supervisorUser->profile->name) : null,
 
+            'city'                  => $advisory->city->name ?? null,
+            'province'              => $advisory->province->name ?? null,
+            'district'              => $advisory->district->name ?? null,
+            'ruc'                   => $advisory->ruc ?? null,
+            'econimic_service'      => $advisory->economicsector->name ?? null,
+            'activity_comercial'    => $advisory->comercialactivity->name ?? null,
+            'component'             => $advisory->component->name ?? null,
+            'theme'                 => strtoupper($advisory->theme->name) ?? null,
+            'observations'          => $advisory->observations ?? null,
+            'modality'              => $advisory->modality->name ?? null,
 
+            // ids
+            'econimic_sector_id'    => $advisory->economicsector->id,
+            'activity_comercial_id' => $advisory->comercialactivity->id,
+            'component_id'             => $advisory->component->id,
+            'theme_id'              => $advisory->theme->id,
+            'modality_id'           => $advisory->modality->id,
+            'city_id'               => $advisory->city->id ?? null,
+            'province_id'           => $advisory->province->id ?? null,
+            'district_id'           => $advisory->district->id ?? null,
+        ];
+    }
 
+    // public function filterHistorialAdvisoriesByDates(Request $request)
+    // {
+    //     $filters = [
+    //         'asesor'    => $request->input('asesor'),
+    //         'name'      => $request->input('name'),
+    //         'dateStart' => $request->input('dateStart'),
+    //         'dateEnd'   => $request->input('dateEnd'),
+    //         'year'      => $request->input('year'),
+    //         'paginate' => $request->input('paginate'),
+    //     ];
 
+    //     $userRole = getUserRole();
+    //     $roleIds  = $userRole['role_id'];
+    //     $userId   = $userRole['user_id'];
 
+    //     $query = Advisory::query();
 
+    //     if (in_array(1, $roleIds) || $userId === 1) {
+    //         $advisories = $query->withAdvisoryRangeDate($filters);
+    //     } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
+    //         $advisories = $query->ByUserId($userId)->withAdvisoryRangeDate($filters);
+    //     } else {
+    //         return response()->json(['message' => 'Unauthorized'], 403);
+    //     }
 
+    //     $mappedAdvisories = $advisories->getCollection()->transform(function ($advisory) {
+    //         return [
+    //             'id'                    => $advisory->id,
+    //             'date'                  => $advisory->created_at->format('d/m/Y'),
+    //             'asesor'                => isset($advisory->user->profile) ? strtoupper($advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename . ' ' . $advisory->user->profile->name) : null,
+    //             'asesor_cde_city'       => $advisory->sede->city ?? null,
+    //             'asesor_cde_province'   => $advisory->sede->province ?? null,
+    //             'asesor_cde_district'   => $advisory->sede->district ?? null,
 
+    //             'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
+    //             'emp_document_number'   => $advisory->people->documentnumber ?? null,
+    //             'emp_country'           => isset($advisory->people->pais->name) ? strtoupper($advisory->people->pais->name) : 'PERU',
+    //             'emp_birth'             => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->format('d/m/Y') : null,
+    //             'emp_age'               => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->age : null,
+    //             'emp_lastname'          => $advisory->people->lastname,
+    //             'emp_middlename'        => $advisory->people->middlename,
+    //             'emp_name'              => $advisory->people->name,
+    //             'emp_gender'            => $advisory->people->gender->name == 'FEMENINO' ? 'F' : 'M',
+    //             'emp_discapabilities'   => $advisory->people->sick ? strtoupper($advisory->people->sick) : null,
+    //             'emp_soons'             => $advisory->people->hasSoon ?? null,
+    //             'emp_phone'             => $advisory->people->phone,
+    //             'emp_email'             => $advisory->people->email ? strtolower($advisory->people->email) : '-',
 
+    //             'supervisor'            => isset($advisory->supervisor->supervisorUser->profile) ? strtoupper($advisory->supervisor->supervisorUser->profile->lastname . ' ' . $advisory->supervisor->supervisorUser->profile->middlename . ' ' . $advisory->supervisor->supervisorUser->profile->name) : null,
 
+    //             'city'                  => $advisory->city->name ?? null,
+    //             'province'              => $advisory->province->name ?? null,
+    //             'district'              => $advisory->district->name ?? null,
+    //             'ruc'                   => $advisory->ruc ?? null,
+    //             'econimic_service'      => $advisory->economicsector->name ?? null,
+    //             'activity_comercial'    => $advisory->comercialactivity->name ?? null,
+    //             'component'             => $advisory->component->name ?? null,
+    //             'theme'                 => strtoupper($advisory->theme->name) ?? null,
+    //             'observations'          => $advisory->observations ?? null,
+    //             'modality'              => $advisory->modality->name ?? null
+    //         ];
+    //     });
+
+    //     $advisories->setCollection($mappedAdvisories);
+
+    //     return response()->json(['data' => $advisories, 'status' => 200]);
+    // }
 
 
 
@@ -199,53 +280,194 @@ class HistorialController extends Controller
     public function filterHistorialFormalizations10ByDates(Request $request)
     {
         $filters = [
-            'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
-            'people_id' => $request->input('people_id'),
+            'asesor'    => $request->input('asesor'),
+            'name'      => $request->input('name'),
             'dateStart' => $request->input('dateStart'),
-            'dateEnd' => $request->input('dateEnd'),
-            'city_id' => $request->input('city_id'),
-            'year' => $request->year
+            'dateEnd'   => $request->input('dateEnd'),
+            'year'      => $request->input('year'),
         ];
 
-        $userRole = getUserRole();
-        $roleIdArray = $userRole['role_id'];
-        $user_id = $userRole['user_id'];
+        $paginate = $request->boolean('paginate', true);
 
-        if (in_array(1, $roleIdArray) || $user_id === 1) {
-            $data = Formalization10::withFormalizationRangeDate($filters);
-            return response()->json($data, 200);
+        $userRole = getUserRole();
+        $roleIds  = $userRole['role_id'];
+        $userId   = $userRole['user_id'];
+
+        $query = Formalization10::query();
+
+
+        if (in_array(1, $roleIds) || $userId === 1) {
+            $query->withFormalizationRangeDate($filters);
+        } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
+            $query->ByUserId($userId)->withFormalizationRangeDate($filters);
+        } else {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
-        if (in_array(2, $roleIdArray) || in_array(7, $roleIdArray)) {
-            $results = Formalization10::ByUserId($user_id)->withFormalizationRangeDate($filters);
-            return response()->json($results, 200);
+
+        if ($paginate) {
+            $formalizations = $query->paginate(150)->through(function ($item) {
+                return $this->mapFormalization10($item);
+            });
+        } else {
+            $formalizations = $query->get()->map(function ($item) {
+                return $this->mapFormalization10($item);
+            });
         }
+
+        return response()->json([
+            'data'   => $formalizations,
+            'status' => 200
+        ]);
+    }
+
+    private function mapFormalization10($f10)
+    {
+        return [
+            'id'                    => $f10->id,
+            'date'                  => $f10->created_at->format('d/m/Y'),
+            'asesor'                => isset($f10->user->profile) ? strtoupper($f10->user->profile->lastname . ' ' . $f10->user->profile->middlename . ' ' . $f10->user->profile->name) : null,
+            'asesor_cde_city'       => $f10->sede->city ?? null,
+            'asesor_cde_province'   => $f10->sede->province ?? null,
+            'asesor_cde_district'   => $f10->sede->district ?? null,
+
+            'emp_document_type'     => $f10->people->typedocument->avr ?? null,
+            'emp_document_number'   => $f10->people->documentnumber ?? null,
+            'emp_country'           => isset($f10->people->pais->name) ? strtoupper($f10->people->pais->name) : 'PERU',
+            'emp_birth'             => $f10->people->birthday ? \Carbon\Carbon::parse($f10->people->birthday)->format('d/m/Y') : null,
+            'emp_age'               => $f10->people->birthday ? \Carbon\Carbon::parse($f10->people->birthday)->age : null,
+            'emp_lastname'          => $f10->people->lastname,
+            'emp_middlename'        => $f10->people->middlename,
+            'emp_name'              => $f10->people->name,
+            'emp_gender'            => $f10->people->gender->name == 'FEMENINO' ? 'F' : 'M',
+            'emp_discapabilities'   => $f10->people->sick ? strtoupper($f10->people->sick) : null,
+            'emp_soons'             => $f10->people->hasSoon ?? null,
+            'emp_phone'             => $f10->people->phone,
+            'emp_email'             => $f10->people->email ? strtolower($f10->people->email) : '-',
+
+            'supervisor'            => isset($f10->supervisor->supervisorUser->profile) ? strtoupper($f10->supervisor->supervisorUser->profile->lastname . ' ' . $f10->supervisor->supervisorUser->profile->middlename . ' ' . $f10->supervisor->supervisorUser->profile->name) : null,
+
+            'city'                  => $f10->city->name ?? null,
+            'province'              => $f10->province->name ?? null,
+            'district'              => $f10->district->name ?? null,
+            'address'               => $f10->address ?? null,
+            'ruc'                   => $f10->ruc ?? null,
+
+            'econimic_sector'       => $f10->economicsector->name ?? null,
+            'activity_comercial'    => $f10->comercialactivity->name ?? null,
+            'detail_tramit'         => $f10->detailprocedure->name ?? null,
+            'modality'              => $f10->modality->name ?? null,
+
+            // ids
+            'econimic_sector_id'    => $f10->economicsector->id,
+            'activity_comercial_id' => $f10->comercialactivity->id,
+            'detailprocedure_id'    => $f10->detailprocedure->id,
+            'modality_id'           => $f10->modality->id,
+            'city_id'               => $f10->city->id ?? null,
+            'province_id'           => $f10->province->id ?? null,
+            'district_id'           => $f10->district->id ?? null,
+        ];
     }
 
     public function filterHistorialFormalizations20ByDates(Request $request)
     {
         $filters = [
-            'user_id' => !$request->input('user_id') ? null : explode(',', $request->input('user_id')),
-            'people_id' => $request->input('people_id'),
+            'asesor'    => $request->input('asesor'),
+            'name'      => $request->input('name'),
             'dateStart' => $request->input('dateStart'),
-            'dateEnd' => $request->input('dateEnd'),
-            'city_id' => $request->input('city_id'),
-            'year' => $request->year
+            'dateEnd'   => $request->input('dateEnd'),
+            'year'      => $request->input('year'),
         ];
 
-        $userRole = getUserRole();
-        $roleIdArray = $userRole['role_id'];
-        $user_id = $userRole['user_id'];
+        $paginate = $request->boolean('paginate', true);
 
-        if (in_array(1, $roleIdArray) || $user_id === 1) {
-            $data = Formalization20::withFormalizationRangeDate($filters);
-            return response()->json($data, 200);
+        $userRole = getUserRole();
+        $roleIds  = $userRole['role_id'];
+        $userId   = $userRole['user_id'];
+
+        $query = Formalization20::query();
+
+        if (in_array(1, $roleIds) || $userId === 1) {
+            $query->withFormalizationRangeDate($filters);
+        } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
+            $query->ByUserId($userId)->withFormalizationRangeDate($filters);
+        } else {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
-        if (in_array(2, $roleIdArray) || in_array(7, $roleIdArray)) {
-            $results = Formalization20::ByUserId($user_id)->withFormalizationRangeDate($filters);
-            return response()->json($results, 200);
+
+        if ($paginate) {
+            $formalizations = $query->paginate(150)->through(function ($item) {
+                return $this->mapFormalization20($item);
+            });
+        } else {
+            $formalizations = $query->get()->map(function ($item) {
+                return $this->mapFormalization20($item);
+            });
         }
+
+        return response()->json([
+            'data'   => $formalizations,
+            'status' => 200
+        ]);
     }
-    // TABULADOR DE ASESORIA-FORMALIZACIONES...
+
+    private function mapFormalization20($f20)
+    {
+        return [
+            'id'                    => $f20->id,
+            'date'                  => $f20->created_at->format('d/m/Y'),
+            'asesor'                => isset($f20->user->profile) ? strtoupper($f20->user->profile->lastname . ' ' . $f20->user->profile->middlename . ' ' . $f20->user->profile->name) : null,
+            'asesor_cde_city'       => $f20->sede->city ?? null,
+            'asesor_cde_province'   => $f20->sede->province ?? null,
+            'asesor_cde_district'   => $f20->sede->district ?? null,
+
+            'emp_document_type'     => $f20->people->typedocument->avr ?? null,
+            'emp_document_number'   => $f20->people->documentnumber ?? null,
+            'emp_country'           => isset($f20->people->pais->name) ? strtoupper($f20->people->pais->name) : 'PERU',
+            'emp_birth'             => $f20->people->birthday ? \Carbon\Carbon::parse($f20->people->birthday)->format('d/m/Y') : null,
+            'emp_age'               => $f20->people->birthday ? \Carbon\Carbon::parse($f20->people->birthday)->age : null,
+            'emp_lastname'          => $f20->people->lastname,
+            'emp_middlename'        => $f20->people->middlename,
+            'emp_name'              => $f20->people->name,
+            'emp_gender'            => $f20->people->gender->name == 'FEMENINO' ? 'F' : 'M',
+            'emp_discapabilities'   => $f20->people->sick ? strtoupper($f20->people->sick) : null,
+            'emp_soons'             => $f20->people->hasSoon ?? null,
+            'emp_phone'             => $f20->people->phone,
+            'emp_email'             => $f20->people->email ? strtolower($f20->people->email) : '-',
+
+            'supervisor'            => isset($f20->supervisor->supervisorUser->profile) ? strtoupper($f20->supervisor->supervisorUser->profile->lastname . ' ' . $f20->supervisor->supervisorUser->profile->middlename . ' ' . $f20->supervisor->supervisorUser->profile->name) : null,
+
+            'city'                  => $f20->city->name ?? null,
+            'province'              => $f20->province->name ?? null,
+            'district'              => $f20->district->name ?? null,
+            'address'               => $f20->address ?? null,
+            'ruc'                   => $f20->ruc ?? null,
+
+            'econimic_sector'       => $f20->economicsector->name ?? null,
+            'activity_comercial'    => $f20->comercialactivity->name ?? null,
+            'date_reception'        => $f20->dateReception ? \Carbon\Carbon::parse($f20->dateReception)->format('d/m/Y') : null,
+            'date_tramite'          => $f20->dateTramite ? \Carbon\Carbon::parse($f20->dateTramite)->format('d/m/Y') : null,
+            'name_mype'             => strtoupper($f20->nameMype),
+            'type_regimen'          => $f20->regime->name,
+            'bic'                   => $f20->isbic,
+            'num_solicitud'         => $f20->numbernotary,
+            'notaria'               => isset($f20->notary->name) ? strtoupper($f20->notary->name) : null,
+            'type_aporte'           => optional($f20->typecapital)->name,
+            'monto_capital'         => $f20->montocapital,
+            'modality'              => $f20->modality->name ?? null,
+
+
+            // ids
+            'regime_id'             => $f20->regime->id,
+            'econimic_sector_id'    => $f20->economicsector->id,
+            'activity_comercial_id' => $f20->comercialactivity->id,
+            'notary_id'             => $f20->notary->id,
+            'typecapital_id'        => $f20->typecapital->id,
+            'modality_id'           => $f20->modality->id,
+            'city_id'               => $f20->city->id ?? null,
+            'province_id'           => $f20->province->id ?? null,
+            'district_id'           => $f20->district->id ?? null,
+        ];
+    }
 
 
     // HISTORIAL DE REGISTROS...
