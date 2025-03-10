@@ -27,6 +27,12 @@ class Event extends Model
         'resultado'
     ];
 
+    public function officePnte()
+    {
+        return $this->belongsTo(OfficePnte::class, 'id_pnte');
+    }
+
+
     // public function recurrences()
     // {
     //     return $this->hasMany(EventRecurrence::class);

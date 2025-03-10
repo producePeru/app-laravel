@@ -141,15 +141,9 @@ class HistorialController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        if ($paginate) {
-            $advisories = $query->paginate(150)->through(function ($advisory) {
-                return $this->mapAdvisory($advisory);
-            });
-        } else {
-            $advisories = $query->get()->map(function ($advisory) {
-                return $this->mapAdvisory($advisory);
-            });
-        }
+        $advisories = $query->paginate(150)->through(function ($advisory) {
+            return $this->mapAdvisory($advisory);
+        });
 
         return response()->json([
             'data'   => $advisories,
@@ -304,15 +298,9 @@ class HistorialController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        if ($paginate) {
-            $formalizations = $query->paginate(150)->through(function ($item) {
-                return $this->mapFormalization10($item);
-            });
-        } else {
-            $formalizations = $query->get()->map(function ($item) {
-                return $this->mapFormalization10($item);
-            });
-        }
+        $formalizations = $query->paginate(150)->through(function ($item) {
+            return $this->mapFormalization10($item);
+        });
 
         return response()->json([
             'data'   => $formalizations,

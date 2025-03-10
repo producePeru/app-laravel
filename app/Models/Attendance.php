@@ -15,6 +15,7 @@ class Attendance extends Model
     protected $table = 'attendancelist';
 
     protected $fillable = [
+        'eventsoffice_id',
         'title',
         'slug',
         'startDate',

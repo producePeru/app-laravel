@@ -37,26 +37,77 @@ class PersonController extends Controller
 
     public function index(Request $request)
     {
-        $role_id = $this->getUserRole()['role_id'];
-        $user_id = $this->getUserRole()['user_id'];
         $filters = [
-            'search' => $request->input('search'),
+            'asesor'    => $request->input('asesor'),
+            'name'      => $request->input('name')
         ];
 
+        $paginate = $request->boolean('paginate', true);
+
         $userRole = getUserRole();
-        $roleIdArray = $userRole['role_id'];
+        $roleIds  = $userRole['role_id'];
+        $userId   = $userRole['user_id'];
 
-        if (in_array(1, $roleIdArray) || in_array(5, $roleIdArray)) {
-            $people = People::withProfileAndRelations($filters);
-            return response()->json($people, 200);
+        $query = People::query();
+
+        if (in_array(1, $roleIds) || $userId === 1) {
+            $query->withProfileAndUser($filters);
+        } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
+            $query->ByUserId($userId)->withProfileAndUser($filters);
+        } else {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-
-        if (in_array(2, $roleIdArray) || in_array(7, $roleIdArray)) {
-            $people = People::withProfileAndUser($user_id, $filters);
-            return response()->json($people, 200);
+        if ($paginate) {
+            $formalizations = $query->paginate(150)->through(function ($item) {
+                return $this->mapPeopleRegisters($item);
+            });
+        } else {
+            $formalizations = $query->get()->map(function ($item) {
+                return $this->mapPeopleRegisters($item);
+            });
         }
+
+        return response()->json([
+            'data'   => $formalizations,
+            'status' => 200
+        ]);
     }
+
+    private function mapPeopleRegisters($people)
+    {
+        return [
+            'id'                    => $people->id,
+            'typedocument'          => $people->typedocument->avr,
+            'document'              => $people->documentnumber,
+            'name'                  => isset($people->name) ? strtoupper($people->name) : null,
+            'last_name'             => isset($people->lastname, $people->middlename) ? strtoupper(trim($people->lastname . ' ' . $people->middlename)) : (isset($people->lastname) ? strtoupper($people->lastname) : (isset($people->middlename) ? strtoupper($people->middlename) : null)),
+            'city'                  => $people->city->name,
+            'province'              => $people->province->name,
+            'district'              => $people->district->name,
+            'address'               => isset($people->address) ? strtoupper($people->address) : null,
+            'phone'                 => $people->phone ?? null,
+            'email'                 => $people->email ?? null,
+            'gender'                => $people->gender->name ?? null,
+            'sick'                  =>  $people->sick == 'yes' ? 'SI' : 'NO',
+            'hasSoon'               => $people->hasSoon ?? null,
+            'registered'            => isset($people->user[0]->profile) ? strtoupper(trim(($people->user[0]->profile->name ?? '') . ' ' . ($people->user[0]->profile->lastname ?? ''))) : null,
+
+            //ids
+            'typedocument_id'       => $people->typedocument->id,
+            'lastname'              => $people->lastname ?? null,
+            'middlename'            => $people->middlename ?? null,
+            'country_id'            => $people->pais->id ?? null,
+            'city_id'               => $people->city->id,
+            'province_id'           => $people->province->id,
+            'district_id'           => $people->district->id,
+            'address'               => $people->address,
+            'birthday'              => $people->birthday,
+            'gender_id'             => $people->gender->id ?? null,
+        ];
+    }
+
+
 
     public function store(Request $request)
     {
@@ -146,32 +197,44 @@ class PersonController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = People::find($id);
+        try {
+            $user_id = $this->getUserRole()['user_id'];
 
-        if (!$user) {
-            return response()->json(['message' => 'El usuario no tiene un perfil'], 404);
+            $user = People::find($id);
+
+            if (!$user) {
+                return response()->json(['message' => 'El usuario no tiene un perfil'], 404);
+            }
+
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'lastname' => 'required|string|max:255',
+                'middlename' => 'nullable|string|max:255',
+                'birthday' => 'nullable|date',
+                'gender_id' => 'nullable|integer',
+                'country_id' => 'required',
+                'city_id' => 'required|integer',
+                'province_id' => 'required|integer',
+                'district_id' => 'required|integer',
+                'sick' => 'nullable|in:yes,no',
+                'phone' => 'nullable|string|max:20',
+                'email' => 'nullable|string',
+                'hasSoon' => 'nullable|string',
+            ]);
+
+            $validatedData['updated_by'] = $user_id;
+
+            $user->update($validatedData);
+
+            return response()->json(['message' => 'Perfil actualizado con éxito', 'status' => 200]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Ocurrió un error al actualizar el perfil.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'middlename' => 'nullable|string|max:255',
-            'birthday' => 'nullable|date',
-            'gender_id' => 'nullable|integer',
-            'country_id' => 'required',
-            'city_id' => 'required|integer',
-            'province_id' => 'required|integer',
-            'district_id' => 'required|integer',
-            'sick' => 'nullable|in:yes,no',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|string',
-            'hasSoon' => 'nullable|string',
-        ]);
-
-        $user->update($validatedData);
-
-        return response()->json(['message' => 'Perfil actualizado con éxito', 'status' => 200]);
     }
+
 
     public function findUserById($dni)
     {

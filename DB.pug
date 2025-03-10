@@ -54,3 +54,24 @@ php artisan make:controller Restrict/RestrictIpController --api
 //-     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 //-     FOREIGN KEY (id_pnte) REFERENCES eventsoffice(id) ON DELETE CASCADE
 //- );
+
+
+
+//- ALTER TABLE people
+//- ADD COLUMN updated_by BIGINT UNSIGNED NULL AFTER gender_id,
+//- ADD CONSTRAINT fk_updated_by FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL;
+
+
+//- CREATE TABLE pnteSoft (
+//-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//-     name VARCHAR(255) NOT NULL,
+//-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+//- );
+
+//- ALTER TABLE attendancelist
+//- ADD COLUMN eventsoffice_id BIGINT UNSIGNED NULL AFTER id,
+//- ADD CONSTRAINT fk_eventsoffice_id FOREIGN KEY (eventsoffice_id) REFERENCES eventsoffice(id) ON DELETE SET NULL;
+
+
+

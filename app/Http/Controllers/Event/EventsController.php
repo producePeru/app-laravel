@@ -224,14 +224,19 @@ class EventsController extends Controller
 
     public function index()
     {
-        $events = Event::orderBy('created_at', 'desc')->paginate(50);
+        try {
 
-        $events->getCollection()->transform(function ($event) {
-            $event->description = strip_tags($event->description);
-            return $event;
-        });
+            $events = Event::with('officePnte')->orderBy('dateStart', 'desc')->paginate(50);
 
-        return response()->json(['data' => $events, 'status' => 200]);
+            $events->getCollection()->transform(function ($event) {
+                $event->description = strip_tags($event->description);
+                return $event;
+            });
+
+            return response()->json(['data' => $events, 'status' => 200]);
+        } catch (QueryException $e) {
+            return response()->json(['message' => 'La validación ha fallado', 'errors' => $e->errors()], 400);
+        }
     }
 
 
@@ -369,8 +374,8 @@ class EventsController extends Controller
                 'organiza'      => $event->organiza,
                 'numMypes'      => $event->numMypes,
 
-                'start'         => Carbon::parse($event->start)->format('h:i A'),
-                'end'           => Carbon::parse($event->end)->format('h:i A'),
+                'start'         => $event->start ? Carbon::parse($event->start)->format('h:i A') : null,
+                'end'           => $event->end ? Carbon::parse($event->end)->format('h:i A') : null,
                 'description'   => Str::limit($event->description, 100, '...'),
                 'descripionAll' => $event->description,
                 'nameUser'      => $event->nameUser,

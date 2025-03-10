@@ -23,151 +23,216 @@ class DownloadFormalizationsController extends Controller
 
     public function exportAsesories(Request $request)
     {
-        $data = collect($request->all());
+        $filters = [
+            'asesor'    => $request->input('asesor'),
+            'name'      => $request->input('name'),
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd'   => $request->input('dateEnd'),
+            'year'      => $request->input('year'),
+        ];
 
-        $result = $data->map(function ($item, $index) {
-            return [
-                'index'                 => $index + 1,
-                'date'                  => $item['date'],
-                'asesor'                => $item['asesor'],
-                'asesor_cde_city'       => $item['asesor_cde_city'],
-                'asesor_cde_province'   => $item['asesor_cde_province'],
-                'asesor_cde_district'   => $item['asesor_cde_district'],
+        $userRole = getUserRole();
+        $roleIds  = $userRole['role_id'];
+        $userId   = $userRole['user_id'];
 
-                'emp_document_type'     => $item['emp_document_type'],
-                'emp_document_number'   => $item['emp_document_number'],
-                'emp_country'           => $item['emp_country'],
-                'emp_birth'             => $item['emp_birth'],
-                // 'emp_age'               => $item['emp_age'],
-                'emp_lastname'          => $item['emp_lastname'],
-                'emp_middlename'        => $item['emp_middlename'],
-                'emp_name'              => $item['emp_name'],
-                'emp_gender'            => $item['emp_gender'],
-                'emp_discapabilities'   => $item['emp_discapabilities'],
-                'emp_soons'             => $item['emp_soons'],
-                'emp_phone'             => $item['emp_phone'],
-                'emp_email'             => $item['emp_email'],
+        $query = Advisory::query();
 
-                'supervisor'            => $item['supervisor'],
+        if (in_array(1, $roleIds) || $userId === 1) {
+            $query->withAdvisoryRangeDate($filters);
+        } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
+            $query->ByUserId($userId)->withAdvisoryRangeDate($filters);
+        } else {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
-                'city'                  => $item['city'],
-                'province'              => $item['province'],
-                'district'              => $item['district'],
-                'ruc'                   => $item['ruc'],
-                'econimic_service'      => $item['econimic_service'],
-                'activity_comercial'    => $item['activity_comercial'],
-                'component'             => $item['component'],
-                'theme'                 => $item['theme'],
-                'observations'          => $item['observations'],
-                'modality'              => $item['modality'],
-            ];
-        });
+        $index = 1;
+        $advisories = collect();
 
-        return Excel::download(new AsesoriasExport($result), 'asesorias.xlsx');
+        foreach ($query->cursor() as $advisory) {
+            $advisories->push([
+                'index'                 => $index++,
+                'date'                  => $advisory->created_at->format('d/m/Y'),
+                'asesor'                => isset($advisory->user->profile) ? strtoupper($advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename . ' ' . $advisory->user->profile->name) : null,
+                'asesor_cde_city'       => $advisory->sede->city ?? null,
+                'asesor_cde_province'   => $advisory->sede->province ?? null,
+                'asesor_cde_district'   => $advisory->sede->district ?? null,
+
+                'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
+                'emp_document_number'   => $advisory->people->documentnumber ?? null,
+                'emp_country'           => isset($advisory->people->pais->name) ? strtoupper($advisory->people->pais->name) : 'PERU',
+                'emp_birth'             => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->format('d/m/Y') : null,
+                // 'emp_age'               => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->age : null,
+                'emp_lastname'          => $advisory->people->lastname,
+                'emp_middlename'        => $advisory->people->middlename,
+                'emp_name'              => $advisory->people->name,
+                'emp_gender'            => $advisory->people->gender->name == 'FEMENINO' ? 'F' : 'M',
+                'emp_discapabilities'   => $advisory->people->sick ? strtoupper($advisory->people->sick) : null,
+                'emp_soons'             => $advisory->people->hasSoon ?? null,
+                'emp_phone'             => $advisory->people->phone,
+                'emp_email'             => $advisory->people->email ? strtolower($advisory->people->email) : '-',
+
+                'supervisor'            => isset($advisory->supervisor->supervisorUser->profile) ? strtoupper($advisory->supervisor->supervisorUser->profile->lastname . ' ' . $advisory->supervisor->supervisorUser->profile->middlename . ' ' . $advisory->supervisor->supervisorUser->profile->name) : null,
+
+                'city'                  => $advisory->city->name ?? null,
+                'province'              => $advisory->province->name ?? null,
+                'district'              => $advisory->district->name ?? null,
+                'ruc'                   => $advisory->ruc ?? null,
+                'econimic_service'      => $advisory->economicsector->name ?? null,
+                'activity_comercial'    => $advisory->comercialactivity->name ?? null,
+                'component'             => $advisory->component->name ?? null,
+                'theme'                 => strtoupper($advisory->theme->name) ?? null,
+                'observations'          => $advisory->observations ?? null,
+                'modality'              => $advisory->modality->name ?? null
+            ]);
+        }
+
+        return Excel::download(new AsesoriasExport($advisories), 'asesorias.xlsx');
     }
 
 
     public function exportFormalizationsRuc10(Request $request)
     {
-        $data = collect($request->all());
+        $filters = [
+            'asesor'    => $request->input('asesor'),
+            'name'      => $request->input('name'),
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd'   => $request->input('dateEnd'),
+            'year'      => $request->input('year'),
+        ];
 
-        $result = $data->map(function ($item, $index) {
-            return [
-                'index'                 => $index + 1,
-                'date'                  => $item['date'],
-                'asesor'                => $item['asesor'],
-                'asesor_cde_city'       => $item['asesor_cde_city'],
-                'asesor_cde_province'   => $item['asesor_cde_province'],
-                'asesor_cde_district'   => $item['asesor_cde_district'],
+        $userRole = getUserRole();
+        $roleIds  = $userRole['role_id'];
+        $userId   = $userRole['user_id'];
 
-                'emp_document_type'     => $item['emp_document_type'],
-                'emp_document_number'   => $item['emp_document_number'],
-                'emp_country'           => $item['emp_country'],
-                'emp_birth'             => $item['emp_birth'],
-                // 'emp_age'               => $item['emp_age'],
-                'emp_lastname'          => $item['emp_lastname'],
-                'emp_middlename'        => $item['emp_middlename'],
-                'emp_name'              => $item['emp_name'],
-                'emp_gender'            => $item['emp_gender'],
-                'emp_discapabilities'   => $item['emp_discapabilities'],
-                'emp_soons'             => $item['emp_soons'],
-                'emp_phone'             => $item['emp_phone'],
-                'emp_email'             => $item['emp_email'],
+        $query = Formalization10::query();
 
-                'tipo_formalization'    => 'PPNN (RUC 10)',
+        if (in_array(1, $roleIds) || $userId === 1) {
+            $query->withFormalizationRangeDate($filters);
+        } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
+            $query->ByUserId($userId)->withFormalizationRangeDate($filters);
+        } else {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
-                'supervisor'            => $item['supervisor'],
+        $index = 1;
+        $fs10 = collect();
 
-                'city'                  => $item['city'],
-                'province'              => $item['province'],
-                'district'              => $item['district'],
-                'address'               => $item['address'],
-                'ruc'                   => $item['ruc'],
+        foreach ($query->cursor() as $f10) {
+            $fs10->push([
+                'index'                 => $index++,
+                'date'                  => $f10->created_at->format('d/m/Y'),
+                'asesor'                => isset($f10->user->profile) ? strtoupper($f10->user->profile->lastname . ' ' . $f10->user->profile->middlename . ' ' . $f10->user->profile->name) : null,
+                'asesor_cde_city'       => $f10->sede->city ?? null,
+                'asesor_cde_province'   => $f10->sede->province ?? null,
+                'asesor_cde_district'   => $f10->sede->district ?? null,
 
-                'econimic_sector'       => $item['econimic_sector'],
-                'activity_comercial'    => $item['activity_comercial'],
-                'detail_tramit'         => $item['detail_tramit'],
-                'modality'              => $item['modality']
-            ];
-        });
+                'emp_document_type'     => $f10->people->typedocument->avr ?? null,
+                'emp_document_number'   => $f10->people->documentnumber ?? null,
+                'emp_country'           => isset($f10->people->pais->name) ? strtoupper($f10->people->pais->name) : 'PERU',
+                'emp_birth'             => $f10->people->birthday ? \Carbon\Carbon::parse($f10->people->birthday)->format('d/m/Y') : null,
+                'emp_age'               => $f10->people->birthday ? \Carbon\Carbon::parse($f10->people->birthday)->age : null,
+                'emp_lastname'          => $f10->people->lastname,
+                'emp_middlename'        => $f10->people->middlename,
+                'emp_name'              => $f10->people->name,
+                'emp_gender'            => $f10->people->gender->name == 'FEMENINO' ? 'F' : 'M',
+                'emp_discapabilities'   => $f10->people->sick ? strtoupper($f10->people->sick) : null,
+                'emp_soons'             => $f10->people->hasSoon ?? null,
+                'emp_phone'             => $f10->people->phone,
+                'emp_email'             => $f10->people->email ? strtolower($f10->people->email) : '-',
 
-        return Excel::download(new FormalizationRUC10Export($result), 'formalizaciones10-pnte.xlsx');
+                'supervisor'            => isset($f10->supervisor->supervisorUser->profile) ? strtoupper($f10->supervisor->supervisorUser->profile->lastname . ' ' . $f10->supervisor->supervisorUser->profile->middlename . ' ' . $f10->supervisor->supervisorUser->profile->name) : null,
+
+                'city'                  => $f10->city->name ?? null,
+                'province'              => $f10->province->name ?? null,
+                'district'              => $f10->district->name ?? null,
+                'address'               => $f10->address ?? null,
+                'ruc'                   => $f10->ruc ?? null,
+
+                'econimic_sector'       => $f10->economicsector->name ?? null,
+                'activity_comercial'    => $f10->comercialactivity->name ?? null,
+                'detail_tramit'         => $f10->detailprocedure->name ?? null,
+                'modality'              => $f10->modality->name ?? null,
+            ]);
+        }
+
+        return Excel::download(new FormalizationRUC10Export($fs10), 'formalizaciones10-pnte.xlsx');
     }
 
 
 
     public function exportFormalizationsRuc20(Request $request)
     {
-        $data = collect($request->all());
+        $filters = [
+            'asesor'    => $request->input('asesor'),
+            'name'      => $request->input('name'),
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd'   => $request->input('dateEnd'),
+            'year'      => $request->input('year'),
+        ];
 
-        $result = $data->map(function ($item, $index) {
-            return [
-                'index'                 => $index + 1,
-                'date'                  => $item['date'],
-                'asesor'                => $item['asesor'],
-                'asesor_cde_city'       => $item['asesor_cde_city'],
-                'asesor_cde_province'   => $item['asesor_cde_province'],
-                'asesor_cde_district'   => $item['asesor_cde_district'],
+        $userRole = getUserRole();
+        $roleIds  = $userRole['role_id'];
+        $userId   = $userRole['user_id'];
 
-                'emp_document_type'     => $item['emp_document_type'],
-                'emp_document_number'   => $item['emp_document_number'],
-                'emp_country'           => $item['emp_country'],
-                'emp_birth'             => $item['emp_birth'],
-                // 'emp_age'               => $item['emp_age'],
-                'emp_lastname'          => $item['emp_lastname'],
-                'emp_middlename'        => $item['emp_middlename'],
-                'emp_name'              => $item['emp_name'],
-                'emp_gender'            => $item['emp_gender'],
-                'emp_discapabilities'   => $item['emp_discapabilities'],
-                'emp_soons'             => $item['emp_soons'],
-                'emp_phone'             => $item['emp_phone'],
-                'emp_email'             => $item['emp_email'],
+        $query = Formalization20::query();
 
-                'tipo_formalization'    => 'PPJJ (RUC 20)',
+        if (in_array(1, $roleIds) || $userId === 1) {
+            $query->withFormalizationRangeDate($filters);
+        } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
+            $query->ByUserId($userId)->withFormalizationRangeDate($filters);
+        } else {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
-                'supervisor'            => $item['supervisor'],
+        $index = 1;
+        $fs20 = collect();
 
-                'city'                  => $item['city'],
-                'province'              => $item['province'],
-                'district'              => $item['district'],
-                'address'               => $item['address'],
-                'ruc'                   => $item['ruc'],
+        foreach ($query->cursor() as $f20) {
+            $fs20->push([
+                'index'                 => $index++,
+                'date'                  => $f20->created_at->format('d/m/Y'),
+                'asesor'                => isset($f20->user->profile) ? strtoupper($f20->user->profile->lastname . ' ' . $f20->user->profile->middlename . ' ' . $f20->user->profile->name) : null,
+                'asesor_cde_city'       => $f20->sede->city ?? null,
+                'asesor_cde_province'   => $f20->sede->province ?? null,
+                'asesor_cde_district'   => $f20->sede->district ?? null,
 
-                'econimic_sector'       => $item['econimic_sector'],
-                'activity_comercial'    => $item['activity_comercial'],
-                'date_reception'        => $item['date_reception'],
-                'date_tramite'          => $item['date_tramite'],
-                'name_mype'             => $item['name_mype'],
-                'type_regimen'          => $item['type_regimen'],
-                'bic'                   => $item['bic'],
-                'num_solicitud'         => $item['num_solicitud'],
-                'notaria'               => $item['notaria'],
-                'type_aporte'           => $item['type_aporte'],
-                'monto_capital'         => $item['monto_capital'],
-                'modality'              => $item['modality']
-            ];
-        });
+                'emp_document_type'     => $f20->people->typedocument->avr ?? null,
+                'emp_document_number'   => $f20->people->documentnumber ?? null,
+                'emp_country'           => isset($f20->people->pais->name) ? strtoupper($f20->people->pais->name) : 'PERU',
+                'emp_birth'             => $f20->people->birthday ? \Carbon\Carbon::parse($f20->people->birthday)->format('d/m/Y') : null,
+                'emp_age'               => $f20->people->birthday ? \Carbon\Carbon::parse($f20->people->birthday)->age : null,
+                'emp_lastname'          => $f20->people->lastname,
+                'emp_middlename'        => $f20->people->middlename,
+                'emp_name'              => $f20->people->name,
+                'emp_gender'            => $f20->people->gender->name == 'FEMENINO' ? 'F' : 'M',
+                'emp_discapabilities'   => $f20->people->sick ? strtoupper($f20->people->sick) : null,
+                'emp_soons'             => $f20->people->hasSoon ?? null,
+                'emp_phone'             => $f20->people->phone,
+                'emp_email'             => $f20->people->email ? strtolower($f20->people->email) : '-',
 
-        return Excel::download(new FormalizationRUC20Export($result), 'asesorias-pnte.xlsx');
+                'supervisor'            => isset($f20->supervisor->supervisorUser->profile) ? strtoupper($f20->supervisor->supervisorUser->profile->lastname . ' ' . $f20->supervisor->supervisorUser->profile->middlename . ' ' . $f20->supervisor->supervisorUser->profile->name) : null,
+
+                'city'                  => $f20->city->name ?? null,
+                'province'              => $f20->province->name ?? null,
+                'district'              => $f20->district->name ?? null,
+                'address'               => $f20->address ?? null,
+                'ruc'                   => $f20->ruc ?? null,
+
+                'econimic_sector'       => $f20->economicsector->name ?? null,
+                'activity_comercial'    => $f20->comercialactivity->name ?? null,
+                'date_reception'        => $f20->dateReception ? \Carbon\Carbon::parse($f20->dateReception)->format('d/m/Y') : null,
+                'date_tramite'          => $f20->dateTramite ? \Carbon\Carbon::parse($f20->dateTramite)->format('d/m/Y') : null,
+                'name_mype'             => strtoupper($f20->nameMype),
+                'type_regimen'          => $f20->regime->name,
+                'bic'                   => $f20->isbic,
+                'num_solicitud'         => $f20->numbernotary,
+                'notaria'               => isset($f20->notary->name) ? strtoupper($f20->notary->name) : null,
+                'type_aporte'           => optional($f20->typecapital)->name,
+                'monto_capital'         => $f20->montocapital,
+                'modality'              => $f20->modality->name ?? null
+            ]);
+        }
+
+        return Excel::download(new FormalizationRUC20Export($fs20), 'f20-pnte.xlsx');
     }
 }

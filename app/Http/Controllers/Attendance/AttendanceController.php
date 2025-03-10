@@ -5,6 +5,10 @@ namespace App\Http\Controllers\Attendance;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
+use App\Models\City;
+use App\Models\District;
+use App\Models\Event;
+use App\Models\Province;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -46,6 +50,7 @@ class AttendanceController extends Controller
             return [
                 'id' => $item->id,
                 'attendance_list_count' => $item->attendance_list_count,
+                'eventsoffice_id' => $item->eventsoffice_id,
                 'slug' => $item->slug,
                 'title' => $item->title,
                 'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
@@ -163,9 +168,9 @@ class AttendanceController extends Controller
                 $data['slug'] = $slug;
                 $data['user_id'] = $user_id;
 
-                Attendance::create($data);
+                $attendance = Attendance::create($data);
 
-                return response()->json(['message' => 'Evento creado con éxito', 'status' => 200]);
+                return response()->json(['message' => 'Evento creado con éxito', 'status' => 200, 'id' => $attendance->id]);
             }
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error de registro', 'status' => 500, 'error' => $e], 500);
@@ -335,5 +340,95 @@ class AttendanceController extends Controller
         });
 
         return response()->json(['data' => $data, 'nameEvent' => $attendance->title]);
+    }
+
+    public function migrateEvents()
+    {
+        try {
+            $events = Attendance::with([
+                'region',
+                'provincia',
+                'distrito',
+                'profile:id,user_id,name,lastname,middlename',
+                'asesor'
+            ])->get();
+
+            foreach ($events as $event) {
+                Event::create([
+                    'id_pnte'    => $event->eventsoffice_id,
+                    'title'      => $event->title,
+                    'dateStart'  => Carbon::parse($event->startDate)->format('Y-m-d'),
+                    'dateEnd'    => Carbon::parse($event->endDate)->format('Y-m-d'),
+                    'description' => "
+                    <strong>Lugar:</strong>
+                    <p>{$event->region->name} - {$event->provincia->name} - {$event->distrito->name}</p>
+                    <p>{$event->address}</p>
+                    <br>
+                    <p style='margin-top: 10px !important;'>{$event->description}</p>
+                ",
+                    'nameUser'   => $event->asesor ? $event->asesor->name . ' ' . $event->asesor->lastname : null,
+                    'user_id'   => 1
+                ]);
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Eventos migrados con éxito'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al migrar los eventos',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    // crea a partir del ID
+    public function createEventoToAttendance($id)
+    {
+        try {
+            $event = Attendance::with([
+                'region',
+                'provincia',
+                'distrito',
+                'profile:id,user_id,name,lastname,middlename',
+                'asesor'
+            ])->find($id);
+
+            if (!$event) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'El evento no existe'
+                ]);
+            }
+
+            Event::create([
+                'id_pnte'    => $event->eventsoffice_id,
+                'title'      => $event->title,
+                'dateStart'  => Carbon::parse($event->startDate)->format('Y-m-d'),
+                'dateEnd'    => Carbon::parse($event->endDate)->format('Y-m-d'),
+                'description' => "
+                <strong>Lugar:</strong>
+                <p>{$event->region->name} - {$event->provincia->name} - {$event->distrito->name}</p>
+                <p>{$event->address}</p>
+                <br>
+                <p style='margin-top: 10px !important;'>{$event->description}</p>
+            ",
+                'nameUser'   => $event->asesor ? $event->asesor->name . ' ' . $event->asesor->lastname : null,
+                'user_id'    => $event->user_id,
+            ]);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Evento migrado con éxito'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al migrar el evento',
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

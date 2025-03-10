@@ -380,11 +380,12 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     Route::post('create',                       [EventsController::class, 'store']);
     Route::get('list',                          [EventsController::class, 'index']);
     Route::delete('delete/{id}',                [EventsController::class, 'deleteEventById']);
-    Route::put('update/{id}',                        [EventsController::class, 'update']);
+    Route::put('update/{id}',                   [EventsController::class, 'update']);
 
     // eventos sra dianita
-    Route::get('rooms',                               [EventsController::class, 'listRooms']);
-    Route::post('reserve-room',                       [EventsController::class, 'storeRoom']);
+    Route::get('rooms',                         [EventsController::class, 'listRooms']);
+    Route::post('reserve-room',                 [EventsController::class, 'storeRoom']);
+    Route::post('to-attendance/{id}',           [AttendanceController::class, 'createEventoToAttendance']);
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
@@ -421,6 +422,8 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
 
     Route::get('list-vote',                     [QRNotaryController::class, 'index']);          // votación notarias...
     Route::get('list-vote-all',                 [QRNotaryController::class, 'allWithoutPagination']);
+
+    Route::post('migrate-events',               [AttendanceController::class, 'migrateEvents']);        // migra los eventos de UGO al calendario sr Carlos
 });
 
 

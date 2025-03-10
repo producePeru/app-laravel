@@ -30,7 +30,8 @@ class People extends Model
         'address',
         'typedocument_id',
         'gender_id',
-        'user_id'
+        'user_id',
+        'updated_by'
     ];
 
     protected $dates = ['deleted_at'];
@@ -138,32 +139,33 @@ class People extends Model
 
         if ($filters['search'] !== null) {
             $query->where('documentnumber', $filters['search'])
-                ->orWhere('lastname', 'LIKE', $filters['search']. '%')
-                ->orWhere('middlename', 'LIKE', $filters['search']. '%')
-                ->orWhere('name', 'LIKE', $filters['search']. '%');
+                ->orWhere('lastname', 'LIKE', $filters['search'] . '%')
+                ->orWhere('middlename', 'LIKE', $filters['search'] . '%')
+                ->orWhere('name', 'LIKE', $filters['search'] . '%');
         }
 
         return $query->paginate(100);
     }
 
-    public function scopeWithProfileAndUser($query, $userId, $filters)        //asesores
+    public function scopeWithProfileAndUser($query, $filters)        //asesores
     {
-        $query->with(['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile'])
-        ->whereHas('user', function ($q) use ($userId) {
-            $q->where('users.id', $userId);
-        })
-        ->orderBy('created_at', 'desc');
+        $query->with([
+            'city',
+            'province',
+            'district',
+            'gender',
+            'typedocument',
+            'from',
+            'user.profile'
+        ])->orderBy('created_at', 'desc');
 
-        if (!empty($filters['search'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->where('documentnumber', $filters['search'])
-                ->orWhere('lastname', 'LIKE', $filters['search'] . '%')
-                ->orWhere('middlename', 'LIKE', $filters['search'] . '%')
-                ->orWhere('name', 'LIKE', $filters['search'] . '%');
-        });
-    }
+        if (!empty($filters['asesor'])) {
+            $query->where('user_id', $filters['asesor']);
+        }
 
-    return $query->paginate(100);
+        if (!empty($filters['name'])) {
+            $query->where('documentnumber', 'like', '%' . $filters['name'] . '%');
+        }
     }
 
     protected static function booted()
@@ -177,9 +179,9 @@ class People extends Model
     public static function search($searchTerm)
     {
         return self::where('documentnumber', 'like', "%{$searchTerm}%")
-                    ->orWhere('lastname', 'like', "%{$searchTerm}%")
-                    ->orWhere('middlename', 'like', "%{$searchTerm}%")
-                    ->orWhere('name', 'like', "%{$searchTerm}%")
-                    ->get();
+            ->orWhere('lastname', 'like', "%{$searchTerm}%")
+            ->orWhere('middlename', 'like', "%{$searchTerm}%")
+            ->orWhere('name', 'like', "%{$searchTerm}%")
+            ->get();
     }
 }
