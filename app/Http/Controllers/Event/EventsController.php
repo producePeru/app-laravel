@@ -254,6 +254,7 @@ class EventsController extends Controller
             'pte'    => 5,
             'rd'     => 6,
             'ougse'  => 7,
+            'dif'    => 8,
         ];
 
         $filterOffices = array_values(array_filter(array_map(
@@ -273,6 +274,7 @@ class EventsController extends Controller
             5 => 'green',
             6 => 'blue',
             7 => 'purple',
+            8 => 'pink',
         ];
 
         $startDate = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
@@ -322,6 +324,7 @@ class EventsController extends Controller
             'pte'    => 5,
             'rd'     => 6,
             'ougse'  => 7,
+            'dif'    => 8,
         ];
 
         $officeKeys = $request->query();
@@ -350,6 +353,7 @@ class EventsController extends Controller
             5 => 'green',
             6 => 'blue',
             7 => 'purple',
+            8 => 'pink',
         ];
 
         $events = $query->get()->map(function ($event) use ($colors) {
