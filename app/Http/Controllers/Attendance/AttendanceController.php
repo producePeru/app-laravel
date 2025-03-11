@@ -28,7 +28,8 @@ class AttendanceController extends Controller
             'provincia',
             'distrito',
             'profile:id,user_id,name,lastname,middlename',
-            'asesor'
+            'asesor',
+            'pnte'
         ])
             ->withCount('attendanceList')
             ->search($search)
@@ -52,7 +53,9 @@ class AttendanceController extends Controller
                 'attendance_list_count' => $item->attendance_list_count,
                 'eventsoffice_id' => $item->eventsoffice_id,
                 'slug' => $item->slug,
-                'title' => $item->title,
+                'title' => strtoupper($item->title),
+                'pnte' => $item->pnte->name,
+                'id_pnte' => $item->pnte->id,
                 'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
                 'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
                 'startDate2' => $item->startDate,

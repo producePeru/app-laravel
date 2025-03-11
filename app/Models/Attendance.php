@@ -60,6 +60,11 @@ class Attendance extends Model
         return $this->belongsTo(Profile::class, 'people_id');
     }
 
+    public function pnte()
+    {
+        return $this->belongsTo(OfficePnte::class, 'eventsoffice_id');
+    }
+
     public function scopeSearch($query, $search)
     {
         if ($search) {

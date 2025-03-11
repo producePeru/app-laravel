@@ -160,7 +160,9 @@ class People extends Model
         ])->orderBy('created_at', 'desc');
 
         if (!empty($filters['asesor'])) {
-            $query->where('user_id', $filters['asesor']);
+            $query->whereHas('user', function ($q) use ($filters) {
+                $q->where('user_id', $filters['asesor']);
+            });
         }
 
         if (!empty($filters['name'])) {
@@ -183,5 +185,25 @@ class People extends Model
             ->orWhere('middlename', 'like', "%{$searchTerm}%")
             ->orWhere('name', 'like', "%{$searchTerm}%")
             ->get();
+    }
+
+    // public function scopeByUserId($query, $userId)
+    // {
+
+    //     // este debe ser el filtro
+    //     $query->where('user_id', $filters['asesor']);
+
+    //     // adaptado similar a este
+    //     // return $query->whereHas('user', function ($q) use ($userId) {
+    //     //     $q->where('id', $userId);
+    //     // });
+    // }
+
+
+    public function scopeByUserId($query, $userId)
+    {
+        return $query->whereHas('user', function ($q) use ($userId) {
+            $q->where('user_id', $userId);
+        });
     }
 }
