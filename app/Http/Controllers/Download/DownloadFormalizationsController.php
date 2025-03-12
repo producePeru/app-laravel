@@ -130,7 +130,7 @@ class DownloadFormalizationsController extends Controller
                 'emp_document_number'   => $f10->people->documentnumber ?? null,
                 'emp_country'           => isset($f10->people->pais->name) ? strtoupper($f10->people->pais->name) : 'PERU',
                 'emp_birth'             => $f10->people->birthday ? \Carbon\Carbon::parse($f10->people->birthday)->format('d/m/Y') : null,
-                'emp_age'               => $f10->people->birthday ? \Carbon\Carbon::parse($f10->people->birthday)->age : null,
+                // 'emp_age'               => $f10->people->birthday ? \Carbon\Carbon::parse($f10->people->birthday)->age : null,
                 'emp_lastname'          => $f10->people->lastname,
                 'emp_middlename'        => $f10->people->middlename,
                 'emp_name'              => $f10->people->name,
@@ -139,6 +139,8 @@ class DownloadFormalizationsController extends Controller
                 'emp_soons'             => $f10->people->hasSoon ?? null,
                 'emp_phone'             => $f10->people->phone,
                 'emp_email'             => $f10->people->email ? strtolower($f10->people->email) : '-',
+
+                'type_formalization'    => 'PPNN 10',
 
                 'supervisor'            => isset($f10->supervisor->supervisorUser->profile) ? strtoupper($f10->supervisor->supervisorUser->profile->lastname . ' ' . $f10->supervisor->supervisorUser->profile->middlename . ' ' . $f10->supervisor->supervisorUser->profile->name) : null,
 
@@ -200,7 +202,7 @@ class DownloadFormalizationsController extends Controller
                 'emp_document_number'   => $f20->people->documentnumber ?? null,
                 'emp_country'           => isset($f20->people->pais->name) ? strtoupper($f20->people->pais->name) : 'PERU',
                 'emp_birth'             => $f20->people->birthday ? \Carbon\Carbon::parse($f20->people->birthday)->format('d/m/Y') : null,
-                'emp_age'               => $f20->people->birthday ? \Carbon\Carbon::parse($f20->people->birthday)->age : null,
+                // 'emp_age'               => $f20->people->birthday ? \Carbon\Carbon::parse($f20->people->birthday)->age : null,
                 'emp_lastname'          => $f20->people->lastname,
                 'emp_middlename'        => $f20->people->middlename,
                 'emp_name'              => $f20->people->name,
@@ -209,6 +211,8 @@ class DownloadFormalizationsController extends Controller
                 'emp_soons'             => $f20->people->hasSoon ?? null,
                 'emp_phone'             => $f20->people->phone,
                 'emp_email'             => $f20->people->email ? strtolower($f20->people->email) : '-',
+
+                'type_formalization'    => 'PPJJ 20',
 
                 'supervisor'            => isset($f20->supervisor->supervisorUser->profile) ? strtoupper($f20->supervisor->supervisorUser->profile->lastname . ' ' . $f20->supervisor->supervisorUser->profile->middlename . ' ' . $f20->supervisor->supervisorUser->profile->name) : null,
 
