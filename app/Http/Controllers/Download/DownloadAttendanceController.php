@@ -63,7 +63,11 @@ class DownloadAttendanceController extends Controller
                     ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
                     : null,
 
-                'profile_creater' => $item['profile'],
+                'profile_creater' => $item->profile
+                    ? strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename)
+                    : null,
+
+                // 'profile_creater' => $item['profile'],
                 'description' => $item->description ?? null,
 
                 'created_at' => Carbon::parse($item->created_at)->format('d-m-Y')
