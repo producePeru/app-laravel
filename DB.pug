@@ -74,4 +74,17 @@ php artisan make:controller Restrict/RestrictIpController --api
 //- ADD CONSTRAINT fk_eventsoffice_id FOREIGN KEY (eventsoffice_id) REFERENCES eventsoffice(id) ON DELETE SET NULL;
 
 
-
+CREATE TABLE workshop (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    workshopName VARCHAR(250) NOT NULL,
+    date DATE NOT NULL,
+    hour VARCHAR(20) NOT NULL,
+    link VARCHAR(255) NOT NULL,
+    description TEXT,
+    expositor VARCHAR(100),
+    status_te TINYINT(1) NOT NULL DEFAULT 0,
+    status_ts TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL
+);

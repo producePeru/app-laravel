@@ -52,7 +52,7 @@ class DownloadFormalizationsController extends Controller
             $advisories->push([
                 'index'                 => $index++,
                 'date'                  => $advisory->created_at->format('d/m/Y'),
-                'asesor'                => isset($advisory->user->profile) ? strtoupper($advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename . ' ' . $advisory->user->profile->name) : null,
+                'asesor'                => isset($advisory->user->profile) ? strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename) : null,
                 'asesor_cde_city'       => $advisory->sede->city ?? null,
                 'asesor_cde_province'   => $advisory->sede->province ?? null,
                 'asesor_cde_district'   => $advisory->sede->district ?? null,
@@ -71,7 +71,7 @@ class DownloadFormalizationsController extends Controller
                 'emp_phone'             => $advisory->people->phone,
                 'emp_email'             => $advisory->people->email ? strtolower($advisory->people->email) : '-',
 
-                'supervisor'            => isset($advisory->supervisor->supervisorUser->profile) ? strtoupper($advisory->supervisor->supervisorUser->profile->lastname . ' ' . $advisory->supervisor->supervisorUser->profile->middlename . ' ' . $advisory->supervisor->supervisorUser->profile->name) : null,
+                'supervisor'            => isset($advisory->supervisor->supervisorUser->profile) ? strtoupper($advisory->supervisor->supervisorUser->profile->name . ' ' . $advisory->supervisor->supervisorUser->profile->lastname . ' ' . $advisory->supervisor->supervisorUser->profile->middlename) : null,
 
                 'city'                  => $advisory->city->name ?? null,
                 'province'              => $advisory->province->name ?? null,
@@ -121,7 +121,7 @@ class DownloadFormalizationsController extends Controller
             $fs10->push([
                 'index'                 => $index++,
                 'date'                  => $f10->created_at->format('d/m/Y'),
-                'asesor'                => isset($f10->user->profile) ? strtoupper($f10->user->profile->lastname . ' ' . $f10->user->profile->middlename . ' ' . $f10->user->profile->name) : null,
+                'asesor'                => isset($f10->user->profile) ? strtoupper($f10->user->profile->name . ' ' . $f10->user->profile->lastname . ' ' . $f10->user->profile->nammiddlenamee) : null,
                 'asesor_cde_city'       => $f10->sede->city ?? null,
                 'asesor_cde_province'   => $f10->sede->province ?? null,
                 'asesor_cde_district'   => $f10->sede->district ?? null,
@@ -142,7 +142,7 @@ class DownloadFormalizationsController extends Controller
 
                 'type_formalization'    => 'PPNN 10',
 
-                'supervisor'            => isset($f10->supervisor->supervisorUser->profile) ? strtoupper($f10->supervisor->supervisorUser->profile->lastname . ' ' . $f10->supervisor->supervisorUser->profile->middlename . ' ' . $f10->supervisor->supervisorUser->profile->name) : null,
+                'supervisor'            => isset($f10->supervisor->supervisorUser->profile) ? strtoupper($f10->supervisor->supervisorUser->profile->name . ' ' . $f10->supervisor->supervisorUser->profile->lastname . ' ' . $f10->supervisor->supervisorUser->profile->middlename) : null,
 
                 'city'                  => $f10->city->name ?? null,
                 'province'              => $f10->province->name ?? null,
@@ -193,7 +193,7 @@ class DownloadFormalizationsController extends Controller
             $fs20->push([
                 'index'                 => $index++,
                 'date'                  => $f20->created_at->format('d/m/Y'),
-                'asesor'                => isset($f20->user->profile) ? strtoupper($f20->user->profile->lastname . ' ' . $f20->user->profile->middlename . ' ' . $f20->user->profile->name) : null,
+                'asesor'                => isset($f20->user->profile) ? strtoupper($f20->user->profile->name . ' ' . $f20->user->profile->lastname . ' ' . $f20->user->profile->middlename) : null,
                 'asesor_cde_city'       => $f20->sede->city ?? null,
                 'asesor_cde_province'   => $f20->sede->province ?? null,
                 'asesor_cde_district'   => $f20->sede->district ?? null,
@@ -214,7 +214,7 @@ class DownloadFormalizationsController extends Controller
 
                 'type_formalization'    => 'PPJJ 20',
 
-                'supervisor'            => isset($f20->supervisor->supervisorUser->profile) ? strtoupper($f20->supervisor->supervisorUser->profile->lastname . ' ' . $f20->supervisor->supervisorUser->profile->middlename . ' ' . $f20->supervisor->supervisorUser->profile->name) : null,
+                'supervisor'            => isset($f20->supervisor->supervisorUser->profile) ? strtoupper($f20->supervisor->supervisorUser->profile->name . ' ' . $f20->supervisor->supervisorUser->profile->lastname . ' ' . $f20->supervisor->supervisorUser->profile->middlename) : null,
 
                 'city'                  => $f20->city->name ?? null,
                 'province'              => $f20->province->name ?? null,
