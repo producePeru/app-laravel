@@ -222,23 +222,50 @@ class EventsController extends Controller
     }
 
 
-    public function index()
+    public function index(Request $request)
     {
-        try {
+        $filters = [
+            'name'      => $request->input('name'),
+            'year'      => $request->input('year'),
+            // 'asesor'    => $request->input('asesor'),
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd'   => $request->input('dateEnd'),
+            'offices'   => $request->input('offices'),
+        ];
 
-            $events = Event::with('officePnte')->orderBy('dateStart', 'desc')->paginate(50);
+        $query = Event::query();
 
-            $events->getCollection()->transform(function ($event) {
-                $event->description = strip_tags($event->description);
-                return $event;
-            });
+        $query->withAdvisoryRangeDate($filters);
 
-            return response()->json(['data' => $events, 'status' => 200]);
-        } catch (QueryException $e) {
-            return response()->json(['message' => 'La validación ha fallado', 'errors' => $e->errors()], 400);
-        }
+        $advisories = $query->paginate(150)->through(function ($advisory) {
+            return $this->mapEvents($advisory);
+        });
+
+        return response()->json([
+            'data'   => $advisories,
+            'status' => 200
+        ]);
     }
 
+    private function mapEvents($item)
+    {
+        return [
+            'id'                => $item->id,
+            'office_id'         => $item->officePnte->id,
+            'office'            => $item->officePnte->office,
+            'area'              => $item->officePnte->name,
+            'title'             => $item->title,
+            'dateStart'         => $item->dateStart,
+            'dateEnd'           => $item->dateEnd,
+            'start'             => $item->start,
+            'end'               => $item->end,
+            'description'       => strip_tags($item->description),
+            'resultado'         => strip_tags($item->resultado),
+            'nameUser'          => $item->nameUser,
+            'link'              => $item->link,
+            'all'               => $item
+        ];
+    }
 
     public function getEventsDots(Request $request, $yearMonth)
     {
@@ -266,17 +293,6 @@ class EventsController extends Controller
             return response()->json(['data' => [], 'status' => 200]);
         }
 
-        $colors = [
-            1 => 'gray',
-            2 => 'red',
-            3 => 'orange',
-            4 => 'yellow',
-            5 => 'green',
-            6 => 'blue',
-            7 => 'purple',
-            8 => 'pink',
-        ];
-
         $startDate = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
         $endDate = Carbon::createFromFormat('Y-m', $yearMonth)->endOfMonth();
 
@@ -285,33 +301,81 @@ class EventsController extends Controller
             ->get();
 
         $formattedEvents = [];
+        $uniqueDates = [];
 
         foreach ($events as $event) {
-            $office = $event->id_pnte;
-            $color = $colors[$office] ?? 'gray';
-
-            if (!isset($formattedEvents[$color])) {
-                $formattedEvents[$color] = [
-                    'key' => $office,
-                    'dot' => $color,
-                    'dates' => []
-                ];
-            }
-
             $start = Carbon::parse($event->dateStart);
             $end = Carbon::parse($event->dateEnd);
 
             while ($start->lte($end)) {
-                $formattedEvents[$color]['dates'][] = $start->toISOString();
+                $dateString = $start->toDateString(); // YYYY-MM-DD
+
+                // Solo registrar un dot azul por día
+                if (!isset($uniqueDates[$dateString])) {
+                    $uniqueDates[$dateString] = true;
+
+                    $formattedEvents[] = [
+                        'key' => 'dot', // Clave genérica
+                        'dot' => 'red', // Siempre azul
+                        'dates' => [$start->toISOString()]
+                    ];
+                }
+
                 $start->addDay();
             }
         }
 
         return response()->json([
-            'data' => array_values($formattedEvents),
+            'data' => $formattedEvents,
             'status' => 200
         ]);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     public function getEventsByDate(Request $request, $date)
@@ -370,6 +434,7 @@ class EventsController extends Controller
             }
 
             return [
+                'id'            => $event->id,
                 'id_pnte'       => $office,
                 'dot'           => $color,
                 'dates'         => $dates,
@@ -486,5 +551,12 @@ class EventsController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function destroy($id)
+    {
+        $workshop = Event::findOrFail($id);
+        $workshop->delete();
+        return response()->json(['message' => 'Evento eliminado correctamente', 'status' => 200]);
     }
 }

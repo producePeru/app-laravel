@@ -121,7 +121,7 @@ class DownloadFormalizationsController extends Controller
             $fs10->push([
                 'index'                 => $index++,
                 'date'                  => $f10->created_at->format('d/m/Y'),
-                'asesor'                => isset($f10->user->profile) ? strtoupper($f10->user->profile->name . ' ' . $f10->user->profile->lastname . ' ' . $f10->user->profile->nammiddlenamee) : null,
+                'asesor'                => isset($f10->user->profile) ? strtoupper($f10->user->profile->name . ' ' . $f10->user->profile->lastname . ' ' . $f10->user->profile->middlename) : null,
                 'asesor_cde_city'       => $f10->sede->city ?? null,
                 'asesor_cde_province'   => $f10->sede->province ?? null,
                 'asesor_cde_district'   => $f10->sede->district ?? null,

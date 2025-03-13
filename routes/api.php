@@ -40,6 +40,7 @@ use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
 use App\Http\Controllers\Room\RoomController;
 use App\Http\Controllers\RutaDigital\RutaDigitalController;
+use App\Http\Controllers\Workshop\WorkshopController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
@@ -386,6 +387,7 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     Route::get('rooms',                         [EventsController::class, 'listRooms']);
     Route::post('reserve-room',                 [EventsController::class, 'storeRoom']);
     Route::post('to-attendance/{id}',           [AttendanceController::class, 'createEventoToAttendance']);
+    Route::post('delete/{id}',                  [EventsController::class, 'destroy']);
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
@@ -463,4 +465,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middlewa
 // REFORMA
 Route::group(['prefix' => 'report', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('advisories',                 [ReportController::class, 'advisiories']);
+});
+
+Route::group(['prefix' => 'route-digital', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::post('store',                 [WorkshopController::class, 'store']);
 });
