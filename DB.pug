@@ -91,3 +91,19 @@ CREATE TABLE workshop (
 
 
 php artisan make:controller Workshop/WorkshopController --resource
+
+
+
+
+ALTER TABLE events
+ADD COLUMN city_id BIGINT UNSIGNED NULL AFTER title,
+ADD CONSTRAINT fk_city_id FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL;
+
+
+ALTER TABLE events
+ADD COLUMN rescheduled TEXT AFTER resultado;
+
+
+ALTER TABLE events
+ADD COLUMN canceled TEXT AFTER rescheduled;
+

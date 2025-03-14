@@ -23,70 +23,84 @@ class DownloadFormalizationsController extends Controller
 
     public function exportAsesories(Request $request)
     {
-        $filters = [
-            'asesor'    => $request->input('asesor'),
-            'name'      => $request->input('name'),
-            'dateStart' => $request->input('dateStart'),
-            'dateEnd'   => $request->input('dateEnd'),
-            'year'      => $request->input('year'),
-        ];
+        try {
 
-        $userRole = getUserRole();
-        $roleIds  = $userRole['role_id'];
-        $userId   = $userRole['user_id'];
+            $filters = [
+                'asesor'    => $request->input('asesor'),
+                'name'      => $request->input('name'),
+                'dateStart' => $request->input('dateStart'),
+                'dateEnd'   => $request->input('dateEnd'),
+                'year'      => $request->input('year'),
+            ];
 
-        $query = Advisory::query();
+            $userRole = getUserRole();
+            $roleIds  = $userRole['role_id'];
+            $userId   = $userRole['user_id'];
 
-        if (in_array(1, $roleIds) || $userId === 1) {
-            $query->withAdvisoryRangeDate($filters);
-        } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
-            $query->ByUserId($userId)->withAdvisoryRangeDate($filters);
-        } else {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+            $query = Advisory::query();
 
-        $index = 1;
-        $advisories = collect();
+            if (in_array(1, $roleIds) || $userId === 1) {
+                $query->withAdvisoryRangeDate($filters);
+            } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
+                $query->ByUserId($userId)->withAdvisoryRangeDate($filters);
+            } else {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
 
-        foreach ($query->cursor() as $advisory) {
-            $advisories->push([
-                'index'                 => $index++,
-                'date'                  => $advisory->created_at->format('d/m/Y'),
-                'asesor'                => isset($advisory->user->profile) ? strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename) : null,
-                'asesor_cde_city'       => $advisory->sede->city ?? null,
-                'asesor_cde_province'   => $advisory->sede->province ?? null,
-                'asesor_cde_district'   => $advisory->sede->district ?? null,
+            $index = 1;
+            $advisories = collect();
 
-                'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
-                'emp_document_number'   => $advisory->people->documentnumber ?? null,
-                'emp_country'           => isset($advisory->people->pais->name) ? strtoupper($advisory->people->pais->name) : 'PERU',
-                'emp_birth'             => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->format('d/m/Y') : null,
-                // 'emp_age'               => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->age : null,
-                'emp_lastname'          => $advisory->people->lastname,
-                'emp_middlename'        => $advisory->people->middlename,
-                'emp_name'              => $advisory->people->name,
-                'emp_gender'            => $advisory->people->gender->name == 'FEMENINO' ? 'F' : 'M',
-                'emp_discapabilities'   => $advisory->people->sick ? strtoupper($advisory->people->sick) : null,
-                'emp_soons'             => $advisory->people->hasSoon ?? null,
-                'emp_phone'             => $advisory->people->phone,
-                'emp_email'             => $advisory->people->email ? strtolower($advisory->people->email) : '-',
+            foreach ($query->cursor() as $advisory) {
+                $advisories->push([
+                    'index'                 => $index++,
+                    'date'                  => $advisory->created_at->format('d/m/Y'),
+                    'asesor'                => isset($advisory->user->profile) ? strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename) : null,
+                    'asesor_cde_city'       => $advisory->sede->city ?? null,
+                    'asesor_cde_province'   => $advisory->sede->province ?? null,
+                    'asesor_cde_district'   => $advisory->sede->district ?? null,
 
-                'supervisor'            => isset($advisory->supervisor->supervisorUser->profile) ? strtoupper($advisory->supervisor->supervisorUser->profile->name . ' ' . $advisory->supervisor->supervisorUser->profile->lastname . ' ' . $advisory->supervisor->supervisorUser->profile->middlename) : null,
+                    'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
+                    'emp_document_number'   => $advisory->people->documentnumber ?? null,
+                    'emp_country'           => isset($advisory->people->pais->name) ? strtoupper($advisory->people->pais->name) : 'PERU',
+                    'emp_birth'             => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->format('d/m/Y') : null,
+                    // 'emp_age'               => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->age : null,
+                    'emp_lastname'          => $advisory->people->lastname,
+                    'emp_middlename'        => $advisory->people->middlename,
+                    'emp_name'              => $advisory->people->name,
+                    'emp_gender'            => $advisory->people->gender->name == 'FEMENINO' ? 'F' : 'M',
+                    'emp_discapabilities'   => $advisory->people->sick ? strtoupper($advisory->people->sick) : null,
+                    'emp_soons'             => $advisory->people->hasSoon ?? null,
+                    'emp_phone'             => $advisory->people->phone,
+                    'emp_email'             => $advisory->people->email ? strtolower($advisory->people->email) : '-',
 
-                'city'                  => $advisory->city->name ?? null,
-                'province'              => $advisory->province->name ?? null,
-                'district'              => $advisory->district->name ?? null,
-                'ruc'                   => $advisory->ruc ?? null,
-                'econimic_service'      => $advisory->economicsector->name ?? null,
-                'activity_comercial'    => $advisory->comercialactivity->name ?? null,
-                'component'             => $advisory->component->name ?? null,
-                'theme'                 => strtoupper($advisory->theme->name) ?? null,
-                'observations'          => $advisory->observations ?? null,
-                'modality'              => $advisory->modality->name ?? null
+                    'supervisor'            => isset($advisory->supervisor->supervisorUser->profile) ? strtoupper($advisory->supervisor->supervisorUser->profile->name . ' ' . $advisory->supervisor->supervisorUser->profile->lastname . ' ' . $advisory->supervisor->supervisorUser->profile->middlename) : null,
+
+                    'city'                  => $advisory->city->name ?? null,
+                    'province'              => $advisory->province->name ?? null,
+                    'district'              => $advisory->district->name ?? null,
+                    'ruc'                   => $advisory->ruc ?? null,
+                    'econimic_service'      => $advisory->economicsector->name ?? null,
+                    'activity_comercial'    => $advisory->comercialactivity->name ?? null,
+                    'component'             => $advisory->component->name ?? null,
+                    'theme'                 => strtoupper($advisory->theme->name) ?? null,
+                    'observations'          => $advisory->observations ?? null,
+                    'modality'              => $advisory->modality->name ?? null
+                ]);
+            }
+
+            // return Excel::download(new AsesoriasExport($advisories), 'asesorias.xlsx');
+
+            return $advisories;
+        } catch (\Exception $e) {
+            \Log::error('Error en exportAsesories: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
             ]);
-        }
 
-        return Excel::download(new AsesoriasExport($advisories), 'asesorias.xlsx');
+            return response()->json([
+                'message' => 'Ocurrió un error al generar el reporte.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 
 

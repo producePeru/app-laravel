@@ -252,6 +252,8 @@ class EventsController extends Controller
         return [
             'id'                => $item->id,
             'office_id'         => $item->officePnte->id,
+            'city'              => $item->region->name ?? null,
+            'place'             => $item->place,
             'office'            => $item->officePnte->office,
             'area'              => $item->officePnte->name,
             'title'             => $item->title,
@@ -558,5 +560,27 @@ class EventsController extends Controller
         $workshop = Event::findOrFail($id);
         $workshop->delete();
         return response()->json(['message' => 'Evento eliminado correctamente', 'status' => 200]);
+    }
+
+    public function updateObservation($id, Request $request)
+    {
+        try {
+
+            $event = Event::findOrFail($id);
+
+            $data = $request->only(['dateStart', 'dateEnd', 'start', 'end', 'rescheduled', 'canceled']);
+
+            $event->update($data);
+
+            return response()->json([
+                'message' => 'Evento actualizado correctamente',
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'No se pudo actualizar el evento',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

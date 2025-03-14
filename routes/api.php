@@ -388,6 +388,7 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     Route::post('reserve-room',                 [EventsController::class, 'storeRoom']);
     Route::post('to-attendance/{id}',           [AttendanceController::class, 'createEventoToAttendance']);
     Route::post('delete/{id}',                  [EventsController::class, 'destroy']);
+    Route::put('update-obs/{id}',               [EventsController::class, 'updateObservation']);
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {

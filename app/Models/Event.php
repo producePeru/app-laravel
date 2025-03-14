@@ -17,6 +17,8 @@ class Event extends Model
     protected $fillable = [
         'id_pnte',
         'title',
+        'city_id',
+        'place',
         'organiza',
         'gps',
         'numMypes',
@@ -29,7 +31,9 @@ class Event extends Model
         'nameUser',
         'link',
         'user_id',
-        'resultado'
+        'resultado',
+        'rescheduled',
+        'canceled'
     ];
 
     public function officePnte()
@@ -37,10 +41,16 @@ class Event extends Model
         return $this->belongsTo(OfficePnte::class, 'id_pnte');
     }
 
+    public function region()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
     public function scopeWithAdvisoryRangeDate($query, $filters)
     {
         $query = $query->with([
-            'officePnte'
+            'officePnte',
+            'region'
         ])->orderBy('dateStart', 'desc');
 
         if (!empty($filters['name'])) {
