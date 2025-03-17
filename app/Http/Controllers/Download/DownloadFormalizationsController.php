@@ -88,14 +88,10 @@ class DownloadFormalizationsController extends Controller
                 ]);
             }
 
-            // return Excel::download(new AsesoriasExport($advisories), 'asesorias.xlsx');
+            return Excel::download(new AsesoriasExport($advisories), 'asesorias.xlsx');
 
             return $advisories;
         } catch (\Exception $e) {
-            \Log::error('Error en exportAsesories: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-
             return response()->json([
                 'message' => 'Ocurrió un error al generar el reporte.',
                 'error'   => $e->getMessage()
