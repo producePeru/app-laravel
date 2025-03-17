@@ -429,6 +429,7 @@ class HistorialController extends Controller
             'district'              => $f20->district->name ?? null,
             'address'               => $f20->address ?? null,
             'ruc'                   => $f20->ruc ?? null,
+            'nameMype'              => $f20->nameMype ?? null,
 
             'econimic_sector'       => $f20->economicsector->name ?? null,
             'activity_comercial'    => $f20->comercialactivity->name ?? null,
