@@ -21,4 +21,11 @@ class Workshop extends Model
         'status_te',
         'status_ts'
     ];
+
+    public function scopeMapWorkshopItems($query, $filters)
+    {
+        if ($filters['workshopName']) {
+            $query->where('workshopName', 'like', "%{$filters['workshopName']}%");
+        }
+    }
 }

@@ -469,5 +469,6 @@ Route::group(['prefix' => 'report', 'namespace' => 'App\Http\Controllers', 'midd
 });
 
 Route::group(['prefix' => 'route-digital', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::post('store',                 [WorkshopController::class, 'store']);
+    Route::post('store',                    [WorkshopController::class, 'store']);
+    Route::get('list',                      [WorkshopController::class, 'index']);
 });

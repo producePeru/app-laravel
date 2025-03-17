@@ -82,6 +82,7 @@ CREATE TABLE workshop (
     link VARCHAR(255) NOT NULL,
     description TEXT,
     expositor VARCHAR(100),
+    status_inv TINYINT(1) NOT NULL DEFAULT 0,
     status_te TINYINT(1) NOT NULL DEFAULT 0,
     status_ts TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
