@@ -27,7 +27,8 @@ class Attendance extends Model
         'address',
         'user_id',
         'people_id',
-        'description'
+        'description',
+        'finally'
     ];
 
     public function region()
