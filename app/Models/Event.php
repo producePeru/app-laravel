@@ -22,7 +22,6 @@ class Event extends Model
         'organiza',
         'gps',
         'numMypes',
-        // 'date',
         'dateStart',
         'dateEnd',
         'start',
@@ -46,6 +45,7 @@ class Event extends Model
         return $this->belongsTo(City::class, 'city_id');
     }
 
+    // ADMIN
     public function scopeWithAdvisoryRangeDate($query, $filters)
     {
         $query = $query->with([

@@ -88,8 +88,8 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
 // EVENTOS SR CARLOS   'middleware' => ['restrict.ip']
 Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], function () {
-    Route::get('dots/{month}',                  [EventsController::class, 'getEventsDots']);
-    Route::get('events-day/{day}',              [EventsController::class, 'getEventsByDate']);
+    Route::get('dots',                  [EventsController::class, 'getEventsDots']);
+    Route::get('events-day',              [EventsController::class, 'getEventsByDate']);
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -427,6 +427,8 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
     Route::get('list-vote-all',                 [QRNotaryController::class, 'allWithoutPagination']);
 
     Route::post('migrate-events',               [AttendanceController::class, 'migrateEvents']);        // migra los eventos de UGO al calendario sr Carlos
+    Route::put('event-finally/{id}',            [AttendanceController::class, 'eventFinally']);        // migra los eventos de UGO al calendario sr Carlos
+
 });
 
 

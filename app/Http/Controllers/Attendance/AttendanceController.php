@@ -236,7 +236,7 @@ class AttendanceController extends Controller
 
         if ($attendance) {
 
-            if ($today->gt(Carbon::parse($attendance->endDate)->endOfDay())) {
+            if ($attendance->finally == 1) {
                 return response()->json(['message' => 'Esta lista ya no esta vigente.', 'status' => 500]);
             }
 
@@ -433,5 +433,25 @@ class AttendanceController extends Controller
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    public function eventFinally($id)
+    {
+        $event = Attendance::find($id);
+
+        if (!$event) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'El evento no existe'
+            ]);
+        }
+
+        $event->finally = 1;
+        $event->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'El evento se marco como finalizado'
+        ]);
     }
 }
