@@ -286,6 +286,14 @@ class EventsController extends Controller
             ]);
         }
 
+        if (!$offices) {
+            return response()->json([
+                'key' => 'dot-offices',
+                'dot' => null,
+                'dates' => []
+            ]);
+        }
+
         // Extraer año y mes
         [$year, $month] = explode('-', $yearMonth);
         $year = (int) $year;
@@ -419,6 +427,13 @@ class EventsController extends Controller
 
         // Si no se proporciona una fecha, retornar respuesta vacía
         if (!$dateSelected) {
+            return response()->json([
+                'message' => 'Debe proporcionar una fecha válida.',
+                'events' => []
+            ], 400);
+        }
+
+        if (!$offices) {
             return response()->json([
                 'message' => 'Debe proporcionar una fecha válida.',
                 'events' => []
