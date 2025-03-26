@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Advisory;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -15,11 +16,16 @@ use Maatwebsite\Excel\Concerns\WithColumnWidths;
 
 class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithStyles, WithColumnWidths
 {
-    protected $result;
 
-    public function __construct(Collection $result)
+    protected $advisories;
+
+    public function __construct($advisories)
     {
-        $this->result = $result;
+        $this->advisories = $advisories;
+    }
+    public function collection()
+    {
+        return collect($this->advisories);
     }
 
     public function columnWidths(): array
@@ -82,9 +88,45 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
         $sheet->getStyle('A1:AD1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
     }
 
-    public function collection()
+    public function query()
     {
-        return $this->result;
+        // Asegúrate de cambiar 'asesorias' por el nombre real de tu tabla
+        return DB::table('asesorias')->select([
+            'No',
+            'Fecha de Registro',
+            'Asesor (a) - Nombre Completo',
+            'Región del CDE del Asesor',
+            'Provincia del CDE del Asesor',
+            'Distrito del CDE del Asesor',
+            'Cde del Asesor',
+
+            'Tipo de Documento de Identidad',
+            'Número de Documento de Identidad',
+            'Nombre del país de origen',
+            'Fecha de Nacimiento',
+            'Apellido Paterno del Solicitante (socio o Gte General)',
+            'Apellido Materno del Solicitante (socio o Gte General)',
+            'Nombres del Solicitante (socio o Gte General)',
+            'Genero',
+            'Tiene alguna Discapacidad ? (SI / NO)',
+            '¿Tiene hijos?  (SI / NO)',
+            'Telefono',
+            'Correo electrónico o "NO TIENE"',
+
+            'SUPERVISOR',
+
+            'Región del negocio',
+            'Provincia del Negocio',
+            'Distrito del Negocio',
+            'N_RUC',
+            'Sector Económico',
+            'Actividad Comercial Inicial',
+            'Componente',
+            'Tema',
+
+            'Nro de Reserva / Observacion',
+            'Modalidad'
+        ]);
     }
 
 

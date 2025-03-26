@@ -77,19 +77,18 @@ class AdvisoryController extends Controller
         $request->validate([
             'economicsector_id' => 'required|integer|exists:economicsectors,id',
             'comercialactivity_id' => 'required|integer|exists:comercialactivities,id',
-            'ruc' => 'nullable|string',
+            'ruc' => 'nullable|numeric',
             'observations' => 'nullable|string',
             'component_id' => 'required|integer',
             'theme_id' => 'required|integer',
             'modality_id' => 'required|integer',
-            'ruc' => 'nullable|string',
             'city_id' => 'required|integer',
             'province_id' => 'required|integer',
             'district_id' => 'required|integer',
             'updated_by' => 'required|integer'
         ]);
 
-        $advisory->update($request->only([
+        $data = $request->only([
             'economicsector_id',
             'comercialactivity_id',
             'ruc',
@@ -101,7 +100,13 @@ class AdvisoryController extends Controller
             'province_id',
             'district_id',
             'updated_by',
-        ]));
+        ]);
+
+        if (isset($data['ruc'])) {
+            $data['ruc'] = (string) $data['ruc'];
+        }
+
+        $advisory->update($data);
 
         return response()->json(['message' => 'Datos actualizados correctamente', 'status' => 200]);
     }

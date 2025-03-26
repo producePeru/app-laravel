@@ -47,12 +47,12 @@ class DownloadFormalizationsController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
-            $index = 1;
-            $advisories = collect();
+            // $index = 1;
+            // $advisories = collect();
 
-            foreach ($query->cursor() as $advisory) {
-                $advisories->push([
-                    'index'                 => $index++,
+            $advisories = $query->cursor()->map(function ($advisory, $index) {
+                return [
+                    'index' => ++$index,
                     'date'                  => $advisory->created_at->format('d/m/Y'),
                     'asesor'                => isset($advisory->user->profile) ? strtoupper($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename) : null,
                     'asesor_cde_city'       => $advisory->sede->city ?? null,
@@ -86,12 +86,15 @@ class DownloadFormalizationsController extends Controller
                     'theme'                 => strtoupper($advisory->theme->name) ?? null,
                     'observations'          => $advisory->observations ?? null,
                     'modality'              => $advisory->modality->name ?? null
-                ]);
-            }
+                ];
+            });
+
+            ini_set('memory_limit', '2G');
+            set_time_limit(300);
+
+            // return $advisories;
 
             return Excel::download(new AsesoriasExport($advisories), 'asesorias.xlsx');
-
-            return $advisories;
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Ocurrió un error al generar el reporte.',

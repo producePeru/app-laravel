@@ -277,7 +277,6 @@ class EventsController extends Controller
         $offices = (array) $request->input('office', []); // Forzar siempre un array
         $cityId = $request->input('city_id'); // Obtener city_id
 
-        // Si no se envía year_month, retornar dates vacío
         if (!$yearMonth) {
             return response()->json([
                 'key' => 'dot',
@@ -294,16 +293,15 @@ class EventsController extends Controller
             ]);
         }
 
-        // Extraer año y mes
         [$year, $month] = explode('-', $yearMonth);
         $year = (int) $year;
         $month = (int) $month;
 
-        // Obtener el primer y último día del mes solicitado
         $startOfMonth = Carbon::create($year, $month, 1, 0, 0, 0, 'UTC')->startOfMonth();
         $endOfMonth = Carbon::create($year, $month, 1, 0, 0, 0, 'UTC')->endOfMonth();
 
-        // Consulta de eventos con relación a la oficina
+
+
         $eventsQuery = Event::with('officePnte')
             ->where(function ($query) use ($startOfMonth, $endOfMonth) {
                 $query->whereBetween('dateStart', [$startOfMonth, $endOfMonth])
@@ -311,40 +309,32 @@ class EventsController extends Controller
                     ->orWhere(function ($query) use ($startOfMonth, $endOfMonth) {
                         $query->where('dateStart', '<=', $startOfMonth)
                             ->where('dateEnd', '>=', $endOfMonth);
-                    });
+                    })
+                    ->orWhereRaw("DATE(dateStart) = DATE(dateEnd) AND DATE(dateStart) BETWEEN ? AND ?", [
+                        $startOfMonth->toDateString(),
+                        $endOfMonth->toDateString()
+                    ]);
             });
 
-        // Aplicar filtro de oficinas solo si se ha proporcionado una lista no vacía
         if (!empty($offices)) {
             $eventsQuery->whereHas('officePnte', function ($subQuery) use ($offices) {
                 $subQuery->whereIn('office', $offices);
             });
         }
 
-        // Aplicar filtro por city_id solo si se proporciona en la petición
         if (!empty($cityId)) {
             $eventsQuery->where('city_id', $cityId);
         }
 
         $events = $eventsQuery->orderBy('id', 'desc')->get();
 
-        // Si no hay eventos, retornar dates vacío
         if ($events->isEmpty()) {
             return response()->json([
-                [
-                    'key' => 'dot-ugse',
-                    'dot' => 'red',
-                    'dates' => []
-                ],
-                [
-                    'key' => 'dot-ugo',
-                    'dot' => 'blue',
-                    'dates' => []
-                ]
+                ['key' => 'dot-ugse', 'dot' => 'red', 'dates' => []],
+                ['key' => 'dot-ugo', 'dot' => 'blue', 'dates' => []]
             ]);
         }
 
-        // Arrays para separar las fechas por color
         $redDates = [];
         $blueDates = [];
 
@@ -352,14 +342,12 @@ class EventsController extends Controller
             $officeName = $event->officePnte->office ?? null;
             $dotColor = $officeName === 'UGO' ? 'blue' : 'red';
 
-            // Generar los días entre dateStart y dateEnd dentro del mes solicitado
             $start = Carbon::parse($event->dateStart)->max($startOfMonth);
             $end = Carbon::parse($event->dateEnd)->min($endOfMonth);
 
             while ($start->lte($end)) {
-                $dateStr = $start->toISOString(); // Formato "YYYY-MM-DDTHH:MM:SS.ssssssZ"
+                $dateStr = $start->toISOString();
 
-                // Almacenar en la lista correspondiente si no está duplicado
                 if ($dotColor === 'red' && !in_array($dateStr, $redDates)) {
                     $redDates[] = $dateStr;
                 } elseif ($dotColor === 'blue' && !in_array($dateStr, $blueDates)) {
@@ -370,18 +358,9 @@ class EventsController extends Controller
             }
         }
 
-        // Retornar respuesta separada por colores
         return response()->json([
-            [
-                'key' => 'dot-ugse',
-                'dot' => 'red',
-                'dates' => $redDates
-            ],
-            [
-                'key' => 'dot-ugo',
-                'dot' => 'blue',
-                'dates' => $blueDates
-            ]
+            ['key' => 'dot-ugse', 'dot' => 'red', 'dates' => $redDates],
+            ['key' => 'dot-ugo', 'dot' => 'blue', 'dates' => $blueDates]
         ]);
     }
 
