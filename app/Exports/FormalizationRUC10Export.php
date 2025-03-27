@@ -19,11 +19,20 @@ Carbon::setLocale('es');
 class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitle, WithStyles, WithColumnWidths
 {
 
-    protected $result;
+    protected $fs10;
 
-    public function __construct(Collection $result)
+    public function __construct($fs10)
     {
-        $this->result = $result;
+        $this->fs10 = $fs10;
+    }
+    public function collection()
+    {
+        return collect($this->fs10);
+    }
+
+    public function title(): string
+    {
+        return 'FormalizacionesRUC10';
     }
 
     public function columnWidths(): array
@@ -64,11 +73,6 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
         ];
     }
 
-    public function title(): string
-    {
-        return 'FormalizacionesRUC10';
-    }
-
     public function styles(Worksheet $sheet)
     {
         $sheet->getStyle('A1:G1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');    // azul
@@ -83,11 +87,6 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
 
         $sheet->getStyle('A1:AD1')->getAlignment()->setWrapText(true);
         $sheet->getStyle('A1:AD1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
-    }
-
-    public function collection()
-    {
-        return $this->result;
     }
 
 
