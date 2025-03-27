@@ -476,6 +476,10 @@ class EventsController extends Controller
                 'link'          => $event->link,
                 'resultado'     => $event->resultado,
                 'descriptionparse' => Str::limit(strip_tags($event->description), 100, '...'),
+                'dateStart'     => $event->dateStart,
+                'dateEnd'       => $event->dateEnd,
+                'rescheduled'   => $event->rescheduled ?? null,
+                'canceled'      => $event->canceled ?? null
             ];
         });
 

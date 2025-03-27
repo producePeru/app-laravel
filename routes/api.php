@@ -382,6 +382,7 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     Route::get('list',                          [EventsController::class, 'index']);
     Route::delete('delete/{id}',                [EventsController::class, 'deleteEventById']);
     Route::put('update/{id}',                   [EventsController::class, 'update']);
+    // Route::put('observations/{id}',             [EventsController::class, 'observations']);
 
     // eventos sra dianita
     Route::get('rooms',                         [EventsController::class, 'listRooms']);
