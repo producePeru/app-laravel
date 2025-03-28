@@ -123,6 +123,7 @@ class HistorialController extends Controller
             'dateStart' => $request->input('dateStart'),
             'dateEnd'   => $request->input('dateEnd'),
             'year'      => $request->input('year'),
+            'typeCdes'  => $request->input('typeCdes'),
         ];
 
         $paginate = $request->boolean('paginate', true);
@@ -161,6 +162,7 @@ class HistorialController extends Controller
             'asesor_cde_province'   => $advisory->sede->province ?? null,
             'asesor_cde_district'   => $advisory->sede->district ?? null,
             'asesor_cde'            => strtoupper($advisory->sede->name) ?? null,
+            'asesor_cde_id'         => $advisory->sede->cdetype_id ?? null,
 
             'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
             'emp_document_number'   => $advisory->people->documentnumber ?? null,
@@ -280,6 +282,7 @@ class HistorialController extends Controller
             'dateStart' => $request->input('dateStart'),
             'dateEnd'   => $request->input('dateEnd'),
             'year'      => $request->input('year'),
+            'typeCdes'  => $request->input('typeCdes'),
         ];
 
         $paginate = $request->boolean('paginate', true);
@@ -366,6 +369,7 @@ class HistorialController extends Controller
             'dateStart' => $request->input('dateStart'),
             'dateEnd'   => $request->input('dateEnd'),
             'year'      => $request->input('year'),
+            'typeCdes'  => $request->input('typeCdes'),
         ];
 
         $paginate = $request->boolean('paginate', true);

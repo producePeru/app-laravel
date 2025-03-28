@@ -253,5 +253,11 @@ class Formalization20 extends Model
         if (!empty($filters['year'])) {
             $query->whereYear('created_at', $filters['year']);
         }
+
+        if (!empty($filters['typeCdes'])) {
+            $query->whereHas('sede', function ($q) use ($filters) {
+                $q->where('cdetype_id', $filters['typeCdes']);
+            });
+        }
     }
 }

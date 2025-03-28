@@ -110,18 +110,18 @@ php artisan make:controller Workshop/WorkshopController --resource
 
 
 
-CREATE TABLE cdesType  (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+//- CREATE TABLE cdesType  (
+//-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//-     name VARCHAR(255) NOT NULL,
+//-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+//- );
 
-insert into cdesType (name) values
-('CDE'),
-('CDEAI AGENTE INSTITUCIONES'),
-('CDEAN AGENTE NOTARÍAS');
+//- insert into cdesType (name) values
+//- ('CDE'),
+//- ('CDEAI AGENTE INSTITUCIONES'),
+//- ('CDEAN AGENTE NOTARÍAS');
 
-ALTER TABLE cdes
-ADD COLUMN cdetype_id BIGINT UNSIGNED NULL AFTER notary_id,
-ADD CONSTRAINT fk_cdetype_id FOREIGN KEY (cdetype_id) REFERENCES cdesType(id) ON DELETE SET NULL;
+//- ALTER TABLE cdes
+//- ADD COLUMN cdetype_id BIGINT UNSIGNED NULL AFTER notary_id,
+//- ADD CONSTRAINT fk_cdetype_id FOREIGN KEY (cdetype_id) REFERENCES cdesType(id) ON DELETE SET NULL;

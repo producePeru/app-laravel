@@ -9,6 +9,7 @@ use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\EmailSendController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
+use App\Http\Controllers\Cde\CdeController;
 use App\Http\Controllers\Dgtdif\SurveysController;
 use App\Http\Controllers\Download\DownloadActionsPlanController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
@@ -231,6 +232,12 @@ Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middl
     Route::get('list', [TokenController::class, 'index']);
     Route::post('create', [TokenController::class, 'store']);
     Route::put('update-status/{id}', [TokenController::class, 'updateStatus']);
+});
+
+Route::group(['prefix' => 'config', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('cdes',                          [CdeController::class, 'index']);
+    Route::put('chooseCde/{id}',                [CdeController::class, 'chooseCde']);
+    Route::put('addressCde/{id}',               [CdeController::class, 'addressCde']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
