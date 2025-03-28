@@ -225,6 +225,7 @@ class Formalization20 extends Model
             'user.profile',
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde:id,name',
+            'sede',
             'mype:id,name,ruc',
             'comercialactivity',
             'regime',
