@@ -10,9 +10,9 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 
 Carbon::setLocale('es');
 

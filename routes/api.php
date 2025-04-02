@@ -16,6 +16,7 @@ use App\Http\Controllers\Download\DownloadAttendanceController;
 use App\Http\Controllers\Download\DownloadDigitalRouterController;
 use App\Http\Controllers\Download\DownloadFairParticipantsController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
+use App\Http\Controllers\Download\DownloadNotariesController;
 use App\Http\Controllers\Download\DownloadOthersController;
 use App\Http\Controllers\Drive\DriveController;
 use App\Http\Controllers\Event\EventsController;
@@ -35,6 +36,7 @@ use App\Http\Controllers\User\SupervisorController;
 use App\Http\Controllers\Fair\FairController;
 use App\Http\Controllers\Formalization\ReportController;
 use App\Http\Controllers\Google\GoogleCalendarController;
+
 use App\Http\Controllers\Notary\QRNotaryController;
 // use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
@@ -226,6 +228,7 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportDigitalRouter']);
     Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
     Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
+    Route::post('notaries',                     [DownloadNotariesController::class, 'exportNotaries']);
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
