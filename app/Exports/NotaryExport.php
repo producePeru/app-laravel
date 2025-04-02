@@ -39,9 +39,9 @@ class NotaryExport implements FromCollection, WithHeadings, WithTitle, WithStyle
             'C' => 12,
             'D' => 12,
             'E' => 12,
-            'F' => 40,
-            'G' => 45,
-            'H' => 42,
+            'F' => 27,
+            'G' => 30,
+            'H' => 30,
             'I' => 15,
             'J' => 22,
             'K' => 46
@@ -60,7 +60,7 @@ class NotaryExport implements FromCollection, WithHeadings, WithTitle, WithStyle
             ->getColor()->setARGB('FFFFFF');
 
         // Ajustar texto en las columnas que necesiten mostrar varias líneas
-        $columnasAjustadas = ['I', 'J', 'K']; // Puedes ajustar más columnas si es necesario
+        $columnasAjustadas = ['F', 'G', 'I', 'J', 'K']; // Puedes ajustar más columnas si es necesario
         foreach ($columnasAjustadas as $columna) {
             $sheet->getStyle("{$columna}1:{$columna}1000") // Ajusta hasta la fila 1000 (o más si lo necesitas)
                 ->getAlignment()->setWrapText(true);
