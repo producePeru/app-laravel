@@ -9,7 +9,7 @@ class CdeType extends Model
 {
     use HasFactory;
 
-    protected $table = 'cdestype';
+    protected $table = 'cdesType';
 
     protected $fillable = ['name'];
 }
