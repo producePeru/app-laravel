@@ -81,4 +81,26 @@ class CdeController extends Controller
             'status' => 200
         ]);
     }
+
+    public function updateCde(Request $request, $id)
+    {
+        $cde = Cde::find($id);
+
+        if (!$cde) {
+            return response()->json(['error' => 'CDE not found'], 404);
+        }
+
+        $cde->name = $request->input('name');
+        $cde->city = $request->input('city');
+        $cde->province = $request->input('province');
+        $cde->district = $request->input('district');
+        $cde->address = $request->input('address');
+
+        $cde->save();
+
+        return response()->json([
+            'message' => 'CDE actualizado correctamente',
+            'status' => 200
+        ]);
+    }
 }

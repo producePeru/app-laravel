@@ -13,7 +13,9 @@ use App\Http\Controllers\Cde\CdeController;
 use App\Http\Controllers\Dgtdif\SurveysController;
 use App\Http\Controllers\Download\DownloadActionsPlanController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
+use App\Http\Controllers\Download\DownloadCdesController;
 use App\Http\Controllers\Download\DownloadDigitalRouterController;
+use App\Http\Controllers\Download\DownloadEventsController;
 use App\Http\Controllers\Download\DownloadFairParticipantsController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\Download\DownloadNotariesController;
@@ -229,6 +231,8 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
     Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
     Route::post('notaries',                     [DownloadNotariesController::class, 'exportNotaries']);
+    Route::post('cdes',                         [DownloadCdesController::class, 'exportCdes']);
+    Route::post('events',                       [DownloadEventsController::class, 'exportEvents']);
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -241,6 +245,7 @@ Route::group(['prefix' => 'config', 'namespace' => 'App\Http\Controllers', 'midd
     Route::get('cdes',                          [CdeController::class, 'index']);
     Route::put('chooseCde/{id}',                [CdeController::class, 'chooseCde']);
     Route::put('addressCde/{id}',               [CdeController::class, 'addressCde']);
+    Route::put('cde/{id}',                      [CdeController::class, 'updateCde']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
