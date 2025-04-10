@@ -9,12 +9,14 @@ use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\EmailSendController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
+use App\Http\Controllers\Cde\CdeController;
 use App\Http\Controllers\Dgtdif\SurveysController;
 use App\Http\Controllers\Download\DownloadActionsPlanController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
 use App\Http\Controllers\Download\DownloadDigitalRouterController;
 use App\Http\Controllers\Download\DownloadFairParticipantsController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
+use App\Http\Controllers\Download\DownloadNotariesController;
 use App\Http\Controllers\Download\DownloadOthersController;
 use App\Http\Controllers\Drive\DriveController;
 use App\Http\Controllers\Event\EventsController;
@@ -32,13 +34,16 @@ use App\Http\Controllers\Selects\SelectController;
 use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\User\SupervisorController;
 use App\Http\Controllers\Fair\FairController;
+use App\Http\Controllers\Formalization\ReportController;
 use App\Http\Controllers\Google\GoogleCalendarController;
+
 use App\Http\Controllers\Notary\QRNotaryController;
 // use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
 use App\Http\Controllers\Room\RoomController;
 use App\Http\Controllers\RutaDigital\RutaDigitalController;
+use App\Http\Controllers\Workshop\WorkshopController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
@@ -86,8 +91,8 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
 // EVENTOS SR CARLOS   'middleware' => ['restrict.ip']
 Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], function () {
-    Route::get('dots/{month}',                  [EventsController::class, 'getEventsDots']);
-    Route::get('events-day/{day}',              [EventsController::class, 'getEventsByDate']);
+    Route::get('dots',                      [EventsController::class, 'getEventsDots']);
+    Route::get('events-day',                [EventsController::class, 'getEventsByDate']);
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -200,30 +205,42 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
     Route::get('formalizations-20', [HistorialController::class, 'historialFormalizations20']);
 
     //filters
-    Route::get('advisories/filters',                [HistorialController::class, 'filterHistorialAdvisoriesByDates']);
+    Route::get('advisories/filters',                [HistorialController::class, 'filterHistorialAdvisoriesByDates']);                  //1
     Route::get('formalizations-10/filters',         [HistorialController::class, 'filterHistorialFormalizations10ByDates']);
     Route::get('formalizations-20/filters',         [HistorialController::class, 'filterHistorialFormalizations20ByDates']);
 
     //registros-historial
     Route::get('registers/{idPeople}', [HistorialController::class, 'getByPeopleIdRegisters']);
+
+
+
+    // datatables
+    Route::get('advisories-filters',                [HistorialController::class, 'indexDataTableAdvisories']);
 });
 
 Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('asesories',                     [DownloadFormalizationsController::class, 'exportAsesories']);
-    Route::get('formalizations-ruc10',          [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
-    Route::get('formalizations-ruc20',          [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
+    Route::post('asesories',                    [DownloadFormalizationsController::class, 'exportAsesories']);
+    Route::post('formalizations-ruc10',         [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
+    Route::post('formalizations-ruc20',         [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
     Route::post('actions-plans',                [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
     Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportDigitalRouter']);
     Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
     Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
+    Route::post('notaries',                     [DownloadNotariesController::class, 'exportNotaries']);
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list', [TokenController::class, 'index']);
     Route::post('create', [TokenController::class, 'store']);
     Route::put('update-status/{id}', [TokenController::class, 'updateStatus']);
+});
+
+Route::group(['prefix' => 'config', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('cdes',                          [CdeController::class, 'index']);
+    Route::put('chooseCde/{id}',                [CdeController::class, 'chooseCde']);
+    Route::put('addressCde/{id}',               [CdeController::class, 'addressCde']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -374,11 +391,15 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     Route::post('create',                       [EventsController::class, 'store']);
     Route::get('list',                          [EventsController::class, 'index']);
     Route::delete('delete/{id}',                [EventsController::class, 'deleteEventById']);
-    Route::put('update/{id}',                        [EventsController::class, 'update']);
+    Route::put('update/{id}',                   [EventsController::class, 'update']);
+    // Route::put('observations/{id}',             [EventsController::class, 'observations']);
 
     // eventos sra dianita
-    Route::get('rooms',                               [EventsController::class, 'listRooms']);
-    Route::post('reserve-room',                       [EventsController::class, 'storeRoom']);
+    Route::get('rooms',                         [EventsController::class, 'listRooms']);
+    Route::post('reserve-room',                 [EventsController::class, 'storeRoom']);
+    Route::post('to-attendance/{id}',           [AttendanceController::class, 'createEventoToAttendance']);
+    Route::post('delete/{id}',                  [EventsController::class, 'destroy']);
+    Route::put('update-obs/{id}',               [EventsController::class, 'updateObservation']);
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
@@ -415,6 +436,10 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
 
     Route::get('list-vote',                     [QRNotaryController::class, 'index']);          // votación notarias...
     Route::get('list-vote-all',                 [QRNotaryController::class, 'allWithoutPagination']);
+
+    Route::post('migrate-events',               [AttendanceController::class, 'migrateEvents']);        // migra los eventos de UGO al calendario sr Carlos
+    Route::put('event-finally/{id}',            [AttendanceController::class, 'eventFinally']);        // migra los eventos de UGO al calendario sr Carlos
+
 });
 
 
@@ -447,3 +472,16 @@ Route::group(['prefix' => 'restrict', 'namespace' => 'App\Http\Controllers', 'mi
 });
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {});
+
+
+
+
+// REFORMA
+Route::group(['prefix' => 'report', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('advisories',                 [ReportController::class, 'advisiories']);
+});
+
+Route::group(['prefix' => 'route-digital', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::post('store',                    [WorkshopController::class, 'store']);
+    Route::get('list',                      [WorkshopController::class, 'index']);
+});

@@ -9,6 +9,7 @@ use App\Models\EventRecurrence;
 use App\Models\EventCategory;
 use App\Models\Rooms;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Str;
 
 class EventsController extends Controller
@@ -222,170 +223,291 @@ class EventsController extends Controller
     }
 
 
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::orderBy('created_at', 'desc')->paginate(50);
+        $filters = [
+            'name'      => $request->input('name'),
+            'year'      => $request->input('year'),
+            // 'asesor'    => $request->input('asesor'),
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd'   => $request->input('dateEnd'),
+            'offices'   => $request->input('offices'),
+        ];
 
-        $events->getCollection()->transform(function ($event) {
-            $event->description = strip_tags($event->description);
-            return $event;
+        $query = Event::query();
+
+        $query->withAdvisoryRangeDate($filters);
+
+        $advisories = $query->paginate(150)->through(function ($advisory) {
+            return $this->mapEvents($advisory);
         });
 
-        return response()->json(['data' => $events, 'status' => 200]);
+        return response()->json([
+            'data'   => $advisories,
+            'status' => 200
+        ]);
+    }
+
+    private function mapEvents($item)
+    {
+        return [
+            'id'                => $item->id,
+            'office_id'         => $item->officePnte->id,
+            'city'              => $item->region->name ?? null,
+            'place'             => $item->place,
+            'office'            => $item->officePnte->office,
+            'area'              => $item->officePnte->name,
+            'title'             => $item->title,
+            'dateStart'         => $item->dateStart,
+            'dateEnd'           => $item->dateEnd,
+            'start'             => $item->start,
+            'end'               => $item->end,
+            'description'       => strip_tags($item->description),
+            'resultado'         => strip_tags($item->resultado),
+            'nameUser'          => $item->nameUser,
+            'link'              => $item->link,
+            'all'               => $item
+        ];
     }
 
 
-    public function getEventsDots(Request $request, $yearMonth)
+    public function getEventsDots(Request $request)
     {
-        if (!preg_match('/^\d{4}-\d{2}$/', $yearMonth)) {
-            return response()->json(['error' => 'Formato de fecha inválido. Usa YYYY-MM.'], 400);
+        $yearMonth = $request->input('year_month'); // Formato esperado: "YYYY-MM"
+        $offices = (array) $request->input('office', []); // Forzar siempre un array
+        $cityId = $request->input('city_id'); // Obtener city_id
+
+        if (!$yearMonth) {
+            return response()->json([
+                'key' => 'dot',
+                'dot' => null,
+                'dates' => []
+            ]);
         }
 
-        $officeMap = [
-            'dte'    => 1,
-            'ferias' => 2,
-            'ftm'    => 3,
-            'mp'     => 4,
-            'pte'    => 5,
-            'rd'     => 6,
-            'ougse'  => 7,
-        ];
-
-        $filterOffices = array_values(array_filter(array_map(
-            fn($param) => $officeMap[$param] ?? null,
-            $request->query()
-        )));
-
-        if (empty($filterOffices)) {
-            return response()->json(['data' => [], 'status' => 200]);
+        if (!$offices) {
+            return response()->json([
+                'key' => 'dot-offices',
+                'dot' => null,
+                'dates' => []
+            ]);
         }
 
-        $colors = [
-            1 => 'gray',
-            2 => 'red',
-            3 => 'orange',
-            4 => 'yellow',
-            5 => 'green',
-            6 => 'blue',
-            7 => 'purple',
-        ];
+        [$year, $month] = explode('-', $yearMonth);
+        $year = (int) $year;
+        $month = (int) $month;
 
-        $startDate = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
-        $endDate = Carbon::createFromFormat('Y-m', $yearMonth)->endOfMonth();
+        $startOfMonth = Carbon::create($year, $month, 1, 0, 0, 0, 'UTC')->startOfMonth();
+        $endOfMonth = Carbon::create($year, $month, 1, 0, 0, 0, 'UTC')->endOfMonth();
 
-        $events = Event::whereBetween('dateStart', [$startDate, $endDate])
-            ->whereIn('id_pnte', $filterOffices)
-            ->get();
 
-        $formattedEvents = [];
+
+        $eventsQuery = Event::with('officePnte')
+            ->where(function ($query) use ($startOfMonth, $endOfMonth) {
+                $query->whereBetween('dateStart', [$startOfMonth, $endOfMonth])
+                    ->orWhereBetween('dateEnd', [$startOfMonth, $endOfMonth])
+                    ->orWhere(function ($query) use ($startOfMonth, $endOfMonth) {
+                        $query->where('dateStart', '<=', $startOfMonth)
+                            ->where('dateEnd', '>=', $endOfMonth);
+                    })
+                    ->orWhereRaw("DATE(dateStart) = DATE(dateEnd) AND DATE(dateStart) BETWEEN ? AND ?", [
+                        $startOfMonth->toDateString(),
+                        $endOfMonth->toDateString()
+                    ]);
+            });
+
+        if (!empty($offices)) {
+            $eventsQuery->whereHas('officePnte', function ($subQuery) use ($offices) {
+                $subQuery->whereIn('office', $offices);
+            });
+        }
+
+        if (!empty($cityId)) {
+            $eventsQuery->where('city_id', $cityId);
+        }
+
+        $events = $eventsQuery->orderBy('id', 'desc')->get();
+
+        if ($events->isEmpty()) {
+            return response()->json([
+                ['key' => 'dot-ugse', 'dot' => 'red', 'dates' => []],
+                ['key' => 'dot-ugo', 'dot' => 'blue', 'dates' => []]
+            ]);
+        }
+
+        $redDates = [];
+        $blueDates = [];
 
         foreach ($events as $event) {
-            $office = $event->id_pnte;
-            $color = $colors[$office] ?? 'gray';
+            $officeName = $event->officePnte->office ?? null;
+            $dotColor = $officeName === 'UGO' ? 'blue' : 'red';
 
-            if (!isset($formattedEvents[$color])) {
-                $formattedEvents[$color] = [
-                    'key' => $office,
-                    'dot' => $color,
-                    'dates' => []
-                ];
-            }
-
-            $start = Carbon::parse($event->dateStart);
-            $end = Carbon::parse($event->dateEnd);
+            $start = Carbon::parse($event->dateStart)->max($startOfMonth);
+            $end = Carbon::parse($event->dateEnd)->min($endOfMonth);
 
             while ($start->lte($end)) {
-                $formattedEvents[$color]['dates'][] = $start->toISOString();
+                $dateStr = $start->toISOString();
+
+                if ($dotColor === 'red' && !in_array($dateStr, $redDates)) {
+                    $redDates[] = $dateStr;
+                } elseif ($dotColor === 'blue' && !in_array($dateStr, $blueDates)) {
+                    $blueDates[] = $dateStr;
+                }
+
                 $start->addDay();
             }
         }
 
         return response()->json([
-            'data' => array_values($formattedEvents),
-            'status' => 200
+            ['key' => 'dot-ugse', 'dot' => 'red', 'dates' => $redDates],
+            ['key' => 'dot-ugo', 'dot' => 'blue', 'dates' => $blueDates]
         ]);
     }
 
 
-    public function getEventsByDate(Request $request, $date)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function getEventsByDate(Request $request)
     {
-        $officeMap = [
-            'dte'    => 1,
-            'ferias' => 2,
-            'ftm'    => 3,
-            'mp'     => 4,
-            'pte'    => 5,
-            'rd'     => 6,
-            'ougse'  => 7,
-        ];
+        // Obtener filtros desde la solicitud
+        $dateSelected = $request->input('dateSelected'); // Fecha específica a buscar
+        $offices = (array) $request->input('office', []); // Oficinas a filtrar (array)
+        $cityId = $request->input('city_id'); // ID de la ciudad opcional
 
-        $officeKeys = $request->query();
-
-        if (empty($officeKeys)) {
+        // Si no se proporciona una fecha, retornar respuesta vacía
+        if (!$dateSelected) {
             return response()->json([
-                'message' => 'No se recibieron parámetros válidos.',
-                'status'  => 200,
-                'data'    => []
-            ]);
+                'message' => 'Debe proporcionar una fecha válida.',
+                'events' => []
+            ], 400);
         }
 
-        $officeIds = collect($officeKeys)->map(fn($key) => $officeMap[$key] ?? null)->filter()->values();
-
-        $query = Event::whereDate('dateStart', '<=', $date)->whereDate('dateEnd', '>=', $date);
-
-        if ($officeIds->isNotEmpty()) {
-            $query->whereIn('id_pnte', $officeIds);
+        if (!$offices) {
+            return response()->json([
+                'message' => 'Debe proporcionar una fecha válida.',
+                'events' => []
+            ], 400);
         }
 
-        $colors = [
-            1 => 'gray',
-            2 => 'red',
-            3 => 'orange',
-            4 => 'yellow',
-            5 => 'green',
-            6 => 'blue',
-            7 => 'purple',
-        ];
+        // Construcción de la consulta de eventos
+        $eventsQuery = Event::with('officePnte', 'region')
+            ->where(function ($query) use ($dateSelected) {
+                $query->where('dateStart', '<=', $dateSelected)
+                    ->where('dateEnd', '>=', $dateSelected);
+            });
 
-        $events = $query->get()->map(function ($event) use ($colors) {
-            $office = $event->id_pnte;
-            $color = $colors[$office] ?? 'gray';
+        // Filtro por oficinas si se proporcionan
+        if (!empty($offices)) {
+            $eventsQuery->whereHas('officePnte', function ($query) use ($offices) {
+                $query->whereIn('office', $offices);
+            });
+        }
 
-            $dates = [];
+        // Filtro por city_id si se proporciona
+        if (!empty($cityId)) {
+            $eventsQuery->where('city_id', $cityId);
+        }
+
+        // Obtener los eventos
+        $events = $eventsQuery->orderBy('dateStart', 'asc')->get();
+
+        // Mapear los eventos para devolver solo los datos requeridos
+        $formattedEvents = $events->map(function ($event) {
+            // Definir el color del punto según la oficina
+            $office = $event->officePnte->office ?? 'Desconocido';
+            $color = ($office === 'UGO') ? 'blue' : 'red';
+
+            // Generar la lista de fechas entre dateStart y dateEnd
             $start = Carbon::parse($event->dateStart);
             $end = Carbon::parse($event->dateEnd);
+            $dates = [];
 
             while ($start->lte($end)) {
-                $dates[] = $start->toISOString();
+                $dates[] = $start->toDateString(); // Formato "YYYY-MM-DD"
                 $start->addDay();
             }
 
             return [
-                'id_pnte'       => $office,
+                'id'            => $event->id,
+                'id_pnte'       => $event->officePnte->name ?? '-',
+                'office'        => $office,
+                'region'        => $event->region->name ?? null,
                 'dot'           => $color,
                 'dates'         => $dates,
                 'titleComplete' => $event->title,
                 'title'         => Str::limit($event->title, 60, '...'),
-                'organiza'      => $event->organiza,
-                'numMypes'      => $event->numMypes,
-
-                'start'         => Carbon::parse($event->start)->format('h:i A'),
-                'end'           => Carbon::parse($event->end)->format('h:i A'),
+                'organiza'      => $event->organiza ?? null,
+                'numMypes'      => $event->numMypes ?? null,
+                'start'         => $event->start ? Carbon::parse($event->start)->format('h:i A') : null,
+                'end'           => $event->end ? Carbon::parse($event->end)->format('h:i A') : null,
                 'description'   => Str::limit($event->description, 100, '...'),
                 'descripionAll' => $event->description,
                 'nameUser'      => $event->nameUser,
                 'link'          => $event->link,
                 'resultado'     => $event->resultado,
                 'descriptionparse' => Str::limit(strip_tags($event->description), 100, '...'),
+                'dateStart'     => $event->dateStart,
+                'dateEnd'       => $event->dateEnd,
+                'rescheduled'   => $event->rescheduled ?? null,
+                'canceled'      => $event->canceled ?? null
             ];
         });
 
+        // Retornar los eventos formateados
         return response()->json([
-            'message' => $events->isEmpty() ? 'No hay eventos para esta fecha.' : 'Eventos encontrados.',
+            'message' => 'Eventos obtenidos correctamente.',
             'status'  => 200,
-            'data'    => $events
+            'data'    => $formattedEvents
         ]);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     public function deleteEventById($idEvent)
@@ -475,6 +597,35 @@ class EventsController extends Controller
             return response()->json([
                 'message' => 'Error al procesar la solicitud.',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        $workshop = Event::findOrFail($id);
+        $workshop->delete();
+        return response()->json(['message' => 'Evento eliminado correctamente', 'status' => 200]);
+    }
+
+    public function updateObservation($id, Request $request)
+    {
+        try {
+
+            $event = Event::findOrFail($id);
+
+            $data = $request->only(['dateStart', 'dateEnd', 'start', 'end', 'rescheduled', 'canceled']);
+
+            $event->update($data);
+
+            return response()->json([
+                'message' => 'Evento actualizado correctamente',
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'No se pudo actualizar el evento',
+                'message' => $e->getMessage()
             ], 500);
         }
     }

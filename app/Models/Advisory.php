@@ -222,12 +222,51 @@ class Advisory extends Model
     }
 
     //filters
+    // public function scopeWithAdvisoryRangeDate($query, $filters)
+    // {
+    //     $query = $query->with([
+    //         'modality',
+    //         'people.gender:id,name',
+    //         'people.typedocument:id,avr',
+    //         'supervisor.supervisorUser.profile',
+    //         'supervisado.supervisadoUser.profile',
+    //         'user.profile',
+    //         'supervisado.supervisadoUser.profile.cde:id,name',
+    //         'sede',
+    //         'theme',
+    //         'component',
+    //         'city',
+    //         'province',
+    //         'district'
+    //     ])->orderBy('created_at', 'desc');
+
+    //     if ($filters['user_id'] !== null) {
+    //         $query->whereIn('user_id', $filters['user_id']);
+    //     }
+
+    //     if ($filters['dateStart'] && $filters['dateEnd']) {
+    //         $endDate = date('Y-m-d', strtotime($filters['dateEnd']));
+    //         $endDate = date('Y-m-d', strtotime($endDate . ' + 1 day'));
+    //         $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
+    //     }
+
+    //     if (!empty($filters['year'])) {
+    //         $query->whereYear('created_at', $filters['year']);
+    //     }
+
+    //     return $query->paginate(150);
+    // }
+
+
+
+    // ULTIMO 2025 ***
     public function scopeWithAdvisoryRangeDate($query, $filters)
     {
         $query = $query->with([
             'modality',
             'people.gender:id,name',
             'people.typedocument:id,avr',
+            'people.pais:id,name',
             'supervisor.supervisorUser.profile',
             'supervisado.supervisadoUser.profile',
             'user.profile',
@@ -235,18 +274,25 @@ class Advisory extends Model
             'sede',
             'theme',
             'component',
+            'economicsector',
+            'comercialactivity',
             'city',
             'province',
             'district'
         ])->orderBy('created_at', 'desc');
 
-        if ($filters['user_id'] !== null) {
-            $query->whereIn('user_id', $filters['user_id']);
+        if (!empty($filters['asesor'])) {
+            $query->where('user_id', $filters['asesor']);
         }
 
-        if ($filters['dateStart'] && $filters['dateEnd']) {
-            $endDate = date('Y-m-d', strtotime($filters['dateEnd']));
-            $endDate = date('Y-m-d', strtotime($endDate . ' + 1 day'));
+        if (!empty($filters['name'])) {
+            $query->whereHas('people', function ($q) use ($filters) {
+                $q->where('documentnumber', 'like', '%' . $filters['name'] . '%');
+            });
+        }
+
+        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' +1 day'));
             $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
         }
 
@@ -254,15 +300,10 @@ class Advisory extends Model
             $query->whereYear('created_at', $filters['year']);
         }
 
-        return $query->paginate(150);
+        if (!empty($filters['typeCdes'])) {
+            $query->whereHas('sede', function ($q) use ($filters) {
+                $q->where('cdetype_id', $filters['typeCdes']);
+            });
+        }
     }
 }
-
-
-// if ($filters['people_id'] !== null) {
-//     $query->where('people_id', $filters['people_id']);
-// }
-
-// if ($filters['city_id'] !== null) {
-//     $query->where('city_id', $filters['city_id']);
-// }

@@ -66,7 +66,5 @@ class DownloadDigitalRouterController extends Controller
         });
 
         return Excel::download(new DigitalRoutesExport($result), 'ruta-digital.xlsx');
-
     }
-
 }

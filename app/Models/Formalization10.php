@@ -88,14 +88,14 @@ class Formalization10 extends Model
             'district',
             'user.profile',
             'people:id,name,lastname,middlename,documentnumber,email,phone',
-            ])
+        ])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
     }
 
     public function scopeByUserId($query, $userId)
     {
-        return $query->whereHas('user', function($q) use ($userId) {
+        return $query->whereHas('user', function ($q) use ($userId) {
             $q->where('id', $userId);
         });
     }
@@ -140,10 +140,10 @@ class Formalization10 extends Model
             'province',
             'district'
         ])
-        ->orderBy('created_at', 'desc')->get()->map(function ($item) {
-            $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
-            return $item;
-        });
+            ->orderBy('created_at', 'desc')->get()->map(function ($item) {
+                $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
+                return $item;
+            });
     }
 
     // todas las formalizaciones de tipo RUC 10
@@ -166,8 +166,8 @@ class Formalization10 extends Model
             'province',
             'district'
         ])
-        ->orderBy('created_at', 'desc')
-        ->paginate(20);
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
     }
 
     //filters
@@ -189,12 +189,18 @@ class Formalization10 extends Model
             'district'
         ])->orderBy('created_at', 'desc');
 
-        if ($filters['user_id'] !== null) {
-            $query->whereIn('user_id', $filters['user_id']);
+        if (!empty($filters['asesor'])) {
+            $query->where('user_id', $filters['asesor']);
         }
 
-        if ($filters['dateStart'] && $filters['dateEnd']) {
-            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' + 1 day'));
+        if (!empty($filters['name'])) {
+            $query->whereHas('people', function ($q) use ($filters) {
+                $q->where('documentnumber', 'like', '%' . $filters['name'] . '%');
+            });
+        }
+
+        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' +1 day'));
             $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
         }
 
@@ -202,6 +208,10 @@ class Formalization10 extends Model
             $query->whereYear('created_at', $filters['year']);
         }
 
-        return $query->paginate(50);
+        if (!empty($filters['typeCdes'])) {
+            $query->whereHas('sede', function ($q) use ($filters) {
+                $q->where('cdetype_id', $filters['typeCdes']);
+            });
+        }
     }
 }

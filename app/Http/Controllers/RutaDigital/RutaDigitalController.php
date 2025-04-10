@@ -195,25 +195,25 @@ class RutaDigitalController extends Controller
         $data->getCollection()->transform(function ($item) {
 
             $supervisador = $item->user->misupervisor?->supervisor->profile
-            ? $item->user->misupervisor->supervisor->profile->name . ' ' . $item->user->misupervisor->supervisor->profile->lastname . ' ' . $item->user->misupervisor->supervisor->profile->middlename
-            : 'Sin supervisor';
+                ? $item->user->misupervisor->supervisor->profile->name . ' ' . $item->user->misupervisor->supervisor->profile->lastname . ' ' . $item->user->misupervisor->supervisor->profile->middlename
+                : 'Sin supervisor';
 
             return [
                 'id' => $item->id,
 
                 'date' => Carbon::parse($item->created_at)->format('d/m/Y H:i'),
                 'asesor_documentnumber' => $item->profile->documentnumber,
-                'asesor_name' => $item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename,
+                'asesor_name' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
                 'asesor_cde' => $item->profile->cde->name,
-                'supervisador' => $supervisador,
+                'supervisador' => strtoupper($supervisador),
 
                 'documentnumber' => $item->person->documentnumber,
                 'typedocument' => $item->person->typedocument->name,
-                'country' => $item->person->pais->name,
+                'country' => strtoupper($item->person->pais->name),
                 'birthdate' => Carbon::parse($item->person->birthday)->format('d/m/Y'),
-                'lastname' => $item->person->lastname . ' ' . $item->person->middlename,
-                'name' => $item->person->name,
-                'gender' => $item->person->gender->avr,
+                'lastname' => strtoupper($item->person->lastname . ' ' . $item->person->middlename),
+                'name' => strtoupper($item->person->name),
+                'gender' => strtoupper($item->person->gender->avr),
                 'sick' => $item->person->sick == 'yes' ? 'SI' : 'NO',
                 'phone' => $item->person->phone,
                 'email' => $item->person->email,
@@ -255,8 +255,8 @@ class RutaDigitalController extends Controller
             'mype.comercialactivity:id,name',
             'mype.economicsector:id,name'
         ])
-        ->search($search)
-        ->orderBy('created_at', 'desc');
+            ->search($search)
+            ->orderBy('created_at', 'desc');
 
         // Filtrado según roles
         if (in_array(1, $role_array) || in_array(5, $role_array)) {
@@ -337,14 +337,14 @@ class RutaDigitalController extends Controller
                 $digitalroute->save();
 
                 return response()->json([
-                   'message' => 'El estado ha sido cambiado',
-                   'status' => 200
+                    'message' => 'El estado ha sido cambiado',
+                    'status' => 200
                 ]);
             }
 
             return response()->json([
-               'message' => 'No se encontró el registro',
-               'status' => 404
+                'message' => 'No se encontró el registro',
+                'status' => 404
             ]);
         }
     }

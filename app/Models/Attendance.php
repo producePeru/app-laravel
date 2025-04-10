@@ -15,6 +15,7 @@ class Attendance extends Model
     protected $table = 'attendancelist';
 
     protected $fillable = [
+        'eventsoffice_id',
         'title',
         'slug',
         'startDate',
@@ -26,7 +27,8 @@ class Attendance extends Model
         'address',
         'user_id',
         'people_id',
-        'description'
+        'description',
+        'finally'
     ];
 
     public function region()
@@ -57,6 +59,11 @@ class Attendance extends Model
     public function asesor()
     {
         return $this->belongsTo(Profile::class, 'people_id');
+    }
+
+    public function pnte()
+    {
+        return $this->belongsTo(OfficePnte::class, 'eventsoffice_id');
     }
 
     public function scopeSearch($query, $search)

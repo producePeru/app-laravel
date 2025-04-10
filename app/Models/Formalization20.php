@@ -120,7 +120,7 @@ class Formalization20 extends Model
             'mype:id,name,ruc',
             'people:id,name,lastname,middlename,documentnumber,email,phone',
             'userupdater.profile'
-            ])
+        ])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
     }
@@ -141,7 +141,7 @@ class Formalization20 extends Model
 
     public function scopeByUserId($query, $userId)
     {
-        return $query->whereHas('user', function($q) use ($userId) {
+        return $query->whereHas('user', function ($q) use ($userId) {
             $q->where('id', $userId);
         });
     }
@@ -181,10 +181,10 @@ class Formalization20 extends Model
             'district',
             'typecapital'
         ])
-        ->orderBy('created_at', 'desc')->get()->map(function ($item) {
-            $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
-            return $item;
-        });
+            ->orderBy('created_at', 'desc')->get()->map(function ($item) {
+                $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
+                return $item;
+            });
     }
 
     // todas las formalizaciones tipo 20
@@ -210,8 +210,8 @@ class Formalization20 extends Model
             'province',
             'district'
         ])
-        ->orderBy('created_at', 'desc')
-        ->paginate(20);
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
     }
 
     //filters
@@ -225,6 +225,7 @@ class Formalization20 extends Model
             'user.profile',
             'supervisado.supervisadoUser.profile',
             'supervisado.supervisadoUser.profile.cde:id,name',
+            'sede',
             'mype:id,name,ruc',
             'comercialactivity',
             'regime',
@@ -235,15 +236,29 @@ class Formalization20 extends Model
             'district'
         ])->orderBy('created_at', 'desc');
 
-        if ($filters['user_id'] !== null) {
-            $query->whereIn('user_id', $filters['user_id']);
+        if (!empty($filters['asesor'])) {
+            $query->where('user_id', $filters['asesor']);
         }
 
-        if ($filters['dateStart'] && $filters['dateEnd']) {
-            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' + 1 day'));
+        if (!empty($filters['name'])) {
+            $query->whereHas('people', function ($q) use ($filters) {
+                $q->where('documentnumber', 'like', '%' . $filters['name'] . '%');
+            });
+        }
+
+        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' +1 day'));
             $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
         }
 
-        return $query->paginate(50);
+        if (!empty($filters['year'])) {
+            $query->whereYear('created_at', $filters['year']);
+        }
+
+        if (!empty($filters['typeCdes'])) {
+            $query->whereHas('sede', function ($q) use ($filters) {
+                $q->where('cdetype_id', $filters['typeCdes']);
+            });
+        }
     }
 }

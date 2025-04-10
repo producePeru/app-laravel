@@ -13,15 +13,25 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+
 Carbon::setLocale('es');
 
 class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitle, WithStyles, WithColumnWidths
 {
-    protected $result;
+    protected $fs20;
 
-    public function __construct(Collection $result)
+    public function __construct($fs20)
     {
-        $this->result = $result;
+        $this->fs20 = $fs20;
+    }
+    public function collection()
+    {
+        return collect($this->fs20);
+    }
+
+    public function title(): string
+    {
+        return 'FormalizacionesRUC10';
     }
 
     public function columnWidths(): array
@@ -33,17 +43,17 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'D' => 14,
             'E' => 14,
             'F' => 14,
+            'G' => 11,
 
-            'G' => 4,
             'H' => 10,
-            'I' => 6,
+            'I' => 14,
             'J' => 11,
             'K' => 15,
-            'L' => 15,
-            'M' => 15,
-            'N' => 4,
-            'O' => 4,
-            'P' => 4,
+            'L' => 24,
+            'M' => 24,
+            'N' => 24,
+            'O' => 8,
+            'P' => 13,
             'Q' => 11,
             'R' => 13,
 
@@ -57,40 +67,34 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'Z' => 15,
             'AA' => 15,
             'AB' => 10,
-            'AC' => 10,
+            'AC' => 20,
             'AD' => 25,
-            'AE' => 5,
+            'AE' => 11,
             'AG' => 10,
-            'AF' => 5,
+            'AF' => 8,
             'AH' => 14,
             'AI' => 12,
-            'AJ' => 10,
+            'AJ' => 22,
             'AK' => 12,
+            'AL' => 12
         ];
     }
 
-    public function title(): string
-    {
-        return 'FormalizacionesRUC20';
-    }
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:F1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');
-        $sheet->getStyle('G1:R1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('833c0c');
+        $sheet->getStyle('A1:G1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');        // azul
+        $sheet->getStyle('H1:R1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('833c0c');
         $sheet->getStyle('S1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('375623');
         $sheet->getStyle('AA1:AH1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('305496');
-        $sheet->getStyle('AI1:AJ1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('c00000');
-        $sheet->getStyle('AK1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
+        $sheet->getStyle('AI1:AK1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('c00000');
+        $sheet->getStyle('AL1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
 
-        $sheet->getStyle('A1:AK1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AK1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:AL1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AL1')->getFont()->getColor()->setARGB('FFFFFF');
+
+        $sheet->getStyle('A1:AL1')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:AL1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
     }
-
-    public function collection()
-    {
-        return $this->result;
-    }
-
 
     public function headings(): array
     {
@@ -101,6 +105,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'Región del CDE del Asesor',
             'Provincia del CDE del Asesor',
             'Distrito del CDE del Asesor',
+            'Cde del Asesor',
 
             'Tipo de Documento de Identidad',
             'Número de Documento de Identidad',
