@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Selects;
 
 use App\Http\Controllers\Controller;
+use App\Models\Advisory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Country;
@@ -317,6 +318,7 @@ class SelectController extends Controller
 
         foreach ($asesores as $asesor) {
             $profile = Profile::find($asesor->user_id);
+
             if ($profile) {
                 $label = strtoupper($profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename);
                 $data->push([
@@ -330,6 +332,28 @@ class SelectController extends Controller
         $data = $data->sortBy('label')->values();
 
         return response()->json(['data' => $data]);
+    }
+
+    public function getAsesoresReporte()
+    {
+        $userIds = Advisory::distinct()->pluck('user_id');
+
+        $profiles = Profile::whereIn('user_id', $userIds)->get();
+
+        $data = collect();
+
+        foreach ($profiles as $profile) {
+            $label = strtoupper($profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename);
+
+            $data->push([
+                'label' => $label,
+                'value' => $profile->user_id,
+            ]);
+        }
+
+        $sortedData = $data->sortBy('label')->values();
+
+        return response()->json(['data' => $sortedData, 'status' => 200]);
     }
 
     public function getOperationalStatus()

@@ -146,12 +146,12 @@ class Advisory extends Model
             'province',
             'district'
         ])
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->map(function ($item) {
-            $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
-            return $item;
-        });
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($item) {
+                $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
+                return $item;
+            });
     }
 
     // public function scopeAllNotaries($query)
@@ -194,8 +194,8 @@ class Advisory extends Model
             'province',
             'district'
         ])
-        ->orderBy('created_at', 'desc')
-        ->paginate(20);
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
     }
 
 
@@ -208,14 +208,15 @@ class Advisory extends Model
             'component',
             'city',
             'province',
-            'district'])
-        ->orderBy('created_at', 'desc')
-        ->paginate(20);
+            'district'
+        ])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
     }
 
     public function scopeByUserId($query, $userId)
     {
-        return $query->whereHas('user', function($q) use ($userId) {
+        return $query->whereHas('user', function ($q) use ($userId) {
             $q->where('id', $userId);
         });
     }
@@ -255,7 +256,6 @@ class Advisory extends Model
 
         return $query->paginate(150);
     }
-
 }
 
 
