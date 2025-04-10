@@ -38,7 +38,7 @@ class DownloadCdesController extends Controller
                         'province'  => strtoupper($cde->province) ?? null,
                         'district'  => strtoupper($cde->district) ?? null,
                         'address'   => strtoupper($cde->address) ?? null,
-                        'cdetype'    => $cde->cdetype->name ?? null,
+                        'cdetype'   => $cde->cdetype ? $cde->cdetype->name : "-",
                     ];
                 }
             });
