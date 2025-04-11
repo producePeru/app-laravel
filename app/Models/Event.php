@@ -18,17 +18,20 @@ class Event extends Model
         'id_pnte',
         'title',
         'city_id',
+        'province_id',
+        'district_id',
         'place',
-        'organiza',
-        'gps',
-        'numMypes',
         'dateStart',
         'dateEnd',
-        'start',
-        'end',
+        'organiza',
+        'numMypes',
         'description',
         'nameUser',
         'link',
+    
+        'gps',
+        'start',
+        'end',
         'user_id',
         'resultado',
         'rescheduled',
@@ -43,6 +46,15 @@ class Event extends Model
     public function region()
     {
         return $this->belongsTo(City::class, 'city_id');
+    }
+    public function province()
+    {
+        return $this->belongsTo('App\Models\Province');
+    }
+
+    public function district()
+    {
+        return $this->belongsTo('App\Models\District');
     }
 
     // ADMIN
