@@ -611,10 +611,16 @@ class EventsController extends Controller
     public function updateObservation($id, Request $request)
     {
         try {
-
             $event = Event::findOrFail($id);
 
             $data = $request->only(['dateStart', 'dateEnd', 'start', 'end', 'rescheduled', 'canceled']);
+
+            // Lógica condicional para los campos rescheduled y canceled
+            if ($request->has('rescheduled')) {
+                $data['canceled'] = null;
+            } elseif ($request->has('canceled')) {
+                $data['rescheduled'] = null;
+            }
 
             $event->update($data);
 
