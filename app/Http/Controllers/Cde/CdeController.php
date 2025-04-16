@@ -17,7 +17,7 @@ class CdeController extends Controller
 
         $userRole = getUserRole();
 
-        $query = Cde::query();
+        $query = Cde::query()->with(['region', 'provincia', 'distrito']);
 
         $data = $query->orderBy('id', 'desc')->paginate(150)->through(function ($item) {
             return $this->mapWorkshopItems($item);
@@ -34,9 +34,12 @@ class CdeController extends Controller
         return [
             'id'                    => $value->id,
             'name'                  => strtoupper($value->name) ?? null,
-            'city'                  => $value->city ?? null,
-            'province'              => $value->province ?? null,
-            'district'              => $value->district ?? null,
+            // 'city'                  => $value->city ?? null,
+            // 'province'              => $value->province ?? null,
+            // 'district'              => $value->district ?? null,
+            'city'                  => $value->region->name ?? null,
+            'province'              => $value->provincia->name ?? null,
+            'district'              => $value->distrito->name ?? null,
             'address'               => $value->address ?? null,
             'cdetype_id'            => $value->cdetype_id ?? null
         ];
@@ -91,9 +94,9 @@ class CdeController extends Controller
         }
 
         $cde->name = $request->input('name');
-        $cde->city = $request->input('city');
-        $cde->province = $request->input('province');
-        $cde->district = $request->input('district');
+        $cde->city_id = $request->input('city_id');
+        $cde->province_id = $request->input('province_id');
+        $cde->district_id = $request->input('district_id');
         $cde->address = $request->input('address');
 
         $cde->save();
@@ -103,4 +106,28 @@ class CdeController extends Controller
             'status' => 200
         ]);
     }
+
+    public function storeCde(Request $request)
+{
+    try {
+        $cde = Cde::create([
+            'name'       => $request->input('name'),
+            'city_id'       => $request->input('city_id'),
+            'province_id'   => $request->input('province_id'),
+            'district_id'   => $request->input('district_id'),
+            'address'    => $request->input('address')
+        ]);
+
+        return response()->json([
+            'message' => 'CDE creado con éxito',
+            'status'  => 200
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error al crear el CDE',
+            'status'  => 500,
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
 }

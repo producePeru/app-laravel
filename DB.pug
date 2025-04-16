@@ -125,3 +125,21 @@ php artisan make:controller Workshop/WorkshopController --resource
 //- ALTER TABLE cdes
 //- ADD COLUMN cdetype_id BIGINT UNSIGNED NULL AFTER notary_id,
 //- ADD CONSTRAINT fk_cdetype_id FOREIGN KEY (cdetype_id) REFERENCES cdesType(id) ON DELETE SET NULL;
+
+
+
+//- ALTER TABLE events
+//- ADD COLUMN province_id BIGINT UNSIGNED NULL AFTER city_id,
+//- ADD COLUMN district_id BIGINT UNSIGNED NULL AFTER province_id,
+//- ADD CONSTRAINT fk_events_province FOREIGN KEY (province_id) REFERENCES provinces(id),
+//- ADD CONSTRAINT fk_events_district FOREIGN KEY (district_id) REFERENCES districts(id);
+
+
+
+ALTER TABLE cdes
+ADD COLUMN city_id BIGINT UNSIGNED NULL AFTER cdetype_id,
+ADD COLUMN province_id BIGINT UNSIGNED NULL AFTER city_id,
+ADD COLUMN district_id BIGINT UNSIGNED NULL AFTER province_id,
+ADD CONSTRAINT fk_cdes_city FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
+ADD CONSTRAINT fk_cdes_province FOREIGN KEY (province_id) REFERENCES provinces(id) ON DELETE SET NULL,
+ADD CONSTRAINT fk_cdes_district FOREIGN KEY (district_id) REFERENCES districts(id) ON DELETE SET NULL;

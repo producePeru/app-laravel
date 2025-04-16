@@ -73,4 +73,57 @@ class Attendance extends Model
         }
         return $query;
     }
+
+    public function scopeWithItems($query, $filters)
+    {
+        $query = $query->with([
+            'attendanceList',
+            'region',
+            'provincia',
+            'distrito',
+            'profile:id,user_id,name,lastname,middlename',
+            'asesor',
+            'pnte'
+            ])->withCount('attendanceList');
+
+            if (!empty($filters['asesor'])) {
+                $query->where('people_id', $filters['asesor']);
+            }
+
+
+        if (!empty($filters['name'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('title', 'like', '%' . $filters['name'] . '%')
+                  ->orWhere('description', 'like', '%' . $filters['name'] . '%');
+            });
+        }
+
+        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+            $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' +1 day'));
+            $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
+        }
+
+        if (!empty($filters['year'])) {
+            
+            $query->whereYear('created_at', $filters['year']);
+        }
+
+        if (!empty($filters['orderby']) && $filters['orderby'] == 1) {
+
+            $query->orderBy('attendance_list_count', 'desc');
+
+        } else if (!empty($filters['orderby']) && $filters['orderby'] == 2) {
+
+            $query->orderBy('attendance_list_count', 'asc');
+
+        } else if (!empty($filters['orderby']) && $filters['orderby'] == 3) {
+
+            $query->orderBy('finally', 'desc');
+
+        } else {
+
+            $query->orderBy('created_at', 'desc');
+
+        }
+    }
 }

@@ -30,6 +30,7 @@ use App\Models\AgreementOperationalStatus;
 use App\Models\AgreementStatus;
 use App\Models\OfficePnte;
 use App\Models\Typecapital;
+use App\Models\Attendance;
 
 class SelectController extends Controller
 {
@@ -409,5 +410,27 @@ class SelectController extends Controller
         });
 
         return response()->json(['data' => $data]);
+    }
+
+    public function getAsesoresEventsUgo()
+    {
+        $userIds = Attendance::distinct()->pluck('people_id');
+
+        $profiles = Profile::whereIn('user_id', $userIds)->get();
+
+        $data = collect();
+
+        foreach ($profiles as $profile) {
+            $label = strtoupper($profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename);
+
+            $data->push([
+                'label' => $label,
+                'value' => $profile->user_id,
+            ]);
+        }
+
+        $sortedData = $data->sortBy('label')->values();
+
+        return response()->json(['data' => $sortedData, 'status' => 200]);
     }
 }

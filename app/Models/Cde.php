@@ -32,4 +32,19 @@ class Cde extends Model
     {
         return $this->hasMany('App\Models\FormalizationDigital');
     }
+
+    public function region()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function provincia()
+    {
+        return $this->belongsTo(Province::class, 'province_id');
+    }
+
+    public function distrito()
+    {
+        return $this->belongsTo(District::class, 'district_id');
+    }
 }

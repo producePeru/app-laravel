@@ -140,3 +140,11 @@ php artisan make:job SendPdfCertificadosEmailsJob
 
 php artisan make:controller Automatic/CertificadoPDFController
 
+
+
+queries
+// actualizar el cde_id de los registros en la tabla advisories
+UPDATE advisories
+SET cde_id = 41
+WHERE user_id = 15
+  AND created_at BETWEEN '2025-04-01' AND '2025-04-30';

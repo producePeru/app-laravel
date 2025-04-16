@@ -227,7 +227,7 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('actions-plans',                [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
-    Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportDigitalRouter']);
+    Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportAttendanceFilter']);
     Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
     Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
     Route::post('notaries',                     [DownloadNotariesController::class, 'exportNotaries']);
@@ -246,6 +246,8 @@ Route::group(['prefix' => 'config', 'namespace' => 'App\Http\Controllers', 'midd
     Route::put('chooseCde/{id}',                [CdeController::class, 'chooseCde']);
     Route::put('addressCde/{id}',               [CdeController::class, 'addressCde']);
     Route::put('cde/{id}',                      [CdeController::class, 'updateCde']);
+    Route::post('cde',                          [CdeController::class, 'storeCde']);
+
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -352,6 +354,8 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('pnte-offices', [SelectController::class, 'getOfficesPnte']);
 
     Route::get('asesores-report', [SelectController::class, 'getAsesoresReporte']);
+    Route::get('asesores-events-ugo', [SelectController::class, 'getAsesoresEventsUgo']);
+
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {

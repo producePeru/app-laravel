@@ -14,70 +14,65 @@ use Maatwebsite\Excel\Facades\Excel;
 class DownloadAttendanceController extends Controller
 {
 
-    public function exportDigitalRouter(Request $request)
+    public function exportAttendanceFilter(Request $request)
     {
 
-        $search = $request->input('search');
-        $year = $request->input('year');
-        $orderBy = $request->input('order_by');
+        try {
 
-        $query = Attendance::with([
-            'attendanceList',
-            'region',
-            'provincia',
-            'distrito',
-            'profile:id,user_id,name,lastname,middlename',
-            'asesor'
-        ])
-            ->withCount('attendanceList')
-            ->search($search)
-            ->when($year, function ($q) use ($year) {
-                $q->whereYear('created_at', $year);
+            $filters = $request->query();
+
+            $userRole = getUserRole();
+            $roleIds  = $userRole['role_id'];
+            $userId   = $userRole['user_id'];
+
+            $query = Attendance::query();
+
+            $query->withItems($filters);
+
+            ini_set('memory_limit', '2G');
+            set_time_limit(300);
+
+            $items = [];
+            $globalIndex = 1;
+
+            $query->chunk(1000, function ($rows) use (&$items, &$globalIndex) {
+                foreach ($rows as $item) {
+                    $items[] = [
+                        'index'             => $globalIndex++,
+                        'title' => $item->title,
+                        'attendance_list_count' => $item->attendanceList?->count() ?? 0,
+                        'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
+                        'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
+                        'modality' => $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
+                        'city' => $item->region->name,
+                        'province' => $item->provincia->name,
+                        'district' => $item->distrito->name,
+                        'asesor' => $item['asesor'],
+                        'asesor' => $item->asesor
+                            ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
+                            : null,
+                        'profile_creater' => $item->profile
+                            ? strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename)
+                            : null,
+                        'description' => $item->description ?? null,
+                        'created_at' => Carbon::parse($item->created_at)->format('d-m-Y'),
+                    ];
+                }
             });
 
-        if (in_array($orderBy, ['asc', 'desc'])) {
-            $query->orderBy('attendance_list_count', $orderBy);
-        } else {
-            $query->orderBy('created_at', 'desc');
+            return Excel::download(new AttendanceListExport($items), 'eventos-pnte.xlsx');
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Ocurrio un error al generar el reporte.',
+                'error'   => $e->getMessage()
+            ], 500);
         }
-
-        $data = $query->get();
-
-
-        $result = $data->map(function ($item, $index) {
-
-            return [
-                'index' => $index + 1,
-                'title' => $item->title,
-                'attendance_list_count' => $item['attendance_list_count'],
-                'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
-                'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
-                'modality' => $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
-
-                'city' => $item->region->name,
-                'province' => $item->provincia->name,
-                'district' => $item->distrito->name,
-                'asesor' => $item['asesor'],
-
-                'asesor' => $item->asesor
-                    ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
-                    : null,
-
-                'profile_creater' => $item->profile
-                    ? strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename)
-                    : null,
-
-                // 'profile_creater' => $item['profile'],
-                'description' => $item->description ?? null,
-
-                'created_at' => Carbon::parse($item->created_at)->format('d-m-Y')
-
-            ];
-        });
-
-        return Excel::download(new AttendanceListExport($result), 'attendances.xlsx');
+        
     }
-    public function exportAttendance($slug)
+
+
+    public function Filter($slug)
     {
 
         $attendance = Attendance::where('slug', $slug)->first();
