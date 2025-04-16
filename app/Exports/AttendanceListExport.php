@@ -2,92 +2,81 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use Carbon\Carbon;
-
-Carbon::setLocale('es');
+use Maatwebsite\Excel\Concerns\FromCollection;
 
 class AttendanceListExport implements FromCollection, WithHeadings, WithTitle, WithStyles, WithColumnWidths
 {
-    protected $items;
+    protected $result;
 
-    public function __construct($items)
+    public function __construct(Collection $result)
     {
-        $this->item = $items;
-    }
-    public function collection()
-    {
-        return collect($this->item);
-    }
-
-    public function title(): string
-    {
-        return 'EVENTOS UGO';
+        $this->result = $result;
     }
 
     public function columnWidths(): array
     {
         return [
             'A' => 6,
-            'B' => 26,
-            'C' => 13,
-            'D' => 17,
-            'E' => 17,
-            'F' => 15,
-            'G' => 15,
-            'H' => 15,
-            'I' => 15,
-            'J' => 24,
-            'K' => 24,
-            'L' => 60,
-            'M' => 17
+            'B' => 45,
+            'C' => 11,
+            'D' => 13,
+            'E' => 13,
+            'F' => 13,
+
+            'G' => 16,
+            'H' => 16,
+            'I' => 20,
+            'J' => 14,
+            'K' => 27,
+            'L' => 15,
+            'Q' => 15,
+
         ];
+    }
+
+    public function title(): string
+    {
+        return 'Eventos UGO';
     }
 
     public function styles(Worksheet $sheet)
     {
-        // Aplicar fondo azul a la primera fila
-        $sheet->getStyle('A1:M1')->getFill()
-            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-            ->getStartColor()->setARGB('002060');
+        $sheet->getStyle('A1:M1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('e9e9e9');
 
-        // Poner en negrita y cambiar color de fuente a blanco en la primera fila
-        $sheet->getStyle('A1:M1')->getFont()->setBold(true)
-            ->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
 
-        // Ajustar texto en las columnas que necesiten mostrar varias líneas
-        $columnasAjustadas = ['B', 'G', 'I', 'J', 'K', 'L', 'M']; // Puedes ajustar más columnas si es necesario
-        foreach ($columnasAjustadas as $columna) {
-            $sheet->getStyle("{$columna}1:{$columna}1000") // Ajusta hasta la fila 1000 (o más si lo necesitas)
-                ->getAlignment()->setWrapText(true);
-        }
+        $sheet->getRowDimension(1)->setRowHeight(20);
 
-        // Alineación vertical al centro
-        $sheet->getStyle('A1:M1')->getAlignment()
-            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A1:M1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+    }
+
+    public function collection()
+    {
+        return $this->result;
     }
 
     public function headings(): array
     {
         return [
-            'Nº',
-            'TÍTULO',
-            'REGISTRADOS',
-            'FECHA DE INICIO',
-            'FECHA DE FIN',
-            'MODALIDAD',
-            'CIUDAD',
-            'PROVINCIA',
-            'DISTRITO',
-            'ASESOR',
-            'REGISTRADO POR',
-            'DESCRIPCIÓN',
-            'FECHA DE REGISTRO'
+            '#',
+            'Título',
+            'Registrados',
+            'Fecha de inicio',
+            'Fecha de fin',
+            'Modalidad',
+            'Ciudad',
+            'Provincia',
+            'Distrito',
+            'Asesor',
+            'Registrado por',
+            'Descripción',
+            'Fecha de registro'
         ];
     }
 }

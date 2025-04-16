@@ -9,25 +9,27 @@ use Illuminate\Http\Request;
 class CdeController extends Controller
 {
     public function index(Request $request)
-    {
-        $filters = [
-            'name'      => $request->input('name'),
-        ];
+{
+    $filters = [
+        'name' => $request->input('name'),
+    ];
 
+    $query = Cde::query()->with(['region', 'provincia', 'distrito']);
 
-        $userRole = getUserRole();
-
-        $query = Cde::query()->with(['region', 'provincia', 'distrito']);
-
-        $data = $query->orderBy('id', 'desc')->paginate(150)->through(function ($item) {
-            return $this->mapWorkshopItems($item);
-        });
-
-        return response()->json([
-            'data'   => $data,
-            'status' => 200
-        ]);
+    // Filtrar por 'name' si está presente
+    if (!empty($filters['name'])) {
+        $query->where('name', 'like', '%' . $filters['name'] . '%');
     }
+
+    $data = $query->orderBy('id', 'desc')->paginate(150)->through(function ($item) {
+        return $this->mapWorkshopItems($item);
+    });
+
+    return response()->json([
+        'data'   => $data,
+        'status' => 200
+    ]);
+}
 
     private function mapWorkshopItems($value)
     {

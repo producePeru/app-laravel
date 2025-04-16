@@ -136,10 +136,10 @@ php artisan make:controller Workshop/WorkshopController --resource
 
 
 
-ALTER TABLE cdes
-ADD COLUMN city_id BIGINT UNSIGNED NULL AFTER cdetype_id,
-ADD COLUMN province_id BIGINT UNSIGNED NULL AFTER city_id,
-ADD COLUMN district_id BIGINT UNSIGNED NULL AFTER province_id,
-ADD CONSTRAINT fk_cdes_city FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
-ADD CONSTRAINT fk_cdes_province FOREIGN KEY (province_id) REFERENCES provinces(id) ON DELETE SET NULL,
-ADD CONSTRAINT fk_cdes_district FOREIGN KEY (district_id) REFERENCES districts(id) ON DELETE SET NULL;
+//- ALTER TABLE cdes
+//- ADD COLUMN city_id BIGINT UNSIGNED NULL AFTER cdetype_id,
+//- ADD COLUMN province_id BIGINT UNSIGNED NULL AFTER city_id,
+//- ADD COLUMN district_id BIGINT UNSIGNED NULL AFTER province_id,
+//- ADD CONSTRAINT fk_cdes_city FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
+//- ADD CONSTRAINT fk_cdes_province FOREIGN KEY (province_id) REFERENCES provinces(id) ON DELETE SET NULL,
+//- ADD CONSTRAINT fk_cdes_district FOREIGN KEY (district_id) REFERENCES districts(id) ON DELETE SET NULL;

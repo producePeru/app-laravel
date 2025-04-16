@@ -227,9 +227,12 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('actions-plans',                [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
-    Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportAttendanceFilter']);
-    Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendance']);
-    Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
+    
+    Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportAttendance']);
+    Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
+    
+    // Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
+
     Route::post('notaries',                     [DownloadNotariesController::class, 'exportNotaries']);
     Route::post('cdes',                         [DownloadCdesController::class, 'exportCdes']);
     Route::post('events',                       [DownloadEventsController::class, 'exportEvents']);

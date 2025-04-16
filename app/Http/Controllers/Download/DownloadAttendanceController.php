@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Download;
 
 use App\Exports\AttendanceExport;
-use App\Exports\AttendanceListExport;
+use App\Exports\AttendanceListSlugExport;
+// use App\Exports\AttendanceListExport;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
@@ -14,7 +15,7 @@ use Maatwebsite\Excel\Facades\Excel;
 class DownloadAttendanceController extends Controller
 {
 
-    public function exportAttendanceFilter(Request $request)
+    public function exportAttendance(Request $request)
     {
 
         try {
@@ -60,7 +61,7 @@ class DownloadAttendanceController extends Controller
                 }
             });
 
-            return Excel::download(new AttendanceListExport($items), 'eventos-pnte.xlsx');
+            return Excel::download(new AttendanceExport($items), 'eventos-pnte.xlsx');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -72,7 +73,7 @@ class DownloadAttendanceController extends Controller
     }
 
 
-    public function Filter($slug)
+    public function exportAttendanceInscriptos($slug)
     {
 
         $attendance = Attendance::where('slug', $slug)->first();
@@ -88,7 +89,7 @@ class DownloadAttendanceController extends Controller
             // 'comercialactivity:id,name',
             'list'
         ])->where('attendancelist_id', $attendance->id)
-            ->orderBy('created_at', 'desc');
+        ->orderBy('created_at', 'desc');
 
         $data = $query->get();
 
@@ -112,6 +113,6 @@ class DownloadAttendanceController extends Controller
 
         // return $result;
 
-        return Excel::download(new AttendanceExport($result), 'attendance.xlsx');
+        return Excel::download(new AttendanceListSlugExport($result), 'attendance.xlsx');
     }
 }
