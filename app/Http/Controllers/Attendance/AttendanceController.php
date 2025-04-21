@@ -64,8 +64,8 @@ class AttendanceController extends Controller
 				'finally' => $item->finally,
 				'pnte' => $item->pnte->name,
 				'id_pnte' => $item->pnte->id,
-				'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
-				'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
+				'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
+				'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
 				'startDate2' => $item->startDate,
 				'endDate2' => $item->endDate,
 				'modality' => $item->modality,
@@ -82,7 +82,7 @@ class AttendanceController extends Controller
 					? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
 					: null,
 				'description' => $item->description ?? null,
-				'created_at' => Carbon::parse($item->created_at)->format('d-m-Y')
+				'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
 		];
 	}
 
