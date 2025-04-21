@@ -44,10 +44,11 @@ class DownloadAttendanceController extends Controller
                         'attendance_list_count' => $item->attendanceList?->count() ?? 0,
                         'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
                         'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
-                        'modality' => $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
+                        // 'modality' => $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
                         'city' => $item->region->name,
                         'province' => $item->provincia->name,
                         'district' => $item->distrito->name,
+                        'address' => $item->address,
                         'asesor' => $item['asesor'],
                         'asesor' => $item->asesor
                             ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
