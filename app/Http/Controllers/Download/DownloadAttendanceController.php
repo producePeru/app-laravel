@@ -59,7 +59,7 @@ class DownloadAttendanceController extends Controller
                         'description' => $item->description ?? null,
                         'created_at' => Carbon::parse($item->created_at)->format('d/m/Y'),
 
-                        'link_participantes' => 'https://programa.soporte-pnte.com/admin/asistencia/' . $item->slug,
+                        'link_participantes' => 'https://programa.soporte-pnte.com/admin/asistencia/inscritos/' . $item->slug,
                         'link_registro_participantes' => 'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
 
 
