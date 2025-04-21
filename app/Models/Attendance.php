@@ -98,10 +98,15 @@ class Attendance extends Model
             });
         }
 
+
         if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
             $endDate = date('Y-m-d', strtotime($filters['dateEnd'] . ' +1 day'));
-            $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
+            $query->where(function ($q) use ($filters, $endDate) {
+                $q->whereBetween('startDate', [$filters['dateStart'], $endDate])
+                  ->orWhereBetween('endDate', [$filters['dateStart'], $endDate]);
+            });
         }
+
 
         if (!empty($filters['year'])) {
             

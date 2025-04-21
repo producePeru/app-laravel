@@ -22,9 +22,9 @@ class DownloadAttendanceController extends Controller
 
             $filters = $request->query();
 
-            $userRole = getUserRole();
-            $roleIds  = $userRole['role_id'];
-            $userId   = $userRole['user_id'];
+            // $userRole = getUserRole();
+            // $roleIds  = $userRole['role_id'];
+            // $userId   = $userRole['user_id'];
 
             $query = Attendance::query();
 
