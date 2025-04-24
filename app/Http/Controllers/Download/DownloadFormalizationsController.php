@@ -55,11 +55,9 @@ class DownloadFormalizationsController extends Controller
                             ? strtoupper(trim($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename))
                             : null,
 
-
                         'asesor_cde_city'       => $advisory->sede->city ? $advisory->sede->city : $advisory->sede->region->name,
                         'asesor_cde_province'   => $advisory->sede->province ? $advisory->sede->province : $advisory->sede->provincia->name,
                         'asesor_cde_district'   => $advisory->sede->district ? $advisory->sede->district : $advisory->sede->distrito->name,
-
 
                         'asesor_cde'            => isset($advisory->sede->name) ? strtoupper($advisory->sede->name) : null,
                         'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
@@ -134,9 +132,9 @@ class DownloadFormalizationsController extends Controller
                         'date'                  => $f10->created_at->format('d/m/Y'),
                         'asesor'                => isset($f10->user->profile) ? strtoupper($f10->user->profile->name . ' ' . $f10->user->profile->lastname . ' ' . $f10->user->profile->middlename) : null,
 
-                        'asesor_cde_city'       => $f10->sede->region->name ? $f10->sede->region->name : $f10->sede->city,
-                        'asesor_cde_province'   => $f10->sede->provincia->name ? $f10->sede->provincia->name : $f10->sede->province,
-                        'asesor_cde_district'   => $f10->sede->distrito->name ? $f10->sede->distrito->name : $f10->sede->district,
+                        'asesor_cde_city'       => $f10->sede->city ? $f10->sede->city : $f10->sede->region->name,
+                        'asesor_cde_province'   => $f10->sede->province ? $f10->sede->province : $f10->sede->provincia->name,
+                        'asesor_cde_district'   => $f10->sede->district ? $f10->sede->district : $f10->sede->distrito->name,
 
                         'asesor_cde'            => strtoupper($f10->sede->name) ?? null,
 
@@ -215,9 +213,13 @@ class DownloadFormalizationsController extends Controller
                         'date'                  => $f20->created_at->format('d/m/Y'),
                         'asesor'                => isset($f20->user->profile) ? strtoupper($f20->user->profile->name . ' ' . $f20->user->profile->lastname . ' ' . $f20->user->profile->middlename) : null,
 
-                        'asesor_cde_city'       => $f20->sede->region->name ? $f20->sede->region->name : $f20->sede->city,
-                        'asesor_cde_province'   => $f20->sede->provincia->name ? $f20->sede->provincia->name : $f20->sede->province,
-                        'asesor_cde_district'   => $f20->sede->distrito->name ? $f20->sede->distrito->name : $f20->sede->district,
+                        // 'asesor_cde_city'       => $f20->sede->region->name ? $f20->sede->region->name : $f20->sede->city,
+                        // 'asesor_cde_province'   => $f20->sede->provincia->name ? $f20->sede->provincia->name : $f20->sede->province,
+                        // 'asesor_cde_district'   => $f20->sede->distrito->name ? $f20->sede->distrito->name : $f20->sede->district,
+
+                        'asesor_cde_city'       => $f20->sede->city ? $f20->sede->city : $f20->sede->region->name,
+                        'asesor_cde_province'   => $f20->sede->province ? $f20->sede->province : $f20->sede->provincia->name,
+                        'asesor_cde_district'   => $f20->sede->district ? $f20->sede->district : $f20->sede->distrito->name,
 
                         'asesor_cde'            => strtoupper($f20->sede->name) ?? null,
                         'emp_document_type'     => $f20->people->typedocument->avr ?? null,
