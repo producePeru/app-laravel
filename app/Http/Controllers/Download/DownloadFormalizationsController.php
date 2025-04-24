@@ -54,9 +54,13 @@ class DownloadFormalizationsController extends Controller
                         'asesor'                => isset($advisory->user->profile)
                             ? strtoupper(trim($advisory->user->profile->name . ' ' . $advisory->user->profile->lastname . ' ' . $advisory->user->profile->middlename))
                             : null,
-                        'asesor_cde_city'       => $advisory->sede->city ?? null,
-                        'asesor_cde_province'   => $advisory->sede->province ?? null,
-                        'asesor_cde_district'   => $advisory->sede->district ?? null,
+
+
+                        'asesor_cde_city'       => $f20->sede->region->name ? $f20->sede->region->name : $f20->sede->city,
+                        'asesor_cde_province'   => $f20->sede->provincia->name ? $f20->sede->provincia->name : $f20->sede->province,
+                        'asesor_cde_district'   => $f20->sede->distrito->name ? $f20->sede->distrito->name : $f20->sede->district,
+
+
                         'asesor_cde'            => isset($advisory->sede->name) ? strtoupper($advisory->sede->name) : null,
                         'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
                         'emp_document_number'   => $advisory->people->documentnumber ?? null,
@@ -129,9 +133,11 @@ class DownloadFormalizationsController extends Controller
                         'index'                 => $globalIndex++,
                         'date'                  => $f10->created_at->format('d/m/Y'),
                         'asesor'                => isset($f10->user->profile) ? strtoupper($f10->user->profile->name . ' ' . $f10->user->profile->lastname . ' ' . $f10->user->profile->middlename) : null,
-                        'asesor_cde_city'       => $f10->sede->city ?? null,
-                        'asesor_cde_province'   => $f10->sede->province ?? null,
-                        'asesor_cde_district'   => $f10->sede->district ?? null,
+
+                        'asesor_cde_city'       => $f20->sede->region->name ? $f20->sede->region->name : $f20->sede->city,
+                        'asesor_cde_province'   => $f20->sede->provincia->name ? $f20->sede->provincia->name : $f20->sede->province,
+                        'asesor_cde_district'   => $f20->sede->distrito->name ? $f20->sede->distrito->name : $f20->sede->district,
+
                         'asesor_cde'            => strtoupper($f10->sede->name) ?? null,
 
                         'emp_document_type'     => $f10->people->typedocument->avr ?? null,
@@ -208,11 +214,12 @@ class DownloadFormalizationsController extends Controller
                         'index'                 => $globalIndex++,
                         'date'                  => $f20->created_at->format('d/m/Y'),
                         'asesor'                => isset($f20->user->profile) ? strtoupper($f20->user->profile->name . ' ' . $f20->user->profile->lastname . ' ' . $f20->user->profile->middlename) : null,
-                        'asesor_cde_city'       => $f20->sede->city ?? null,
-                        'asesor_cde_province'   => $f20->sede->province ?? null,
-                        'asesor_cde_district'   => $f20->sede->district ?? null,
-                        'asesor_cde'            => strtoupper($f20->sede->name) ?? null,
 
+                        'asesor_cde_city'       => $f20->sede->region->name ? $f20->sede->region->name : $f20->sede->city,
+                        'asesor_cde_province'   => $f20->sede->provincia->name ? $f20->sede->provincia->name : $f20->sede->province,
+                        'asesor_cde_district'   => $f20->sede->distrito->name ? $f20->sede->distrito->name : $f20->sede->district,
+
+                        'asesor_cde'            => strtoupper($f20->sede->name) ?? null,
                         'emp_document_type'     => $f20->people->typedocument->avr ?? null,
                         'emp_document_number'   => $f20->people->documentnumber ?? null,
                         'emp_country'           => isset($f20->people->pais->name) ? strtoupper($f20->people->pais->name) : 'PERU',
@@ -252,6 +259,8 @@ class DownloadFormalizationsController extends Controller
                     ];
                 }
             });
+
+
 
             return Excel::download(new FormalizationRUC20Export($fs20), 'f20-pnte.xlsx');
         } catch (\Exception $e) {

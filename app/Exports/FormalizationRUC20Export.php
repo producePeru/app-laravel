@@ -31,7 +31,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
 
     public function title(): string
     {
-        return 'FormalizacionesRUC10';
+        return 'FormalizacionesRUC20';
     }
 
     public function columnWidths(): array
