@@ -335,11 +335,12 @@ class SelectController extends Controller
         return response()->json(['data' => $data]);
     }
 
+
+    // Lista de asesores para el reporte
     public function getAsesoresReporte()
     {
-        $userIds = Advisory::distinct()->pluck('user_id');
-
-        $profiles = Profile::whereIn('user_id', $userIds)->get();
+        // Obtener los perfiles donde el rol_id sea 2
+        $profiles = Profile::where('rol_id', 2)->get();
 
         $data = collect();
 
@@ -352,10 +353,12 @@ class SelectController extends Controller
             ]);
         }
 
+        // Ordenar por el campo label
         $sortedData = $data->sortBy('label')->values();
 
         return response()->json(['data' => $sortedData, 'status' => 200]);
     }
+
 
     public function getOperationalStatus()
     {

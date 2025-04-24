@@ -143,3 +143,10 @@ php artisan make:controller Workshop/WorkshopController --resource
 //- ADD CONSTRAINT fk_cdes_city FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
 //- ADD CONSTRAINT fk_cdes_province FOREIGN KEY (province_id) REFERENCES provinces(id) ON DELETE SET NULL,
 //- ADD CONSTRAINT fk_cdes_district FOREIGN KEY (district_id) REFERENCES districts(id) ON DELETE SET NULL;
+
+
+
+//- ALTER TABLE `profiles`
+//- ADD COLUMN `rol_id` BIGINT UNSIGNED NULL AFTER `notary_id`,
+//- ADD CONSTRAINT `fk_profiles_roles`
+//- FOREIGN KEY (`rol_id`) REFERENCES `roles`(`id`);
