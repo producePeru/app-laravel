@@ -50,7 +50,11 @@ class DownloadNotariesController extends Controller
                         'condiciones'           => "- " . implode("\n- ", $listaCondiciones),
                         'biometrico'            => strip_tags($notary->biometrico) ?? null,
                         'socio'                 => strip_tags($notary->sociointerveniente) ?? null,
-                        'contacto'              => strip_tags($notary->infocontacto) ?? null
+                        // 'contacto'              => strip_tags($notary->infocontacto) ?? null,
+                        'contacto'=>trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($notary->infocontacto)))),
+
+                        'tarifa_normal'         => $notary->tarifanormal ?? null,
+                        'tarifa_social'         => $notary->tarifasocial ?? null,
                     ];
                 }
             });

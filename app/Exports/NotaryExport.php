@@ -40,34 +40,36 @@ class NotaryExport implements FromCollection, WithHeadings, WithTitle, WithStyle
             'D' => 12,
             'E' => 12,
             'F' => 27,
-            'G' => 30,
+            'G' => 50,
             'H' => 30,
             'I' => 15,
             'J' => 22,
-            'K' => 46
+            'K' => 46,
+            'L' => 16,
+            'M' => 16,
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Aplicar fondo azul a la primera fila
-        $sheet->getStyle('A1:K1')->getFill()
+        $sheet->getStyle('A1:M1')->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('002060');
 
         // Poner en negrita y cambiar color de fuente a blanco en la primera fila
-        $sheet->getStyle('A1:K1')->getFont()->setBold(true)
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true)
             ->getColor()->setARGB('FFFFFF');
 
         // Ajustar texto en las columnas que necesiten mostrar varias líneas
-        $columnasAjustadas = ['F', 'G', 'I', 'J', 'K']; // Puedes ajustar más columnas si es necesario
+        $columnasAjustadas = ['F', 'G', 'I', 'J', 'K', 'L', 'M']; // Puedes ajustar más columnas si es necesario
         foreach ($columnasAjustadas as $columna) {
             $sheet->getStyle("{$columna}1:{$columna}1000") // Ajusta hasta la fila 1000 (o más si lo necesitas)
                 ->getAlignment()->setWrapText(true);
         }
 
         // Alineación vertical al centro
-        $sheet->getStyle('A1:K1000')->getAlignment()
+        $sheet->getStyle('A1:M1')->getAlignment()
             ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
     }
 
@@ -85,7 +87,9 @@ class NotaryExport implements FromCollection, WithHeadings, WithTitle, WithStyle
             'CONDICIONES',
             'BIOMÉTRICO / HUELLA DIGITAL',
             'SOCIO O INTERVINIENTE ADICIONAL',
-            'CONTÁCTO'
+            'CONTÁCTO',
+            'TARIFA NORMAL',
+            'TARIFA SOCIAL'
         ];
     }
 }
