@@ -56,9 +56,9 @@ class DownloadFormalizationsController extends Controller
                             : null,
 
 
-                        'asesor_cde_city'       => $f20->sede->region->name ? $f20->sede->region->name : $f20->sede->city,
-                        'asesor_cde_province'   => $f20->sede->provincia->name ? $f20->sede->provincia->name : $f20->sede->province,
-                        'asesor_cde_district'   => $f20->sede->distrito->name ? $f20->sede->distrito->name : $f20->sede->district,
+                        'asesor_cde_city'       => $advisory->sede->region->name ? $advisory->sede->region->name : $advisory->sede->city,
+                        'asesor_cde_province'   => $advisory->sede->provincia->name ? $advisory->sede->provincia->name : $advisory->sede->province,
+                        'asesor_cde_district'   => $advisory->sede->distrito->name ? $advisory->sede->distrito->name : $advisory->sede->district,
 
 
                         'asesor_cde'            => isset($advisory->sede->name) ? strtoupper($advisory->sede->name) : null,
@@ -90,6 +90,8 @@ class DownloadFormalizationsController extends Controller
                     ];
                 }
             });
+
+            return $advisories;
 
             return Excel::download(new AsesoriasExport($advisories), 'asesorias.xlsx');
         } catch (\Exception $e) {
@@ -134,9 +136,9 @@ class DownloadFormalizationsController extends Controller
                         'date'                  => $f10->created_at->format('d/m/Y'),
                         'asesor'                => isset($f10->user->profile) ? strtoupper($f10->user->profile->name . ' ' . $f10->user->profile->lastname . ' ' . $f10->user->profile->middlename) : null,
 
-                        'asesor_cde_city'       => $f20->sede->region->name ? $f20->sede->region->name : $f20->sede->city,
-                        'asesor_cde_province'   => $f20->sede->provincia->name ? $f20->sede->provincia->name : $f20->sede->province,
-                        'asesor_cde_district'   => $f20->sede->distrito->name ? $f20->sede->distrito->name : $f20->sede->district,
+                        'asesor_cde_city'       => $f10->sede->region->name ? $f10->sede->region->name : $f10->sede->city,
+                        'asesor_cde_province'   => $f10->sede->provincia->name ? $f10->sede->provincia->name : $f10->sede->province,
+                        'asesor_cde_district'   => $f10->sede->distrito->name ? $f10->sede->distrito->name : $f10->sede->district,
 
                         'asesor_cde'            => strtoupper($f10->sede->name) ?? null,
 
