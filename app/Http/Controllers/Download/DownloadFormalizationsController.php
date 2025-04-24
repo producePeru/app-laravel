@@ -56,9 +56,9 @@ class DownloadFormalizationsController extends Controller
                             : null,
 
 
-                        'asesor_cde_city'       => $advisory->sede->region ? $advisory->sede->region->name : $advisory->sede->city,
-                        'asesor_cde_province'   => $advisory->sede->provincia ? $advisory->sede->provincia->name : $advisory->sede->province,
-                        'asesor_cde_district'   => $advisory->sede->distrito ? $advisory->sede->distrito->name : $advisory->sede->district,
+                        'asesor_cde_city'       => $advisory->sede->city ? $advisory->sede->city : $advisory->sede->region->name,
+                        'asesor_cde_province'   => $advisory->sede->province ? $advisory->sede->province : $advisory->sede->provincia->name,
+                        'asesor_cde_district'   => $advisory->sede->district ? $advisory->sede->district : $advisory->sede->distrito->name,
 
 
                         'asesor_cde'            => isset($advisory->sede->name) ? strtoupper($advisory->sede->name) : null,
