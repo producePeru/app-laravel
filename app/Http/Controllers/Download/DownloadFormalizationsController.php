@@ -91,8 +91,6 @@ class DownloadFormalizationsController extends Controller
                 }
             });
 
-            return $advisories;
-
             return Excel::download(new AsesoriasExport($advisories), 'asesorias.xlsx');
         } catch (\Exception $e) {
             return response()->json([
