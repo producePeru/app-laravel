@@ -207,6 +207,10 @@ class PersonController extends Controller
             }
 
             $validatedData = $request->validate([
+
+                'typedocument_id' => 'required|integer',
+                'documentnumber' => 'required',
+
                 'name' => 'required|string|max:255',
                 'lastname' => 'required|string|max:255',
                 'middlename' => 'nullable|string|max:255',
