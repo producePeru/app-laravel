@@ -38,7 +38,7 @@ class DownloadNotariesController extends Controller
 
                     $notaries[] = [
                         'index'                 => $globalIndex++,
-                        'notaria'               => strtoupper($notary->nameNotary) ?? null,
+                        'notaria'               => strtoupper($notary->name) ?? null,
                         'city'                  => $notary->city->name ?? null,
                         'province'              => $notary->province->name ?? null,
                         'district'              => $notary->district->name ?? null,

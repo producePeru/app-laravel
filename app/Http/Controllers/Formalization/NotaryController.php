@@ -45,7 +45,7 @@ class NotaryController extends Controller
 	{
 		return [
 				'id' => $item->id,
-                'nameNotary' => $item->nameNotary,
+                'name' => $item->name,
                 'city_id' => $item->city->id,
                 'province_id' => $item->province->id,
                 'district_id' => $item->district->id,
