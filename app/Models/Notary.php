@@ -88,7 +88,7 @@ class Notary extends Model
         }
 
         if (!empty($filters['name'])) {
-            $query->where('name', 'LIKE', '%' . $filters['name'] . '%');
+            $query->where('nameNotary', 'LIKE', '%' . $filters['name'] . '%');
         }
 
         return $query->orderBy('id', 'desc');
