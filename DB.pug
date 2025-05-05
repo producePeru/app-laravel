@@ -155,3 +155,54 @@ php artisan make:controller Workshop/WorkshopController --resource
 
 
 MGEA: K0jLf3IX_7nIPMLt9RF3VQ
+
+
+
+
+SELECT
+    CONCAT(
+      REGEXP_REPLACE(JSON_UNQUOTE(JSON_EXTRACT(gastos, '$[0].gasto')), '<[^>]+>', ''),
+      ' ',
+      REGEXP_REPLACE(JSON_UNQUOTE(JSON_EXTRACT(gastos, '$[0].condicion')), '<[^>]+>', '')
+    ) AS gastos_limpios
+FROM
+    notaries;
+
+
+
+    SELECT
+    CONCAT(
+      REGEXP_REPLACE(JSON_UNQUOTE(JSON_EXTRACT(gastos, '$[0].gasto')), '<[^>]+>', ''),
+      ' ',
+      REGEXP_REPLACE(JSON_UNQUOTE(JSON_EXTRACT(gastos, '$[0].condicion')), '<[^>]+>', '')
+    ) AS gastos_limpios
+FROM
+    notaries;
+
+
+
+
+
+
+    UPDATE notaries
+SET biometrico = REGEXP_REPLACE(biometrico, '<[^>]+>', '');
+
+
+
+UPDATE notaries
+SET sociointerveniente = REGEXP_REPLACE(sociointerveniente, '<[^>]+>', '');
+
+
+
+ALTER TABLE notaries
+ADD COLUMN tarifa1 VARCHAR(100) NULL AFTER gastos,
+ADD COLUMN tarifa2 VARCHAR(100) NULL AFTER tarifa1,
+ADD COLUMN tarifa3 VARCHAR(100) NULL AFTER tarifa2,
+ADD COLUMN tarifa4 VARCHAR(100) NULL AFTER tarifa3;
+
+
+
+UPDATE notaries
+SET status = 1;
+
+

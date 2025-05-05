@@ -227,10 +227,10 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('actions-plans',                [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
-    
+
     Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportAttendance']);
     Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
-    
+
     // Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
 
     Route::post('notaries',                     [DownloadNotariesController::class, 'exportNotaries']);
@@ -259,6 +259,7 @@ Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'midd
     Route::post('create',                   [NotaryController::class, 'storeNotary']);
     Route::delete('delete/{id}',            [NotaryController::class, 'deleteNotary']);
     Route::patch('update/{id}',             [NotaryController::class, 'updateNotary']);
+    Route::put('status/{id}',               [NotaryController::class, 'updateStatusNotary']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers'], function () {});

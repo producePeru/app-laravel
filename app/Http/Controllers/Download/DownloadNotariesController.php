@@ -7,6 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Notary;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DownloadNotariesController extends Controller
 {
@@ -22,7 +25,7 @@ class DownloadNotariesController extends Controller
 
             $query = Notary::query();
 
-            $query->withNotariesAndRelations($filters);
+            $query->withItems($filters);
 
             ini_set('memory_limit', '2G');
             set_time_limit(300);
@@ -33,33 +36,63 @@ class DownloadNotariesController extends Controller
             $query->chunk(1000, function ($rows) use (&$notaries, &$globalIndex) {
                 foreach ($rows as $notary) {
 
-                    $gastos = is_array($notary->gastos) ? $notary->gastos : json_decode($notary->gastos, true);
-                    $gastos = $gastos ?? [];
-                    $listaGastos = array_map('strip_tags', array_column($gastos, 'gasto'));
-                    $listaCondiciones = array_map('strip_tags', array_column($gastos, 'condicion'));
-
-
                     $notaries[] = [
                         'index'                 => $globalIndex++,
-                        'notaria'               => strtoupper($notary->name) ?? null,
+                        'notaria'               => strtoupper($notary->nameNotary) ?? null,
                         'city'                  => $notary->city->name ?? null,
                         'province'              => $notary->province->name ?? null,
                         'district'              => $notary->district->name ?? null,
-                        'address'               => strtoupper($notary->address) ?? null,
-                        'gastos'                => "- " . implode("\n- ", $listaGastos),
-                        'condiciones'           => "- " . implode("\n- ", $listaCondiciones),
-                        'biometrico'            => strip_tags($notary->biometrico) ?? null,
-                        'socio'                 => strip_tags($notary->sociointerveniente) ?? null,
-                        // 'contacto'              => strip_tags($notary->infocontacto) ?? null,
-                        'contacto'=>trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($notary->infocontacto)))),
-
-                        'tarifa_normal'         => $notary->tarifanormal ?? null,
-                        'tarifa_social'         => $notary->tarifasocial ?? null,
+                        'addressNotary'         => strtoupper($notary->addressNotary) ?? null,
+                        'gastos'                => $notary->gasto1 ?? null,
+                        'gasto2'                => $notary->gasto2 ?? null,
+                        'gasto2Detail'          => $notary->gasto2Detail ?? null,
+                        'gasto3'                => $notary->gasto3 ?? null,
+                        'gasto3Detail'          => $notary->gasto3Detail ?? null,
+                        'gasto4'                => $notary->gasto4 ?? null,
+                        'gasto4Detail'          => $notary->gasto4Detail ?? null,
+                        'testimonio'            => $notary->testimonio ?? null,
+                        'legalization'          => $notary->legalization ?? null,
+                        'biometric'             => $notary->biometric ?? null,
+                        'aclaratory'            => $notary->aclaratory ?? null,
+                        'socio'                 => $notary->socio ?? null,
+                        'conditions'            => $notary->conditions ?? null,
+                        'contactName'           => $notary->contactName ?? null,
+                        'contactEmail'          => $notary->contactEmail ?? null,
+                        'contactPhone'          => $notary->contactPhone ?? null,
+                        'normalTarifa'          => $notary->normalTarifa ?? null,
                     ];
                 }
             });
 
-            return Excel::download(new NotaryExport($notaries), 'notaries.xlsx');
+            // return Excel::download(new NotaryExport($notaries), 'notaries.xlsx');
+
+            // 🔹 Cargar la plantilla existente
+            $templatePath = storage_path('app/plantillas/notarias_template.xlsx');
+            $spreadsheet = IOFactory::load($templatePath);
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // 🔹 Insertar datos desde la fila 4
+            $startRow = 4;
+            foreach ($notaries as $i => $notaryRow) {
+                $col = 'A';
+                foreach ($notaryRow as $value) {
+                    $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
+                    $col++;
+                }
+            }
+
+            // 🔹 Retornar como descarga
+            return new StreamedResponse(function () use ($spreadsheet) {
+                $writer = new Xlsx($spreadsheet);
+                $writer->save('php://output');
+            }, 200, [
+                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="notarias.xlsx"',
+            ]);
+
+
+
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'OcurriÓ un error al generar el reporte.',

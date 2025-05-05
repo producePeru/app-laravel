@@ -12,17 +12,44 @@ class Notary extends Model
     protected $table = 'notaries';
 
     protected $fillable = [
-        'address',
-        'biometrico',
+        // 'address',
+        // 'biometrico',
+        // 'city_id',
+        // 'district_id',
+        // 'gastos',
+        // 'tarifa1',
+        // 'tarifa2',
+        // 'tarifa3',
+        // 'tarifa4',
+        // 'infocontacto',
+        // 'name',
+        // 'province_id',
+        // 'sociointerveniente',
+        // 'tarifanormal',
+        // 'tarifasocial',
+
+        'nameNotary',
         'city_id',
-        'district_id',
-        'gastos',
-        'infocontacto',
-        'name',
         'province_id',
-        'sociointerveniente',
-        'tarifanormal',
-        'tarifasocial',
+        'district_id',
+        'addressNotary',
+        'gasto1',
+        'gasto2',
+        'gasto2Detail',
+        'gasto3',
+        'gasto3Detail',
+        'gasto4',
+        'gasto4Detail',
+        'testimonio',
+        'legalization',
+        'biometric',
+        'aclaratory',
+        'socio',
+        'conditions',
+        'contactName',
+        'contactEmail',
+        'contactPhone',
+        'normalTarifa',
         'user_id',
         'status'
     ];
@@ -52,40 +79,21 @@ class Notary extends Model
         return $this->belongsTo('App\Models\User');
     }
 
-    public function scopeWithNotariesById($query, $filters)
+    public function scopeWithItems($query, $filters)
     {
-        $query = $query->with(['city', 'province', 'district', 'user.profile'])
-            ->orderBy('created_at', 'asc');
+        $query->with(['city', 'province', 'district', 'user.profile']);
 
-        if (isset($filters['city_id'])) {
+        if (!empty($filters['city_id'])) {
             $query->where('city_id', $filters['city_id']);
         }
 
-        if (isset($filters['name'])) {
+        if (!empty($filters['name'])) {
             $query->where('name', 'LIKE', '%' . $filters['name'] . '%');
         }
 
-        // Filtrar por nombres de provincia, ciudad o distrito
-        if (isset($filters['city_name'])) {
-            $query->whereHas('city', function ($q) use ($filters) {
-                $q->where('name', 'LIKE', '%' . $filters['city_name'] . '%');
-            });
-        }
-
-        if (isset($filters['province_name'])) {
-            $query->whereHas('province', function ($q) use ($filters) {
-                $q->where('name', 'LIKE', '%' . $filters['province_name'] . '%');
-            });
-        }
-
-        if (isset($filters['district_name'])) {
-            $query->whereHas('district', function ($q) use ($filters) {
-                $q->where('name', 'LIKE', '%' . $filters['district_name'] . '%');
-            });
-        }
-
-        return $query->paginate(200);
+        return $query->orderBy('id', 'desc');
     }
+
 
 
     public function profiles()
@@ -93,10 +101,10 @@ class Notary extends Model
         return $this->hasMany(Profile::class, 'notary_id');
     }
 
-    public function getGastosAttribute($value)
-    {
-        return json_decode($value, true);
-    }
+    // public function getGastosAttribute($value)
+    // {
+    //     return json_decode($value, true);
+    // }
 
     public function scopeWithNotariesAndRelations($query, $cityId = null)
     {
@@ -116,6 +124,11 @@ class Notary extends Model
             ->orderBy('city_id', 'asc')
             ->paginate(50);
     }
+
+    // public function scopeWithItems($query, $filters)
+    // {
+
+    // }
 }
 
 
