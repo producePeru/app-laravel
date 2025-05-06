@@ -34,6 +34,7 @@ class Notary extends Model
         'district_id',
         'addressNotary',
         'gasto1',
+        'gasto1Detail',
         'gasto2',
         'gasto2Detail',
         'gasto3',

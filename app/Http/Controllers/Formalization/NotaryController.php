@@ -54,6 +54,7 @@ class NotaryController extends Controller
                 'province_name' => $item->province->name,
                 'district_name' => $item->district->name,
                 'gasto1' => $item->gasto1,
+                'gasto1Detail' => $item->gasto1Detail,
                 'gasto2' => $item->gasto2,
                 'gasto2Detail' => $item->gasto2Detail,
                 'gasto3' => $item->gasto3,

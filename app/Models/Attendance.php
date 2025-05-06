@@ -86,9 +86,9 @@ class Attendance extends Model
             'pnte'
             ])->withCount('attendanceList');
 
-            if (!empty($filters['asesor'])) {
-                $query->where('people_id', $filters['asesor']);
-            }
+        if (!empty($filters['asesor'])) {
+            $query->where('people_id', $filters['asesor']);
+        }
 
 
         if (!empty($filters['name'])) {
@@ -105,11 +105,11 @@ class Attendance extends Model
                   ->orWhereBetween('endDate', [$filters['dateStart'], $filters['dateEnd']]);
             });
         }
-        
+
 
 
         if (!empty($filters['year'])) {
-            
+
             $query->whereYear('created_at', $filters['year']);
         }
 

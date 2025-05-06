@@ -23,7 +23,7 @@ class DownloadNotariesController extends Controller
             $roleIds  = $userRole['role_id'];
             $userId   = $userRole['user_id'];
 
-            $query = Notary::query();
+            $query = Notary::query()->where('status', 1);
 
             $query->withItems($filters);
 
@@ -44,6 +44,7 @@ class DownloadNotariesController extends Controller
                         'district'              => $notary->district->name ?? null,
                         'addressNotary'         => strtoupper($notary->addressNotary) ?? null,
                         'gastos'                => $notary->gasto1 ?? null,
+                        'gastosDetail'          => $notary->gasto1Detail ?? null,
                         'gasto2'                => $notary->gasto2 ?? null,
                         'gasto2Detail'          => $notary->gasto2Detail ?? null,
                         'gasto3'                => $notary->gasto3 ?? null,

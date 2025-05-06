@@ -349,7 +349,7 @@ class SelectController extends Controller
 
             $data->push([
                 'label' => $label,
-                'value' => $profile->user_id,
+                'value' => $profile->id,
             ]);
         }
 
