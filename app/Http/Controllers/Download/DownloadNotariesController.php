@@ -91,9 +91,6 @@ class DownloadNotariesController extends Controller
                 'Content-Disposition' => 'attachment; filename="notarias.xlsx"',
             ]);
 
-
-
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'OcurriÓ un error al generar el reporte.',

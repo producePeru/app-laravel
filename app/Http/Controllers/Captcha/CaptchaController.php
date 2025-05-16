@@ -27,6 +27,6 @@ class CaptchaController extends Controller
         }
 
         // Si es válido, continúa con el procesamiento
-        return response()->json(['message' => 'Formulario validado correctamente']);
+        return response()->json(['message' => 'Formulario validado correctamente', 'status' => 200]);
     }
 }
