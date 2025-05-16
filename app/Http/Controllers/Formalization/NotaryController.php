@@ -81,7 +81,6 @@ class NotaryController extends Controller
 	}
 
 
-
     public function storeNotary(Request $request)
     {
         try {
