@@ -67,7 +67,7 @@
                   <tbody>
                     <tr>
                       <td
-                        width="570"
+                        width="500"
                         align="left"
                         style="border-radius:8px;border:1px solid #f0f1f1; background-color: #fff;"
                       >
@@ -77,9 +77,10 @@
                               <td style="padding: 10px 30px;">
                                 <table
                                   width="100%"
-                                  style="font-family: Arial, Helvetica; font-size: 14px;"
+                                  style="font-family: Arial, Helvetica; font-size: 14px; margin-top: 30px;"
                                 >
-                                  <tr>
+
+                                  <tr style="margin-top: 20px">
                                     <td align="left" width="50%">
                                       <img
                                         src="https://apituempresa.soporte-pnte.com/images/ministeriologo.png"
@@ -161,10 +162,8 @@
                                           <!-- Registro -->
                                           <p style="margin: 0;">
                                             🔗
-                                            <b
-                                              >Confirma tu participación
-                                              registrándote en el siguiente
-                                              enlace:</b
+                                            <b style="color: red; font-size: 20px"
+                                              >SI ESTAS INTERESADO PUEDES REGISTRARTE AQUÍ</b
                                             >
                                           </p>
                                           <br />
@@ -173,7 +172,7 @@
                                             style="margin: 0 0 20px 0; text-align: left;"
                                           >
                                             <a
-                                              href="https://docs.google.com/forms/d/e/1FAIpQLSe46hGoCyD6CpJZT5E7aIgg-w30vLblS8lGA3dbHt-gRlHgoQ/viewform"
+                                              href="https://docs.google.com/forms/d/e/1FAIpQLScrVUuMJvp9mF1QvcAeeZCE0_BdZ9AgA4r3wcprPit3WXADAA/viewform"
                                               target="_blank"
                                               style="display: inline-block; padding: 14px 38px; background-color: #d31b1b; color: #ffffff; font-weight: bold; font-size: 16px; text-align: center; text-decoration: none; border-radius: 8px; font-family: Arial, Helvetica, sans-serif;"
                                             >
@@ -271,7 +270,7 @@
                                         <!-- Contenido -->
 
                                         <a
-                                          href="https://docs.google.com/forms/d/e/1FAIpQLSe46hGoCyD6CpJZT5E7aIgg-w30vLblS8lGA3dbHt-gRlHgoQ/viewform"
+                                          href="https://docs.google.com/forms/d/e/1FAIpQLScrVUuMJvp9mF1QvcAeeZCE0_BdZ9AgA4r3wcprPit3WXADAA/viewform"
                                           target="_blank"
                                           rel="noopener noreferrer"
                                         >

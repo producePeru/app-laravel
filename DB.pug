@@ -206,3 +206,28 @@ UPDATE notaries
 SET status = 1;
 
 
+
+
+CREATE TABLE typecompanies  (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO typecompanies (name)
+VALUES
+  ('EIRL'),
+  ('SAC'),
+  ('SRL'),
+  ('Persona Natural con Negocio');
+
+
+
+ALTER TABLE mypes
+ADD COLUMN typecompany_id BIGINT UNSIGNED AFTER economicsector_id,
+ADD CONSTRAINT fk_typecompany
+  FOREIGN KEY (typecompany_id)
+  REFERENCES typecompanies(id)
+  ON DELETE RESTRICT
+  ON UPDATE CASCADE;

@@ -31,6 +31,8 @@ use App\Models\AgreementStatus;
 use App\Models\OfficePnte;
 use App\Models\Typecapital;
 use App\Models\Attendance;
+use App\Models\TypeCompany;
+use App\Models\Category;
 
 class SelectController extends Controller
 {
@@ -248,14 +250,15 @@ class SelectController extends Controller
 
     public function getComercialActivities()
     {
-        $comercialActivities = ComercialActivities::all();
+        $comercialActivities = ComercialActivities::orderBy('name', 'asc')->get();
 
         $data = $comercialActivities->map(function ($item) {
             return [
-                'label' => $item->name,
+                'label' => ucfirst(strtolower($item->name)), // Solo la primera letra en mayúscula
                 'value' => $item->id
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -349,7 +352,7 @@ class SelectController extends Controller
 
             $data->push([
                 'label' => $label,
-                'value' => $profile->id,
+                'value' => $profile->user_id,
             ]);
         }
 
@@ -435,5 +438,33 @@ class SelectController extends Controller
         $sortedData = $data->sortBy('label')->values();
 
         return response()->json(['data' => $sortedData, 'status' => 200]);
+    }
+
+    public function getTypeCompanies()
+    {
+        $types = TypeCompany::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getRubrosCategories()
+    {
+        $types = Category::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
     }
 }

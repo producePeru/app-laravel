@@ -47,11 +47,14 @@ use App\Http\Controllers\Room\RoomController;
 use App\Http\Controllers\RutaDigital\RutaDigitalController;
 use App\Http\Controllers\Workshop\WorkshopController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Captcha\CaptchaController;
 
 Route::post('login', [AuthController::class, 'login']);
 
 //testing
 Route::post('create', [UserController::class, 'store']);
+
+Route::post('/verify-captcha', [CaptchaController::class, 'verify']);
 
 Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function () {
     Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
@@ -359,6 +362,11 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
 
     Route::get('asesores-report', [SelectController::class, 'getAsesoresReporte']);
     Route::get('asesores-events-ugo', [SelectController::class, 'getAsesoresEventsUgo']);
+
+    Route::get('type-companies', [SelectController::class, 'getTypeCompanies']);
+    Route::get('rubros', [SelectController::class, 'getRubrosCategories']);
+
+
 
 });
 
