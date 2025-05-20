@@ -48,6 +48,8 @@ use App\Http\Controllers\RutaDigital\RutaDigitalController;
 use App\Http\Controllers\Workshop\WorkshopController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Captcha\CaptchaController;
+use App\Http\Controllers\PP03\Pp03Controller;
+
 
 Route::post('login', [AuthController::class, 'login']);
 
@@ -505,4 +507,9 @@ Route::group(['prefix' => 'report', 'namespace' => 'App\Http\Controllers', 'midd
 Route::group(['prefix' => 'route-digital', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::post('store',                    [WorkshopController::class, 'store']);
     Route::get('list',                      [WorkshopController::class, 'index']);
+});
+
+Route::group(['prefix' => 'pp03', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::post('store',                    [Pp03Controller::class, 'store']);
+    Route::get('list',                      [Pp03Controller::class, 'index']);
 });

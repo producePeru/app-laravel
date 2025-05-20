@@ -221,7 +221,7 @@ class PersonController extends Controller
                 'province_id' => 'required|integer',
                 'district_id' => 'required|integer',
                 'sick' => 'nullable|in:yes,no',
-                'phone' => 'nullable|string|max:20',
+                'phone' => 'nullable|max:20',
                 'email' => 'nullable|string',
                 'hasSoon' => 'nullable|string',
             ]);

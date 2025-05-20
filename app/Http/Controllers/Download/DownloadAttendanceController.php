@@ -8,9 +8,16 @@ use App\Exports\AttendanceListSlugExport;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
+use App\Models\City;
+use App\Models\District;
+use App\Models\People;
+use App\Models\Province;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class DownloadAttendanceController extends Controller
 {
@@ -75,7 +82,7 @@ class DownloadAttendanceController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
-        
+
     }
 
 
@@ -88,6 +95,13 @@ class DownloadAttendanceController extends Controller
             return response()->json(['message' => 'Not found'], 404);
         }
 
+        $asesor = People::find($attendance->people_id);
+        $region = City::find($attendance->city_id);
+        $province = Province::find($attendance->province_id);
+        $district = District::find($attendance->district_id);
+
+
+
         $query = AttendanceList::with([
             'typedocument:id,name',
             'gender:id,name,avr',
@@ -99,10 +113,18 @@ class DownloadAttendanceController extends Controller
 
         $data = $query->get();
 
-        $result = $data->map(function ($item, $index) {
+        $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
             return [
                 'index' => $index + 1,
-                'created_at' => Carbon::parse($item->created_at)->format('d-m-Y H:i'),
+                'nameActividad' => $attendance->title,
+                'asesor' => $asesor ? "{$asesor->name} {$asesor->lastname} {$asesor->middlename}" : null,
+                'dateActividad' => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
+
+                'region' => $region->name,
+                'provincia' => $province->name,
+                'distrito' => $district->name,
+
+                'place' => $attendance->address ?? null,
                 'lastname' => $item->lastname . ' ' . $item->middlename,
                 'name' => $item->name,
                 'typedocument' => $item->typedocument->name,
@@ -119,6 +141,27 @@ class DownloadAttendanceController extends Controller
 
         // return $result;
 
-        return Excel::download(new AttendanceListSlugExport($result), 'attendance.xlsx');
+        // return Excel::download(new AttendanceListSlugExport($result), 'attendance.xlsx');
+
+        $templatePath = storage_path('app/plantillas/ugo_eventos_lista_registrados_template.xlsx');
+        $spreadsheet = IOFactory::load($templatePath);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $startRow = 2;
+        foreach ($result as $i => $resultRow) {
+            $col = 'A';
+            foreach ($resultRow as $value) {
+                $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
+                $col++;
+            }
+        }
+
+        return new StreamedResponse(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="lista-registrados.xlsx"',
+        ]);
     }
 }

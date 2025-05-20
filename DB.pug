@@ -231,3 +231,26 @@ ADD CONSTRAINT fk_typecompany
   REFERENCES typecompanies(id)
   ON DELETE RESTRICT
   ON UPDATE CASCADE;
+
+
+
+
+//
+CREATE TABLE `eventspp03` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `nameEvent` VARCHAR(255) NOT NULL,
+    `slug` VARCHAR(100) UNIQUE NOT NULL,
+    `city_id` BIGINT UNSIGNED NOT NULL,
+    `place` VARCHAR(255) NOT NULL,
+    `modality_id` BIGINT UNSIGNED NOT NULL,
+    `dateStart` DATE NOT NULL,
+    `dateEnd` DATE DEFAULT NULL,
+    `hours` VARCHAR(100) NOT NULL,
+    `description` TEXT,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+
+    FOREIGN KEY (`city_id`) REFERENCES `cities`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`modality_id`) REFERENCES `modalities`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

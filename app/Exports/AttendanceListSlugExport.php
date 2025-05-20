@@ -9,14 +9,25 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Events\AfterSheet;
+use Maatwebsite\Excel\Concerns\WithEvents;
 
-class AttendanceListSlugExport implements FromCollection, WithHeadings, WithTitle, WithStyles, WithColumnWidths
+
+class AttendanceListSlugExport implements FromCollection, WithTitle, WithStyles, WithColumnWidths, WithEvents
 {
     protected $result;
 
     public function __construct(Collection $result)
     {
         $this->result = $result;
+    }
+    public function collection()
+    {
+        return $this->result;
+    }
+    public function title(): string
+    {
+        return 'Registrados';
     }
 
     public function columnWidths(): array
@@ -39,44 +50,57 @@ class AttendanceListSlugExport implements FromCollection, WithHeadings, WithTitl
         ];
     }
 
-    public function title(): string
-    {
-        return 'Registrados';
-    }
+
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:M1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('e9e9e9');
+        // $sheet->getStyle('A1:M1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('e9e9e9');
 
-        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        // $sheet->getStyle('A1:M1')->getFont()->setBold(true);
 
-        $sheet->getRowDimension(1)->setRowHeight(20);
+        // $sheet->getRowDimension(1)->setRowHeight(20);
 
-        $sheet->getStyle('A1:M1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        // $sheet->getStyle('A1:M1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
     }
 
-    public function collection()
-    {
-        return $this->result;
-    }
 
-    public function headings(): array
+    // public function headings(): array
+    // {
+    //     return [
+    //         '#',
+    //         'FECHA DE REGISTRO',
+    //         'APELLIDOS',
+    //         'NOMBRES',
+    //         'TIPO DE DOCUMENTO',
+    //         'NÚMERO DE DOCUMENTO',
+    //         'EMAIL',
+    //         'CELULAR',
+    //         'SEXO (F/M)',
+    //         'DISCAPACITADO',
+    //         'RUC',
+    //         'SECTOR ECONÓMICO',
+    //         'ACTIVIDAD COMERCIAL'
+    //     ];
+    // }
+
+    public function registerEvents(): array
     {
         return [
-            '#',
-            'FECHA DE REGISTRO',
-            'APELLIDOS',
-            'NOMBRES',
-            'TIPO DE DOCUMENTO',
-            'NÚMERO DE DOCUMENTO',
-            'EMAIL',
-            'CELULAR',
-            'SEXO (F/M)',
-            'DISCAPACITADO',
-            'RUC',
-            'SECTOR ECONÓMICO',
-            'ACTIVIDAD COMERCIAL'
+            AfterSheet::class => function (AfterSheet $event) {
+                $startRow = 2; // Inicia desde la fila 4
+                $rowIndex = $startRow;
+
+                foreach ($this->result as $row) {
+                    $colIndex = 0;
+                    foreach ($row as $value) {
+                        $cell = chr(65 + $colIndex) . $rowIndex; // A4, B4, etc.
+                        $event->sheet->setCellValue($cell, $value);
+                        $colIndex++;
+                    }
+                    $rowIndex++;
+                }
+            },
         ];
     }
 }
