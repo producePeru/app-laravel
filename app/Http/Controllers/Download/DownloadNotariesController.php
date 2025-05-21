@@ -43,19 +43,57 @@ class DownloadNotariesController extends Controller
                         'province'              => $notary->province->name ?? null,
                         'district'              => $notary->district->name ?? null,
                         'addressNotary'         => strtoupper($notary->addressNotary) ?? null,
-                        'gastos'                => $notary->gasto1 ?? null,
+
+                        // 'gastos'                => $notary->gasto1 ?? null,
+                        'gastos' => is_numeric(str_replace(',', '', $notary->gasto1))
+                                    ? 'S/ ' . number_format((float) str_replace(',', '', $notary->gasto1), 2, '.', ',')
+                                    : null,
                         'gastosDetail'          => $notary->gasto1Detail ?? null,
-                        'gasto2'                => $notary->gasto2 ?? null,
+
+                        'gasto2' => is_numeric(str_replace(',', '', $notary->gasto2))
+                                    ? 'S/ ' . number_format((float) str_replace(',', '', $notary->gasto2), 2, '.', ',')
+                                    : null,
+
+                        // 'gasto2'                => $notary->gasto2 ?? null,
+
                         'gasto2Detail'          => $notary->gasto2Detail ?? null,
-                        'gasto3'                => $notary->gasto3 ?? null,
+                        // 'gasto3'                => $notary->gasto3 ?? null,
+                        'gasto3' => is_numeric(str_replace(',', '', $notary->gasto3))
+                                    ? 'S/ ' . number_format((float) str_replace(',', '', $notary->gasto3), 2, '.', ',')
+                                    : null,
+
                         'gasto3Detail'          => $notary->gasto3Detail ?? null,
-                        'gasto4'                => $notary->gasto4 ?? null,
+                        // 'gasto4'                => $notary->gasto4 ?? null,
+
+                        'gasto4' => is_numeric(str_replace(', ', '', $notary->gasto4))
+                                    ? 'S/ ' . number_format((float) str_replace(', ', '', $notary->gasto4), 2, '.', ', ')
+                                    : null,
                         'gasto4Detail'          => $notary->gasto4Detail ?? null,
-                        'testimonio'            => $notary->testimonio ?? null,
+                        // 'gasto5'                => $notary->gasto4 ?? null,
+                        'gasto5' => is_numeric(str_replace(',', '', $notary->gasto5))
+                                    ? 'S/ ' . number_format((float) str_replace(',', '', $notary->gasto5), 2, '.', ',')
+                                    : null,
+                        'gasto5Detail'          => $notary->gasto4Detail ?? null,
+                        // 'gasto6'                => $notary->gasto4 ?? null,
+                        'gasto6' => is_numeric(str_replace(',', '', $notary->gasto6))
+                                    ? 'S/ ' . number_format((float) str_replace(',', '', $notary->gasto6), 2, '.', ',')
+                                    : null,
+                        'gasto6Detail'          => $notary->gasto4Detail ?? null,
+                        // 'testimonio'            => $notary->testimonio ?? null,
+                        'testimonio' => is_numeric(str_replace(',', '', $notary->testimonio))
+                                    ? 'S/ ' . number_format((float) str_replace(',', '', $notary->testimonio), 2, '.', ',')
+                                    : null,
                         'legalization'          => $notary->legalization ?? null,
-                        'biometric'             => $notary->biometric ?? null,
+                        // 'biometric'             => $notary->biometric ?? null,
+                        'biometric' => is_numeric(str_replace(',', '', $notary->biometric))
+                                    ? 'S/ ' . number_format((float) str_replace(',', '', $notary->biometric), 2, '.', ',')
+                                    : null,
                         'aclaratory'            => $notary->aclaratory ?? null,
-                        'socio'                 => $notary->socio ?? null,
+                        // 'socio'                 => $notary->socio ?? null,
+                        'socio' => is_numeric(str_replace(',', '', $notary->socio))
+                                    ? 'S/ ' . number_format((float) str_replace(',', '', $notary->socio), 2, '.', ',')
+                                    : null,
+
                         'conditions'            => $notary->conditions ?? null,
                         'contactName'           => $notary->contactName ?? null,
                         'contactEmail'          => $notary->contactEmail ?? null,
