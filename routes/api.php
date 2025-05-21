@@ -512,4 +512,5 @@ Route::group(['prefix' => 'route-digital', 'namespace' => 'App\Http\Controllers'
 Route::group(['prefix' => 'pp03', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::post('store',                    [Pp03Controller::class, 'store']);
     Route::get('list',                      [Pp03Controller::class, 'index']);
+    Route::put('update/{id}',               [Pp03Controller::class, 'update']);
 });

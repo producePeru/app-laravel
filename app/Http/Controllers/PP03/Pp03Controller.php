@@ -85,16 +85,61 @@ class Pp03Controller extends Controller
 				'id' => $item->id,
                 'nameEvent' => $item->nameEvent,
                 'slug' => $item->slug,
-                'city_id' => $item->city->name,
+                'city_id' => $item->city->id,
                 'city_name' => $item->city->name,
                 'place' => $item->place,
                 'modality_id' => $item->modality->id,
                 'modality_name' => $item->modality->name,
-                'dateStart' => $item->dateStart ? Carbon::parse($item->dateStart)->format('d/m/Y') : null,
-                'dateEnd' => $item->dateEnd ? Carbon::parse($item->dateEnd)->format('d/m/Y') : null,
+                'dateStartFormat' => $item->dateStart ? Carbon::parse($item->dateStart)->format('d/m/Y') : null,
+                'dateEndFormat' => $item->dateEnd ? Carbon::parse($item->dateEnd)->format('d/m/Y') : null,
+                'dateStart' => $item->dateStart ? $item->dateStart : null,
+                'dateEnd' => $item->dateEnd ? $item->dateEnd : null,
                 'hours' => $item->hours,
                 'description' => $item->description,
 				'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
 		];
 	}
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $data = $request->all();
+
+            // Verificar existencia de ciudad
+            $city = City::find($data['city_id']);
+            if (!$city) {
+                return response()->json(['error' => 'Ciudad no encontrada'], 404);
+            }
+
+            // Crear código de fechas si existe dateEnd
+            $codigoFechas = $data['dateStart'] . $data['dateEnd'] ;
+
+            // Crear slug
+            $slugParts = [
+                Str::slug($city->name),
+                Str::slug($data['nameEvent']),
+            ];
+
+            if ($codigoFechas) {
+                $slugParts[] = $codigoFechas;
+            }
+
+            $slug = implode('-', $slugParts);
+
+            // Agregar slug al array de datos
+            $data['slug'] = $slug;
+
+            // Actualizar evento
+            Eventspp03::where('id', $id)->update($data);
+
+            return response()->json(['message' => 'Evento actualizado correctamente', 'status' => 200]);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Error al procesar la solicitud',
+                'error' => $th->getMessage(),
+                'status' => 500
+            ], 500);
+        }
+    }
 }

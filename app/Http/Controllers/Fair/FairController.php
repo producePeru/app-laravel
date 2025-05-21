@@ -52,12 +52,12 @@ class FairController extends Controller
                 'fairtype_id' => $item->fairType ? $item->fairType->id : null,
                 'powerBy' => $item->powerBy,
                 'modality' => $item->modality,
-                'city' => $item->region->name,
-                'province' => $item->provincia->name,
-                'district' => $item->distrito->name,
-                'city_id' => $item->region->id,
-                'province_id' => $item->provincia->id,
-                'district_id' => $item->distrito->id,
+                'city' => $item->region->name ?? null,
+                // 'province' => $item->provincia->name,
+                // 'district' => $item->distrito->name,
+                'city_id' => $item->region->id ?? null,
+                // 'province_id' => $item->provincia->id,
+                // 'district_id' => $item->distrito->id,
                 'profile' => $item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename,
             ];
         });
@@ -127,7 +127,8 @@ class FairController extends Controller
                 'title' => $fair->title,
                 'subTitle' => $fair->subTitle,
                 'description' => $fair->description,
-                'modality' => $fair->modality
+                'modality' => $fair->modality,
+                'typeFair' => $fair->fairtype_id,
             ], 'status' => 200]);
         }
 
@@ -252,7 +253,19 @@ class FairController extends Controller
 
             FairPostulate::create($data);
 
-            Mail::to($request->email)->send(new FeriasEmpresarialesMail($fair));
+
+
+            $mailer = 'gmail';
+
+
+            Mail::mailer($mailer)->to($request->input('email'))->send(new FeriasEmpresarialesMail($fair));
+
+
+
+            // Mail::to($request->email)->send(new FeriasEmpresarialesMail($fair));
+
+
+
 
             return response()->json(['message' => 'Se le ha enviado un mensaje a su correo', 'status' => 200]);
         } else {
