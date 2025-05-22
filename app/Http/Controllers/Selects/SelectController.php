@@ -33,6 +33,9 @@ use App\Models\Typecapital;
 use App\Models\Attendance;
 use App\Models\TypeCompany;
 use App\Models\Category;
+use App\Models\AnnualSale;
+use App\Models\PropagandaMedia;
+
 
 class SelectController extends Controller
 {
@@ -457,6 +460,34 @@ class SelectController extends Controller
     public function getRubrosCategories()
     {
         $types = Category::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getAnnualSales()
+    {
+        $types = AnnualSale::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getPropagandaMedia()
+    {
+        $types = PropagandaMedia::orderBy('name', 'asc')->get();
 
         $data = $types->map(function ($item) {
             return [

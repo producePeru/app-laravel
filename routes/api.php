@@ -368,6 +368,8 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('type-companies', [SelectController::class, 'getTypeCompanies']);
     Route::get('rubros', [SelectController::class, 'getRubrosCategories']);
 
+    Route::get('annual-sales', [SelectController::class, 'getAnnualSales']);
+    Route::get('propaganda-media', [SelectController::class, 'getPropagandaMedia']);
 
 
 });

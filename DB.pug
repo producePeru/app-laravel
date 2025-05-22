@@ -254,3 +254,34 @@ CREATE TABLE `eventspp03` (
     FOREIGN KEY (`city_id`) REFERENCES `cities`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`modality_id`) REFERENCES `modalities`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+CREATE TABLE annualSales  (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO annualSales (name)
+VALUES
+  ('100'),
+  ('200'),
+  ('300'),
+  ('400');
+
+
+CREATE TABLE propagandaMedia  (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO propagandaMedia (name)
+VALUES
+  ('Faceboook'),
+  ('Aviso'),
+  ('Correo'),
+  ('Mensaje de texto');

@@ -73,12 +73,12 @@ class DownloadNotariesController extends Controller
                         'gasto5' => is_numeric(str_replace(',', '', $notary->gasto5))
                                     ? 'S/ ' . number_format((float) str_replace(',', '', $notary->gasto5), 2, '.', ',')
                                     : null,
-                        'gasto5Detail'          => $notary->gasto4Detail ?? null,
+                        'gasto5Detail'          => $notary->gasto5Detail ?? null,
                         // 'gasto6'                => $notary->gasto4 ?? null,
                         'gasto6' => is_numeric(str_replace(',', '', $notary->gasto6))
                                     ? 'S/ ' . number_format((float) str_replace(',', '', $notary->gasto6), 2, '.', ',')
                                     : null,
-                        'gasto6Detail'          => $notary->gasto4Detail ?? null,
+                        'gasto6Detail'          => $notary->gasto6Detail ?? null,
                         // 'testimonio'            => $notary->testimonio ?? null,
                         'testimonio' => is_numeric(str_replace(',', '', $notary->testimonio))
                                     ? 'S/ ' . number_format((float) str_replace(',', '', $notary->testimonio), 2, '.', ',')
