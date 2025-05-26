@@ -25,7 +25,7 @@ class FeriasEmpresarialesMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Ferias Empresariales PNTE',
+            subject: 'Confirmación de Registro – Feria Virtual Perú Produce Cyber Wow Julio 2025',
         );
     }
 

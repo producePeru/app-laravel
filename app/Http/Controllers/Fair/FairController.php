@@ -245,9 +245,9 @@ class FairController extends Controller
                 'ruc' => $request->ruc,
                 'dni' => $request->dni,
                 'email' => $request->email,
-                'hasParticipatedProduce' => $request->hasParticipatedProduce,
+                // 'hasParticipatedProduce' => $request->hasParticipatedProduce,
                 'nameService' => $request->nameService,
-                'hasParticipatedFair' => $request->hasParticipatedFair,
+                // 'hasParticipatedFair' => $request->hasParticipatedFair,
                 'nameFair' => $request->nameFair
             ];
 
