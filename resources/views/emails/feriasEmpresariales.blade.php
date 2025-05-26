@@ -37,7 +37,7 @@
 
 
 
-                      Hemos recibido su registro de postulación para participar en <br> Perú Produce – Cyber Wow Julio
+                      Hemos recibido su registro de postulación para participar en el <br> Perú Produce – Cyber Wow Julio
                       2025, <br> que se llevará a cabo del 14 al 17 de julio de 2025.
 
                       En caso sea seleccionado, un asesor se pondrá en contacto con usted para brindarle más información
