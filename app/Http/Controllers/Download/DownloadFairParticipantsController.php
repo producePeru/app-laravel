@@ -107,6 +107,7 @@ class DownloadFairParticipantsController extends Controller
                 'nameFair' => $item->mype->nameFair ? $item->mype->nameFair : '-',
                 'produceFeria' => $item->mype->hasParticipatedProduce,
                 'servicio' => $item->mype->nameService ? $item->mype->nameService : '-',
+
             ];
         });
 

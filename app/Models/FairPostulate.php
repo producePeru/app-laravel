@@ -25,7 +25,8 @@ class FairPostulate extends Model
         'hasParticipatedProduce',
         'nameService',
         'hasParticipatedFair',
-        'nameFair'
+        'nameFair',
+        'propagandamedia_id'
     ];
 
     public function mype()

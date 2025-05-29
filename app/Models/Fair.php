@@ -15,19 +15,20 @@ class Fair extends Model
         'title',
         'subTitle',
         'description',
-        'metaMypes',
-        'metaSales',
+        'fairtype_id',
+        'modality_id',
         'startDate',
         'endDate',
-        'modality',
-        'powerBy',
-        'fairtype_id',
+        'metaMypes',
         'city_id',
-        'province_id',
-        'district_id',
-        'address',
-        'user_id'
+        'place',
+        'hours',
+        'msgEndForm',
+        'msgSendEmail',
+        'created_by',
+        'updated_by',
     ];
+
 
     protected $dates = ['startDate', 'endDate', 'deleted_at'];
 
@@ -61,6 +62,11 @@ class Fair extends Model
         return $this->belongsTo(FairType::class, 'fairtype_id');
     }
 
+    public function modality()
+    {
+        return $this->belongsTo(Modality::class, 'modality_id');
+    }
+
 
     // SCOPE SEARCH
     public function scopeSearch($query, $search)
@@ -80,5 +86,53 @@ class Fair extends Model
                 });
         }
         return $query;
+    }
+
+    public function scopeWithItems($query, $filters)
+    {
+        $query = $query->with([
+            'modality',
+            'region',
+            'fairType'
+            ]);
+
+
+        if (!empty($filters['name'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('nameEvent', 'like', '%' . $filters['name'] . '%')
+                  ->orWhere('description', 'like', '%' . $filters['name'] . '%');
+            });
+        }
+
+
+        if (!empty($filters['startDate']) && !empty($filters['endDate'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->whereBetween('startDate', [$filters['startDate'], $filters['endDate']])
+                  ->orWhereBetween('endDate', [$filters['startDate'], $filters['endDate']]);
+            });
+        }
+
+        if (!empty($filters['year'])) {
+
+            $query->whereYear('created_at', $filters['year']);
+        }
+
+        if (!empty($filters['orderby']) && $filters['orderby'] == 1) {
+
+            $query->orderBy('attendance_list_count', 'desc');
+
+        } else if (!empty($filters['orderby']) && $filters['orderby'] == 2) {
+
+            $query->orderBy('attendance_list_count', 'asc');
+
+        } else if (!empty($filters['orderby']) && $filters['orderby'] == 3) {
+
+            $query->orderBy('finally', 'desc');
+
+        } else {
+
+            $query->orderBy('created_at', 'desc');
+
+        }
     }
 }

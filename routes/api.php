@@ -48,6 +48,7 @@ use App\Http\Controllers\RutaDigital\RutaDigitalController;
 use App\Http\Controllers\Workshop\WorkshopController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Captcha\CaptchaController;
+use App\Http\Controllers\Image\ImageController;
 use App\Http\Controllers\PP03\Pp03Controller;
 
 
@@ -338,6 +339,7 @@ Route::group(['prefix' => 'commitments', 'namespace' => 'App\Http\Controllers', 
 
 Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], function () {
     Route::get('countries', [SelectController::class, 'getCountries']);
+    Route::get('cities-national', [SelectController::class, 'getCitiesNational']);
     Route::get('cities', [SelectController::class, 'getCities']);
     Route::get('provinces/{idCity}', [SelectController::class, 'getProvinces']);
     Route::get('districts/{idProv}', [SelectController::class, 'getDistricts']);
@@ -370,7 +372,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
 
     Route::get('annual-sales', [SelectController::class, 'getAnnualSales']);
     Route::get('propaganda-media', [SelectController::class, 'getPropagandaMedia']);
-
+    Route::get('fair-types', [SelectController::class, 'getFairTypes']);
 
 });
 
@@ -440,8 +442,10 @@ Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middlew
 });
 
 Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',                          [FairController::class, 'index']);
     Route::post('create',                       [FairController::class, 'create']);
+    Route::get('list',                          [FairController::class, 'index']);
+
+
     Route::put('update/{id}',                   [FairController::class, 'update']);
     Route::get('applicants/{slug}',             [FairController::class, 'fairApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
     Route::put('status-participant/{id}',       [FairController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
@@ -515,4 +519,11 @@ Route::group(['prefix' => 'pp03', 'namespace' => 'App\Http\Controllers', 'middle
     Route::post('store',                    [Pp03Controller::class, 'store']);
     Route::get('list',                      [Pp03Controller::class, 'index']);
     Route::put('update/{id}',               [Pp03Controller::class, 'update']);
+});
+
+
+Route::group(['prefix' => 'image', 'namespace' => 'App\Http\Controllers'], function () {
+    Route::post('upload-image',                     [ImageController::class, 'upload']);
+    Route::put('origin-image/{id}',                 [ImageController::class, 'setOriginImage']);
+
 });

@@ -187,4 +187,7 @@ return [
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
     ])->toArray(),
 
+    'custom_url_base' => env('APP_IMAGE_URL', 'https://apituempresa.soporte-pnte.com/'),
+
+
 ];

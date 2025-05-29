@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Fair;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateFairRequest;
 use Illuminate\Http\Request;
 use App\Models\Fair;
 use App\Models\Mype;
@@ -11,79 +12,89 @@ use Carbon\Carbon;
 use App\Mail\FeriasEmpresarialesMail;
 use App\Models\FairPostulate;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class FairController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $filters = [
+            'year'      =>  $request->input('year'),
+            'startDate' =>  $request->input('dateStart'),
+            'endDate'   =>  $request->input('dateEnd'),
+            'name'      =>  $request->input('name'),
+            'orderby'   =>  $request->input('orderby'),
+        ];
 
-        $query = Fair::with([
-            'fairPostulate',
-            'region',
-            'provincia',
-            'distrito',
-            'fairType',
-            'profile:id,user_id,name,lastname,middlename'
-        ])
-            ->withCount('fairPostulate')
-            ->search($search)
-            ->orderBy('created_at', 'desc');
+        $query = Fair::query();
 
+        $query->withItems($filters);
 
-        $data = $query->paginate(50);
-
-
-        $data->getCollection()->transform(function ($item) {
-            return [
-                'id' => $item->id,
-                'slug' => $item->slug,
-                'title' => $item->title,
-                'subTitle' => $item->subTitle,
-                'description' => $item->description,
-                'metaMypes' => $item->metaMypes,
-                'countMypes' => $item->fair_postulate_count,
-                'metaSales' => $item->metaSales,
-                'startDate' => Carbon::parse($item->startDate)->format('d-m-Y'),
-                'endDate' => Carbon::parse($item->endDate)->format('d-m-Y'),
-                'startDate2' => $item->startDate,
-                'endDate2' => $item->endDate,
-                'fairtype_id' => $item->fairType ? $item->fairType->id : null,
-                'powerBy' => $item->powerBy,
-                'modality' => $item->modality,
-                'city' => $item->region->name ?? null,
-                // 'province' => $item->provincia->name,
-                // 'district' => $item->distrito->name,
-                'city_id' => $item->region->id ?? null,
-                // 'province_id' => $item->provincia->id,
-                // 'district_id' => $item->distrito->id,
-                'profile' => $item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename,
-            ];
+        $items = $query->paginate(150)->through(function ($item) {
+            return $this->mapItems($item);
         });
 
-        return response()->json(['data' => $data]);
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
     }
 
-    public function create(Request $request)
+    private function mapItems($item)
     {
-        $user_role = getUserRole();
+        return [
+            'id' => $item->id,
+            'slug' => $item->slug ?? null,
+            'title' => $item->title ?? null,
+            'subTitle' => $item->subTitle ?? null,
+            'description' => isset($item->description) ? strip_tags($item->description) : null,
+            'description3'   => isset($item->description)
+                ? (mb_strlen(strip_tags($item->description)) > 200
+                    ? mb_substr(strip_tags($item->description), 0, 200) . '...'
+                    : strip_tags($item->description))
+                : null,
+            'fairtype_id' => $item->fairType->id ?? null,
+            'fairtype_name' => $item->fairType->name ?? null,
+            'modality_id' => $item->modality->id ?? null,
+            'modality_name' => $item->modality->name ?? null,
+            'startDate' => $item->startDate ?? null,
+            'endDate' => $item->endDate ?? null,
+            'dateStartFormat' => $item->startDate ? Carbon::parse($item->startDate)->format('d/m/Y') : null,
+            'dateEndFormat' => $item->endDate ? Carbon::parse($item->endDate)->format('d/m/Y') : null,
+            'metaMypes' => $item->metaMypes ?? null,
+            'city_id' => $item->region->id ?? null,
+            'city_name' => $item->region->name ?? null,
+            'place' => $item->place ?? null,
+            'hours' => $item->hours ?? null,
+            'msgEndForm' => isset($item->msgEndForm) ? strip_tags($item->msgEndForm) : null,
+            'msgEndForm3' => isset($item->msgEndForm)
+                ? (mb_strlen(strip_tags($item->msgEndForm)) > 200
+                    ? mb_substr(strip_tags($item->msgEndForm), 0, 200) . '...'
+                    : strip_tags($item->msgEndForm))
+                : null,
+            'msgSendEmail' => isset($item->msgSendEmail) ? strip_tags($item->msgSendEmail) : null,
+            'msgSendEmail3' => isset($item->msgSendEmail)
+                ? (mb_strlen(strip_tags($item->msgSendEmail)) > 200
+                    ? mb_substr(strip_tags($item->msgSendEmail), 0, 200) . '...'
+                    : strip_tags($item->msgSendEmail))
+                : null,
 
-        $role_array = $user_role['role_id'];
+        ];
+    }
 
-        if (
-            in_array(5, $role_array) ||
-            in_array(10, $role_array)
-        ) {
+    public function create(CreateFairRequest $request)
+    {
+        try {
+
             $user_role = getUserRole();
             $user_id = $user_role['user_id'];
 
-            $data = $request->all();
+            $data = $request->validated(); // Solo campos permitidos y validados
 
+            // Generar slug único
             $slug = Str::slug($data['title']);
-
             $originalSlug = $slug;
-
             $count = 1;
 
             while (Fair::where('slug', $slug)->exists()) {
@@ -92,14 +103,52 @@ class FairController extends Controller
             }
 
             $data['slug'] = $slug;
-            $data['user_id'] = $user_id;
+            $data['created_by'] = $user_id;
+            $data['updated_by'] = $user_id;
 
-            Fair::create($data);
+            $fair = Fair::create($data);
 
-            return response()->json(['message' => 'Feria creada con éxito', 'status' => 200]);
-        } else {
-            return response()->json(['message' => 'Sin acceso', 'status' => 500]);
+            return response()->json([
+                'data' => $fair,
+                'message' => 'Feria creada con éxito',
+                'status' => 200
+            ], 201);
+
+        } catch (\Exception $e) {
+            Log::error('Error al crear feria: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Ocurrió un error al crear la feria',
+                'error' => $e->getMessage()
+            ], 500);
         }
+        // $user_role = getUserRole();
+
+
+        // $user_role = getUserRole();
+        // $user_id = $user_role['user_id'];
+
+        // $data = $request->all();
+
+        // $slug = Str::slug($data['title']);
+
+        // $originalSlug = $slug;
+
+        // $count = 1;
+
+        // while (Fair::where('slug', $slug)->exists()) {
+        //     $slug = $originalSlug . '-' . $count;
+        //     $count++;
+        // }
+
+        // $data['slug'] = $slug;
+        // $data['user_id'] = $user_id;
+
+        // Fair::create($data);
+
+        // return response()->json(['message' => 'Feria creada con éxito', 'status' => 200]);
     }
 
     /**
@@ -248,7 +297,8 @@ class FairController extends Controller
                 // 'hasParticipatedProduce' => $request->hasParticipatedProduce,
                 'nameService' => $request->nameService,
                 // 'hasParticipatedFair' => $request->hasParticipatedFair,
-                'nameFair' => $request->nameFair
+                'nameFair' => $request->nameFair,
+                'propagandamedia_id' => $request->propagandamedia_id
             ];
 
             FairPostulate::create($data);
@@ -306,7 +356,15 @@ class FairController extends Controller
 
         $data = $query->paginate(50);
 
-        $data->getCollection()->transform(function ($item) {
+        $mediaOptions = [
+            1 => 'FACEBOOK',
+            5 => 'CENTRO DE DESARROLLO (CDE)',
+            6 => 'CAPACITACIONES',
+            7 => 'INSTAGRAM',
+            8 => 'GRUPOS DE WHATSAPP',
+        ];
+
+        $data->getCollection()->transform(function ($item) use ($mediaOptions) {
             return [
                 'id' => $item->id,
                 'fair_name' => $item->fair->title,
@@ -360,6 +418,12 @@ class FairController extends Controller
                 'address' => $item->person->address,
                 'typedocument' => $item->person->typedocument->name,
                 'gender' => $item->person->gender->name,
+
+
+
+                'propagandamedia' => $mediaOptions[$item->propagandamedia_id] ?? ' ',
+
+
             ];
         });
 
@@ -415,7 +479,6 @@ class FairController extends Controller
             }
 
             return response()->json(['message' => 'Participante no encontrado'], 404);
-
         } else {
             return response()->json(['message' => 'Sin acceso', 'status' => 500]);
         }

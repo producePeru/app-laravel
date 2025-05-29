@@ -34,6 +34,7 @@ use App\Models\Attendance;
 use App\Models\TypeCompany;
 use App\Models\Category;
 use App\Models\AnnualSale;
+use App\Models\FairType;
 use App\Models\PropagandaMedia;
 
 
@@ -71,9 +72,23 @@ class SelectController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function getCities()
+    public function getCitiesNational()
     {
         $cities = City::all();
+
+        $data = $cities->sortBy('name')->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id,
+            ];
+        })->values();
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getCities()
+    {
+        $cities = City::where('id', '!=', 26)->get();
 
         $data = $cities->sortBy('name')->map(function ($item) {
             return [
@@ -488,6 +503,20 @@ class SelectController extends Controller
     public function getPropagandaMedia()
     {
         $types = PropagandaMedia::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getFairTypes()
+    {
+        $types = FairType::orderBy('name', 'asc')->get();
 
         $data = $types->map(function ($item) {
             return [

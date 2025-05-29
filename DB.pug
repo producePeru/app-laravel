@@ -286,3 +286,34 @@ VALUES
   ('Correo'),
   ('Mensaje de texto');
 
+
+
+
+
+
+
+
+
+
+
+
+
+//ok
+CREATE TABLE images (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    url TEXT NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    size BIGINT UNSIGNED NOT NULL,
+    from_origin VARCHAR(50) NOT NULL,
+    id_origin BIGINT UNSIGNED NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+
+
+//- $urlBase = config('app.custom_url_base');
+
+//- 'logo' => $item->mype->logo_path ? $urlBase . $item->mype->logo_path : null,
