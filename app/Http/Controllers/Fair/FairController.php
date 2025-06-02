@@ -419,8 +419,6 @@ class FairController extends Controller
                 'typedocument' => $item->person->typedocument->name ?? null,
                 'gender' => $item->person->gender->name ?? null,
 
-
-
                 'propagandamedia' => $mediaOptions[$item->propagandamedia_id] ?? ' ',
 
 
