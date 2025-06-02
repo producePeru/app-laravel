@@ -4,155 +4,108 @@ namespace App\Http\Controllers\Room;
 
 use App\Http\Controllers\Controller;
 use App\Models\Profile;
-use App\Models\Rooms;
+use App\Models\Room;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RoomController extends Controller
 {
 
-    public function index(Request $request)
-    {
-        $month = $request->input('month', date('m'));
-        $year = $request->input('year', date('Y'));
-
-        if (!$month || !$year) {
-            return response()->json(['message' => 'El mes y el año son requeridos'], 400);
-        }
-
-        $rooms = Rooms::whereYear('startDate', $year)
-            ->whereMonth('startDate', $month)
-            ->with('profile:id,user_id,name,lastname,middlename')
-            ->orderBy('timeStart', 'asc')
-            ->get();
-
-        $data = $rooms->map(function ($room) {
-            $backgroundColor = '';
-            switch ($room->room) {
-                case 1:
-                    $backgroundColor = '#e10f00';
-                    break;
-                case 2:
-                    $backgroundColor = '#2196f3';
-                    break;
-                case 3:
-                    $backgroundColor = 'blue';
-                    break;
-                default:
-                    $backgroundColor = 'gray';
-                    break;
-            }
-
-            // Devolver los campos requeridos
-            return [
-                'id' => $room->id,
-                'title' => $room->title,
-                'start' => $room->startDate,
-                'timeStart' => $room->timeStart,
-                'timeEnd' => $room->timeEnd,
-                'description' => $room->description,
-                'link' => $room->link,
-                'unity' => $room->unity,
-                'room' => $room->room,
-                'backgroundColor' => $backgroundColor,
-                '_id' => $room->profile->id,
-                'registered' =>  $room->profile->name . ' ' . $room->profile->lastname . ' ' . $room->profile->middlename,
-            ];
-        });
-
-        return response()->json($data);
-    }
-
-
     public function store(Request $request)
     {
-        $user = getUserRole();
-        $user_id = $user['user_id'];
+        $validated = $request->validate([
+            'id' => 'nullable|string',
+            'sala' => 'required|string|max:100',
+            'inicio' => 'required|date',
+            'fin' => 'required|date|after:inicio',
+            'descripcion' => 'nullable|string',
+            'unidad' => 'nullable|string|max:50',
+        ]);
 
-        // Obtener datos de la solicitud y asignar el user_id
-        $data = $request->all();
-        $data['user_id'] = $user_id;
+        if (isset($validated['id'])) {
+            // Actualizar reserva existente
+            $room = Room::findOrFail($validated['id']);
+            $room->update([
+                'sala' => $validated['sala'],
+                'inicio' => $validated['inicio'],
+                'fin' => $validated['fin'],
+                'descripcion' => $validated['descripcion'] ?? null,
+                'unidad' => $validated['unidad'] ?? null,
+                'updated_by' => Auth::id(),  // <-- Actualizar usuario que modificó
+            ]);
 
-        // Validación para evitar creación en fechas anteriores a hoy
-        $today = date('Y-m-d');
-        if ($data['startDate'] < $today) {
             return response()->json([
-                'message' => 'No se puede reservar con fecha pasada.',
-                'status' => 400
+                'message' => 'Reserva actualizada correctamente.',
+                'id' => $room->id,
+                'data' => $room,
+                'status' => 200
+            ]);
+        } else {
+            // Crear nueva reserva
+            $room = Room::create([
+                'sala' => $validated['sala'],
+                'inicio' => $validated['inicio'],
+                'fin' => $validated['fin'],
+                'descripcion' => $validated['descripcion'] ?? null,
+                'unidad' => $validated['unidad'] ?? null,
+                'created_by' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'message' => 'Reserva creada correctamente.',
+                'id' => $room->id,   // <-- Devuelvo el id para que el frontend pueda asignarlo
+                'data' => $room,
+                'status' => 200
             ]);
         }
+    }
 
-        // Verificar si ya existe una reserva en el mismo rango de tiempo y sala
-        $existingRoom = Rooms::where('room', $data['room'])
-            ->where('startDate', $data['startDate'])
-            ->where(function ($query) use ($data) {
-                $query->where(function ($q) use ($data) {
-                    $q->where('timeStart', '<', $data['timeEnd']) // Verifica que el inicio no esté antes del fin de la reserva
-                        ->where('timeEnd', '>', $data['timeStart']); // Verifica que el fin no esté después del inicio de la reserva
-                });
-            })
-            ->first();
+    public function getByMonth(Request $request)
+    {
+        $validated = $request->validate([
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2000',
+        ]);
 
-        if ($existingRoom) {
-            return response()->json([
-                'message' => 'La sala ya está reservada en el rango de tiempo seleccionado.',
-                'status' => 409
-            ]);
-        }
+        $startOfMonth = now()->setDate($validated['year'], $validated['month'], 1)->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
-        // Obtener los datos del perfil del usuario para registered
-        $profile = Profile::where('user_id', $user_id)->first();
-        if (!$profile) {
-            return response()->json([
-                'message' => 'Perfil no encontrado para el usuario.',
-                'status' => 404
-            ]);
-        }
+        $events = Room::with('profile:id,name,lastname,middlename')->whereBetween('inicio', [$startOfMonth, $endOfMonth])->get();
 
-        // Determinar el color de fondo en función de la sala
-        $backgroundColor = $data['room'] == 1 ? '#e10f00' : '#2196f3';
+        return response()->json($events);
+    }
 
-        $room = Rooms::create($data);
+    public function updateRoomDescription(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'descripcion' => 'required|string',
+            'unidad' => 'nullable|string|max:50',
+        ]);
 
-        // Preparar la respuesta con los datos necesarios
-        $response = [
-            'id' => $room['id'],
-            'title' => $room['title'],
-            'start' => $room['startDate'],
-            'timeStart' => $room['timeStart'],
-            'timeEnd' => $room['timeEnd'],
-            'description' => $room['description'],
-            'link' => $room['link'],
-            'unity' => $room['unity'],
-            'room' => $room['room'],
-            'backgroundColor' => $backgroundColor,
-            '_id' => $user_id,
-            'registered' => $profile->name . ' ' . $profile->lastname,
-        ];
+        $room = Room::findOrFail($id);
+        $room->descripcion = $validated['descripcion'];
+        $room->unidad = $validated['unidad'];
+        $room->updated_by = Auth::id();
+        $room->save();
 
         return response()->json([
-            'message' => 'Sala reservada.',
-            'status' => 200,
-            'data' => $response
+            'message' => 'Descripción actualizada correctamente.',
+            'data' => $room,
+            'status' => 200
         ]);
     }
 
-    public function destroy($idRoom)
+    public function destroy($id)
     {
-        $user = auth()->user();
+        $evento = Room::find($id);
 
-        $user_id = $user->id;
-
-        $room = Rooms::find($idRoom);
-        if (!$room) {
-            return response()->json(['message' => 'No se encontró la sala', 'status' => 404]);
+        if (!$evento) {
+            return response()->json(['message' => 'Evento no encontrado'], 404);
         }
 
-        if ($room->user_id != $user_id) {
-            return response()->json(['message' => 'No tiene permiso para eliminar esta sala', 'status' => 403]);
-        }
+        $evento->delete();
 
-        $room->delete();
-
-        return response()->json(['message' => 'Sala eliminada correctamente', 'status' => 200]);
+        return response()->json(['message' => 'Reserva eliminada del calendario', 'status' => 200]);
     }
+
 }
