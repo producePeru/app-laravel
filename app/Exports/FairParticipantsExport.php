@@ -148,10 +148,10 @@ class FairParticipantsExport implements FromCollection, WithHeadings, WithTitle,
             'Su negocio emite factura electrónica',
             'Se ha formalizado a través del Programa Nacional Tu Empresa',
             '¿Su marca se encuentra registrada en INDECOPI?',
-            'Ha participado en alguna feria virtual/presencial y/o rueda de negocios en los últimos años? Especificar',
-            'Evento donde participó',
-            'Ha participado en algún servicio que ofrece PRODUCE (taller, capacitación, o asistencia técnica)',
-            'Ingrese nombre del servicio que participó en PRODUCE (taller, capacitación, o asistencia técnica)'
+            // 'Ha participado en alguna feria virtual/presencial y/o rueda de negocios en los últimos años? Especificar',
+            // 'Evento donde participó',
+            // 'Ha participado en algún servicio que ofrece PRODUCE (taller, capacitación, o asistencia técnica)',
+            // 'Ingrese nombre del servicio que participó en PRODUCE (taller, capacitación, o asistencia técnica)'
         ];
     }
 }

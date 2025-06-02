@@ -103,10 +103,10 @@ class DownloadFairParticipantsController extends Controller
                 'electronica' => $item->mype->hasElectronicInvoice,
                 'isProduce' => $item->mype->isFormalizedPnte,
                 'indecopi' => $item->mype->isIndecopi,
-                'participadoFeria' => $item->mype->hasParticipatedFair,
-                'nameFair' => $item->mype->nameFair ? $item->mype->nameFair : '-',
-                'produceFeria' => $item->mype->hasParticipatedProduce,
-                'servicio' => $item->mype->nameService ? $item->mype->nameService : '-',
+                // 'participadoFeria' => $item->mype->hasParticipatedFair,
+                // 'nameFair' => $item->mype->nameFair ? $item->mype->nameFair : '-',
+                // 'produceFeria' => $item->mype->hasParticipatedProduce,
+                // 'servicio' => $item->mype->nameService ? $item->mype->nameService : '-',
 
             ];
         });
