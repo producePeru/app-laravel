@@ -297,7 +297,9 @@ class PersonController extends Controller
                             'lastname' => $responseData['apellidoPaterno'] ?? null,
                             'middlename' => $responseData['apellidoMaterno'] ?? null,
                             'gender_id' => null,
-                            'sick' => null
+                            'sick' => null,
+                            'phone' => null,
+                            'email' => null
                         ]
                     ]);
                 } catch (\Exception $e) {
@@ -317,7 +319,9 @@ class PersonController extends Controller
                         'lastname' => $person->lastname ?? null,
                         'middlename' => $person->middlename ?? null,
                         'gender_id' => $person->gender_id ?? null,
-                        'sick' => $person->sick ?? null
+                        'sick' => $person->sick ?? null,
+                        'phone' => $person->phone ?? null,
+                        'email' => $person->email ?? null
                     ]
                 ]);
             }

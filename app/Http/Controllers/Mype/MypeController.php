@@ -222,7 +222,6 @@ class MypeController extends Controller
     // SI EXISTE LO EDITAS SINO LO EDITAS
     public function apiRUC($numeroRUC)
     {
-
         $mype = Mype::where('ruc', $numeroRUC)->first();
 
         if (!$mype) {
@@ -249,8 +248,8 @@ class MypeController extends Controller
                     'status' => 200,
                     'message' => 'Información de MYPE obtenida',
                     'data' => [
-                        'comercialName' => null,
-                        'socialReason' => $responseData['razonSocial'] ?? null,
+                        'comercialName' => $responseData['comercialName'] ?? null,
+                        'socialReason' => $responseData['socialReason'] ?? null,
                         'web' => null,
                         'facebook' => null,
                         'instagram' => null,
@@ -278,6 +277,7 @@ class MypeController extends Controller
                     'instagram' => $mype->instagram ?? null,
                     'description' => $mype->description ?? null,
                     'address' => $mype->address ?? null,
+                    'mype' => $mype
                 ]
             ]);
         }

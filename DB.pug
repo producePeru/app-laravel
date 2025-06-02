@@ -341,3 +341,24 @@ ADD CONSTRAINT fk_fairs_image_id FOREIGN KEY (image_id) REFERENCES images(id) ON
 //-   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 //-   deleted_at TIMESTAMP NULL DEFAULT NULL
 //- );
+
+
+
+CREATE TABLE eventsugopostulate (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_mype BIGINT UNSIGNED NULL,
+    id_businessman BIGINT UNSIGNED NULL,
+    id_form BIGINT UNSIGNED NULL,
+
+    comercialName VARCHAR(100) NOT NULL,
+    sick VARCHAR(5) NOT NULL,
+    phone VARCHAR(9) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+    CONSTRAINT fk_eventsugo_mype FOREIGN KEY (id_mype) REFERENCES mypes(id) ON DELETE SET NULL,
+    CONSTRAINT fk_eventsugo_businessman FOREIGN KEY (id_businessman) REFERENCES people(id) ON DELETE SET NULL,
+    CONSTRAINT fk_eventsugo_form FOREIGN KEY (id_form) REFERENCES attendancelist(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
