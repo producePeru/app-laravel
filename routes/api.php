@@ -421,12 +421,16 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     Route::put('update/{id}',                   [EventsController::class, 'update']);
     // Route::put('observations/{id}',             [EventsController::class, 'observations']);
 
-    // eventos sra dianita
-    Route::get('rooms',                         [EventsController::class, 'listRooms']);
-    Route::post('reserve-room',                 [EventsController::class, 'storeRoom']);
-    Route::post('to-attendance/{id}',           [AttendanceController::class, 'createEventoToAttendance']);
-    Route::post('delete/{id}',                  [EventsController::class, 'destroy']);
-    Route::put('update-obs/{id}',               [EventsController::class, 'updateObservation']);
+    // eventos sra dianita & Fernando Somocursio*** v2
+    Route::post('reserve-room',                 [RoomController::class, 'store']);
+    Route::get('rooms',                         [RoomController::class, 'getByMonth']);
+    Route::patch('update-room-description/{id}',[RoomController::class, 'updateRoomDescription']);
+    Route::delete('delete-room/{id}',           [RoomController::class, 'destroy']);
+
+
+    // Route::post('to-attendance/{id}',           [AttendanceController::class, 'createEventoToAttendance']);
+    // Route::post('delete/{id}',                  [EventsController::class, 'destroy']);
+    // Route::put('update-obs/{id}',               [EventsController::class, 'updateObservation']);
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {

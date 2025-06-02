@@ -79,7 +79,15 @@ class FairController extends Controller
                     ? mb_substr(strip_tags($item->msgSendEmail), 0, 200) . '...'
                     : strip_tags($item->msgSendEmail))
                 : null,
-
+            'image' => $item->image ? [
+                'id'   => $item->image->id ?? null,
+                'name' => $item->image->name ?? null,
+                'url'  => $item->image->url ? url($item->image->url) : null,
+            ] : [
+                'id'   => null,
+                'name' => null,
+                'url'  => null,
+            ],
         ];
     }
 
@@ -113,7 +121,6 @@ class FairController extends Controller
                 'message' => 'Feria creada con éxito',
                 'status' => 200
             ], 201);
-
         } catch (\Exception $e) {
             Log::error('Error al crear feria: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
@@ -124,40 +131,8 @@ class FairController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-        // $user_role = getUserRole();
-
-
-        // $user_role = getUserRole();
-        // $user_id = $user_role['user_id'];
-
-        // $data = $request->all();
-
-        // $slug = Str::slug($data['title']);
-
-        // $originalSlug = $slug;
-
-        // $count = 1;
-
-        // while (Fair::where('slug', $slug)->exists()) {
-        //     $slug = $originalSlug . '-' . $count;
-        //     $count++;
-        // }
-
-        // $data['slug'] = $slug;
-        // $data['user_id'] = $user_id;
-
-        // Fair::create($data);
-
-        // return response()->json(['message' => 'Feria creada con éxito', 'status' => 200]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     public function show($slug)
     {
@@ -184,56 +159,45 @@ class FairController extends Controller
         return response()->json(['message' => 'Feria no encontrada.', 'status' => 400]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        $user_role = getUserRole();
+        try {
+            $user_role = getUserRole();
+            $role_array = $user_role['role_id'];
 
-        $role_array = $user_role['role_id'];
+            // Validar roles autorizados
+            // if (!in_array(5, $role_array) && !in_array(10, $role_array)) {
+            //     return response()->json(['message' => 'Sin acceso', 'status' => 403], 403);
+            // }
 
-        if (
-            in_array(5, $role_array) ||
-            in_array(10, $role_array)
-        ) {
             // Encuentra el registro por su ID
             $registro = Fair::findOrFail($id);
 
             // Toma todos los datos enviados en el request
             $data = $request->all();
 
-            // Solo regenerar el slug si el título fue actualizado
-            if (isset($data['title'])) {
-                $slug = Str::slug($data['title']);
-                $originalSlug = $slug;
-                $count = 1;
+            // Asegurarse de que el slug no se modifique aunque venga en el request
+            unset($data['slug']);
 
-                // Asegurarse de que el nuevo slug sea único
-                while (Fair::where('slug', $slug)->where('id', '!=', $id)->exists()) {
-                    $slug = $originalSlug . '-' . $count;
-                    $count++;
-                }
-
-                $data['slug'] = $slug;
+            // Si image_id NO está en los datos, lo quitamos del array para que no se actualice
+            if (array_key_exists('image_id', $data) && is_null($data['image_id'])) {
+                unset($data['image_id']);
             }
 
-            // Actualizar los datos, incluido el slug si fue modificado
+            // Actualiza el registro
             $registro->update($data);
 
             return response()->json(['message' => 'Registro actualizado con éxito', 'status' => 200]);
-        } else {
-            return response()->json(['message' => 'Sin acceso', 'status' => 500]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Registro no encontrado', 'status' => 404], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al actualizar el registro', 'error' => $e->getMessage(), 'status' => 500], 500);
         }
     }
+
+
+
 
     /**
      * Remove the specified resource from storage.
