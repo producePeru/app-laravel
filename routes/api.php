@@ -422,7 +422,7 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     // Route::put('observations/{id}',             [EventsController::class, 'observations']);
 
     // eventos sra dianita
-    Route::get('rooms',                         [EventsController::class, 'listRooms']);
+    // Route::get('rooms',                         [EventsController::class, 'listRooms']);
     Route::post('reserve-room',                 [EventsController::class, 'storeRoom']);
     Route::post('to-attendance/{id}',           [AttendanceController::class, 'createEventoToAttendance']);
     Route::post('delete/{id}',                  [EventsController::class, 'destroy']);
