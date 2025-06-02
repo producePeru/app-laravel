@@ -413,11 +413,11 @@ class FairController extends Controller
                 'sick' => $item->person->sick,
                 // 'user_country' => $item->person->pais->name,
                 'user_city' => $item->person->city->name,
-                'user_province' => $item->person->province->name,
-                'user_district' => $item->person->district->name,
+                'user_province' => $item->person->province->name ?? null,
+                'user_district' => $item->person->district->name ?? null,
                 'address' => $item->person->address,
-                'typedocument' => $item->person->typedocument->name,
-                'gender' => $item->person->gender->name,
+                'typedocument' => $item->person->typedocument->name ?? null,
+                'gender' => $item->person->gender->name ?? null,
 
 
 
