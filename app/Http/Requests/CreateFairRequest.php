@@ -29,6 +29,7 @@ class CreateFairRequest extends FormRequest
             'hours' => 'nullable|string|max:100',
             'msgEndForm' => 'nullable|string',
             'msgSendEmail' => 'nullable|string',
+            'image_id' => 'nullable|integer|exists:images,id',
         ];
     }
 }

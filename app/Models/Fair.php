@@ -27,6 +27,7 @@ class Fair extends Model
         'msgSendEmail',
         'created_by',
         'updated_by',
+        'image_id'
     ];
 
 
@@ -67,6 +68,11 @@ class Fair extends Model
         return $this->belongsTo(Modality::class, 'modality_id');
     }
 
+    public function image()
+    {
+        return $this->belongsTo(Image::class, 'image_id');
+    }
+
 
     // SCOPE SEARCH
     public function scopeSearch($query, $search)
@@ -93,7 +99,8 @@ class Fair extends Model
         $query = $query->with([
             'modality',
             'region',
-            'fairType'
+            'fairType',
+            'image',
             ]);
 
 
