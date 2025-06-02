@@ -335,6 +335,8 @@ class FairController extends Controller
             return response()->json(['message' => 'Fair not found'], 404);
         }
 
+        return "hello";
+
         $query = FairPostulate::with([
             'fair',
             'mype',
