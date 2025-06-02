@@ -411,7 +411,7 @@ class FairController extends Controller
                 'email' => $item->person->email,
                 'birthdate' => $item->person->birthday,
                 'sick' => $item->person->sick,
-                'user_country' => $item->person->pais->name,
+                // 'user_country' => $item->person->pais->name,
                 'user_city' => $item->person->city->name,
                 'user_province' => $item->person->province->name,
                 'user_district' => $item->person->district->name,
