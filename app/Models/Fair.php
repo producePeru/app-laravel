@@ -21,6 +21,7 @@ class Fair extends Model
         'endDate',
         'metaMypes',
         'city_id',
+        'fecha',
         'place',
         'hours',
         'msgEndForm',

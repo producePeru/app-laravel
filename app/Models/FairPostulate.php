@@ -19,6 +19,7 @@ class FairPostulate extends Model
         'fair_id',
         'mype_id',
         'person_id',
+        'invitado_id',          //
         'ruc',
         'dni',
         'email',
@@ -26,7 +27,10 @@ class FairPostulate extends Model
         'nameService',
         'hasParticipatedFair',
         'nameFair',
-        'propagandamedia_id'
+        'propagandamedia_id',
+        'positionUser1',
+        'positionUser2',
+        'howKnowEvent_id'
     ];
 
     public function mype()

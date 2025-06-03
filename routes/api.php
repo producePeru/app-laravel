@@ -96,7 +96,10 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
     Route::post('valorization-notary',          [QRNotaryController::class, 'store']);              // VALORIZACION DE NOTARIOS
 
-    Route::post('register-participant-ugo',     [EventsUgoController::class, 'participantsUgoEvent']);              // VALORIZACION DE NOTARIOS
+    Route::post('register-participant-ugo',     [EventsUgoController::class, 'participantsUgoEvent']);              // VUETIFY FORM UGO
+
+    Route::post('register-participant-ugse',    [EventsUgoController::class, 'participantsUgoEvent']);              // VUETIFY FORM UGSE EventsUgseController
+
 
 });
 

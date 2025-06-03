@@ -153,6 +153,11 @@ class FairController extends Controller
                 'description' => $fair->description,
                 'modality' => $fair->modality,
                 'typeFair' => $fair->fairtype_id,
+
+                'fecha' => $fair->fecha,
+                'place' => $fair->place,
+                'schedule' => $fair->hours,
+
             ], 'status' => 200]);
         }
 

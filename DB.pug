@@ -305,17 +305,17 @@ CREATE TABLE images (
     url TEXT NOT NULL,
     mime_type VARCHAR(100) NOT NULL,
     size BIGINT UNSIGNED NOT NULL,
-    //- from_origin VARCHAR(50) NOT NULL,
-    //- id_origin BIGINT UNSIGNED NULL,
+    from_origin VARCHAR(50) NOT NULL,
+    id_origin BIGINT UNSIGNED NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 
 
-ALTER TABLE fairs
-ADD COLUMN image_id BIGINT UNSIGNED AFTER msgSendEmail,
-ADD CONSTRAINT fk_fairs_image_id FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE SET NULL;
+//- ALTER TABLE fairs
+//- ADD COLUMN image_id BIGINT UNSIGNED AFTER msgSendEmail,
+//- ADD CONSTRAINT fk_fairs_image_id FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE SET NULL;
 
 
 
