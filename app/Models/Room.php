@@ -22,10 +22,27 @@ class Room extends Model
         'updated_by'
     ];
 
+    protected $appends = ['profile'];
+
     protected $dates = ['inicio', 'fin', 'deleted_at'];
 
-    public function profile()
+    public function creator()
     {
-        return $this->belongsTo(Profile::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function getProfileAttribute()
+    {
+        $profile = $this->creator->profile ?? null;
+
+        if (!$profile) return null;
+
+        return [
+            'id' => $profile->id,
+            'name' => $profile->name,
+            'lastname' => $profile->lastname,
+            'middlename' => $profile->middlename,
+            'user_id' => $profile->user_id,
+        ];
     }
 }

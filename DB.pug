@@ -57,9 +57,7 @@ php artisan make:controller Restrict/RestrictIpController --api
 
 
 
-//- ALTER TABLE people
-//- ADD COLUMN updated_by BIGINT UNSIGNED NULL AFTER gender_id,
-//- ADD CONSTRAINT fk_updated_by FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL;
+
 
 
 //- CREATE TABLE pnteSoft (
@@ -362,3 +360,22 @@ CREATE TABLE eventsugopostulate (
     CONSTRAINT fk_eventsugo_businessman FOREIGN KEY (id_businessman) REFERENCES people(id) ON DELETE SET NULL,
     CONSTRAINT fk_eventsugo_form FOREIGN KEY (id_form) REFERENCES attendancelist(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+//- AZ#j12Jav38E                    outlook
+
+
+
+
+
+
+
+//- ALTER TABLE fairpostulate
+//- ADD COLUMN invitado_id BIGINT UNSIGNED NULL AFTER person_id,
+//- ADD CONSTRAINT fk_invitado_id FOREIGN KEY (invitado_id) REFERENCES people(id) ON DELETE SET NULL;
+
+
+//- ALTER TABLE fairpostulate
+//- ADD COLUMN positionUser1 VARCHAR(100) NULL AFTER propagandamedia_id,
+//- ADD COLUMN positionUser2 VARCHAR(100) NULL AFTER positionUser1;

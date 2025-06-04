@@ -18,8 +18,8 @@ class FairPostulate extends Model
     protected $fillable = [
         'fair_id',
         'mype_id',
-        'person_id',
-        'invitado_id',          //
+        'person_id',            // representante de la empresa
+        'invitado_id',          // persona invitado
         'ruc',
         'dni',
         'email',
@@ -28,8 +28,8 @@ class FairPostulate extends Model
         'hasParticipatedFair',
         'nameFair',
         'propagandamedia_id',
-        'positionUser1',
-        'positionUser2',
+        'positionUser1',        // cargo representante de la empresa
+        'positionUser2',        // cargo invitado
         'howKnowEvent_id'
     ];
 

@@ -70,7 +70,7 @@ class RoomController extends Controller
         $startOfMonth = now()->setDate($validated['year'], $validated['month'], 1)->startOfMonth();
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
-        $events = Room::with('profile:id,name,lastname,middlename')->whereBetween('inicio', [$startOfMonth, $endOfMonth])->get();
+        $events = Room::with('creator')->whereBetween('inicio', [$startOfMonth, $endOfMonth])->get();
 
         return response()->json($events);
     }

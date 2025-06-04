@@ -5,6 +5,7 @@ use App\Http\Controllers\Agreement\AgreementController;
 use App\Http\Controllers\Agreement\CommitmentsController;
 use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\Attendance\EventsUgoController;
+use App\Http\Controllers\Attendance\EventsUgseController;
 use App\Http\Controllers\User\TokenController;
 // use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
@@ -98,7 +99,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
     Route::post('register-participant-ugo',     [EventsUgoController::class, 'participantsUgoEvent']);              // VUETIFY FORM UGO
 
-    Route::post('register-participant-ugse',    [EventsUgoController::class, 'participantsUgoEvent']);              // VUETIFY FORM UGSE EventsUgseController
+    Route::post('register-participant-ugse',    [EventsUgseController::class, 'store']);              // VUETIFY FORM UGSE EventsUgseController
 
 
 });
@@ -444,7 +445,7 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
     Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
     Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);
-    Route::post('/send-emails',         [EmailSendController::class, 'sendEmails']);            // nuevo desde home-25
+    Route::post('/send-emails',         [EmailSendController::class, 'sendEmails']);            // nuevo desde home-2025
 });
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
