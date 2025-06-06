@@ -12,6 +12,17 @@ class AttendanceList extends Model
     protected $table = 'attendancelist_users';
 
     protected $fillable = [
+        'ruc',
+        'comercialName',
+        'socialReason',
+        'economicsector_id',
+        'comercialactivity_id',
+        'category_id',
+        'city_id',
+
+        'howKnowEvent_id',
+        'slug',
+
         'typedocument_id',
         'documentnumber',
         'name',
@@ -21,10 +32,7 @@ class AttendanceList extends Model
         'sick',
         'email',
         'phone',
-        'ruc',
-        'socialReason',
-        'economicsector_id',
-        // 'comercialactivity_id',
+
         'comercialActivity',
         'attendancelist_id'
     ];

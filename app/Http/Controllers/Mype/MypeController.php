@@ -277,7 +277,10 @@ class MypeController extends Controller
                     'instagram' => $mype->instagram ?? null,
                     'description' => $mype->description ?? null,
                     'address' => $mype->address ?? null,
-                    'mype' => $mype
+                    'economicsector_id' => $mype->economicsector_id ?? null,
+                    'category_id' => $mype->category_id ?? null,
+                    'comercialactivity_id' => $mype->comercialactivity_id ?? null,
+                    'city_id' => $mype->city_id ?? null
                 ]
             ]);
         }

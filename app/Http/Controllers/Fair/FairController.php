@@ -64,6 +64,7 @@ class FairController extends Controller
             'dateEndFormat' => $item->endDate ? Carbon::parse($item->endDate)->format('d/m/Y') : null,
             'metaMypes' => $item->metaMypes ?? null,
             'city_id' => $item->region->id ?? null,
+            'fecha' => $item->fecha ?? null,
             'city_name' => $item->region->name ?? null,
             'place' => $item->place ?? null,
             'hours' => $item->hours ?? null,

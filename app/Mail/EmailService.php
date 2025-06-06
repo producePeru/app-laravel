@@ -24,7 +24,7 @@ class EmailService extends Mailable implements ShouldQueue
     }
 
     /**
-     * Build the message.           // desde el VUEXV...................                  ->view('emails.sed')
+     * Build the message.           // desde el VUEXV...................                  ->view('emails.sed   pp03')
      *
      * @return $this
      */

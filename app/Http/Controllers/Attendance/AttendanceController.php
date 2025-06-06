@@ -74,6 +74,8 @@ class AttendanceController extends Controller
 				'district' => $item->distrito->name,
 				'city_id' => $item->region->id,
 				'address' => $item->address ?? null,
+                'fecha' => $item->fecha ?? null,
+                'hora' => $item->hora ?? null,
 				'province_id' => $item->provincia->id,
 				'district_id' => $item->distrito->id,
 				'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
@@ -242,6 +244,9 @@ class AttendanceController extends Controller
 			return response()->json(['data' => [
 				'slug' => $attendance->slug,
 				'title' => $attendance->title,
+                'address' => $attendance->address ?? null,
+                'fecha' => $attendance->fecha ?? null,
+                'hora' => $attendance->hora ?? null,
 				// 'subTitle' => $attendance->subTitle,
 				// 'description' => $attendance->description,
 				// 'modality' => $attendance->modality
@@ -270,6 +275,7 @@ class AttendanceController extends Controller
 			}
 
 			$user = new AttendanceList();
+
 			$user->typedocument_id = $request->typedocument_id;
 			$user->documentnumber = $request->documentnumber;
 			$user->name = $request->name;
@@ -279,9 +285,16 @@ class AttendanceController extends Controller
 			$user->sick = $request->sick;
 			$user->email = $request->email;
 			$user->phone = $request->phone;
+
 			$user->ruc = $request->ruc;
+            $user->comercialName = $request->comercialName ?? null;
 			$user->socialReason = $request->socialReason;
 			$user->economicsector_id = $request->economicsector_id;
+            $user->comercialactivity_id = $request->comercialactivity_id ?? null;
+            $user->category_id = $request->category_id ?? null;
+            $user->city_id = $request->city_id ?? null;
+            $user->slug = $request->slug ?? null;
+            $user->howKnowEvent_id = $request->howKnowEvent_id ?? null;
 			$user->comercialactivity = $request->comercialactivity;
 			$user->attendancelist_id = $attendancelist_id;
 			$user->save();

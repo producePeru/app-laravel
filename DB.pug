@@ -270,19 +270,20 @@ VALUES
   ('400');
 
 
-CREATE TABLE propagandaMedia  (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+//- CREATE TABLE propagandaMedia  (
+//-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//-     name VARCHAR(50) NOT NULL,
+//-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+//- );
 
-INSERT INTO propagandaMedia (name)
-VALUES
-  ('Faceboook'),
-  ('Aviso'),
-  ('Correo'),
-  ('Mensaje de texto');
+//- INSERT INTO propagandaMedia (name)
+//- VALUES
+//-   ('CENTRO DE DESARROLLO (CDE)'),
+//-   ('CAPACITACIONES'),
+//-   ('FACEBOOK'),
+//-   ('INSTAGRAM'),
+//-   ('GRUPOS DE WHATSAPP')
 
 
 
@@ -363,7 +364,7 @@ CREATE TABLE eventsugopostulate (
 
 
 
-//- AZ#j12Jav38E                    outlook
+//- AZ#j12Jav38E                    outlook                                     QZL8Q-93QUV-BXYF7-DH6U3-ZPKU7
 
 
 
@@ -379,3 +380,23 @@ CREATE TABLE eventsugopostulate (
 //- ALTER TABLE fairpostulate
 //- ADD COLUMN positionUser1 VARCHAR(100) NULL AFTER propagandamedia_id,
 //- ADD COLUMN positionUser2 VARCHAR(100) NULL AFTER positionUser1;
+
+
+
+
+********************* aqui se hace un hito
+en mysql crea una tabla llamada ugseApplicants
+con los siguientes valores
+
+id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+
+
+ALTER TABLE attendancelist_users
+  ADD COLUMN category_id BIGINT UNSIGNED NULL AFTER comercialactivity_id,
+  ADD COLUMN city_id BIGINT UNSIGNED NULL AFTER category_id;
+
+
+ALTER TABLE attendancelist_users
+  ADD COLUMN howKnowEvent_id BIGINT UNSIGNED NULL AFTER city_id,
+  ADD COLUMN slug VARCHAR(255) NULL AFTER howKnowEvent_id,

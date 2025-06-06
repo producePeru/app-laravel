@@ -444,7 +444,7 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
     Route::post('send-certificates',    [CertificadoPDFController::class, 'sendEmailWithCertificates']);
 
     Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
-    Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);
+    Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);        // luchooo
     Route::post('/send-emails',         [EmailSendController::class, 'sendEmails']);            // nuevo desde home-2025
 });
 

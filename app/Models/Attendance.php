@@ -25,6 +25,8 @@ class Attendance extends Model
         'province_id',
         'district_id',
         'address',
+        'fecha',
+        'hora',
         'user_id',
         'people_id',
         'description',
