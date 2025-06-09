@@ -119,7 +119,7 @@ class PersonController extends Controller
                 'name' => 'required|string',
                 'country_id' => 'required',
                 'phone' => 'nullable|string',
-                'email' => 'nullable|email|unique:people',
+                'email' => 'nullable|email',
                 'birthday' => 'nullable|date',
                 'sick' => 'nullable|in:yes,no',
                 'facebook' => 'nullable|string',

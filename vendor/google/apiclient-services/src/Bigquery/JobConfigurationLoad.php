@@ -53,6 +53,14 @@ class JobConfigurationLoad extends \Google\Collection
    */
   public $createSession;
   /**
+   * @var string
+   */
+  public $dateFormat;
+  /**
+   * @var string
+   */
+  public $datetimeFormat;
+  /**
    * @var string[]
    */
   public $decimalTargetTypes;
@@ -92,6 +100,10 @@ class JobConfigurationLoad extends \Google\Collection
    * @var string
    */
   public $nullMarker;
+  /**
+   * @var string[]
+   */
+  public $nullMarkers;
   protected $parquetOptionsType = ParquetOptions::class;
   protected $parquetOptionsDataType = '';
   /**
@@ -133,13 +145,29 @@ class JobConfigurationLoad extends \Google\Collection
   /**
    * @var string
    */
+  public $sourceColumnMatch;
+  /**
+   * @var string
+   */
   public $sourceFormat;
   /**
    * @var string[]
    */
   public $sourceUris;
+  /**
+   * @var string
+   */
+  public $timeFormat;
   protected $timePartitioningType = TimePartitioning::class;
   protected $timePartitioningDataType = '';
+  /**
+   * @var string
+   */
+  public $timeZone;
+  /**
+   * @var string
+   */
+  public $timestampFormat;
   /**
    * @var bool
    */
@@ -274,6 +302,34 @@ class JobConfigurationLoad extends \Google\Collection
   public function getCreateSession()
   {
     return $this->createSession;
+  }
+  /**
+   * @param string
+   */
+  public function setDateFormat($dateFormat)
+  {
+    $this->dateFormat = $dateFormat;
+  }
+  /**
+   * @return string
+   */
+  public function getDateFormat()
+  {
+    return $this->dateFormat;
+  }
+  /**
+   * @param string
+   */
+  public function setDatetimeFormat($datetimeFormat)
+  {
+    $this->datetimeFormat = $datetimeFormat;
+  }
+  /**
+   * @return string
+   */
+  public function getDatetimeFormat()
+  {
+    return $this->datetimeFormat;
   }
   /**
    * @param string[]
@@ -444,6 +500,20 @@ class JobConfigurationLoad extends \Google\Collection
     return $this->nullMarker;
   }
   /**
+   * @param string[]
+   */
+  public function setNullMarkers($nullMarkers)
+  {
+    $this->nullMarkers = $nullMarkers;
+  }
+  /**
+   * @return string[]
+   */
+  public function getNullMarkers()
+  {
+    return $this->nullMarkers;
+  }
+  /**
    * @param ParquetOptions
    */
   public function setParquetOptions(ParquetOptions $parquetOptions)
@@ -600,6 +670,20 @@ class JobConfigurationLoad extends \Google\Collection
   /**
    * @param string
    */
+  public function setSourceColumnMatch($sourceColumnMatch)
+  {
+    $this->sourceColumnMatch = $sourceColumnMatch;
+  }
+  /**
+   * @return string
+   */
+  public function getSourceColumnMatch()
+  {
+    return $this->sourceColumnMatch;
+  }
+  /**
+   * @param string
+   */
   public function setSourceFormat($sourceFormat)
   {
     $this->sourceFormat = $sourceFormat;
@@ -626,6 +710,20 @@ class JobConfigurationLoad extends \Google\Collection
     return $this->sourceUris;
   }
   /**
+   * @param string
+   */
+  public function setTimeFormat($timeFormat)
+  {
+    $this->timeFormat = $timeFormat;
+  }
+  /**
+   * @return string
+   */
+  public function getTimeFormat()
+  {
+    return $this->timeFormat;
+  }
+  /**
    * @param TimePartitioning
    */
   public function setTimePartitioning(TimePartitioning $timePartitioning)
@@ -638,6 +736,34 @@ class JobConfigurationLoad extends \Google\Collection
   public function getTimePartitioning()
   {
     return $this->timePartitioning;
+  }
+  /**
+   * @param string
+   */
+  public function setTimeZone($timeZone)
+  {
+    $this->timeZone = $timeZone;
+  }
+  /**
+   * @return string
+   */
+  public function getTimeZone()
+  {
+    return $this->timeZone;
+  }
+  /**
+   * @param string
+   */
+  public function setTimestampFormat($timestampFormat)
+  {
+    $this->timestampFormat = $timestampFormat;
+  }
+  /**
+   * @return string
+   */
+  public function getTimestampFormat()
+  {
+    return $this->timestampFormat;
   }
   /**
    * @param bool

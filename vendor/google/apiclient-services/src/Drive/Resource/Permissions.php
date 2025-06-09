@@ -41,6 +41,8 @@ class Permissions extends \Google\Service\Resource
    *
    * @opt_param string emailMessage A plain text custom message to include in the
    * notification email.
+   * @opt_param bool enforceExpansiveAccess Whether the request should enforce
+   * expansive access rules.
    * @opt_param bool enforceSingleParent Deprecated: See `moveToNewOwnersRoot` for
    * details.
    * @opt_param bool moveToNewOwnersRoot This parameter will only take effect if
@@ -81,6 +83,8 @@ class Permissions extends \Google\Service\Resource
    * @param string $permissionId The ID of the permission.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param bool enforceExpansiveAccess Whether the request should enforce
+   * expansive access rules.
    * @opt_param bool supportsAllDrives Whether the requesting application supports
    * both My Drives and shared drives.
    * @opt_param bool supportsTeamDrives Deprecated: Use `supportsAllDrives`
@@ -163,6 +167,8 @@ class Permissions extends \Google\Service\Resource
    * @param Permission $postBody
    * @param array $optParams Optional parameters.
    *
+   * @opt_param bool enforceExpansiveAccess Whether the request should enforce
+   * expansive access rules.
    * @opt_param bool removeExpiration Whether to remove the expiration date.
    * @opt_param bool supportsAllDrives Whether the requesting application supports
    * both My Drives and shared drives.

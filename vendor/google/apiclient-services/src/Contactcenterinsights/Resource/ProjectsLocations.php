@@ -17,6 +17,7 @@
 
 namespace Google\Service\Contactcenterinsights\Resource;
 
+use Google\Service\Contactcenterinsights\GoogleCloudContactcenterinsightsV1BulkDeleteFeedbackLabelsRequest;
 use Google\Service\Contactcenterinsights\GoogleCloudContactcenterinsightsV1BulkDownloadFeedbackLabelsRequest;
 use Google\Service\Contactcenterinsights\GoogleCloudContactcenterinsightsV1BulkUploadFeedbackLabelsRequest;
 use Google\Service\Contactcenterinsights\GoogleCloudContactcenterinsightsV1EncryptionSpec;
@@ -36,7 +37,25 @@ use Google\Service\Contactcenterinsights\GoogleLongrunningOperation;
 class ProjectsLocations extends \Google\Service\Resource
 {
   /**
-   * Download feedback labels in bulk. (locations.bulkDownloadFeedbackLabels)
+   * Delete feedback labels in bulk using a filter.
+   * (locations.bulkDeleteFeedbackLabels)
+   *
+   * @param string $parent Required. The parent resource for new feedback labels.
+   * @param GoogleCloudContactcenterinsightsV1BulkDeleteFeedbackLabelsRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return GoogleLongrunningOperation
+   * @throws \Google\Service\Exception
+   */
+  public function bulkDeleteFeedbackLabels($parent, GoogleCloudContactcenterinsightsV1BulkDeleteFeedbackLabelsRequest $postBody, $optParams = [])
+  {
+    $params = ['parent' => $parent, 'postBody' => $postBody];
+    $params = array_merge($params, $optParams);
+    return $this->call('bulkDeleteFeedbackLabels', [$params], GoogleLongrunningOperation::class);
+  }
+  /**
+   * Download feedback labels in bulk from an external source. Currently supports
+   * exporting Quality AI example conversations with transcripts and question
+   * bodies. (locations.bulkDownloadFeedbackLabels)
    *
    * @param string $parent Required. The parent resource for new feedback labels.
    * @param GoogleCloudContactcenterinsightsV1BulkDownloadFeedbackLabelsRequest $postBody
@@ -51,7 +70,9 @@ class ProjectsLocations extends \Google\Service\Resource
     return $this->call('bulkDownloadFeedbackLabels', [$params], GoogleLongrunningOperation::class);
   }
   /**
-   * Upload feedback labels in bulk. (locations.bulkUploadFeedbackLabels)
+   * Upload feedback labels from an external source in bulk. Currently supports
+   * labeling Quality AI example conversations.
+   * (locations.bulkUploadFeedbackLabels)
    *
    * @param string $parent Required. The parent resource for new feedback labels.
    * @param GoogleCloudContactcenterinsightsV1BulkUploadFeedbackLabelsRequest $postBody

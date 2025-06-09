@@ -20,6 +20,10 @@ namespace Google\Service\AnalyticsHub;
 class Listing extends \Google\Collection
 {
   protected $collection_key = 'categories';
+  /**
+   * @var bool
+   */
+  public $allowOnlyMetadataSharing;
   protected $bigqueryDatasetType = BigQueryDatasetSource::class;
   protected $bigqueryDatasetDataType = '';
   /**
@@ -51,6 +55,10 @@ class Listing extends \Google\Collection
    */
   public $icon;
   /**
+   * @var bool
+   */
+  public $logLinkedDatasetQueryUserEmail;
+  /**
    * @var string
    */
   public $name;
@@ -77,6 +85,20 @@ class Listing extends \Google\Collection
    */
   public $state;
 
+  /**
+   * @param bool
+   */
+  public function setAllowOnlyMetadataSharing($allowOnlyMetadataSharing)
+  {
+    $this->allowOnlyMetadataSharing = $allowOnlyMetadataSharing;
+  }
+  /**
+   * @return bool
+   */
+  public function getAllowOnlyMetadataSharing()
+  {
+    return $this->allowOnlyMetadataSharing;
+  }
   /**
    * @param BigQueryDatasetSource
    */
@@ -202,6 +224,20 @@ class Listing extends \Google\Collection
   public function getIcon()
   {
     return $this->icon;
+  }
+  /**
+   * @param bool
+   */
+  public function setLogLinkedDatasetQueryUserEmail($logLinkedDatasetQueryUserEmail)
+  {
+    $this->logLinkedDatasetQueryUserEmail = $logLinkedDatasetQueryUserEmail;
+  }
+  /**
+   * @return bool
+   */
+  public function getLogLinkedDatasetQueryUserEmail()
+  {
+    return $this->logLinkedDatasetQueryUserEmail;
   }
   /**
    * @param string

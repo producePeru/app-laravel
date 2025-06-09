@@ -46,6 +46,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata extends \Goo
    * @var string
    */
   public $expectedState;
+  protected $gcbdrConfigurationType = StorageDatabasecenterPartnerapiV1mainGCBDRConfiguration::class;
+  protected $gcbdrConfigurationDataType = '';
   protected $idType = StorageDatabasecenterPartnerapiV1mainDatabaseResourceId::class;
   protected $idDataType = '';
   /**
@@ -74,6 +76,10 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata extends \Goo
    * @var string
    */
   public $resourceName;
+  /**
+   * @var string
+   */
+  public $suspensionReason;
   protected $tagsSetType = StorageDatabasecenterPartnerapiV1mainTags::class;
   protected $tagsSetDataType = '';
   /**
@@ -210,6 +216,20 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata extends \Goo
     return $this->expectedState;
   }
   /**
+   * @param StorageDatabasecenterPartnerapiV1mainGCBDRConfiguration
+   */
+  public function setGcbdrConfiguration(StorageDatabasecenterPartnerapiV1mainGCBDRConfiguration $gcbdrConfiguration)
+  {
+    $this->gcbdrConfiguration = $gcbdrConfiguration;
+  }
+  /**
+   * @return StorageDatabasecenterPartnerapiV1mainGCBDRConfiguration
+   */
+  public function getGcbdrConfiguration()
+  {
+    return $this->gcbdrConfiguration;
+  }
+  /**
    * @param StorageDatabasecenterPartnerapiV1mainDatabaseResourceId
    */
   public function setId(StorageDatabasecenterPartnerapiV1mainDatabaseResourceId $id)
@@ -334,6 +354,20 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata extends \Goo
   public function getResourceName()
   {
     return $this->resourceName;
+  }
+  /**
+   * @param string
+   */
+  public function setSuspensionReason($suspensionReason)
+  {
+    $this->suspensionReason = $suspensionReason;
+  }
+  /**
+   * @return string
+   */
+  public function getSuspensionReason()
+  {
+    return $this->suspensionReason;
   }
   /**
    * @param StorageDatabasecenterPartnerapiV1mainTags

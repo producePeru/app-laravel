@@ -19,6 +19,8 @@ namespace Google\Service\Aiplatform;
 
 class GoogleCloudAiplatformV1EvaluateInstancesRequest extends \Google\Model
 {
+  protected $autoraterConfigType = GoogleCloudAiplatformV1AutoraterConfig::class;
+  protected $autoraterConfigDataType = '';
   protected $bleuInputType = GoogleCloudAiplatformV1BleuInput::class;
   protected $bleuInputDataType = '';
   protected $coherenceInputType = GoogleCloudAiplatformV1CoherenceInput::class;
@@ -53,6 +55,8 @@ class GoogleCloudAiplatformV1EvaluateInstancesRequest extends \Google\Model
   protected $questionAnsweringRelevanceInputDataType = '';
   protected $rougeInputType = GoogleCloudAiplatformV1RougeInput::class;
   protected $rougeInputDataType = '';
+  protected $rubricBasedInstructionFollowingInputType = GoogleCloudAiplatformV1RubricBasedInstructionFollowingInput::class;
+  protected $rubricBasedInstructionFollowingInputDataType = '';
   protected $safetyInputType = GoogleCloudAiplatformV1SafetyInput::class;
   protected $safetyInputDataType = '';
   protected $summarizationHelpfulnessInputType = GoogleCloudAiplatformV1SummarizationHelpfulnessInput::class;
@@ -82,6 +86,20 @@ class GoogleCloudAiplatformV1EvaluateInstancesRequest extends \Google\Model
   protected $trajectorySingleToolUseInputType = GoogleCloudAiplatformV1TrajectorySingleToolUseInput::class;
   protected $trajectorySingleToolUseInputDataType = '';
 
+  /**
+   * @param GoogleCloudAiplatformV1AutoraterConfig
+   */
+  public function setAutoraterConfig(GoogleCloudAiplatformV1AutoraterConfig $autoraterConfig)
+  {
+    $this->autoraterConfig = $autoraterConfig;
+  }
+  /**
+   * @return GoogleCloudAiplatformV1AutoraterConfig
+   */
+  public function getAutoraterConfig()
+  {
+    return $this->autoraterConfig;
+  }
   /**
    * @param GoogleCloudAiplatformV1BleuInput
    */
@@ -319,6 +337,20 @@ class GoogleCloudAiplatformV1EvaluateInstancesRequest extends \Google\Model
   public function getRougeInput()
   {
     return $this->rougeInput;
+  }
+  /**
+   * @param GoogleCloudAiplatformV1RubricBasedInstructionFollowingInput
+   */
+  public function setRubricBasedInstructionFollowingInput(GoogleCloudAiplatformV1RubricBasedInstructionFollowingInput $rubricBasedInstructionFollowingInput)
+  {
+    $this->rubricBasedInstructionFollowingInput = $rubricBasedInstructionFollowingInput;
+  }
+  /**
+   * @return GoogleCloudAiplatformV1RubricBasedInstructionFollowingInput
+   */
+  public function getRubricBasedInstructionFollowingInput()
+  {
+    return $this->rubricBasedInstructionFollowingInput;
   }
   /**
    * @param GoogleCloudAiplatformV1SafetyInput

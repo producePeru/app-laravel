@@ -22,6 +22,8 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
   protected $collection_key = 'processes';
   protected $accessType = GoogleCloudSecuritycenterV2Access::class;
   protected $accessDataType = '';
+  protected $affectedResourcesType = GoogleCloudSecuritycenterV2AffectedResources::class;
+  protected $affectedResourcesDataType = '';
   protected $applicationType = GoogleCloudSecuritycenterV2Application::class;
   protected $applicationDataType = '';
   protected $attackExposureType = GoogleCloudSecuritycenterV2AttackExposure::class;
@@ -36,6 +38,8 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
    * @var string
    */
   public $category;
+  protected $chokepointType = GoogleCloudSecuritycenterV2Chokepoint::class;
+  protected $chokepointDataType = '';
   protected $cloudArmorType = GoogleCloudSecuritycenterV2CloudArmor::class;
   protected $cloudArmorDataType = '';
   protected $cloudDlpDataProfileType = GoogleCloudSecuritycenterV2CloudDlpDataProfile::class;
@@ -92,6 +96,10 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
   protected $iamBindingsDataType = 'array';
   protected $indicatorType = GoogleCloudSecuritycenterV2Indicator::class;
   protected $indicatorDataType = '';
+  protected $ipRulesType = GoogleCloudSecuritycenterV2IpRules::class;
+  protected $ipRulesDataType = '';
+  protected $jobType = GoogleCloudSecuritycenterV2Job::class;
+  protected $jobDataType = '';
   protected $kernelRootkitType = GoogleCloudSecuritycenterV2KernelRootkit::class;
   protected $kernelRootkitDataType = '';
   protected $kubernetesType = GoogleCloudSecuritycenterV2Kubernetes::class;
@@ -124,6 +132,8 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
    * @var string
    */
   public $name;
+  protected $networksType = GoogleCloudSecuritycenterV2Network::class;
+  protected $networksDataType = 'array';
   /**
    * @var string
    */
@@ -180,6 +190,20 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
   public function getAccess()
   {
     return $this->access;
+  }
+  /**
+   * @param GoogleCloudSecuritycenterV2AffectedResources
+   */
+  public function setAffectedResources(GoogleCloudSecuritycenterV2AffectedResources $affectedResources)
+  {
+    $this->affectedResources = $affectedResources;
+  }
+  /**
+   * @return GoogleCloudSecuritycenterV2AffectedResources
+   */
+  public function getAffectedResources()
+  {
+    return $this->affectedResources;
   }
   /**
    * @param GoogleCloudSecuritycenterV2Application
@@ -250,6 +274,20 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
   public function getCategory()
   {
     return $this->category;
+  }
+  /**
+   * @param GoogleCloudSecuritycenterV2Chokepoint
+   */
+  public function setChokepoint(GoogleCloudSecuritycenterV2Chokepoint $chokepoint)
+  {
+    $this->chokepoint = $chokepoint;
+  }
+  /**
+   * @return GoogleCloudSecuritycenterV2Chokepoint
+   */
+  public function getChokepoint()
+  {
+    return $this->chokepoint;
   }
   /**
    * @param GoogleCloudSecuritycenterV2CloudArmor
@@ -574,6 +612,34 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
     return $this->indicator;
   }
   /**
+   * @param GoogleCloudSecuritycenterV2IpRules
+   */
+  public function setIpRules(GoogleCloudSecuritycenterV2IpRules $ipRules)
+  {
+    $this->ipRules = $ipRules;
+  }
+  /**
+   * @return GoogleCloudSecuritycenterV2IpRules
+   */
+  public function getIpRules()
+  {
+    return $this->ipRules;
+  }
+  /**
+   * @param GoogleCloudSecuritycenterV2Job
+   */
+  public function setJob(GoogleCloudSecuritycenterV2Job $job)
+  {
+    $this->job = $job;
+  }
+  /**
+   * @return GoogleCloudSecuritycenterV2Job
+   */
+  public function getJob()
+  {
+    return $this->job;
+  }
+  /**
    * @param GoogleCloudSecuritycenterV2KernelRootkit
    */
   public function setKernelRootkit(GoogleCloudSecuritycenterV2KernelRootkit $kernelRootkit)
@@ -726,6 +792,20 @@ class GoogleCloudSecuritycenterV2Finding extends \Google\Collection
   public function getName()
   {
     return $this->name;
+  }
+  /**
+   * @param GoogleCloudSecuritycenterV2Network[]
+   */
+  public function setNetworks($networks)
+  {
+    $this->networks = $networks;
+  }
+  /**
+   * @return GoogleCloudSecuritycenterV2Network[]
+   */
+  public function getNetworks()
+  {
+    return $this->networks;
   }
   /**
    * @param string
