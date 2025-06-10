@@ -282,7 +282,7 @@ class AttendanceController extends Controller
             $user->lastname = $request->lastname;
             $user->middlename = $request->middlename;
             $user->gender_id = $request->gender_id;
-            $user->sick = $request->sick;
+            $user->sick = $request->sick ?? null;
             $user->email = $request->email;
             $user->phone = $request->phone;
 
@@ -354,7 +354,7 @@ class AttendanceController extends Controller
             ];
         });
 
-        return response()->json(['data' => $data, 'nameEvent' => $attendance->title]);
+        return response()->json(['data' => $data, 'nameEvent' => $attendance->title, 'typeEvent' => $attendance->eventsoffice_id]);
     }
 
     public function migrateEvents()

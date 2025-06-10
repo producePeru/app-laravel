@@ -34,7 +34,9 @@ class AttendanceList extends Model
         'phone',
 
         'comercialActivity',
-        'attendancelist_id'
+        'attendancelist_id',
+        'mercado',
+        'fecha'
     ];
 
     public function typedocument()

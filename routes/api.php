@@ -242,7 +242,11 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
 
     Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportAttendance']);
+
+
     Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
+    Route::get('attendance-mercado/{slug}',     [DownloadAttendanceController::class, 'exportFortaleceTuMercado']);         // lista de ventos ugo Fortalece tu Mercado
+
 
     // Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
 
@@ -263,7 +267,6 @@ Route::group(['prefix' => 'config', 'namespace' => 'App\Http\Controllers', 'midd
     Route::put('addressCde/{id}',               [CdeController::class, 'addressCde']);
     Route::put('cde/{id}',                      [CdeController::class, 'updateCde']);
     Route::post('cde',                          [CdeController::class, 'storeCde']);
-
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -380,7 +383,6 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('annual-sales', [SelectController::class, 'getAnnualSales']);
     Route::get('propaganda-media', [SelectController::class, 'getPropagandaMedia']);
     Route::get('fair-types', [SelectController::class, 'getFairTypes']);
-
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
@@ -431,7 +433,7 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     // eventos sra dianita & Fernando Somocursio*** v2
     Route::post('reserve-room',                 [RoomController::class, 'store']);
     Route::get('rooms',                         [RoomController::class, 'getByMonth']);
-    Route::patch('update-room-description/{id}',[RoomController::class, 'updateRoomDescription']);
+    Route::patch('update-room-description/{id}', [RoomController::class, 'updateRoomDescription']);
     Route::delete('delete-room/{id}',           [RoomController::class, 'destroy']);
 
 
@@ -536,5 +538,4 @@ Route::group(['prefix' => 'pp03', 'namespace' => 'App\Http\Controllers', 'middle
 Route::group(['prefix' => 'image', 'namespace' => 'App\Http\Controllers'], function () {
     Route::post('upload-image',                     [ImageController::class, 'upload']);
     Route::put('origin-image/{id}',                 [ImageController::class, 'setOriginImage']);
-
 });

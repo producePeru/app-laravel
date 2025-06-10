@@ -400,3 +400,8 @@ ALTER TABLE attendancelist_users
 ALTER TABLE attendancelist_users
   ADD COLUMN howKnowEvent_id BIGINT UNSIGNED NULL AFTER city_id,
   ADD COLUMN slug VARCHAR(255) NULL AFTER howKnowEvent_id,
+
+
+
+ALTER TABLE attendancelist_users
+MODIFY COLUMN sick ENUM('si', 'no') DEFAULT NULL;

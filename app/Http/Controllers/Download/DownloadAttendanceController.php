@@ -75,14 +75,12 @@ class DownloadAttendanceController extends Controller
             });
 
             return Excel::download(new AttendanceExport($items), 'eventos-pnte.xlsx');
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Ocurrio un error al generar el reporte.',
                 'error'   => $e->getMessage()
             ], 500);
         }
-
     }
 
 
@@ -109,7 +107,7 @@ class DownloadAttendanceController extends Controller
             // 'comercialactivity:id,name',
             'list'
         ])->where('attendancelist_id', $attendance->id)
-        ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc');
 
         $data = $query->get();
 
@@ -144,6 +142,82 @@ class DownloadAttendanceController extends Controller
         // return Excel::download(new AttendanceListSlugExport($result), 'attendance.xlsx');
 
         $templatePath = storage_path('app/plantillas/ugo_eventos_lista_registrados_template.xlsx');
+        $spreadsheet = IOFactory::load($templatePath);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $startRow = 2;
+        foreach ($result as $i => $resultRow) {
+            $col = 'A';
+            foreach ($resultRow as $value) {
+                $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
+                $col++;
+            }
+        }
+
+        return new StreamedResponse(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="lista-registrados.xlsx"',
+        ]);
+    }
+
+
+
+    public function exportFortaleceTuMercado($slug)
+    {
+
+        $attendance = Attendance::where('slug', $slug)->first();
+
+        if (!$attendance) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+
+        $asesor = People::find($attendance->people_id);
+        $region = City::find($attendance->city_id);
+        $province = Province::find($attendance->province_id);
+        $district = District::find($attendance->district_id);
+
+        $query = AttendanceList::with([
+            'typedocument:id,name',
+            'gender:id,name,avr',
+            'economicsector:id,name',
+            // 'comercialactivity:id,name',
+            'list'
+        ])->where('attendancelist_id', $attendance->id)
+            ->orderBy('created_at', 'desc');
+
+        $data = $query->get();
+
+        $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
+            return [
+                'index' => $index + 1,
+                'fechaCapacitacion' => $item->list->fecha,
+                'name' => $item->name,
+                'lastName' => $item->lastname,
+                'middleName' => $item->middlename,
+                'documentType' => $item->typedocument->name,
+                'numberDocument' => $item->documentnumber,
+                'gender' => $item->gender->avr,
+                'email' => $item->email,
+                'phone' => $item->phone,
+                'ruc' => $item->ruc ? $item->ruc : '-',
+                'region' => $region->name,
+                'provincia' => $province->name,
+                'distrito' => $district->name,
+                'comercialActivity' => $item->comercialName,            // rubro *
+                'tema' => $item->list->title,                                      // Tema de la capacitación *
+                'place' => $attendance->address ?? null,
+                'mercadoPertenece' => $item
+            ];
+        });
+
+        return $result;
+
+        // return Excel::download(new AttendanceListSlugExport($result), 'attendance.xlsx');
+
+        $templatePath = storage_path('app/plantillas/fortalece_tu_mercado_template.xlsx');
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
