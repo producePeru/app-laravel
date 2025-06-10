@@ -61,7 +61,7 @@ class UgsePostulante extends Model
 
     public function typedocument()
     {
-        return $this->belongsTo(TypeDocument::class);
+        return $this->belongsTo(Typedocument::class, 'typedocument_id');
     }
 
     public function gender()
