@@ -392,11 +392,15 @@ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
 
 
-ALTER TABLE attendancelist_users
-  ADD COLUMN category_id BIGINT UNSIGNED NULL AFTER comercialactivity_id,
-  ADD COLUMN city_id BIGINT UNSIGNED NULL AFTER category_id;
+//- ALTER TABLE attendancelist_users
+//-   ADD COLUMN category_id BIGINT UNSIGNED NULL AFTER comercialactivity_id,
+//-   ADD COLUMN city_id BIGINT UNSIGNED NULL AFTER category_id;
 
 
-ALTER TABLE attendancelist_users
-  ADD COLUMN howKnowEvent_id BIGINT UNSIGNED NULL AFTER city_id,
-  ADD COLUMN slug VARCHAR(255) NULL AFTER howKnowEvent_id,
+//- ALTER TABLE attendancelist_users
+//-   ADD COLUMN howKnowEvent_id BIGINT UNSIGNED NULL AFTER city_id,
+//-   ADD COLUMN slug VARCHAR(255) NULL AFTER howKnowEvent_id,
+
+
+ALTER TABLE ugo_postulantes
+MODIFY COLUMN sick ENUM('si', 'no') DEFAULT NULL;

@@ -4,15 +4,6 @@
 <head>
     <title>Programa Nacional Tu Empresa</title>
     <style>
-        .masive {
-            border: 1px solid #ffffff;
-            margin: 20px auto;
-            box-shadow: -1px 0px 10px #ccc;
-            max-width: 800px;
-            padding: 20px 40px;
-            border-radius: 10px;
-        }
-
         .masive br {
             display: none;
         }
@@ -24,7 +15,8 @@
 </head>
 
 <body>
-    <div class="masive">
+    <div
+        style="border: 1px solid #ffffff; margin: 20px auto; box-shadow: -1px 0px 10px #ccc; max-width: 800px; padding: 20px 40px; border-radius: 10px;">
         {!! $content !!}
     </div>
 </body>

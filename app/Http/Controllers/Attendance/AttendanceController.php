@@ -76,6 +76,7 @@ class AttendanceController extends Controller
 				'address' => $item->address ?? null,
                 'fecha' => $item->fecha ?? null,
                 'hora' => $item->hora ?? null,
+                'mercado' => $item->mercado ?? null,
 				'province_id' => $item->provincia->id,
 				'district_id' => $item->distrito->id,
 				'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
@@ -293,10 +294,11 @@ class AttendanceController extends Controller
             $user->comercialactivity_id = $request->comercialactivity_id ?? null;
             $user->category_id = $request->category_id ?? null;
             $user->city_id = $request->city_id ?? null;
-            $user->slug = $request->slug ?? null;
+            // $user->slug = $request->slug ?? null;
             $user->howKnowEvent_id = $request->howKnowEvent_id ?? null;
 			$user->comercialactivity = $request->comercialactivity;
 			$user->attendancelist_id = $attendancelist_id;
+            $user->mercado = $request->mercado ?? null;
 			$user->save();
 
 			return response()->json([

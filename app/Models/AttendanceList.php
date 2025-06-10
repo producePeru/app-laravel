@@ -9,7 +9,7 @@ class AttendanceList extends Model
 {
     use HasFactory;
 
-    protected $table = 'attendancelist_users';
+    protected $table = 'ugo_postulantes';
 
     protected $fillable = [
         'ruc',
@@ -32,6 +32,8 @@ class AttendanceList extends Model
         'sick',
         'email',
         'phone',
+
+        'mercado',
 
         'comercialActivity',
         'attendancelist_id'
