@@ -22,6 +22,8 @@ class Finding extends \Google\Collection
   protected $collection_key = 'processes';
   protected $accessType = Access::class;
   protected $accessDataType = '';
+  protected $affectedResourcesType = AffectedResources::class;
+  protected $affectedResourcesDataType = '';
   protected $applicationType = Application::class;
   protected $applicationDataType = '';
   protected $attackExposureType = AttackExposure::class;
@@ -36,6 +38,8 @@ class Finding extends \Google\Collection
    * @var string
    */
   public $category;
+  protected $chokepointType = Chokepoint::class;
+  protected $chokepointDataType = '';
   protected $cloudArmorType = CloudArmor::class;
   protected $cloudArmorDataType = '';
   protected $cloudDlpDataProfileType = CloudDlpDataProfile::class;
@@ -92,6 +96,10 @@ class Finding extends \Google\Collection
   protected $iamBindingsDataType = 'array';
   protected $indicatorType = Indicator::class;
   protected $indicatorDataType = '';
+  protected $ipRulesType = IpRules::class;
+  protected $ipRulesDataType = '';
+  protected $jobType = Job::class;
+  protected $jobDataType = '';
   protected $kernelRootkitType = KernelRootkit::class;
   protected $kernelRootkitDataType = '';
   protected $kubernetesType = Kubernetes::class;
@@ -124,6 +132,8 @@ class Finding extends \Google\Collection
    * @var string
    */
   public $name;
+  protected $networksType = Network::class;
+  protected $networksDataType = 'array';
   /**
    * @var string
    */
@@ -180,6 +190,20 @@ class Finding extends \Google\Collection
   public function getAccess()
   {
     return $this->access;
+  }
+  /**
+   * @param AffectedResources
+   */
+  public function setAffectedResources(AffectedResources $affectedResources)
+  {
+    $this->affectedResources = $affectedResources;
+  }
+  /**
+   * @return AffectedResources
+   */
+  public function getAffectedResources()
+  {
+    return $this->affectedResources;
   }
   /**
    * @param Application
@@ -250,6 +274,20 @@ class Finding extends \Google\Collection
   public function getCategory()
   {
     return $this->category;
+  }
+  /**
+   * @param Chokepoint
+   */
+  public function setChokepoint(Chokepoint $chokepoint)
+  {
+    $this->chokepoint = $chokepoint;
+  }
+  /**
+   * @return Chokepoint
+   */
+  public function getChokepoint()
+  {
+    return $this->chokepoint;
   }
   /**
    * @param CloudArmor
@@ -574,6 +612,34 @@ class Finding extends \Google\Collection
     return $this->indicator;
   }
   /**
+   * @param IpRules
+   */
+  public function setIpRules(IpRules $ipRules)
+  {
+    $this->ipRules = $ipRules;
+  }
+  /**
+   * @return IpRules
+   */
+  public function getIpRules()
+  {
+    return $this->ipRules;
+  }
+  /**
+   * @param Job
+   */
+  public function setJob(Job $job)
+  {
+    $this->job = $job;
+  }
+  /**
+   * @return Job
+   */
+  public function getJob()
+  {
+    return $this->job;
+  }
+  /**
    * @param KernelRootkit
    */
   public function setKernelRootkit(KernelRootkit $kernelRootkit)
@@ -726,6 +792,20 @@ class Finding extends \Google\Collection
   public function getName()
   {
     return $this->name;
+  }
+  /**
+   * @param Network[]
+   */
+  public function setNetworks($networks)
+  {
+    $this->networks = $networks;
+  }
+  /**
+   * @return Network[]
+   */
+  public function getNetworks()
+  {
+    return $this->networks;
   }
   /**
    * @param string

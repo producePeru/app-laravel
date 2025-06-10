@@ -26,6 +26,8 @@ class GoogleCloudConnectorsV1EventingConfig extends \Google\Collection
   protected $authConfigDataType = '';
   protected $deadLetterConfigType = GoogleCloudConnectorsV1EventingConfigDeadLetterConfig::class;
   protected $deadLetterConfigDataType = '';
+  protected $enrichmentConfigType = GoogleCloudConnectorsV1EnrichmentConfig::class;
+  protected $enrichmentConfigDataType = '';
   /**
    * @var bool
    */
@@ -44,6 +46,8 @@ class GoogleCloudConnectorsV1EventingConfig extends \Google\Collection
   protected $proxyDestinationConfigDataType = '';
   protected $registrationDestinationConfigType = GoogleCloudConnectorsV1DestinationConfig::class;
   protected $registrationDestinationConfigDataType = '';
+  protected $sslConfigType = GoogleCloudConnectorsV1SslConfig::class;
+  protected $sslConfigDataType = '';
 
   /**
    * @param GoogleCloudConnectorsV1ConfigVariable[]
@@ -86,6 +90,20 @@ class GoogleCloudConnectorsV1EventingConfig extends \Google\Collection
   public function getDeadLetterConfig()
   {
     return $this->deadLetterConfig;
+  }
+  /**
+   * @param GoogleCloudConnectorsV1EnrichmentConfig
+   */
+  public function setEnrichmentConfig(GoogleCloudConnectorsV1EnrichmentConfig $enrichmentConfig)
+  {
+    $this->enrichmentConfig = $enrichmentConfig;
+  }
+  /**
+   * @return GoogleCloudConnectorsV1EnrichmentConfig
+   */
+  public function getEnrichmentConfig()
+  {
+    return $this->enrichmentConfig;
   }
   /**
    * @param bool
@@ -170,6 +188,20 @@ class GoogleCloudConnectorsV1EventingConfig extends \Google\Collection
   public function getRegistrationDestinationConfig()
   {
     return $this->registrationDestinationConfig;
+  }
+  /**
+   * @param GoogleCloudConnectorsV1SslConfig
+   */
+  public function setSslConfig(GoogleCloudConnectorsV1SslConfig $sslConfig)
+  {
+    $this->sslConfig = $sslConfig;
+  }
+  /**
+   * @return GoogleCloudConnectorsV1SslConfig
+   */
+  public function getSslConfig()
+  {
+    return $this->sslConfig;
   }
 }
 

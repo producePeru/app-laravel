@@ -36,7 +36,9 @@ class AttendanceList extends Model
         'mercado',
 
         'comercialActivity',
-        'attendancelist_id'
+        'attendancelist_id',
+        'mercado',
+        'fecha'
     ];
 
     public function typedocument()

@@ -36,6 +36,8 @@ class GoogleCloudDiscoveryengineV1alphaSearchRequest extends \Google\Collection
   protected $customFineTuningSpecDataType = '';
   protected $dataStoreSpecsType = GoogleCloudDiscoveryengineV1alphaSearchRequestDataStoreSpec::class;
   protected $dataStoreSpecsDataType = 'array';
+  protected $displaySpecType = GoogleCloudDiscoveryengineV1alphaSearchRequestDisplaySpec::class;
+  protected $displaySpecDataType = '';
   protected $embeddingSpecType = GoogleCloudDiscoveryengineV1alphaSearchRequestEmbeddingSpec::class;
   protected $embeddingSpecDataType = '';
   protected $facetSpecsType = GoogleCloudDiscoveryengineV1alphaSearchRequestFacetSpec::class;
@@ -91,7 +93,13 @@ class GoogleCloudDiscoveryengineV1alphaSearchRequest extends \Google\Collection
   /**
    * @var string
    */
+  public $rankingExpressionBackend;
+  /**
+   * @var string
+   */
   public $regionCode;
+  protected $relevanceScoreSpecType = GoogleCloudDiscoveryengineV1alphaSearchRequestRelevanceScoreSpec::class;
+  protected $relevanceScoreSpecDataType = '';
   /**
    * @var string
    */
@@ -208,6 +216,20 @@ class GoogleCloudDiscoveryengineV1alphaSearchRequest extends \Google\Collection
   public function getDataStoreSpecs()
   {
     return $this->dataStoreSpecs;
+  }
+  /**
+   * @param GoogleCloudDiscoveryengineV1alphaSearchRequestDisplaySpec
+   */
+  public function setDisplaySpec(GoogleCloudDiscoveryengineV1alphaSearchRequestDisplaySpec $displaySpec)
+  {
+    $this->displaySpec = $displaySpec;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1alphaSearchRequestDisplaySpec
+   */
+  public function getDisplaySpec()
+  {
+    return $this->displaySpec;
   }
   /**
    * @param GoogleCloudDiscoveryengineV1alphaSearchRequestEmbeddingSpec
@@ -436,6 +458,20 @@ class GoogleCloudDiscoveryengineV1alphaSearchRequest extends \Google\Collection
   /**
    * @param string
    */
+  public function setRankingExpressionBackend($rankingExpressionBackend)
+  {
+    $this->rankingExpressionBackend = $rankingExpressionBackend;
+  }
+  /**
+   * @return string
+   */
+  public function getRankingExpressionBackend()
+  {
+    return $this->rankingExpressionBackend;
+  }
+  /**
+   * @param string
+   */
   public function setRegionCode($regionCode)
   {
     $this->regionCode = $regionCode;
@@ -446,6 +482,20 @@ class GoogleCloudDiscoveryengineV1alphaSearchRequest extends \Google\Collection
   public function getRegionCode()
   {
     return $this->regionCode;
+  }
+  /**
+   * @param GoogleCloudDiscoveryengineV1alphaSearchRequestRelevanceScoreSpec
+   */
+  public function setRelevanceScoreSpec(GoogleCloudDiscoveryengineV1alphaSearchRequestRelevanceScoreSpec $relevanceScoreSpec)
+  {
+    $this->relevanceScoreSpec = $relevanceScoreSpec;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1alphaSearchRequestRelevanceScoreSpec
+   */
+  public function getRelevanceScoreSpec()
+  {
+    return $this->relevanceScoreSpec;
   }
   /**
    * @param string
