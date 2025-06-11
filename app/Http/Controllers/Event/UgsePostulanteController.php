@@ -252,6 +252,66 @@ class UgsePostulanteController extends Controller
                 ));
 
 
+            // Si el representante trae invitado
+            if ($request->has('invitado') && $request->invitado === true) {
+                $invitado = UgsePostulante::create([
+                    'ruc' => $request->ruc,
+                    'comercialName' => $request->comercialName,
+                    'socialReason' => $request->socialReason,
+                    'economicsector_id' => $request->economicsector_id,
+                    'comercialactivity_id' => $request->comercialactivity_id,
+                    'category_id' => $request->category_id,
+                    'city_id' => $request->city_id,
+                    'typeAsistente' => 2,
+                    'typedocument_id' => $request->invitado_typedocument_id,
+                    'documentnumber' => $request->invitado_documentnumber,
+                    'lastname' => $request->invitado_lastname,
+                    'middlename' => $request->invitado_middlename,
+                    'name' => $request->invitado_name,
+                    'gender_id' => $request->invitado_gender_id,
+                    'sick' => $request->invitado_sick,
+                    'phone' => $request->invitado_phone,
+                    'email' => $request->invitado_email,
+                    'birthday' => $request->invitado_birthday,
+                    'positionCompany' => $request->invitado_positionCompany,
+                    'bringsGuest' => 0,
+                    'howKnowEvent_id' => $request->howKnowEvent_id,
+                    'event_id' => $fair->id,
+                    'instagram' => null,
+                    'facebook' => null,
+                    'web' => null,
+                ]);
+
+                $qrInvitado = Builder::create()
+                    ->writer(new PngWriter())
+                    ->data($invitado->documentnumber)
+                    ->size(200)
+                    ->margin(10)
+                    ->build();
+                $qrBase64Invitado = base64_encode($qrInvitado->getString());
+
+                $pdfInvitado = PDF::loadView('pdf.ticket_entry', [
+                    'fair' => $fair,
+                    'participantName' => "{$invitado->name} {$invitado->lastname}",
+                    'qrBase64' => $qrBase64Invitado,
+                    'logoDataUri' => $logoDataUri,
+                ]);
+
+                $filenameInvitado = 'entrada_' . Str::random(10) . '.pdf';
+                $filepathInvitado = storage_path("app/public/entradas/{$filenameInvitado}");
+                $pdfInvitado->save($filepathInvitado);
+
+                Mail::mailer($mailer)
+                    ->to($invitado->email)
+                    ->send(new FairSedInfoMail(
+                        $messageContent,
+                        $filepathInvitado,
+                        "{$invitado->name} {$invitado->lastname}",
+                        $fair
+                    ));
+            }
+
+
             DB::commit();
 
 
