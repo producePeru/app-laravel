@@ -15,10 +15,13 @@
 </head>
 
 <body>
-    <div
-        style="border: 1px solid #ffffff; margin: 20px auto; box-shadow: -1px 0px 10px #ccc; max-width: 800px; padding: 20px 40px; border-radius: 10px;">
-        {!! $content !!}
-    </div>
+    <h1>{{ $fairName }}</h1>
+
+<p>Hola {{ $participantName }}, esta es tu entrada para el evento.</p>
+
+<div style="text-align: center; margin-top: 20px;">
+    <img src="data:image/png;base64,{{ $qrImage }}" alt="Código QR">
+</div>
 </body>
 
 </html>

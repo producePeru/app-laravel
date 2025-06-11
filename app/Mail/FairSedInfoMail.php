@@ -10,31 +10,31 @@ class FairSedInfoMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     *
-     * @return void
-     */
-    public function __construct(
-        public string $mensaje,
-        public string $qrData
-    ) {
-        //
+    public $messageContent;
+    public $qrPath;
+    public $participantName;
+    public $fair;
+
+    public function __construct($messageContent, $qrPath, $participantName, $fair)
+    {
+        $this->messageContent = $messageContent;
+        $this->qrPath = $qrPath;
+        $this->participantName = $participantName;
+        $this->fair = $fair;
     }
 
-    /**
-     * Build the message.
-     *
-     * @return $this
-     */
     public function build()
     {
-        return $this->view('emails.confirmacion_registro')
-            ->with([
-                'mensaje' => $this->mensaje,
+        return $this->view('emails.fair_info')
+            ->subject('Información de la feria')
+            ->attach($this->qrPath, [
+                'as' => 'entrada.pdf',
+                'mime' => 'application/pdf',
             ])
-            ->attachData($this->qrData, 'codigo-qr.png', [
-                'mime' => 'image/png',
+            ->with([
+                'messageContent' => $this->messageContent,
+                'participantName' => $this->participantName,
+                'fair' => $this->fair,
             ]);
     }
 }

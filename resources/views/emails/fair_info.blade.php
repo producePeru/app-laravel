@@ -1,12 +1,4 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="UTF-8">
-    <title>Bienvenido al Evento</title>
-</head>
-
-<body style="margin:0; padding:0; background-color:#f2f2f2;">
+<section style="margin:0; padding:0; background-color:#f2f2f2;">
     <table align="center" width="100%" cellpadding="0" cellspacing="0"
         style="background-color:#f2f2f2; padding: 20px 0;">
         <tr>
@@ -21,18 +13,12 @@
                         </td>
                     </tr>
 
-                    <!-- Main Image -->
-                    <tr>
-                        <td align="center" style="padding: 20px;">
-                            <img src="{{ $qr }}" alt="Código QR" />
-                        </td>
-                    </tr>
 
                     <!-- Greeting -->
                     <tr>
                         <td align="center"
                             style="font-family: Arial, sans-serif; font-size: 24px; color: #333; padding: 10px;">
-                            Hola, empresario
+                            {{ $participantName }}
                         </td>
                     </tr>
 
@@ -40,10 +26,20 @@
                     <tr>
                         <td align="center"
                             style="font-family: Arial, sans-serif; font-size: 16px; color: #666; padding: 0 40px 30px; line-height: 1.4">
-                            Las capacitaciones programadas para este 2025 se desarrollarán vía TEAMS, para lo cual
-                            deberá seleccionar el día y la hora de capacita
+                            Hola, {{ $messageContent }}
                         </td>
                     </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 20px;">
+                            <a href="{{ asset('storage/entradas/' . basename($qrPath)) }}"
+                                style="background-color: #e31d1a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;"
+                                target="_blank">
+                                Descargar entrada
+                            </a>
+                        </td>
+                    </tr>
+
 
                     <!-- Footer -->
                     <tr>
@@ -56,6 +52,4 @@
             </td>
         </tr>
     </table>
-</body>
-
-</html>
+</section>

@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
+use PDF;
+use Illuminate\Support\Str;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\PngWriter;
+
 
 class UgsePostulanteController extends Controller
 {
@@ -161,6 +166,7 @@ class UgsePostulanteController extends Controller
         DB::beginTransaction();
 
         try {
+
             $representante = UgsePostulante::create([
                 'ruc' => $request->ruc,
                 'comercialName' => $request->comercialName,
@@ -190,23 +196,63 @@ class UgsePostulanteController extends Controller
             ]);
 
 
-            // 🔁 Generar el QR en formato PNG y codificarlo en Base64 para incluirlo en el correo
-$qrCode = QrCode::format('png')
-    ->size(300)
-    ->errorCorrection('H')
-    ->generate($representante->documentnumber);
+            $mailer = $request->mailer ?? 'gmail';
 
-// Codificar la imagen QR en Base64
-$qrBase64 = 'data:image/png;base64,' . base64_encode($qrCode);
+
+            // ✅ Codificar logo en base64
+            // ✅ Generar QR en base64 usando Endroid QR Code
+            $logoPath = public_path('images/logo/sed.png');
+            $logoBase64 = base64_encode(file_get_contents($logoPath));
+            $logoMime = mime_content_type($logoPath);
+            $logoDataUri = "data:$logoMime;base64,$logoBase64";
+            $qrResult = Builder::create()
+                ->writer(new PngWriter())
+                ->data($representante->documentnumber)
+                ->size(200)
+                ->margin(10)
+                ->build();
+
+            $qrBase64 = base64_encode($qrResult->getString());
+
+
+            $qrResult = Builder::create()
+                ->writer(new PngWriter())
+                ->data($representante->documentnumber)
+                ->size(200)
+                ->margin(10)
+                ->build();
+
+            // Obtener la imagen QR en base64
+            $qrBase64 = base64_encode($qrResult->getString());
+
+            $pdf = PDF::loadView('pdf.ticket_entry', [
+                'fair' => $fair,
+                'participantName' => "{$representante->name} {$representante->lastname}",
+                'qrBase64' => $qrBase64,
+                'logoDataUri' => $logoDataUri,
+            ]);
+
+            $filename = 'entrada_' . Str::random(10) . '.pdf';
+            $filepath = storage_path("app/public/entradas/{$filename}");
+            Storage::makeDirectory('public/entradas');
+            $pdf->save($filepath);
+
+            $participantName = "{$representante->name} {$representante->lastname}";
+            $messageContent = strip_tags($fair->msgSendEmail);
+
+
+
+            Mail::mailer($mailer)
+                ->to($representante->email)
+                ->send(new FairSedInfoMail(
+                    $messageContent,
+                    $filepath,
+                    $participantName,
+                    $fair
+                ));
 
 
             DB::commit();
-
-            $mailer = $request->mailer ?? 'gmail';
-
-            Mail::mailer($mailer)->to($request->email)->send(
-    new FairSedInfoMail($fair->msgSendEmail, $qrBase64)
-);
 
 
             return response()->json([
