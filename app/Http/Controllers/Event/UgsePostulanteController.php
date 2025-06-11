@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
 use App\Models\Fair;
+use App\Mail\FairSedInfoMail;
 use App\Models\UgsePostulante;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\Storage;
 
 class UgsePostulanteController extends Controller
 {
@@ -125,9 +130,11 @@ class UgsePostulanteController extends Controller
     }
 
 
+
+
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'ruc' => 'required|max:11',
             'comercialName' => 'required|string|max:200',
             'socialReason' => 'required|string|max:200',
@@ -146,16 +153,14 @@ class UgsePostulanteController extends Controller
             'email' => 'required|email|max:100',
             'birthday' => 'required|date',
             'positionCompany' => 'required|string|max:100',
+            'mailer' => 'nullable|string|in:gmail,office365',
         ]);
 
-        // Buscar event_id desde slug
         $fair = Fair::where('slug', $request->slug)->firstOrFail();
 
-        // Transaction (opcional pero recomendado si se crean 2 registros)
         DB::beginTransaction();
 
         try {
-            // Insertar representante
             $representante = UgsePostulante::create([
                 'ruc' => $request->ruc,
                 'comercialName' => $request->comercialName,
@@ -164,7 +169,7 @@ class UgsePostulanteController extends Controller
                 'comercialactivity_id' => $request->comercialactivity_id,
                 'category_id' => $request->category_id,
                 'city_id' => $request->city_id,
-                'typeAsistente' => 1, // Representante
+                'typeAsistente' => 1,
                 'typedocument_id' => $request->typedocument_id,
                 'documentnumber' => $request->documentnumber,
                 'lastname' => $request->lastname,
@@ -184,41 +189,28 @@ class UgsePostulanteController extends Controller
                 'web' => $request->web,
             ]);
 
-            // Si se debe registrar el invitado
-            if ($request->registrarInvitado) {
-                UgsePostulante::create([
-                    'ruc' => $request->ruc, // Mismo RUC
-                    'comercialName' => $request->comercialName,
-                    'socialReason' => $request->socialReason,
-                    'economicsector_id' => $request->economicsector_id,
-                    'comercialactivity_id' => $request->comercialactivity_id,
-                    'category_id' => $request->category_id,
-                    'city_id' => $request->city_id,
-                    'typeAsistente' => 2, // Invitado
-                    'typedocument_id' => $request->invitado_typedocument_id,
-                    'documentnumber' => $request->invitado_documentnumber,
-                    'lastname' => $request->invitado_lastname,
-                    'middlename' => $request->invitado_middlename,
-                    'name' => $request->invitado_name,
-                    'gender_id' => $request->invitado_gender_id,
-                    'sick' => $request->invitado_sick,
-                    'phone' => $request->invitado_phone,
-                    'email' => $request->invitado_email,
-                    'birthday' => $request->invitado_birthday,
-                    'positionCompany' => $request->invitado_positionCompany,
-                    'bringsGuest' => 0, // Invitado no tiene invitado
-                    'howKnowEvent_id' => $request->howKnowEvent_id,
-                    'event_id' => $fair->id,
-                    'instagram' => $request->instagram,
-                    'facebook' => $request->facebook,
-                    'web' => $request->web,
-                ]);
-            }
+
+            // 🔁 Generar el QR en formato PNG y codificarlo en Base64 para incluirlo en el correo
+$qrCode = QrCode::format('png')
+    ->size(300)
+    ->errorCorrection('H')
+    ->generate($representante->documentnumber);
+
+// Codificar la imagen QR en Base64
+$qrBase64 = 'data:image/png;base64,' . base64_encode($qrCode);
+
 
             DB::commit();
 
+            $mailer = $request->mailer ?? 'gmail';
+
+            Mail::mailer($mailer)->to($request->email)->send(
+    new FairSedInfoMail($fair->msgSendEmail, $qrBase64)
+);
+
+
             return response()->json([
-                'message' => 'Postulante(s) registrado(s) correctamente.',
+                'message' => 'Postulante registrado correctamente y correo enviado.',
                 'representante_id' => $representante->id,
                 'status' => 200
             ]);

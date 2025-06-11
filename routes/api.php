@@ -448,7 +448,7 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
     Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
     Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);        // luchooo
-    Route::post('/send-emails',         [EmailSendController::class, 'sendEmails']);            // nuevo desde home-2025
+    Route::post('/send-emails',         [EmailSendController::class, 'sendEmails']);                            // nuevo desde home-2025
 });
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
