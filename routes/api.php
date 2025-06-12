@@ -102,6 +102,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
     Route::post('register-participant-ugse',    [UgsePostulanteController::class, 'store']);              // VUETIFY FORM UGSE EventsUgseController sed
 
+    Route::post('participant-info',             [UgsePostulanteController::class, 'isRegistered']);               // buscar participante x slug
 
 });
 
@@ -466,9 +467,11 @@ Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middle
     Route::delete('delete-participant/{id}',    [FairController::class, 'destroyParticipant']);       // delete PARTICIPAnte
 
 
-    Route::get('list-event',                    [UgsePostulanteController::class, 'index']);                    // listar INSCRITOS sed
-    Route::get('type-fair/{slug}',              [UgsePostulanteController::class, 'showFairBySlug']);            // devuelve datos de la feria desde un slug
-    Route::put('sed-update-data-user/{slug}',   [UgsePostulanteController::class, 'update']);            // devuelve datos de la feria desde un slug
+    // SED LUCHOOO
+    Route::get('list-event-sed/{slug}',         [UgsePostulanteController::class, 'index']);                        // listar INSCRITOS sed
+    Route::get('type-fair/{slug}',              [UgsePostulanteController::class, 'showFairBySlug']);               // devuelve datos de la feria desde un slug
+    Route::put('sed-update-data-user/{slug}',   [UgsePostulanteController::class, 'update']);                       //
+
 
 
 });

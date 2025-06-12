@@ -74,6 +74,11 @@ class Fair extends Model
         return $this->belongsTo(Image::class, 'image_id');
     }
 
+    public function postulantes()
+    {
+        return $this->hasMany(UgsePostulante::class, 'event_id');
+    }
+
 
     // SCOPE SEARCH
     public function scopeSearch($query, $search)
@@ -97,18 +102,18 @@ class Fair extends Model
 
     public function scopeWithItems($query, $filters)
     {
-        $query = $query->with([
+        $query->with([
             'modality',
             'region',
             'fairType',
             'image',
-            ]);
+        ])->withCount('postulantes');
 
 
         if (!empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('nameEvent', 'like', '%' . $filters['name'] . '%')
-                  ->orWhere('description', 'like', '%' . $filters['name'] . '%');
+                    ->orWhere('description', 'like', '%' . $filters['name'] . '%');
             });
         }
 
@@ -116,7 +121,7 @@ class Fair extends Model
         if (!empty($filters['startDate']) && !empty($filters['endDate'])) {
             $query->where(function ($q) use ($filters) {
                 $q->whereBetween('startDate', [$filters['startDate'], $filters['endDate']])
-                  ->orWhereBetween('endDate', [$filters['startDate'], $filters['endDate']]);
+                    ->orWhereBetween('endDate', [$filters['startDate'], $filters['endDate']]);
             });
         }
 
@@ -128,19 +133,15 @@ class Fair extends Model
         if (!empty($filters['orderby']) && $filters['orderby'] == 1) {
 
             $query->orderBy('attendance_list_count', 'desc');
-
         } else if (!empty($filters['orderby']) && $filters['orderby'] == 2) {
 
             $query->orderBy('attendance_list_count', 'asc');
-
         } else if (!empty($filters['orderby']) && $filters['orderby'] == 3) {
 
             $query->orderBy('finally', 'desc');
-
         } else {
 
             $query->orderBy('created_at', 'desc');
-
         }
     }
 }

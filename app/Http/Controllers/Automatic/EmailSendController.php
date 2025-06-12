@@ -15,12 +15,12 @@ class EmailSendController extends Controller
             $validatedData = $request->validate([
                 'emails' => 'required|array|min:1',
                 'message' => 'required|string',
-                'mailer' => 'nullable|string|in:gmail,office365',
+                'mailer' => 'nullable|string',
             ]);
 
             $emails = $validatedData['emails'];
             $message = $validatedData['message'];
-            $mailer = 'gmail';
+            $mailer = 'presencial';
 
             // Procesar cada correo y enviarlo a la cola
             foreach ($emails as $email) {

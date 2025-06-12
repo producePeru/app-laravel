@@ -23,8 +23,11 @@ class UgsePostulanteController extends Controller
 {
 
 
-    public function index(Request $request)
+    public function index(Request $request, $slug)
     {
+        // Buscar la feria por su slug
+        $fair = Fair::where('slug', $slug)->firstOrFail();
+
         $filters = [
             'name'         => $request->input('name'),
             'document'     => $request->input('document'),
@@ -34,7 +37,8 @@ class UgsePostulanteController extends Controller
             'city_id'      => $request->input('city_id'),
         ];
 
-        $query = UgsePostulante::query();
+        // Crear la consulta base y filtrar por el ID del evento
+        $query = UgsePostulante::where('event_id', $fair->id);
 
         $query->withBasicFilters($filters);
 
@@ -133,9 +137,6 @@ class UgsePostulanteController extends Controller
 
         ];
     }
-
-
-
 
     public function store(Request $request)
     {
@@ -375,6 +376,42 @@ class UgsePostulanteController extends Controller
                 'data'    => $postulante,
                 'status'  => 200
             ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el postulante',
+                'error'   => $e->getMessage(),
+                'status'  => 500
+            ], 500);
+        }
+    }
+
+    public function isRegistered(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'slug' => 'required|string',
+                'dni' => 'required',
+            ]);
+
+            $fair = Fair::where('slug', $validatedData['slug'])->first();
+
+            if (!$fair) {
+                return response()->json(['message' => 'Evento no encontrado'], 404);
+            }
+
+            $postulante = UgsePostulante::where('event_id', $fair->id)
+                ->where('documentnumber', $validatedData['dni'])
+                ->first();
+
+            if ($postulante) {
+                return response()->json([
+                    'name' => $postulante->name . ' ' . $postulante->lastname,
+                    'status' => 200
+                ]);
+            }
+
+            return response()->json(['message' => 'No se ha registrado', 'status' => 400]);
+
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error al actualizar el postulante',

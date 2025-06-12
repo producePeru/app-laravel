@@ -47,6 +47,19 @@ return [
             ],
         ],
 
+        'presencial' => [
+            'transport' => env('MAIL_MAILER_CAPACITACIONPRESENCIAL', 'smtp'),
+            'host' => env('MAIL_HOST_CAPACITACIONPRESENCIAL'),
+            'port' => env('MAIL_PORT_CAPACITACIONPRESENCIAL'),
+            'username' => env('MAIL_USERNAME_CAPACITACIONPRESENCIAL'),
+            'password' => env('MAIL_PASSWORD_CAPACITACIONPRESENCIAL'),
+            'encryption' => env('MAIL_ENCRYPTION_CAPACITACIONPRESENCIAL'),
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS_CAPACITACIONPRESENCIAL'),
+                'name' => env('MAIL_FROM_NAME_CAPACITACIONPRESENCIAL'),
+            ],
+        ],
+
         'office365' => [
             'transport' => env('MAIL_MAILER_OFFICE365', 'smtp'),
             'host' => env('MAIL_HOST_OFFICE365'),

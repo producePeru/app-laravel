@@ -48,7 +48,7 @@ class FairController extends Controller
             'slug' => $item->slug ?? null,
             'title' => $item->title ?? null,
             'subTitle' => $item->subTitle ?? null,
-            'description' => isset($item->description) ? strip_tags($item->description) : null,
+            'description' => $item->description ? $item->description : null,
             'description3'   => isset($item->description)
                 ? (mb_strlen(strip_tags($item->description)) > 200
                     ? mb_substr(strip_tags($item->description), 0, 200) . '...'
@@ -62,19 +62,20 @@ class FairController extends Controller
             'endDate' => $item->endDate ?? null,
             'dateStartFormat' => $item->startDate ? Carbon::parse($item->startDate)->format('d/m/Y') : null,
             'dateEndFormat' => $item->endDate ? Carbon::parse($item->endDate)->format('d/m/Y') : null,
+            'registered' => $item->postulantes_count,
             'metaMypes' => $item->metaMypes ?? null,
             'city_id' => $item->region->id ?? null,
             'fecha' => $item->fecha ?? null,
             'city_name' => $item->region->name ?? null,
             'place' => $item->place ?? null,
             'hours' => $item->hours ?? null,
-            'msgEndForm' => isset($item->msgEndForm) ? strip_tags($item->msgEndForm) : null,
+            'msgEndForm' => $item->msgEndForm ? $item->msgEndForm : null,
             'msgEndForm3' => isset($item->msgEndForm)
                 ? (mb_strlen(strip_tags($item->msgEndForm)) > 200
                     ? mb_substr(strip_tags($item->msgEndForm), 0, 200) . '...'
                     : strip_tags($item->msgEndForm))
                 : null,
-            'msgSendEmail' => isset($item->msgSendEmail) ? strip_tags($item->msgSendEmail) : null,
+            'msgSendEmail' => $item->msgSendEmail ? $item->msgSendEmail : null,
             'msgSendEmail3' => isset($item->msgSendEmail)
                 ? (mb_strlen(strip_tags($item->msgSendEmail)) > 200
                     ? mb_substr(strip_tags($item->msgSendEmail), 0, 200) . '...'
