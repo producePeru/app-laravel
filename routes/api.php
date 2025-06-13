@@ -50,6 +50,7 @@ use App\Http\Controllers\RutaDigital\RutaDigitalController;
 use App\Http\Controllers\Workshop\WorkshopController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Captcha\CaptchaController;
+use App\Http\Controllers\Download\SedAsistentesController;
 use App\Http\Controllers\Event\UgsePostulanteController;
 use App\Http\Controllers\Image\ImageController;
 use App\Http\Controllers\PP03\Pp03Controller;
@@ -77,32 +78,34 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
 
     // FERIAS EMPRESARIALES
-    Route::get('data/{slug}',           [FairController::class, 'show']);                       // TRAE LA FERIA POR SLUG
-    Route::get('search-api-ruc/{ruc}',  [MypeController::class, 'apiRUC']);                     // BUSCA DATOS A PARTIR DEL RUC     *******************
-    Route::post('first-or-new',         [MypeController::class, 'registerMype']);               // PASO 1 CREA O EDITA UNA MYPE
-    Route::get('search-api-dni/{dni}',  [PersonController::class, 'apiDNI']);                   // BUSCA DATOS A PARTIR DEL DNI     *******************
-    Route::post('create-up',            [PersonController::class, 'createUpdate']);             // PASO 2 EDITA O CREA UN USUARIO PERSON
-    Route::post('mype/{ruc}',           [FairController::class, 'updateFieldsMypeFair']);       // PASO 3 actualiza los campos faltantes de la mype
-    Route::post('postulate',            [FairController::class, 'postulateFair']);              // POSTULAR EN FERIA
+    Route::get('data/{slug}',                       [FairController::class, 'show']);                       // TRAE LA FERIA POR SLUG
+    Route::get('search-api-ruc/{ruc}',              [MypeController::class, 'apiRUC']);                     // BUSCA DATOS A PARTIR DEL RUC     *******************
+    Route::post('first-or-new',                     [MypeController::class, 'registerMype']);               // PASO 1 CREA O EDITA UNA MYPE
+    Route::get('search-api-dni/{dni}',              [PersonController::class, 'apiDNI']);                   // BUSCA DATOS A PARTIR DEL DNI     *******************
+    Route::post('create-up',                        [PersonController::class, 'createUpdate']);             // PASO 2 EDITA O CREA UN USUARIO PERSON
+    Route::post('mype/{ruc}',                       [FairController::class, 'updateFieldsMypeFair']);       // PASO 3 actualiza los campos faltantes de la mype
+    Route::post('postulate',                        [FairController::class, 'postulateFair']);              // POSTULAR EN FERIA
 
-    Route::post('survey',               [SurveysController::class, 'store']);              // ENCUESTAS 3° PISO
-    Route::get('surveys',               [SurveysController::class, 'index']);              // ENCUESTAS 3° PISO
+    Route::post('survey',                           [SurveysController::class, 'store']);              // ENCUESTAS 3° PISO
+    Route::get('surveys',                           [SurveysController::class, 'index']);              // ENCUESTAS 3° PISO
 
-    Route::get('data-attendance/{slug}',           [AttendanceController::class, 'show']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
-    Route::post('attendance-present',        [AttendanceController::class, 'userPresent']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
+    Route::get('data-attendance/{slug}',            [AttendanceController::class, 'show']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
+    Route::post('attendance-present',               [AttendanceController::class, 'userPresent']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
 
 
     // // EVENTOS SR CARLOS
     // Route::get('dots/{month}',                  [EventsController::class, 'getEventsDots']);
     // Route::get('events-day/{day}',              [EventsController::class, 'getEventsByDate']);
 
-    Route::post('valorization-notary',          [QRNotaryController::class, 'store']);              // VALORIZACION DE NOTARIOS
+    Route::post('valorization-notary',              [QRNotaryController::class, 'store']);              // VALORIZACION DE NOTARIOS
 
-    Route::post('register-participant-ugo',     [EventsUgoController::class, 'participantsUgoEvent']);              // VUETIFY FORM UGO
+    Route::post('register-participant-ugo',         [EventsUgoController::class, 'participantsUgoEvent']);              // VUETIFY FORM UGO
 
-    Route::post('register-participant-ugse',    [UgsePostulanteController::class, 'store']);              // VUETIFY FORM UGSE EventsUgseController sed
 
-    Route::post('participant-info',             [UgsePostulanteController::class, 'isRegistered']);               // buscar participante x slug
+    //SED
+    Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // VUETIFY FORM UGSE EventsUgseController sed
+    Route::post('participant-info',                 [UgsePostulanteController::class, 'isRegistered']);             // VUETIFY FORM UGSE EventsUgseController sed
+    Route::put('register-attendance',               [UgsePostulanteController::class, 'registerAttendance']);       // registra la fecha y hora de asistencia
 
 });
 
@@ -255,6 +258,8 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('notaries',                     [DownloadNotariesController::class, 'exportNotaries']);
     Route::post('cdes',                         [DownloadCdesController::class, 'exportCdes']);
     Route::post('events',                       [DownloadEventsController::class, 'exportEvents']);
+    Route::post('sed-asistentes/{slug}',        [SedAsistentesController::class, 'exportList']);                 // asistentes de sed
+
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -468,10 +473,9 @@ Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middle
 
 
     // SED LUCHOOO
-    Route::get('list-event-sed/{slug}',         [UgsePostulanteController::class, 'index']);                        // listar INSCRITOS sed
-    Route::get('type-fair/{slug}',              [UgsePostulanteController::class, 'showFairBySlug']);               // devuelve datos de la feria desde un slug
-    Route::put('sed-update-data-user/{slug}',   [UgsePostulanteController::class, 'update']);                       //
-
+    Route::get('list-event-sed/{slug}',         [UgsePostulanteController::class, 'index']);
+    Route::get('type-fair/{slug}',              [UgsePostulanteController::class, 'showFairBySlug']);            // devuelve datos de la feria desde un slug
+    Route::put('sed-update-data-user/{slug}',   [UgsePostulanteController::class, 'update']);            // devuelve datos de la feria desde un slug
 
 
 });

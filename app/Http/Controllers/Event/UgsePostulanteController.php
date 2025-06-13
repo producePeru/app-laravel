@@ -80,13 +80,13 @@ class UgsePostulanteController extends Controller
             'facebook'         => $item->facebook,
             'web'              => $item->web,
             'ruc'              => $item->ruc,
+            'attended'         => $item->attended ?? null,
             'comercialName'    => $item->comercialName,
             'socialReason'     => $item->socialReason,
             'typeAsistente'    => $item->typeAsistente,
             'sick'             => $item->sick,
             'birthday'         => $item->birthday,
             'created_at' => $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : null,
-
 
 
             // Relaciones
@@ -359,6 +359,7 @@ class UgsePostulanteController extends Controller
     }
 
 
+    // Actualizamos los datos del registrado
     public function update(Request $request, $id)
     {
         try {
@@ -406,15 +407,61 @@ class UgsePostulanteController extends Controller
             if ($postulante) {
                 return response()->json([
                     'name' => $postulante->name . ' ' . $postulante->lastname,
+                    'doc' => $postulante->documentnumber,
                     'status' => 200
                 ]);
             }
 
             return response()->json(['message' => 'No se ha registrado', 'status' => 400]);
-
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error al actualizar el postulante',
+                'error'   => $e->getMessage(),
+                'status'  => 500
+            ], 500);
+        }
+    }
+
+    public function registerAttendance(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'slug'     => 'required|string',
+                'dni'      => 'required|string',
+                'attended' => 'required|string', // formato "DD-MM-YYYY HH:mm a"
+            ]);
+
+            $fair = Fair::where('slug', $validatedData['slug'])->first();
+
+            if (!$fair) {
+                return response()->json(['message' => 'Evento no encontrado'], 404);
+            }
+
+            $postulante = UgsePostulante::where('event_id', $fair->id)
+                ->where('documentnumber', $validatedData['dni'])
+                ->first();
+
+            if (!$postulante) {
+                return response()->json(['message' => 'Postulante no encontrado'], 404);
+            }
+
+            if ($postulante->attended !== null) {
+                return response()->json([
+                    'message' => 'Ya has sido registrado anteriormente',
+                    'status'  => 400
+                ]);
+            }
+
+            $postulante->attended = $validatedData['attended'];
+            $postulante->save();
+
+            return response()->json([
+                'message' => 'Asistencia registrada correctamente',
+                'status'  => 200
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al registrar la asistencia',
                 'error'   => $e->getMessage(),
                 'status'  => 500
             ], 500);

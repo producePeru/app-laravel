@@ -20,7 +20,7 @@ class EmailSendController extends Controller
 
             $emails = $validatedData['emails'];
             $message = $validatedData['message'];
-            $mailer = 'presencial';
+            $mailer = 'office365';
 
             // Procesar cada correo y enviarlo a la cola
             foreach ($emails as $email) {

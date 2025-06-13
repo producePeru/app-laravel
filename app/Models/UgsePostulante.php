@@ -35,6 +35,7 @@ class UgsePostulante extends Model
         'instagram',
         'facebook',
         'web',
+        'attended'
     ];
 
     // Relaciones
