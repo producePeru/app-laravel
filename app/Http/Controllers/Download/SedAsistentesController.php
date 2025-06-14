@@ -39,21 +39,20 @@ class SedAsistentesController extends Controller
                     $index + 1,
                     $item->event->subTitle,
                     $item->ruc,
-                    $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : '',
                     $item->comercialName,
                     $item->socialReason,
                     $item->economicsector?->name,
                     $item->comercialactivity?->name,
                     $item->category?->name,
                     $item->city?->name,
-                    $item->typeAsistente,
+                    $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
                     $item->typedocument?->name,
                     $item->documentnumber,
                     $item->lastname,
                     $item->middlename,
                     $item->name,
                     $item->gender?->name,
-                    $item->sick ? 'Sí' : 'No',
+                    $item->sick == 'no' ? 'No' : 'Si',
                     $item->phone,
                     $item->email,
                     $item->birthday,
@@ -63,9 +62,9 @@ class SedAsistentesController extends Controller
                     $item->facebook,
                     $item->web,
                     $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : '',
+                    $item->attended,
                 ];
             });
-            return $rows;
 
             $templatePath = storage_path('app/plantillas/sed_template.xlsx');
             $spreadsheet = IOFactory::load($templatePath);

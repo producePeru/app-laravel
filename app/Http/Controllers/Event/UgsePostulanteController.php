@@ -29,12 +29,10 @@ class UgsePostulanteController extends Controller
         $fair = Fair::where('slug', $slug)->firstOrFail();
 
         $filters = [
-            'name'         => $request->input('name'),
-            'document'     => $request->input('document'),
-            'email'        => $request->input('email'),
-            'phone'        => $request->input('phone'),
-            'event_id'     => $request->input('event_id'),
-            'city_id'      => $request->input('city_id'),
+            'name'          => $request->input('name'),
+            'dateStart'     => $request->input('dateStart'),
+            'dateEnd'       => $request->input('dateEnd'),
+
         ];
 
         // Crear la consulta base y filtrar por el ID del evento

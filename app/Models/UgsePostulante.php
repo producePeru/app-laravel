@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -83,32 +84,22 @@ class UgsePostulante extends Model
 
     public function scopeWithBasicFilters($query, $filters)
     {
-        $query->orderBy('id', 'desc');
+        if (!empty($filters['year'])) {
+            $query->whereYear('created_at', $filters['year']);
+        }
+
+        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($filters['dateStart'])->startOfDay(),
+                Carbon::parse($filters['dateEnd'])->endOfDay()
+            ]);
+        }
 
         if (!empty($filters['name'])) {
-            $query->where('name', 'like', '%' . $filters['name'] . '%');
-        }
-
-        if (!empty($filters['document'])) {
-            $query->where('documentnumber', 'like', '%' . $filters['document'] . '%');
-        }
-
-        if (!empty($filters['email'])) {
-            $query->where('email', 'like', '%' . $filters['email'] . '%');
-        }
-
-        if (!empty($filters['phone'])) {
-            $query->where('phone', 'like', '%' . $filters['phone'] . '%');
-        }
-
-        if (!empty($filters['event_id'])) {
-            $query->where('event_id', $filters['event_id']);
-        }
-
-        if (!empty($filters['city_id'])) {
-            $query->where('city_id', $filters['city_id']);
+            $query->where(function ($q) use ($filters) {
+                $q->where('ruc', 'like', '%' . $filters['name'] . '%')
+                    ->orWhere('documentnumber', 'like', '%' . $filters['name'] . '%');
+            });
         }
     }
-
 }
-
