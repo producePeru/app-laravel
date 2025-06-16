@@ -138,46 +138,46 @@ class UgsePostulanteController extends Controller
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'ruc' => 'required|max:11',
-            'comercialName' => 'required|string|max:200',
-            'socialReason' => 'required|string|max:200',
-            'economicsector_id' => 'required|integer',
-            'comercialactivity_id' => 'required|integer',
-            'category_id' => 'required|integer',
-            'city_id' => 'required|integer',
-            'typedocument_id' => 'required|integer',
-            'documentnumber' => 'required|string|max:12',
-            'lastname' => 'required|string|max:100',
-            'name' => 'required|string|max:100',
-            'gender_id' => 'required|integer',
-            'howKnowEvent_id' => 'required|integer',
-            'slug' => 'required|string',
-            'phone' => 'required|max:9',
-            'email' => 'required|email|max:100',
-            'birthday' => 'required|date',
-            'positionCompany' => 'required|string|max:100',
-            'mailer' => 'nullable|string|in:gmail,office365',
-        ]);
-
-
-
-        $fair = Fair::where('slug', $request->slug)->firstOrFail();
-
-        $exists = UgsePostulante::where('event_id', $fair->id)
-            ->where('documentnumber', $request->documentnumber)
-            ->exists();
-
-        if ($exists) {
-            return response()->json([
-                'message' => 'Ya estás registrado en este evento con este número de documento.',
-                'status' => 409,
-            ]);
-        }
-
-        DB::beginTransaction();
-
         try {
+
+            $validatedData = $request->validate([
+                'ruc' => 'required|max:11',
+                'comercialName' => 'required|string|max:200',
+                'socialReason' => 'required|string|max:200',
+                'economicsector_id' => 'required|integer',
+                'comercialactivity_id' => 'required|integer',
+                'category_id' => 'required|integer',
+                'city_id' => 'required|integer',
+                'typedocument_id' => 'required|integer',
+                'documentnumber' => 'required',
+                'lastname' => 'required|string|max:100',
+                'name' => 'required|string|max:100',
+                'gender_id' => 'required|integer',
+                'howKnowEvent_id' => 'required|integer',
+                'slug' => 'required|string',
+                'phone' => 'required|max:9',
+                'email' => 'required|email|max:100',
+                'birthday' => 'required|date',
+                'positionCompany' => 'required|string|max:100',
+                'mailer' => 'nullable|string|in:gmail,office365',
+            ]);
+
+
+
+            $fair = Fair::where('slug', $request->slug)->firstOrFail();
+
+            $exists = UgsePostulante::where('event_id', $fair->id)
+                ->where('documentnumber', $request->documentnumber)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'message' => 'Ya estás registrado en este evento con este número de documento.',
+                    'status' => 409,
+                ]);
+            }
+
+            DB::beginTransaction();
 
             $representante = UgsePostulante::create([
                 'ruc' => $request->ruc,
