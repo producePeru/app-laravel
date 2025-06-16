@@ -63,6 +63,12 @@ Route::post('create', [UserController::class, 'store']);
 
 Route::post('/verify-captcha', [CaptchaController::class, 'verify']);
 
+Route::group(['prefix' => 'pnte-event', 'middleware' => ['recaptcha'] ], function () {
+   Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // sed
+});
+
+
+
 Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function () {
     Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
     Route::post('formalization-digital', [FormalizationDigitalController::class, 'formalizationDigital']);
@@ -103,7 +109,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
 
     //SED
-    Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // VUETIFY FORM UGSE EventsUgseController sed
+    // Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // VUETIFY FORM UGSE EventsUgseController sed
     Route::post('participant-info',                 [UgsePostulanteController::class, 'isRegistered']);             // VUETIFY FORM UGSE EventsUgseController sed
     Route::put('register-attendance',               [UgsePostulanteController::class, 'registerAttendance']);       // registra la fecha y hora de asistencia
 

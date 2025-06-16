@@ -39,6 +39,7 @@ class SedAsistentesController extends Controller
                     $index + 1,
                     $item->event->subTitle,
                     $item->ruc,
+                    $item->attended,
                     $item->comercialName,
                     $item->socialReason,
                     $item->economicsector?->name,
@@ -62,7 +63,6 @@ class SedAsistentesController extends Controller
                     $item->facebook,
                     $item->web,
                     $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : '',
-                    $item->attended,
                 ];
             });
 

@@ -69,4 +69,9 @@ class Kernel extends HttpKernel
         // Agregar esta línea para registrar el middleware
         'restrict.ip' => \App\Http\Middleware\RestrictAccessByIP::class,
     ];
+
+    protected $routeMiddleware = [
+        // Otros middleware
+        'recaptcha' => \App\Http\Middleware\VerifyRecaptcha::class,
+    ];
 }

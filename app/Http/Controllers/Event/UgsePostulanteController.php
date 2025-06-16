@@ -160,7 +160,20 @@ class UgsePostulanteController extends Controller
             'mailer' => 'nullable|string|in:gmail,office365',
         ]);
 
+
+
         $fair = Fair::where('slug', $request->slug)->firstOrFail();
+
+        $exists = UgsePostulante::where('event_id', $fair->id)
+            ->where('documentnumber', $request->documentnumber)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Ya estás registrado en este evento con este número de documento.',
+                'status' => 409,
+            ]);
+        }
 
         DB::beginTransaction();
 

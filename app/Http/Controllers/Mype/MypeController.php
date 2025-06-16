@@ -248,8 +248,8 @@ class MypeController extends Controller
                     'status' => 200,
                     'message' => 'Información de MYPE obtenida',
                     'data' => [
-                        'comercialName' => $responseData['comercialName'] ?? null,
-                        'socialReason' => $responseData['socialReason'] ?? null,
+                        'comercialName' => null,
+                        'socialReason' => $responseData['razonSocial'] ?? null,
                         'web' => null,
                         'facebook' => null,
                         'instagram' => null,
