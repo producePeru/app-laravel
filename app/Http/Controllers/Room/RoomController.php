@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Room;
 use App\Http\Controllers\Controller;
 use App\Models\Profile;
 use App\Models\Room;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -60,20 +61,38 @@ class RoomController extends Controller
         }
     }
 
+    // public function getByMonth(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'month' => 'required|integer|min:1|max:12',
+    //         'year' => 'required|integer|min:2000',
+    //     ]);
+
+    //     $startOfMonth = now()->setDate($validated['year'], $validated['month'], 1)->startOfMonth();
+    //     $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+    //     $events = Room::with('creator')->whereBetween('inicio', [$startOfMonth, $endOfMonth])->get();
+
+    //     return response()->json($events);
+    // }
+
     public function getByMonth(Request $request)
     {
         $validated = $request->validate([
-            'month' => 'required|integer|min:1|max:12',
-            'year' => 'required|integer|min:2000',
+            'start' => 'required|date',
+            'end'   => 'required|date|after_or_equal:start',
         ]);
 
-        $startOfMonth = now()->setDate($validated['year'], $validated['month'], 1)->startOfMonth();
-        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+        $startDate = Carbon::parse($validated['start'])->startOfDay();
+        $endDate   = Carbon::parse($validated['end'])->endOfDay();
 
-        $events = Room::with('creator')->whereBetween('inicio', [$startOfMonth, $endOfMonth])->get();
+        $events = Room::with('creator')
+            ->whereBetween('inicio', [$startDate, $endDate])
+            ->get();
 
         return response()->json($events);
     }
+
 
     public function updateRoomDescription(Request $request, $id)
     {
@@ -107,5 +126,4 @@ class RoomController extends Controller
 
         return response()->json(['message' => 'Reserva eliminada del calendario', 'status' => 200]);
     }
-
 }
