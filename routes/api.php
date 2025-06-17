@@ -456,7 +456,7 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
-    Route::post('send-certificates',    [CertificadoPDFController::class, 'sendEmailWithCertificates']);
+    Route::post('send-certificates',    [CertificadoPDFController::class, 'sendEmailWithCertificates']);        // certificados de Ruta
 
     Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
     Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);        // luchooo
@@ -482,6 +482,7 @@ Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('list-event-sed/{slug}',         [UgsePostulanteController::class, 'index']);
     Route::get('type-fair/{slug}',              [UgsePostulanteController::class, 'showFairBySlug']);            // devuelve datos de la feria desde un slug
     Route::put('sed-update-data-user/{slug}',   [UgsePostulanteController::class, 'update']);            // devuelve datos de la feria desde un slug
+    Route::delete('sed-delete-user/{dni}',      [UgsePostulanteController::class, 'deleteParticipante']);            // devuelve datos de la feria desde un slug
 
 
 });

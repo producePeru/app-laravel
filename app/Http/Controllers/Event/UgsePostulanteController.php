@@ -478,4 +478,23 @@ class UgsePostulanteController extends Controller
             ], 500);
         }
     }
+
+    public function deleteParticipante($id)
+    {
+        try {
+            $participante = UgsePostulante::findOrFail($id);
+            $participante->delete();
+
+            return response()->json([
+                'message' => 'Participante eliminado correctamente',
+                'status'  => 200
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al eliminar el participante',
+                'error'   => $e->getMessage(),
+                'status'  => 500
+            ], 500);
+        }
+    }
 }
