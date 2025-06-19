@@ -8,19 +8,18 @@ use Illuminate\Http\Request;
 
 class EmailSendController extends Controller
 {
-    public function sendEmails(Request $request)
+    public function invitacionesCapacitacionesPP93(Request $request)
     {
         try {
             // Validación de los datos entrantes
             $validatedData = $request->validate([
                 'emails' => 'required|array|min:1',
-                'message' => 'required|string',
                 'mailer' => 'nullable|string',
             ]);
 
             $emails = $validatedData['emails'];
-            $message = $validatedData['message'];
-            $mailer = 'gmail';
+            $message = 'PP03';
+            $mailer = 'office365';
 
             // Procesar cada correo y enviarlo a la cola
             foreach ($emails as $email) {

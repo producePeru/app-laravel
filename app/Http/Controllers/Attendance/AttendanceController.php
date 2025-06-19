@@ -134,7 +134,7 @@ class AttendanceController extends Controller
                 'province_id' => $item->provincia->id,
                 'district_id' => $item->distrito->id,
                 'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
-                'people_id' => $item->asesor->id ?? null,
+                'asesorId' => $item->asesor->id ?? null,
                 'asesor' => $item->asesor
                     ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
                     : null,

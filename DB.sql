@@ -372,14 +372,14 @@ CREATE TABLE eventsugopostulate (
 
 
 
-//- ALTER TABLE fairpostulate
-//- ADD COLUMN invitado_id BIGINT UNSIGNED NULL AFTER person_id,
-//- ADD CONSTRAINT fk_invitado_id FOREIGN KEY (invitado_id) REFERENCES people(id) ON DELETE SET NULL;
+-- //- ALTER TABLE fairpostulate
+-- //- ADD COLUMN invitado_id BIGINT UNSIGNED NULL AFTER person_id,
+-- //- ADD CONSTRAINT fk_invitado_id FOREIGN KEY (invitado_id) REFERENCES people(id) ON DELETE SET NULL;
 
 
-//- ALTER TABLE fairpostulate
-//- ADD COLUMN positionUser1 VARCHAR(100) NULL AFTER propagandamedia_id,
-//- ADD COLUMN positionUser2 VARCHAR(100) NULL AFTER positionUser1;
+-- //- ALTER TABLE fairpostulate
+-- //- ADD COLUMN positionUser1 VARCHAR(100) NULL AFTER propagandamedia_id,
+-- //- ADD COLUMN positionUser2 VARCHAR(100) NULL AFTER positionUser1;
 
 
 
@@ -455,3 +455,23 @@ CREATE TABLE eventsugopostulate (
 
 -- ALTER TABLE ugse_postulantes
 -- ADD COLUMN typeAsistente TINYINT(1) NOT NULL COMMENT '1 = Representante, 2 = Invitado' AFTER city_id;
+
+
+
+CREATE TABLE emails (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    count INT,
+    image VARCHAR(255),
+    description TEXT,
+    emailAccount VARCHAR(255),
+    status CHAR(1) DEFAULT '0',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL
+);
+
+
+
+  UPDATE attendancelist
+SET asesorId = people_id;

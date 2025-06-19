@@ -36,7 +36,7 @@ use App\Models\Category;
 use App\Models\AnnualSale;
 use App\Models\FairType;
 use App\Models\PropagandaMedia;
-
+use App\Models\User;
 
 class SelectController extends Controller
 {
@@ -334,28 +334,23 @@ class SelectController extends Controller
 
     public function getAsesores()
     {
-        $asesores = DB::table('role_user')->where('role_id', 2)->get();
+        $asesores = User::where('rol', 2)->get();
 
-        $data = collect();
+        $data = $asesores->map(function ($item) {
+            $label = strtoupper(trim(
+                $item->name . ' ' . $item->lastname . ' ' . ($item->middlename ?? '')
+            ));
 
-        foreach ($asesores as $asesor) {
-            $profile = Profile::find($asesor->user_id);
+            return [
+                'label' => $label,
+                'value' => $item->id,
+            ];
+        });
 
-            if ($profile) {
-                $label = strtoupper($profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename);
-                $data->push([
-                    'label' => $label,
-                    'value' => $profile->id
-                ]);
-            }
-        }
+        $sortedData = $data->sortBy('label')->values();
 
-        // Ordena por label
-        $data = $data->sortBy('label')->values();
-
-        return response()->json(['data' => $data]);
+        return response()->json(['data' => $sortedData, 'status' => 200]);
     }
-
 
     // Lista de asesores para el reporte
     public function getAsesoresReporte()

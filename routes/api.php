@@ -51,6 +51,7 @@ use App\Http\Controllers\Workshop\WorkshopController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Captcha\CaptchaController;
 use App\Http\Controllers\Download\SedAsistentesController;
+use App\Http\Controllers\Email\EmailController;
 use App\Http\Controllers\Event\UgsePostulanteController;
 use App\Http\Controllers\Image\ImageController;
 use App\Http\Controllers\PP03\Pp03Controller;
@@ -460,7 +461,15 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
     Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
     Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);        // luchooo
-    Route::post('/send-emails',         [EmailSendController::class, 'sendEmails']);                            // nuevo desde home-2025
+
+
+
+
+    Route::post('/invitaciones-capacitaciones-pp093',         [EmailSendController::class, 'invitacionesCapacitacionesPP93']);                            // envia correos para PP093 usa outlook PRODUCE
+});
+
+Route::group(['prefix' => 'email', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('pp03/{emailAccount}', [EmailController::class, 'show']);
 });
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {

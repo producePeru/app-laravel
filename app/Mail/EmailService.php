@@ -24,14 +24,14 @@ class EmailService extends Mailable implements ShouldQueue
     }
 
     /**
-     * Build the message.           // desde el VUEXV...................                  ->view('emails.sed   pp03    ')
+     * Build the message.
      *
      * @return $this
      */
     public function build()
     {
-        return $this->subject('PERÚ PRODUCE')
-            ->view('emails.sedSatipo')
+        return $this->subject('PERÚ PRODUCE - Capacitaciones')
+            ->view('emails.pp03')
             ->with('content', $this->messageContent);
     }
 }
