@@ -246,8 +246,11 @@ class AttendanceController extends Controller
                 'slug' => $attendance->slug,
                 'title' => $attendance->title,
                 'address' => $attendance->address ?? null,
+                'startDate' => $attendance->startDate,
+                'endDate' =>  $attendance->endDate,
                 'fecha' => $attendance->fecha ?? null,
                 'hora' => $attendance->hora ?? null,
+
                 // 'subTitle' => $attendance->subTitle,
                 // 'description' => $attendance->description,
                 // 'modality' => $attendance->modality
@@ -299,6 +302,7 @@ class AttendanceController extends Controller
 			$user->comercialactivity = $request->comercialactivity;
 			$user->attendancelist_id = $attendancelist_id;
             $user->mercado = $request->mercado ?? null;
+            $user->fechaRegistro = $request->fechaRegistro ?? null;
 			$user->save();
 
             return response()->json([

@@ -473,5 +473,4 @@ CREATE TABLE emails (
 
 
 
-  UPDATE attendancelist
-SET asesorId = people_id;
+

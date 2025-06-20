@@ -34,6 +34,7 @@ class AttendanceList extends Model
         'phone',
 
         'mercado',
+        'fechaRegistro',
 
         'comercialActivity',
         'attendancelist_id',

@@ -193,7 +193,7 @@ class DownloadAttendanceController extends Controller
         $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
             return [
                 'index' => $index + 1,
-                'fechaCapacitacion' => $item->list->fecha,
+                'fechaCapacitacion' => $item->fechaRegistro,
                 'name' => $item->name,
                 'lastName' => $item->lastname,
                 'middleName' => $item->middlename,
@@ -212,8 +212,6 @@ class DownloadAttendanceController extends Controller
                 'mercadoPertenece' => $item->mercado ?? null
             ];
         });
-
-        // return $result;
 
         // return Excel::download(new AttendanceListSlugExport($result), 'attendance.xlsx');
 

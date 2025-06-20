@@ -36,10 +36,13 @@ class EmailController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($emailAccount)
+    public function show($type, $emailAccount)
     {
-        $emails = Email::where('emailAccount', $emailAccount)
-            ->where('status', '1') // ✅ solo registros con status = 1
+        $emails = Email::where([
+                'type' => $type,
+                'emailAccount' => $emailAccount
+            ])
+            ->where('status', '1')
             ->get();
 
         return response()->json([
@@ -49,6 +52,7 @@ class EmailController extends Controller
             'data'           => $emails
         ]);
     }
+
 
     /**
      * Update the specified resource in storage.

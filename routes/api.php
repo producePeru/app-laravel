@@ -464,12 +464,14 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
 
 
 
+    // PP093
+    Route::post('/invitaciones-capacitaciones-pp093',       [EmailSendController::class, 'invitacionesCapacitacionesPP93']);            // envia correos para PP093 usa outlook PRODUCE
+    Route::post('/invitaciones-capacitaciones-provincia',   [EmailSendController::class, 'invitacionesCapacitacionesProvincia']);       // envia correos para invitaciones a Provincia
 
-    Route::post('/invitaciones-capacitaciones-pp093',         [EmailSendController::class, 'invitacionesCapacitacionesPP93']);                            // envia correos para PP093 usa outlook PRODUCE
 });
 
 Route::group(['prefix' => 'email', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('pp03/{emailAccount}', [EmailController::class, 'show']);
+    Route::get('pp03/{type}/{emailAccount}', [EmailController::class, 'show']);
 });
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
