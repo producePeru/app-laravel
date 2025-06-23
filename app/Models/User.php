@@ -176,4 +176,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(SupervisorUser::class, 'supervisado_id', 'id')->with('supervisor');
     }
+
+    public function pages()
+    {
+        return $this->belongsToMany(Page::class)
+            ->withPivot(['can_create', 'can_update', 'can_delete', 'can_download'])
+            ->withTimestamps();
+    }
 }

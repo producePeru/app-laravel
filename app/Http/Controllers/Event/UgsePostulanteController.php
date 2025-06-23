@@ -208,7 +208,7 @@ class UgsePostulanteController extends Controller
             ]);
 
 
-            $mailer = $request->mailer ?? 'gmail';
+            $mailer = $request->mailer ?? 'presencial';
 
 
             // ✅ Codificar logo en base64

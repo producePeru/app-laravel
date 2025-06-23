@@ -120,6 +120,10 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], function () {
     Route::get('dots',                      [EventsController::class, 'getEventsDots']);
     Route::get('events-day',                [EventsController::class, 'getEventsByDate']);
+
+    // creamos una pagina para luego darles privilegios a los usuarios
+    // Route::post('new-page',                 [PageController::class, 'isRegistered']);             // VUETIFY FORM UGSE EventsUgseController sed
+
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
