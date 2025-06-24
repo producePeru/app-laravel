@@ -54,6 +54,7 @@ use App\Http\Controllers\Download\SedAsistentesController;
 use App\Http\Controllers\Email\EmailController;
 use App\Http\Controllers\Event\UgsePostulanteController;
 use App\Http\Controllers\Image\ImageController;
+use App\Http\Controllers\Import\ImportEventsUgoController;
 use App\Http\Controllers\PP03\Pp03Controller;
 
 
@@ -260,8 +261,9 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportAttendance']);
 
 
-    Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
-    Route::get('attendance-mercado/{slug}',     [DownloadAttendanceController::class, 'exportFortaleceTuMercado']);         // lista de ventos ugo Fortalece tu Mercado
+    Route::get('attendance/{slug}',                 [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
+    Route::get('attendance-mercado/{slug}',         [DownloadAttendanceController::class, 'exportFortaleceTuMercado']);         // lista de ventos ugo Fortalece tu Mercado
+    Route::post('list-ugo-by-components-id/{id}',    [DownloadAttendanceController::class, 'exportAttendanceByComponentsId']);         // lista de ventos ugo Fortalece tu Mercado
 
 
     // Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
@@ -271,6 +273,10 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('events',                       [DownloadEventsController::class, 'exportEvents']);
     Route::post('sed-asistentes/{slug}',        [SedAsistentesController::class, 'exportList']);                 // asistentes de sed
 
+});
+
+Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::post('events-ugo',                    [ImportEventsUgoController::class, 'importEventsUgo']);
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
