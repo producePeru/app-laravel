@@ -52,10 +52,10 @@ class DownloadAttendanceController extends Controller
                         'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
                         'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
                         // 'modality' => $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
-                        'city' => $item->region->name,
-                        'province' => $item->provincia->name,
-                        'district' => $item->distrito->name,
-                        'address' => $item->address,
+                        'city' => $item->region->name ?? null,
+                        'province' => $item->provincia->name ??  null,
+                        'district' => $item->distrito->name ?? null,
+                        'address' => $item->address ??  null,
                         'asesor' => $item['asesor'],
                         'asesor' => $item->asesor
                             ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
