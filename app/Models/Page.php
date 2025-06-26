@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 
 class Page extends Model
 {
-    use SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -32,7 +32,7 @@ class Page extends Model
     public function users()
     {
         return $this->belongsToMany(User::class)
-            ->withPivot(['can_create', 'can_update', 'can_delete', 'can_download'])
+            ->withPivot(['can_create', 'can_update', 'can_delete', 'can_download', 'can_finish', 'can_import'])
             ->withTimestamps();
     }
 }

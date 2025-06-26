@@ -55,6 +55,7 @@ use App\Http\Controllers\Email\EmailController;
 use App\Http\Controllers\Event\UgsePostulanteController;
 use App\Http\Controllers\Image\ImageController;
 use App\Http\Controllers\Import\ImportEventsUgoController;
+use App\Http\Controllers\Page\PageController;
 use App\Http\Controllers\PP03\Pp03Controller;
 
 
@@ -122,27 +123,33 @@ Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], functi
     Route::get('dots',                      [EventsController::class, 'getEventsDots']);
     Route::get('events-day',                [EventsController::class, 'getEventsByDate']);
 
-    // creamos una pagina para luego darles privilegios a los usuarios
-    // Route::post('new-page',                 [PageController::class, 'isRegistered']);             // VUETIFY FORM UGSE EventsUgseController sed
+});
 
+
+Route::group(['prefix' => 'page', 'middleware' => 'auth:sanctum'], function () {
+    // creamos una pagina para luego darles privilegios a los usuarios
+    Route::post('new-page',                 [PageController::class, 'store']);
+    Route::get('permissions',               [PageController::class, 'index']);
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',              [UserController::class, 'index']);
-    Route::post('create',           [UserController::class, 'store']);
-    Route::delete('delete/{id}',    [UserController::class, 'destroy']);
-    Route::put('update/{id}',       [UserController::class, 'update']);
+    Route::get('list',                      [UserController::class, 'index']);      // v2.0
 
-    Route::get('api/{type}/{num}',  [AuthController::class, 'dniDataUser']);
-    Route::get('only-dni/{num}',    [AuthController::class, 'dniDataUser2']);
 
-    Route::post('logout',           [AuthController::class, 'logout']);
-    Route::post('password-reset',   [AuthController::class, 'passwordReset']);
-    Route::put('views/{id}',        [UserController::class, 'asignViewsUser']);
-    Route::get('views/{id}',        [UserController::class, 'showViewsUser']);
+    Route::post('create',                   [UserController::class, 'store']);
+    Route::delete('delete/{id}',            [UserController::class, 'destroy']);
+    Route::put('update/{id}',               [UserController::class, 'update']);
 
-    Route::get('list-asesories',    [UserController::class, 'allAsesores']);
-    Route::get('my-profile',        [UserController::class, 'showMyProfile']);
+    Route::get('api/{type}/{num}',          [AuthController::class, 'dniDataUser']);
+    Route::get('only-dni/{num}',            [AuthController::class, 'dniDataUser2']);
+
+    Route::post('logout',                   [AuthController::class, 'logout']);
+    Route::post('password-reset',           [AuthController::class, 'passwordReset']);
+    Route::put('views/{id}',                [UserController::class, 'asignViewsUser']);
+    Route::get('views/{id}',                [UserController::class, 'showViewsUser']);
+
+    Route::get('list-asesories',            [UserController::class, 'allAsesores']);
+    Route::get('my-profile',                [UserController::class, 'showMyProfile']);
 
     // REGISTRAR UN ASESOR EXTERNO NOTARIO
     Route::post('register-user',    [UserController::class, 'registerUsers']);
@@ -468,10 +475,10 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
     Route::post('send-certificates',    [CertificadoPDFController::class, 'sendEmailWithCertificates']);        // certificados de Ruta
 
     Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
-    Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);        // luchooo
 
 
-
+    // SED
+    Route::post('/correos-sed',                             [EmailSendController::class, 'invitacionesCapacitacionesSed']);        // luchooo
     // PP093
     Route::post('/invitaciones-capacitaciones-pp093',       [EmailSendController::class, 'invitacionesCapacitacionesPP93']);            // envia correos para PP093 usa outlook PRODUCE
     Route::post('/invitaciones-capacitaciones-provincia',   [EmailSendController::class, 'invitacionesCapacitacionesProvincia']);       // envia correos para invitaciones a Provincia

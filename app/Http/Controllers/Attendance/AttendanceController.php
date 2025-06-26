@@ -11,6 +11,7 @@ use App\Models\Event;
 use App\Models\Province;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use mysqli;
 
@@ -27,21 +28,24 @@ class AttendanceController extends Controller
             'asesor'    => $request->input('asesor')
         ];
 
-        $paginate = $request->boolean('paginate', true);
-
         $userRole = getUserRole();
-        $roleIds  = $userRole['role_id'];
-        $userId   = $userRole['user_id'];
+        $userId = $userRole['user_id'];
+
+        $hasPermission = DB::table('page_user')->where('user_id', $userId)->exists();
+
+        if (!$hasPermission) {
+            return response()->json([
+                'message' => 'No tienes permisos para acceder a esta página.',
+                'status'  => 403
+            ], 403);
+        }
+
 
         $query = Attendance::query();
 
-        if (in_array(1, $roleIds) || $userId === 1) {
-            $query->withItems($filters);
-        } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
-            $query->ByUserId($userId)->withItems($filters);
-        } else {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $query->withItems($filters);
+
+        $query->withItems($filters);
 
         $items = $query->paginate(150)->through(function ($item) {
             return $this->mapAdvisory($item);
@@ -53,41 +57,41 @@ class AttendanceController extends Controller
         ]);
     }
 
-	private function mapAdvisory($item)
-	{
-		return [
-				'id' => $item->id,
-				'attendance_list_count' => $item->attendanceList?->count() ?? 0,
-				'eventsoffice_id' => $item->eventsoffice_id,
-				'slug' => $item->slug,
-				'title' => strtoupper($item->title),
-				'finally' => $item->finally,
-				'pnte' => $item->pnte->name,
-				'id_pnte' => $item->pnte->id,
-				'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
-				'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
-				'startDate2' => $item->startDate,
-				'endDate2' => $item->endDate,
-				'modality' => $item->modality,
-				'city' => $item->region->name ?? null,
-				'province' => $item->provincia->name ?? null,
-				'district' => $item->distrito->name ?? null,
-				'city_id' => $item->region->id ?? null,
-				'address' => $item->address ?? null,
-                'fecha' => $item->fecha ?? null,
-                'hora' => $item->hora ?? null,
-                'mercado' => $item->mercado ?? null,
-				'province_id' => $item->provincia->id ?? null,
-				'district_id' => $item->distrito->id ?? null,
-				// 'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
-				'people_id' => $item->asesor->id ?? null,
-				'asesor' => $item->asesor
-					? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
-					: null,
-				'description' => $item->description ?? null,
-				'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
-		];
-	}
+    private function mapAdvisory($item)
+    {
+        return [
+            'id' => $item->id,
+            'attendance_list_count' => $item->attendanceList?->count() ?? 0,
+            'eventsoffice_id' => $item->eventsoffice_id,
+            'slug' => $item->slug,
+            'title' => strtoupper($item->title),
+            'finally' => $item->finally,
+            'pnte' => $item->pnte->name,
+            'id_pnte' => $item->pnte->id,
+            'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
+            'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
+            'startDate2' => $item->startDate,
+            'endDate2' => $item->endDate,
+            'modality' => $item->modality,
+            'city' => $item->region->name ?? null,
+            'province' => $item->provincia->name ?? null,
+            'district' => $item->distrito->name ?? null,
+            'city_id' => $item->region->id ?? null,
+            'address' => $item->address ?? null,
+            'fecha' => $item->fecha ?? null,
+            'hora' => $item->hora ?? null,
+            'mercado' => $item->mercado ?? null,
+            'province_id' => $item->provincia->id ?? null,
+            'district_id' => $item->distrito->id ?? null,
+            // 'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
+            'people_id' => $item->asesor->id ?? null,
+            'asesor' => $item->asesor
+                ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
+                : null,
+            'description' => $item->description ?? null,
+            'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
+        ];
+    }
 
 
 
@@ -299,11 +303,11 @@ class AttendanceController extends Controller
             $user->city_id = $request->city_id ?? null;
             // $user->slug = $request->slug ?? null;
             $user->howKnowEvent_id = $request->howKnowEvent_id ?? null;
-			$user->comercialactivity = $request->comercialactivity;
-			$user->attendancelist_id = $attendancelist_id;
+            $user->comercialactivity = $request->comercialactivity;
+            $user->attendancelist_id = $attendancelist_id;
             $user->mercado = $request->mercado ?? null;
             $user->fechaRegistro = $request->fechaRegistro ?? null;
-			$user->save();
+            $user->save();
 
             return response()->json([
                 'message' => 'Registrado exitosamente',

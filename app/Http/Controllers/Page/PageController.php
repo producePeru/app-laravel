@@ -13,19 +13,30 @@ class PageController extends Controller
      */
     public function index(Request $request)
     {
-        $user = $request->user();
-        $slug = $request->query('slug');
+        try {
+            $user = $request->user();
+            $slug = $request->query('slug');
 
-        $page = Page::where('slug', $slug)->firstOrFail();
+            $page = Page::where('slug', $slug)->firstOrFail();
 
-        $pivot = $user->pages()->where('page_id', $page->id)->first()?->pivot;
+            $pivot = $user->pages()->where('page_id', $page->id)->first()?->pivot;
 
-        return response()->json([
-            'can_create' => $pivot->can_create ?? false,
-            'can_update' => $pivot->can_update ?? false,
-            'can_delete' => $pivot->can_delete ?? false,
-            'can_download' => $pivot->can_download ?? false,
-        ]);
+            return response()->json([
+                'can_create' => $pivot->can_create == 1 ? true : false,
+                'can_update' => $pivot->can_update == 1 ? true : false,
+                'can_delete' => $pivot->can_delete == 1 ? true : false,
+                'can_download' => $pivot->can_download == 1 ? true : false,
+
+                'can_finish' => $pivot->can_finish == 1 ? true : false,
+                'can_import' => $pivot->can_import == 1 ? true : false,
+
+
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'No tienes acceso a esta página o la página no existe.'
+            ], 500);
+        }
     }
 
     // Creamos una nueva página
