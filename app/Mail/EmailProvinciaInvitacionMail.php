@@ -7,31 +7,22 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class EmailService extends Mailable implements ShouldQueue
+class EmailProvinciaInvitacionMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
     public $messageContent;
 
-    /**
-     * Create a new message instance.
-     *
-     * @param string $messageContent
-     */
     public function __construct($messageContent)
     {
         $this->messageContent = $messageContent;
     }
 
-    /**
-     * Build the message.
-     *
-     * @return $this
-     */
+
     public function build()
     {
         return $this->subject('PERÚ PRODUCE - Capacitaciones')
-            ->view('emails.pp03')
+            ->view('emails.invitacionProvincia')
             ->with('content', $this->messageContent);
     }
 }

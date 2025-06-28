@@ -15,6 +15,60 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    public function index(Request $request)
+    {
+
+        $permission = getPermission('usuarios-lista');
+
+        if (!$permission['hasPermission']) {
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a esta sección',
+                'status' => 403
+            ]);
+        }
+
+        $filters = [
+            'name'      => $request->input('name')
+        ];
+
+        $query = User::where('active', 1)->orderBy('id', 'desc');
+
+        $query->withDataItems($filters);
+
+        $users = $query->paginate(150)->through(function ($advisory) {
+            return $this->mapEvents($advisory);
+        });
+
+        return response()->json([
+            'data'   => $users,
+            'status' => 200
+        ]);
+    }
+
+    private function mapEvents($item)
+    {
+        return [
+            'id'                => $item->id,
+            'email'             => $item->email,
+            'name'              => isset($item->name) ? strtoupper($item->name) : null,
+            'fullname'          => trim(
+                                    (isset($item->lastname) ? strtoupper($item->lastname) : '') . ' ' .
+                                    (isset($item->middlename) ? strtoupper($item->middlename) : '')
+                                ) ?: null,
+
+            'dni'               => $item->dni ?? null,
+            'phone'             => $item->phone ?? null,
+            'personalemail'     => $item->personalemail ?? null,
+            'birthday'          => $item->birthday ? date('d/m/Y', strtotime($item->birthday)) : null,
+            'cde_id'           => $item->cde_id ?? null,
+            'cde_name'         => isset($item->cde->name) ? strtoupper($item->cde->name) : null,
+            'office_id'        => $item->office_id ?? null,
+            'office_name'      => isset($item->office->name) ? strtoupper($item->office->name) : null,
+        ];
+    }
+
+
+
     private function getUserRole()
     {
         $user_id = Auth::user()->id;
@@ -33,36 +87,7 @@ class UserController extends Controller
         ];
     }
 
-    public function index(Request $request)
-    {
-        $search = $request->input('search', '');
 
-        $query = User::with([
-            'profile',
-            'profile.office',
-            'profile.cde',
-            'roles'
-        ])->orderBy('created_at', 'desc');
-
-        if ($search) {
-            $query->whereHas('profile', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('lastname', 'like', "%{$search}%")
-                    ->orWhere('middlename', 'like', "%{$search}%")
-                    ->orWhere('documentnumber', 'like', "%{$search}%")
-                    ->orWhere('birthday', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhereHas('cde', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        $data = $query->paginate(50);
-
-        return response()->json(['data' => $data]);
-    }
 
     public function store(Request $request)
     {
@@ -374,7 +399,7 @@ class UserController extends Controller
     public function registerViewsSeven(Request $request)        // asesores externos notarios
     {
         View::create([
-            'views'     => json_encode(["home", "asesorias", "asesorias-formalizaciones", "asesorias-listado","solicitantes"]),
+            'views'     => json_encode(["home", "asesorias", "asesorias-formalizaciones", "asesorias-listado", "solicitantes"]),
             'user_id'   => $request->input('user_id')
         ]);
         return response()->json(['message' => 'Vista asignadas', 'status' => 200]);

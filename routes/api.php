@@ -51,8 +51,11 @@ use App\Http\Controllers\Workshop\WorkshopController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Captcha\CaptchaController;
 use App\Http\Controllers\Download\SedAsistentesController;
+use App\Http\Controllers\Email\EmailController;
 use App\Http\Controllers\Event\UgsePostulanteController;
 use App\Http\Controllers\Image\ImageController;
+use App\Http\Controllers\Import\ImportEventsUgoController;
+use App\Http\Controllers\Page\PageController;
 use App\Http\Controllers\PP03\Pp03Controller;
 
 
@@ -62,6 +65,12 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('create', [UserController::class, 'store']);
 
 Route::post('/verify-captcha', [CaptchaController::class, 'verify']);
+
+Route::group(['prefix' => 'pnte-event', 'middleware' => ['recaptcha'] ], function () {
+   Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // sed
+});
+
+
 
 Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function () {
     Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
@@ -103,7 +112,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
 
     //SED
-    Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // VUETIFY FORM UGSE EventsUgseController sed
+    // Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // VUETIFY FORM UGSE EventsUgseController sed
     Route::post('participant-info',                 [UgsePostulanteController::class, 'isRegistered']);             // VUETIFY FORM UGSE EventsUgseController sed
     Route::put('register-attendance',               [UgsePostulanteController::class, 'registerAttendance']);       // registra la fecha y hora de asistencia
 
@@ -113,24 +122,34 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], function () {
     Route::get('dots',                      [EventsController::class, 'getEventsDots']);
     Route::get('events-day',                [EventsController::class, 'getEventsByDate']);
+
+});
+
+
+Route::group(['prefix' => 'page', 'middleware' => 'auth:sanctum'], function () {
+    // creamos una pagina para luego darles privilegios a los usuarios
+    Route::post('new-page',                 [PageController::class, 'store']);
+    Route::get('permissions',               [PageController::class, 'index']);
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',              [UserController::class, 'index']);
-    Route::post('create',           [UserController::class, 'store']);
-    Route::delete('delete/{id}',    [UserController::class, 'destroy']);
-    Route::put('update/{id}',       [UserController::class, 'update']);
+    Route::get('list',                      [UserController::class, 'index']);      // v2.0
 
-    Route::get('api/{type}/{num}',  [AuthController::class, 'dniDataUser']);
-    Route::get('only-dni/{num}',    [AuthController::class, 'dniDataUser2']);
 
-    Route::post('logout',           [AuthController::class, 'logout']);
-    Route::post('password-reset',   [AuthController::class, 'passwordReset']);
-    Route::put('views/{id}',        [UserController::class, 'asignViewsUser']);
-    Route::get('views/{id}',        [UserController::class, 'showViewsUser']);
+    Route::post('create',                   [UserController::class, 'store']);
+    Route::delete('delete/{id}',            [UserController::class, 'destroy']);
+    Route::put('update/{id}',               [UserController::class, 'update']);
 
-    Route::get('list-asesories',    [UserController::class, 'allAsesores']);
-    Route::get('my-profile',        [UserController::class, 'showMyProfile']);
+    Route::get('api/{type}/{num}',          [AuthController::class, 'dniDataUser']);
+    Route::get('only-dni/{num}',            [AuthController::class, 'dniDataUser2']);
+
+    Route::post('logout',                   [AuthController::class, 'logout']);
+    Route::post('password-reset',           [AuthController::class, 'passwordReset']);
+    Route::put('views/{id}',                [UserController::class, 'asignViewsUser']);
+    Route::get('views/{id}',                [UserController::class, 'showViewsUser']);
+
+    Route::get('list-asesories',            [UserController::class, 'allAsesores']);
+    Route::get('my-profile',                [UserController::class, 'showMyProfile']);
 
     // REGISTRAR UN ASESOR EXTERNO NOTARIO
     Route::post('register-user',    [UserController::class, 'registerUsers']);
@@ -246,11 +265,10 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
 
-    Route::post('attendance-ugo',               [DownloadAttendanceController::class, 'exportAttendance']);
-
-
-    Route::get('attendance/{slug}',             [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
-    Route::get('attendance-mercado/{slug}',     [DownloadAttendanceController::class, 'exportFortaleceTuMercado']);         // lista de ventos ugo Fortalece tu Mercado
+    Route::post('attendance-ugo',                       [DownloadAttendanceController::class, 'exportAttendance']);
+    Route::get('attendance/{slug}',                     [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
+    Route::get('attendance-mercado/{slug}',             [DownloadAttendanceController::class, 'exportFortaleceTuMercado']);         // lista de ventos ugo Fortalece tu Mercado
+    Route::post('list-ugo-by-components-id/{id}',       [DownloadAttendanceController::class, 'exportAttendanceByComponentsId']);         // lista de ventos ugo Fortalece tu Mercado
 
 
     // Route::post('votations-notaries',           [DownloadAttendanceController::class, 'exportDigitalRouter']);
@@ -260,6 +278,10 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('events',                       [DownloadEventsController::class, 'exportEvents']);
     Route::post('sed-asistentes/{slug}',        [SedAsistentesController::class, 'exportList']);                 // asistentes de sed
 
+});
+
+Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+    Route::post('events-ugo',                    [ImportEventsUgoController::class, 'importEventsUgo']);
 });
 
 Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -450,11 +472,21 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
-    Route::post('send-certificates',    [CertificadoPDFController::class, 'sendEmailWithCertificates']);
+    Route::post('send-certificates',    [CertificadoPDFController::class, 'sendEmailWithCertificates']);        // certificados de Ruta
 
     Route::post('/ayacucho',            [SendMailAyacuchoController::class, 'sendEmailsAyacucho']);
-    Route::post('/invitations',         [SendMailAyacuchoController::class, 'sendEmailsAyacuchoArray']);        // luchooo
-    Route::post('/send-emails',         [EmailSendController::class, 'sendEmails']);                            // nuevo desde home-2025
+
+
+    // SED
+    Route::post('/correos-sed',                             [EmailSendController::class, 'invitacionesCapacitacionesSed']);        // luchooo
+    // PP093
+    Route::post('/invitaciones-capacitaciones-pp093',       [EmailSendController::class, 'invitacionesCapacitacionesPP93']);            // envia correos para PP093 usa outlook PRODUCE
+    Route::post('/invitaciones-capacitaciones-provincia',   [EmailSendController::class, 'invitacionesCapacitacionesProvincia']);       // envia correos para invitaciones a Provincia
+
+});
+
+Route::group(['prefix' => 'email', 'middleware' => 'auth:sanctum'], function () {
+    Route::get('pp03/{type}/{emailAccount}', [EmailController::class, 'show']);
 });
 
 Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -476,6 +508,7 @@ Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('list-event-sed/{slug}',         [UgsePostulanteController::class, 'index']);
     Route::get('type-fair/{slug}',              [UgsePostulanteController::class, 'showFairBySlug']);            // devuelve datos de la feria desde un slug
     Route::put('sed-update-data-user/{slug}',   [UgsePostulanteController::class, 'update']);            // devuelve datos de la feria desde un slug
+    Route::delete('sed-delete-user/{dni}',      [UgsePostulanteController::class, 'deleteParticipante']);            // devuelve datos de la feria desde un slug
 
 
 });

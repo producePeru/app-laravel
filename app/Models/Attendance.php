@@ -28,7 +28,8 @@ class Attendance extends Model
         'fecha',
         'hora',
         'user_id',
-        'people_id',
+        // 'people_id',
+        'asesorId',
         'description',
         'finally'
     ];
@@ -60,7 +61,7 @@ class Attendance extends Model
 
     public function asesor()
     {
-        return $this->belongsTo(Profile::class, 'people_id');
+        return $this->belongsTo(User::class, 'asesorId');
     }
 
     public function pnte()
@@ -86,17 +87,21 @@ class Attendance extends Model
             'profile:id,user_id,name,lastname,middlename',
             'asesor',
             'pnte'
-            ])->withCount('attendanceList');
+        ])->withCount('attendanceList');
+
+        // if (!empty($filters['asesor'])) {
+        //     $query->where('people_id', $filters['asesor']);
+        // }
 
         if (!empty($filters['asesor'])) {
-            $query->where('people_id', $filters['asesor']);
+            $query->where('asesorId', $filters['asesor']);
         }
 
 
         if (!empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('title', 'like', '%' . $filters['name'] . '%')
-                  ->orWhere('description', 'like', '%' . $filters['name'] . '%');
+                    ->orWhere('description', 'like', '%' . $filters['name'] . '%');
             });
         }
 
@@ -104,7 +109,7 @@ class Attendance extends Model
         if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
             $query->where(function ($q) use ($filters) {
                 $q->whereBetween('startDate', [$filters['dateStart'], $filters['dateEnd']])
-                  ->orWhereBetween('endDate', [$filters['dateStart'], $filters['dateEnd']]);
+                    ->orWhereBetween('endDate', [$filters['dateStart'], $filters['dateEnd']]);
             });
         }
 
@@ -118,19 +123,15 @@ class Attendance extends Model
         if (!empty($filters['orderby']) && $filters['orderby'] == 1) {
 
             $query->orderBy('attendance_list_count', 'desc');
-
         } else if (!empty($filters['orderby']) && $filters['orderby'] == 2) {
 
             $query->orderBy('attendance_list_count', 'asc');
-
         } else if (!empty($filters['orderby']) && $filters['orderby'] == 3) {
 
             $query->orderBy('finally', 'desc');
-
         } else {
 
             $query->orderBy('created_at', 'desc');
-
         }
     }
 }

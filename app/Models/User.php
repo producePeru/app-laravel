@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -21,7 +22,23 @@ class User extends Authenticatable
         // 'name',
         'email',
         'password',
-        'dni'
+        'dni',
+
+        'name',
+        'lastname',
+        'middlename',
+        'birthday',
+        'phone',
+        'personalemail',
+        'sick',
+        'gender_id',
+        'cde_id',
+        'office_id',
+        'notary_id',
+        'supervisor_id',
+        'rol',
+        'active'
+
     ];
 
     /**
@@ -113,6 +130,11 @@ class User extends Authenticatable
         return $this->belongsTo('App\Models\Cde');
     }
 
+    public function office()
+    {
+        return $this->belongsTo('App\Models\Office');
+    }
+
     // public function scopeWithProfileAsesories($query)
     // {
     //     return $query->has('asesores')
@@ -159,5 +181,29 @@ class User extends Authenticatable
     public function misupervisor()
     {
         return $this->hasOne(SupervisorUser::class, 'supervisado_id', 'id')->with('supervisor');
+    }
+
+    public function pages()
+    {
+        return $this->belongsToMany(Page::class)
+            ->withPivot(['can_create', 'can_update', 'can_delete', 'can_download', 'can_finish', 'can_import'])
+            ->withTimestamps();
+    }
+
+
+    public function scopeWithDataItems($query, $filters)
+    {
+        $query->with([
+            'cde',
+            'office'
+        ])->orderBy('created_at', 'desc');
+
+
+        if (!empty($filters['name'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('dni', 'like', '%' . $filters['name'] . '%')
+                    ->orWhere(DB::raw("CONCAT(name, ' ', lastname, ' ', middlename)"), 'like', '%' . $filters['name'] . '%');
+            });
+        }
     }
 }

@@ -276,7 +276,7 @@ class FairController extends Controller
 
 
 
-            $mailer = 'gmail';
+            $mailer = 'digitalization';
 
 
             Mail::mailer($mailer)->to($request->input('email'))->send(new FeriasEmpresarialesMail($fair));

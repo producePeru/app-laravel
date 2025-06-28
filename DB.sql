@@ -372,14 +372,14 @@ CREATE TABLE eventsugopostulate (
 
 
 
-//- ALTER TABLE fairpostulate
-//- ADD COLUMN invitado_id BIGINT UNSIGNED NULL AFTER person_id,
-//- ADD CONSTRAINT fk_invitado_id FOREIGN KEY (invitado_id) REFERENCES people(id) ON DELETE SET NULL;
+-- //- ALTER TABLE fairpostulate
+-- //- ADD COLUMN invitado_id BIGINT UNSIGNED NULL AFTER person_id,
+-- //- ADD CONSTRAINT fk_invitado_id FOREIGN KEY (invitado_id) REFERENCES people(id) ON DELETE SET NULL;
 
 
-//- ALTER TABLE fairpostulate
-//- ADD COLUMN positionUser1 VARCHAR(100) NULL AFTER propagandamedia_id,
-//- ADD COLUMN positionUser2 VARCHAR(100) NULL AFTER positionUser1;
+-- //- ALTER TABLE fairpostulate
+-- //- ADD COLUMN positionUser1 VARCHAR(100) NULL AFTER propagandamedia_id,
+-- //- ADD COLUMN positionUser2 VARCHAR(100) NULL AFTER positionUser1;
 
 
 
@@ -455,3 +455,56 @@ CREATE TABLE eventsugopostulate (
 
 -- ALTER TABLE ugse_postulantes
 -- ADD COLUMN typeAsistente TINYINT(1) NOT NULL COMMENT '1 = Representante, 2 = Invitado' AFTER city_id;
+
+
+
+CREATE TABLE emails (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    count INT,
+    image VARCHAR(255),
+    description TEXT,
+    emailAccount VARCHAR(255),
+    status CHAR(1) DEFAULT '0',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL
+);
+
+
+
+
+
+
+-- CREATE TABLE pages (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL UNIQUE,
+--     slug VARCHAR(255) NOT NULL UNIQUE,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- );
+
+-- CREATE TABLE page_user (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     user_id BIGINT UNSIGNED NOT NULL,
+--     page_id BIGINT UNSIGNED NOT NULL,
+
+--     can_view_all TINYINT(1) DEFAULT 1,
+--     can_create TINYINT(1) DEFAULT 0,
+--     can_update TINYINT(1) DEFAULT 0,
+--     can_delete TINYINT(1) DEFAULT 0,
+--     can_download TINYINT(1) DEFAULT 0,
+
+--     can_finish TINYINT(1) DEFAULT 0,
+--     can_import TINYINT(1) DEFAULT 0,
+
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+--     CONSTRAINT fk_page_user_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+--     CONSTRAINT fk_page_user_page FOREIGN KEY (page_id) REFERENCES pages(id) ON DELETE CASCADE
+-- );
+
+
+INSERT INTO pages (name) VALUES ('Usuarios lista');
+

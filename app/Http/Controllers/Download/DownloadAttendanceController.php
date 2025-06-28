@@ -52,10 +52,10 @@ class DownloadAttendanceController extends Controller
                         'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
                         'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
                         // 'modality' => $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
-                        'city' => $item->region->name,
-                        'province' => $item->provincia->name,
-                        'district' => $item->distrito->name,
-                        'address' => $item->address,
+                        'city' => $item->region->name ?? null,
+                        'province' => $item->provincia->name ??  null,
+                        'district' => $item->distrito->name ?? null,
+                        'address' => $item->address ??  null,
                         'asesor' => $item['asesor'],
                         'asesor' => $item->asesor
                             ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
@@ -193,7 +193,7 @@ class DownloadAttendanceController extends Controller
         $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
             return [
                 'index' => $index + 1,
-                'fechaCapacitacion' => $item->list->fecha,
+                'fechaCapacitacion' => $item->fechaRegistro,
                 'name' => $item->name,
                 'lastName' => $item->lastname,
                 'middleName' => $item->middlename,
@@ -213,8 +213,6 @@ class DownloadAttendanceController extends Controller
             ];
         });
 
-        // return $result;
-
         // return Excel::download(new AttendanceListSlugExport($result), 'attendance.xlsx');
 
         $templatePath = storage_path('app/plantillas/fortalece_tu_mercado_template.xlsx');
@@ -225,6 +223,90 @@ class DownloadAttendanceController extends Controller
         foreach ($result as $i => $resultRow) {
             $col = 'A';
             foreach ($resultRow as $value) {
+                $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
+                $col++;
+            }
+        }
+
+        return new StreamedResponse(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="lista-registrados.xlsx"',
+        ]);
+    }
+
+
+
+
+    // descargamos de acuerdo al tipo de evento que queremos 1,2,3,4,5
+    public function exportAttendanceByComponentsId($eventsoffice_id)
+    {
+        // Buscar todos los Attendance que pertenecen al eventsoffice_id
+        $attendances = Attendance::where('eventsoffice_id', $eventsoffice_id)
+            ->orderBy('startDate', 'desc') // o 'created_at', según lo que prefieras
+            ->get();
+
+        if ($attendances->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron actividades para este eventsoffice.'], 404);
+        }
+
+        $data = collect();
+
+        foreach ($attendances as $attendance) {
+            $asesor = People::find($attendance->people_id);
+            $region = City::find($attendance->city_id);
+            $province = Province::find($attendance->province_id);
+            $district = District::find($attendance->district_id);
+
+            $lists = AttendanceList::with([
+                'typedocument:id,name',
+                'gender:id,name,avr',
+                'economicsector:id,name',
+                'list'
+            ])
+                ->where('attendancelist_id', $attendance->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $transformed = $lists->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district, $data) {
+                return [
+                    'index' => $data->count() + $index + 1,
+                    'nameActividad' => $attendance->title,
+                    'dateActividad' => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
+                    'asesor' => $asesor ? "{$asesor->name} {$asesor->lastname} {$asesor->middlename}" : null,
+                    'region' => $region->name ?? '-',
+                    'provincia' => $province->name ?? '-',
+                    'distrito' => $district->name ?? '-',
+                    'place' => $attendance->address ?? null,
+                    'lastname' => $item->lastname . ' ' . $item->middlename,
+                    'name' => $item->name,
+                    'typedocument' => $item->typedocument->name ?? '-',
+                    'documentnumber' => $item->documentnumber,
+                    'email' => $item->email,
+                    'phone' => $item->phone,
+                    'gender' => $item->gender->avr ?? '-',
+                    'sick' => $item->sick,
+                    'ruc' => $item->ruc ?? '-',
+                    'economicsector' => $item->economicsector->name ?? '-',
+                    'comercialActivity' => $item->comercialActivity ?? '-',
+                ];
+            });
+
+            $data = $data->concat($transformed);
+        }
+
+        // Cargar plantilla
+        $templatePath = storage_path('app/plantillas/ugo_eventos_lista_registrados_template.xlsx');
+        $spreadsheet = IOFactory::load($templatePath);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Llenar Excel
+        $startRow = 2;
+        foreach ($data as $i => $row) {
+            $col = 'A';
+            foreach ($row as $value) {
                 $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
                 $col++;
             }
