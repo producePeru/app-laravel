@@ -23,16 +23,14 @@
                     </tr>
 
                     <!-- Message -->
-                    <tr>
-                        <td align="center"
-                            style="font-family: Arial, sans-serif; font-size: 16px; color: #666; padding: 0 40px 30px; line-height: 1.7">
-                            {{ $messageContent }}
-                        </td>
-                    </tr>
+                    <td align="center"
+                        style="font-family: Arial, sans-serif; font-size: 16px; color: #666; padding: 0 40px 30px; line-height: 1.7">
+                        {!! $messageContent !!}
+                    </td>
 
                     <tr>
                         <td align="center" style="padding: 20px;">
-                           <span>Hemos adjuntado tu entrada para el evento en este correo.</span>
+                            <span>Hemos adjuntado tu entrada para el evento en este correo.</span>
                         </td>
                     </tr>
 

@@ -47,7 +47,7 @@ return [
             ],
         ],
 
-        'digitalization' => [
+        'digitalization' => [                                                           //
             'transport' => env('MAIL_MAILER_DIGITAL', 'smtp'),
             'host' => env('MAIL_HOST_DIGITAL'),
             'port' => env('MAIL_PORT_DIGITAL'),
@@ -60,7 +60,7 @@ return [
             ],
         ],
 
-        'presencial' => [
+        'presencial' => [                                                                   //sed
             'transport' => env('MAIL_MAILER_CAPACITACIONPRESENCIAL', 'smtp'),
             'host' => env('MAIL_HOST_CAPACITACIONPRESENCIAL'),
             'port' => env('MAIL_PORT_CAPACITACIONPRESENCIAL'),
@@ -97,6 +97,19 @@ return [
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS_OFFICE365'),
                 'name' => env('MAIL_FROM_NAME_OFFICE365'),
+            ],
+        ],
+
+        'lucho' => [
+            'transport' => env('MAIL_MAILER_LUCHO', 'smtp'),
+            'host' => env('MAIL_HOST_LUCHO'),
+            'port' => env('MAIL_PORT_LUCHO'),
+            'username' => env('MAIL_USERNAME_LUCHO'),
+            'password' => env('MAIL_PASSWORD_LUCHO'),
+            'encryption' => env('MAIL_ENCRYPTION_LUCHO'),
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS_LUCHO'),
+                'name' => env('MAIL_FROM_NAME_LUCHO'),
             ],
         ],
 

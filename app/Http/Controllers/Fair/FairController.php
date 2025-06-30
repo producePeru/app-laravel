@@ -158,13 +158,42 @@ class FairController extends Controller
 
                 'fecha' => $fair->fecha,
                 'place' => $fair->place,
-                'schedule' => $fair->hours,
+                'schedule' => $fair->hours
 
             ], 'status' => 200]);
         }
 
         return response()->json(['message' => 'Feria no encontrada.', 'status' => 400]);
     }
+
+    public function showEventCount($slug)
+    {
+        try {
+            $fair = Fair::where('slug', $slug)->first();
+
+            if (!$fair) {
+                return response()->json([
+                    'message' => 'Feria no encontrada.',
+                    'status' => 404
+                ]);
+            }
+
+            return response()->json([
+                'data' => [
+                    'total'      => $fair->metaMypes,
+                    'amountNow' => $fair->postulantes()->whereNotNull('attended')->count(),
+                ],
+                'status' => 200
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al obtener los datos.',
+                'error'   => $e->getMessage(),
+                'status'  => 500
+            ]);
+        }
+    }
+
 
 
     public function update(Request $request, string $id)

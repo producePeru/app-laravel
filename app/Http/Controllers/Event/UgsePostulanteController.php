@@ -159,7 +159,7 @@ class UgsePostulanteController extends Controller
                 'email' => 'required|email|max:100',
                 'birthday' => 'required|date',
                 'positionCompany' => 'required|string|max:100',
-                'mailer' => 'nullable|string|in:gmail,office365',
+                'mailer' => 'nullable|string',
             ]);
 
 
@@ -208,7 +208,7 @@ class UgsePostulanteController extends Controller
             ]);
 
 
-            $mailer = $request->mailer ?? 'presencial';
+            $mailer = $request->mailer ?? 'digitalization';
 
 
             // ✅ Codificar logo en base64

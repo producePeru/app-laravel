@@ -101,7 +101,7 @@
                                         <p align="left" style="
                                                 padding-top: 15px;
                                                 font-weight: 600;
-                                                font-size: 16px;
+                                                font-size: 14px;
                                                 line-height: 24px;
                                                 font-family: 'roboto', arial,
                                                   helvetica, sans-serif !important;
@@ -111,7 +111,7 @@
 
                                         <p align="left" style="
                                                 font-weight: 300;
-                                                font-size: 16px;
+                                                font-size: 14px;
                                                 line-height: 24px;
                                                 font-family: 'roboto', arial,
                                                   helvetica, sans-serif !important;
@@ -134,7 +134,7 @@
 
                                         <b style="
                                                 font-weight: 600;
-                                                font-size: 16px;
+                                                font-size: 14px;
                                                 line-height: 16px;
                                                 font-family: 'roboto', arial,
                                                   helvetica, sans-serif !important;
@@ -143,7 +143,7 @@
 
                                         <p align="left" style="
                                                 font-weight: 300;
-                                                font-size: 16px;
+                                                font-size: 14px;
                                                 line-height: 20px;
                                                 font-family: 'roboto', arial,
                                                   helvetica, sans-serif !important;
@@ -153,7 +153,7 @@
                                         </p>
                                         <p align="left" style="
                                                 font-weight: 300;
-                                                font-size: 16px;
+                                                font-size: 14px;
                                                 line-height: 20px;
                                                 font-family: 'roboto', arial,
                                                   helvetica, sans-serif !important;
@@ -161,7 +161,7 @@
                                           🕗 Hora: 5:00 pm a 8:00 pm
                                         </p>
                                         <p align="left" style="
-                                                font-size: 16px;
+                                                font-size: 14px;
                                                 line-height: 20px;
                                                 font-family: 'roboto', arial,
                                                   helvetica, sans-serif !important;
@@ -179,7 +179,7 @@
 
                                         <p align="left" style="
                                                 font-weight: 300;
-                                                font-size: 16px;
+                                                font-size: 14px;
                                                 line-height: 20px;
                                                 font-family: 'roboto', arial,
                                                   helvetica, sans-serif !important;
@@ -199,7 +199,7 @@
                                                              border-radius: 4px;
                                                         color: #ffffff;
                                                         display: block;
-                                                        font-size: 16px;
+                                                        font-size: 14px;
                                                         font-weight: bold;
                                                         text-align: center;
                                                         text-decoration: none;
@@ -229,7 +229,7 @@
                                     padding: 20px 30px 10px 30px;
                                     font-family: 'roboto', arial, helvetica,
                                       sans-serif;
-                                    font-size: 16px;
+                                    font-size: 14px;
                                     line-height: 24px;
                                     color: #252525;
                                   ">

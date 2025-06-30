@@ -88,6 +88,8 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
     // FERIAS EMPRESARIALES
     Route::get('data/{slug}',                       [FairController::class, 'show']);                       // TRAE LA FERIA POR SLUG
+    Route::get('data-event-count/{slug}',           [FairController::class, 'showEventCount']);                       // REALIZA EL CONTADOR 12/100
+
     Route::get('search-api-ruc/{ruc}',              [MypeController::class, 'apiRUC']);                     // BUSCA DATOS A PARTIR DEL RUC     *******************
     Route::post('first-or-new',                     [MypeController::class, 'registerMype']);               // PASO 1 CREA O EDITA UNA MYPE
     Route::get('search-api-dni/{dni}',              [PersonController::class, 'apiDNI']);                   // BUSCA DATOS A PARTIR DEL DNI     *******************
