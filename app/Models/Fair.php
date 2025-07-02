@@ -133,19 +133,32 @@ class Fair extends Model
 
         $today = Carbon::today();
 
-        if (!empty($filters['orderby']) && $filters['orderby'] == 1) {
-            // Vigentes: aún no ha terminado (endDate igual o mayor a hoy)
-            $query->whereDate('endDate', '>=', $today)
-                ->orderBy('endDate', 'asc');
-        } else if (!empty($filters['orderby']) && $filters['orderby'] == 2) {
-            // Pasados: ya terminó
-            $query->whereDate('endDate', '<', $today)
-                ->orderBy('endDate', 'desc');
-        } else if (!empty($filters['orderby']) && $filters['orderby'] == 3) {
-            // Todos
-            $query->orderBy('endDate', 'desc');
+        if (!empty($filters['orderby'])) {
+            switch ($filters['orderby']) {
+                case 1:
+                    // Más recientes (por creación)
+                    // $query->orderBy('created_at', 'desc');
+                    $query->whereDate('endDate', '>=', $today)
+                        ->orderBy('endDate', 'asc');
+                    break;
+                case 2:
+                    // Vigentes (endDate >= hoy)
+                    $query->whereDate('endDate', '<', $today)
+                        ->orderBy('endDate', 'desc');
+                    break;
+                case 3:
+                    // Finalizados (ya terminaron)
+                    $query->orderBy('created_at', 'desc');
+                    break;
+                case 4:
+                    // Orden por fecha de finalización, descendente
+                    $query->orderBy('endDate', 'desc');
+                    break;
+                default:
+                    $query->orderBy('created_at', 'desc');
+            }
         } else {
-            // Orden por defecto
+            // Por defecto: más recientes
             $query->orderBy('created_at', 'desc');
         }
     }
