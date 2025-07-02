@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class Fair extends Model
 {
@@ -130,17 +131,21 @@ class Fair extends Model
             $query->whereYear('created_at', $filters['year']);
         }
 
+        $today = Carbon::today();
+
         if (!empty($filters['orderby']) && $filters['orderby'] == 1) {
-
-            $query->orderBy('attendance_list_count', 'desc');
+            // Vigentes: aún no ha terminado (endDate igual o mayor a hoy)
+            $query->whereDate('endDate', '>=', $today)
+                ->orderBy('endDate', 'asc');
         } else if (!empty($filters['orderby']) && $filters['orderby'] == 2) {
-
-            $query->orderBy('attendance_list_count', 'asc');
+            // Pasados: ya terminó
+            $query->whereDate('endDate', '<', $today)
+                ->orderBy('endDate', 'desc');
         } else if (!empty($filters['orderby']) && $filters['orderby'] == 3) {
-
-            $query->orderBy('finally', 'desc');
+            // Todos
+            $query->orderBy('endDate', 'desc');
         } else {
-
+            // Orden por defecto
             $query->orderBy('created_at', 'desc');
         }
     }
