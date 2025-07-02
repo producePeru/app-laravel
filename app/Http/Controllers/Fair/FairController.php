@@ -180,7 +180,7 @@ class FairController extends Controller
 
             return response()->json([
                 'data' => [
-                    'total'      => $fair->metaMypes,
+                    'total'      => $fair->postulantes()->count(),
                     'amountNow' => $fair->postulantes()->whereNotNull('attended')->count(),
                 ],
                 'status' => 200

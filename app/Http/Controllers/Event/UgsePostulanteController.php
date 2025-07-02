@@ -343,6 +343,128 @@ class UgsePostulanteController extends Controller
     }
 
 
+    // public function store(Request $request)
+    // {
+    //     try {
+
+    //         $request->validate([
+    //             'ruc' => 'required|max:11',
+    //             'comercialName' => 'required|string|max:200',
+    //             'socialReason' => 'required|string|max:200',
+    //             'economicsector_id' => 'required|integer',
+    //             'comercialactivity_id' => 'required|integer',
+    //             'category_id' => 'required|integer',
+    //             'city_id' => 'required|integer',
+    //             'typedocument_id' => 'required|integer',
+    //             'documentnumber' => 'required',
+    //             'lastname' => 'required|string|max:100',
+    //             'name' => 'required|string|max:100',
+    //             'gender_id' => 'required|integer',
+    //             'howKnowEvent_id' => 'required|integer',
+    //             'slug' => 'required|string',
+    //             'phone' => 'required|max:9',
+    //             'email' => 'required',
+    //             'birthday' => 'required',
+    //             'positionCompany' => 'required',
+    //             'mailer' => 'nullable|string',
+    //         ]);
+
+    //         $fair = Fair::where('slug', $request->slug)->firstOrFail();
+
+    //         $exists = UgsePostulante::where('event_id', $fair->id)
+    //             ->where('documentnumber', $request->documentnumber)
+    //             ->exists();
+
+    //         if ($exists) {
+    //             return response()->json([
+    //                 'message' => 'Ya estás registrado en este evento con este número de documento.',
+    //                 'status' => 409,
+    //             ]);
+    //         }
+
+    //         DB::beginTransaction();
+
+    //         $representante = UgsePostulante::create($request->all());
+
+    //         if (!$representante || !$representante->id) {
+    //             DB::rollBack();
+    //             return response()->json([
+    //                 'message' => 'No se pudo registrar al postulante.',
+    //                 'status' => 500
+    //             ]);
+    //         }
+
+    //         $mailer = $request->mailer ?? 'digitalization';
+
+    //         // ✅ Codificar logo en base64 & ✅ Generar QR en base64 usando Endroid QR Code
+
+    //         $logoPath = public_path('images/logo/sed.png');
+    //         $logoBase64 = base64_encode(file_get_contents($logoPath));
+    //         $logoMime = mime_content_type($logoPath);
+    //         $logoDataUri = "data:$logoMime;base64,$logoBase64";
+    //         $qrResult = Builder::create()
+    //             ->writer(new PngWriter())
+    //             ->data($representante->documentnumber)
+    //             ->size(200)
+    //             ->margin(10)
+    //             ->build();
+
+    //         $qrBase64 = base64_encode($qrResult->getString());
+
+    //         $qrResult = Builder::create()
+    //             ->writer(new PngWriter())
+    //             ->data($representante->documentnumber)
+    //             ->size(200)
+    //             ->margin(10)
+    //             ->build();
+
+    //         // Obtener la imagen QR en base64
+    //         $qrBase64 = base64_encode($qrResult->getString());
+
+    //         $pdf = PDF::loadView('pdf.ticket_entry', [
+    //             'fair' => $fair,
+    //             'participantName' => "{$representante->name} {$representante->lastname}",
+    //             'qrBase64' => $qrBase64,
+    //             'logoDataUri' => $logoDataUri,
+    //         ]);
+
+    //         $filename = 'entrada_' . Str::random(10) . '.pdf';
+    //         $filepath = storage_path("app/public/entradas/{$filename}");
+    //         Storage::makeDirectory('public/entradas');
+    //         $pdf->save($filepath);
+
+    //         $participantName = "{$representante->name} {$representante->lastname}";
+    //         $messageContent = strip_tags($fair->msgSendEmail);
+
+    //         Mail::mailer($mailer)
+    //             ->to($representante->email)
+    //             ->send(new FairSedInfoMail(
+    //                 $messageContent,
+    //                 $filepath,
+    //                 $participantName,
+    //                 $fair
+    //             ));
+
+
+    //         DB::commit();
+
+
+    //         return response()->json([
+    //             'message' => 'Postulante registrado correctamente y correo enviado.',
+    //             'representante_id' => $representante->id,
+    //             'status' => 200
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+
+    //         return response()->json([
+    //             'message' => 'Error al registrar postulante.',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
+
     // devuelve el tipo de evento x el slug que te paso
     public function showFairBySlug($slug)
     {
