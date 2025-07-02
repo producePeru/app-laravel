@@ -156,9 +156,9 @@ class UgsePostulanteController extends Controller
                 'howKnowEvent_id' => 'required|integer',
                 'slug' => 'required|string',
                 'phone' => 'required|max:9',
-                'email' => 'required|email|max:100',
-                'birthday' => 'required|date',
-                'positionCompany' => 'required|string|max:100',
+                'email' => 'required',
+                'birthday' => 'required',
+                'positionCompany' => 'required',
                 'mailer' => 'nullable|string',
             ]);
 
