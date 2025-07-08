@@ -36,6 +36,7 @@ use App\Models\Category;
 use App\Models\AnnualSale;
 use App\Models\FairType;
 use App\Models\PropagandaMedia;
+use App\Models\TypeTaxpayer;
 use App\Models\User;
 
 class SelectController extends Controller
@@ -512,6 +513,20 @@ class SelectController extends Controller
     public function getFairTypes()
     {
         $types = FairType::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getTaxpayerTypes()
+    {
+        $types = TypeTaxpayer::orderBy('name', 'asc')->get();
 
         $data = $types->map(function ($item) {
             return [

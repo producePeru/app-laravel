@@ -37,7 +37,12 @@ class UgsePostulante extends Model
         'instagram',
         'facebook',
         'web',
-        'attended'
+        'attended',
+        'age',
+        'province_id',
+        'district_id',
+        'address'
+
     ];
 
     // Relaciones

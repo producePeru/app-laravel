@@ -619,4 +619,35 @@ class UgsePostulanteController extends Controller
             ], 500);
         }
     }
+
+    public function registerSedEvent(Request $request)
+    {
+        try {
+            $fair = Fair::where('slug', $request->slug)->firstOrFail();
+
+            $data = $request->all();
+            $data['event_id'] = $fair->id;
+
+            // Verifica si ya existe asistencia registrada con ruc + documentnumber + event_id
+            $exists = UgsePostulante::where('event_id', $fair->id)
+                ->where('documentnumber', $request->documentnumber)
+                ->where('ruc', $request->ruc)
+                ->exists();
+
+            if ($exists) {
+                return response()->json(['message' => 'Asistencia ya registrada'], 200);
+            }
+
+            // Si no existe, registra la asistencia con la hora actual
+            $data['attended'] = Carbon::now()->format('d/m/Y h:i a');
+            UgsePostulante::create($data);
+
+            return response()->json(['message' => 'Registro exitoso'], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Ocurrió un error al procesar el registro',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
