@@ -635,7 +635,7 @@ class UgsePostulanteController extends Controller
                 ->exists();
 
             if ($exists) {
-                return response()->json(['message' => 'Asistencia ya registrada'], 200);
+                return response()->json(['message' => 'Asistencia ya registrada', 'status' => 200]);
             }
 
             // Si no existe, registra la asistencia con la hora actual
