@@ -549,16 +549,7 @@ CREATE TABLE empresas (
   distrito_id BIGINT UNSIGNED,
   direccion VARCHAR(255) NULL,
   estado VARCHAR(255) NULL,
-  condicion VARCHAR(255) NULL,
-
-  FOREIGN KEY (tipoContribuyente_id) REFERENCES typeTaxpayers(id),
-  FOREIGN KEY (sectorEconomico_id) REFERENCES economicsectors(id),
-  FOREIGN KEY (actividadComercial_id) REFERENCES comercialactivities(id),
-  FOREIGN KEY (region_id) REFERENCES cities(id),
-  FOREIGN KEY (provincia_id) REFERENCES provinces(id),
-  FOREIGN KEY (distrito_id) REFERENCES districts(id),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  condicion VARCHAR(255) NULL
 );
 
 CREATE TABLE empresarios (
@@ -570,10 +561,5 @@ CREATE TABLE empresarios (
   middlename VARCHAR(100),
   gender_id BIGINT UNSIGNED,
   birthday DATE,
-  phone VARCHAR(9),
-
-  FOREIGN KEY (typedocument_id) REFERENCES typedocuments(id),
-  FOREIGN KEY (gender_id) REFERENCES genders(id),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  phone VARCHAR(9)
 );

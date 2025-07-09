@@ -67,6 +67,16 @@ class UgsePostulante extends Model
         return $this->belongsTo(City::class);
     }
 
+    public function province()
+    {
+        return $this->belongsTo('App\Models\Province');
+    }
+
+    public function district()
+    {
+        return $this->belongsTo('App\Models\District');
+    }
+
     public function typedocument()
     {
         return $this->belongsTo(Typedocument::class, 'typedocument_id');

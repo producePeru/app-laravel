@@ -68,9 +68,9 @@ Route::post('create', [UserController::class, 'store']);
 Route::post('/verify-captcha', [CaptchaController::class, 'verify']);
 
 Route::group(['prefix' => 'pnte-event'  ], function () {
-    Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);    // sed1
+    // Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);    // sed1
 
-    Route::post('register-sed-event',        [UgsePostulanteController::class, 'store']);   // sed asistencia                 // sed
+    Route::post('register-sed-event',        [UgsePostulanteController::class, 'registerSedEvent']);   // sed asistencia                 // sed
 
 
     // eventos-publicos = 'middleware' => ['recaptcha']
