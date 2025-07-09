@@ -627,22 +627,23 @@ class UgsePostulanteController extends Controller
 
             $data = $request->all();
             $data['event_id'] = $fair->id;
+            $data['attended'] = Carbon::now()->format('d/m/Y h:i a');
 
-            // Verifica si ya existe asistencia registrada con ruc + documentnumber + event_id
-            $exists = UgsePostulante::where('event_id', $fair->id)
+            // Busca si ya existe el registro
+            $postulante = UgsePostulante::where('event_id', $fair->id)
                 ->where('documentnumber', $request->documentnumber)
                 ->where('ruc', $request->ruc)
-                ->exists();
+                ->first();
 
-            if ($exists) {
-                return response()->json(['message' => 'Asistencia ya registrada', 'status' => 409]);
+            if ($postulante) {
+                // Actualiza los datos existentes
+                $postulante->update($data);
+                return response()->json(['message' => 'Datos actualizados correctamente', 'status' => 200]);
+            } else {
+                // Crea nuevo registro
+                UgsePostulante::create($data);
+                return response()->json(['message' => 'Registro exitoso', 'status' => 200]);
             }
-
-            // Si no existe, registra la asistencia con la hora actual
-            $data['attended'] = Carbon::now()->format('d/m/Y h:i a');
-            UgsePostulante::create($data);
-
-            return response()->json(['message' => 'Registro exitoso', 'status' => 200]);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Ocurrió un error al procesar el registro',
