@@ -30,7 +30,7 @@ class SedAsistentesController extends Controller
                     'gender',
                     'howKnowEvent',
                     'event',
-                ]);
+                ])->orderBy('created_at', 'desc');
 
             $postulantes = $query->get();
 
