@@ -635,14 +635,14 @@ class UgsePostulanteController extends Controller
                 ->exists();
 
             if ($exists) {
-                return response()->json(['message' => 'Asistencia ya registrada', 'status' => 200]);
+                return response()->json(['message' => 'Asistencia ya registrada', 'status' => 409]);
             }
 
             // Si no existe, registra la asistencia con la hora actual
             $data['attended'] = Carbon::now()->format('d/m/Y h:i a');
             UgsePostulante::create($data);
 
-            return response()->json(['message' => 'Registro exitoso'], 201);
+            return response()->json(['message' => 'Registro exitoso', 'status' => 200]);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Ocurrió un error al procesar el registro',
