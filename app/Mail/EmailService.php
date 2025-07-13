@@ -30,7 +30,7 @@ class EmailService extends Mailable implements ShouldQueue
      */
     public function build()
     {
-        return $this->subject('PERÚ PRODUCE - Capacitaciones')
+        return $this->subject('Capacitaciones')
             ->view('emails.pp03')
             ->with('content', $this->messageContent);
     }

@@ -129,7 +129,7 @@
                 <p style="color: #315496"><b>Información adicional:</b></p>
                 <p>📅 <b>Fechas:</b> mes de julio del 2025.</p>
                 <p>
-                  🕗 <b>Horarios:</b> Lunes a Viernes / de 2:00 pm a 5:00 pm o
+                  🕗 <b>Horarios:</b> Lunes a Viernes de 2:00 pm a 5:00 pm o
                   de 5:30 pm a 8:30 pm
                 </p>
 

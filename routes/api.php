@@ -66,8 +66,8 @@ Route::post('create', [UserController::class, 'store']);
 
 Route::post('/verify-captcha', [CaptchaController::class, 'verify']);
 
-Route::group(['prefix' => 'pnte-event', 'middleware' => ['recaptcha'] ], function () {
-   Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // sed
+Route::group(['prefix' => 'pnte-event', 'middleware' => ['recaptcha']], function () {
+    Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // sed
 });
 
 
@@ -88,6 +88,8 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
     // FERIAS EMPRESARIALES
     Route::get('data/{slug}',                       [FairController::class, 'show']);                       // TRAE LA FERIA POR SLUG
+    Route::get('data-event-count/{slug}',           [FairController::class, 'showEventCount']);                       // REALIZA EL CONTADOR 12/100
+
     Route::get('search-api-ruc/{ruc}',              [MypeController::class, 'apiRUC']);                     // BUSCA DATOS A PARTIR DEL RUC     *******************
     Route::post('first-or-new',                     [MypeController::class, 'registerMype']);               // PASO 1 CREA O EDITA UNA MYPE
     Route::get('search-api-dni/{dni}',              [PersonController::class, 'apiDNI']);                   // BUSCA DATOS A PARTIR DEL DNI     *******************
@@ -122,7 +124,6 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], function () {
     Route::get('dots',                      [EventsController::class, 'getEventsDots']);
     Route::get('events-day',                [EventsController::class, 'getEventsByDate']);
-
 });
 
 
@@ -130,15 +131,21 @@ Route::group(['prefix' => 'page', 'middleware' => 'auth:sanctum'], function () {
     // creamos una pagina para luego darles privilegios a los usuarios
     Route::post('new-page',                 [PageController::class, 'store']);
     Route::get('permissions',               [PageController::class, 'index']);
+
+    Route::get('list',                      [PageController::class, 'allPages']);
+    Route::get('views-to-user/{id}',        [PageController::class, 'pageToUser']);
+    Route::put('user-assign-view',          [PageController::class, 'userAssignView']);
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',                      [UserController::class, 'index']);      // v2.0
+
+    Route::get('list',                                  [UserController::class, 'index']);                  // v2.0
+    Route::post('register-user-pnte',                   [UserController::class, 'registerNewUser']);        // registrar un usuario v2
+    Route::put('update-user-pnte/{id}',                 [UserController::class, 'update']);                 // actualizar info user
+    Route::post('change-password',                      [AuthController::class, 'updatePassword']);         // RESETEO DE PASSWORD
 
 
-    Route::post('create',                   [UserController::class, 'store']);
     Route::delete('delete/{id}',            [UserController::class, 'destroy']);
-    Route::put('update/{id}',               [UserController::class, 'update']);
 
     Route::get('api/{type}/{num}',          [AuthController::class, 'dniDataUser']);
     Route::get('only-dni/{num}',            [AuthController::class, 'dniDataUser2']);
@@ -158,7 +165,6 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
     Route::post('register-views',   [UserController::class, 'registerViewsSeven']);
 
     Route::post('new-user-views',   [UserController::class, 'newUser']);     // REGISTRO PARA CADA USUARIO
-    Route::post('update-password',  [AuthController::class, 'updatePassword']);     // RESETEO DE PASSWORD
 
 });
 

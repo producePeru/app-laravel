@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class Fair extends Model
 {
@@ -130,17 +131,34 @@ class Fair extends Model
             $query->whereYear('created_at', $filters['year']);
         }
 
-        if (!empty($filters['orderby']) && $filters['orderby'] == 1) {
+        $today = Carbon::today();
 
-            $query->orderBy('attendance_list_count', 'desc');
-        } else if (!empty($filters['orderby']) && $filters['orderby'] == 2) {
-
-            $query->orderBy('attendance_list_count', 'asc');
-        } else if (!empty($filters['orderby']) && $filters['orderby'] == 3) {
-
-            $query->orderBy('finally', 'desc');
+        if (!empty($filters['orderby'])) {
+            switch ($filters['orderby']) {
+                case 1:
+                    // Más recientes (por creación)
+                    // $query->orderBy('created_at', 'desc');
+                    $query->whereDate('endDate', '>=', $today)
+                        ->orderBy('endDate', 'asc');
+                    break;
+                case 2:
+                    // Vigentes (endDate >= hoy)
+                    $query->whereDate('endDate', '<', $today)
+                        ->orderBy('endDate', 'desc');
+                    break;
+                case 3:
+                    // Finalizados (ya terminaron)
+                    $query->orderBy('created_at', 'desc');
+                    break;
+                case 4:
+                    // Orden por fecha de finalización, descendente
+                    $query->orderBy('endDate', 'desc');
+                    break;
+                default:
+                    $query->orderBy('created_at', 'desc');
+            }
         } else {
-
+            // Por defecto: más recientes
             $query->orderBy('created_at', 'desc');
         }
     }

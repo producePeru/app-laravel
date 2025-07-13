@@ -12,6 +12,7 @@ use App\Models\City;
 use App\Models\District;
 use App\Models\People;
 use App\Models\Province;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -93,7 +94,7 @@ class DownloadAttendanceController extends Controller
             return response()->json(['message' => 'Not found'], 404);
         }
 
-        $asesor = People::find($attendance->people_id);
+        $asesor = User::find($attendance->asesorId);
         $region = City::find($attendance->city_id);
         $province = Province::find($attendance->province_id);
         $district = District::find($attendance->district_id);
@@ -115,7 +116,8 @@ class DownloadAttendanceController extends Controller
             return [
                 'index' => $index + 1,
                 'nameActividad' => $attendance->title,
-                'asesor' => $asesor ? "{$asesor->name} {$asesor->lastname} {$asesor->middlename}" : null,
+
+                'asesor' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
                 'dateActividad' => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
 
                 'region' => $region->name,
@@ -136,8 +138,6 @@ class DownloadAttendanceController extends Controller
                 'comercialActivity' => $item->comercialActivity
             ];
         });
-
-        // return $result;
 
         // return Excel::download(new AttendanceListSlugExport($result), 'attendance.xlsx');
 
