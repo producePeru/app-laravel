@@ -70,4 +70,26 @@ class EventsUgoController extends Controller
             ], 500);
         }
     }
+
+    public function listAttendanceByAsesor()
+    {
+        try {
+            $attendances = Attendance::where('user_id', auth()->user()->id)->get();
+
+            return $attendances;
+
+            return response()->json([
+                'status' => 200,
+                'success' => true,
+                'attendances' => $attendances
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'success' => false,
+                'message' => 'Error al procesar la solicitud.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

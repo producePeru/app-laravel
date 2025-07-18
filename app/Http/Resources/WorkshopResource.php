@@ -31,6 +31,6 @@ class WorkshopResource extends JsonResource
             'sms' => $this->sms,
             'correo' => $this->correo,
             'userId' => $this->user_id
-        ]
+        ];
     }
 }

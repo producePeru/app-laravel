@@ -86,6 +86,8 @@ class UgsePostulanteController extends Controller
             'birthday'         => $item->birthday,
             'created_at' => $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : null,
 
+            'asistio' => $item->attended ? true : false,
+
 
             // Relaciones
             'economicsector' => $item->economicsector ? [
@@ -647,6 +649,35 @@ class UgsePostulanteController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Ocurrió un error al procesar el registro',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateAttendedStatus(Request $request)
+    {
+        try {
+            // 1. Buscar el evento por slug
+            $fair = Fair::where('slug', $request->slug)->firstOrFail();
+
+            // 2. Buscar al postulante por event_id, ruc y documentnumber
+            $postulante = UgsePostulante::where('event_id', $fair->id)
+                ->where('documentnumber', $request->documentnumber)
+                ->firstOrFail();
+
+            // 3. Actualizar el campo 'attended' según el valor de check
+            if ($request->check) {
+                $postulante->attended = $request->date;
+            } else {
+                $postulante->attended = null;
+            }
+
+            $postulante->save();
+
+            return response()->json(['message' => 'Estado de asistencia actualizado correctamente.', 'status' => 200]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar asistencia.',
                 'error' => $e->getMessage()
             ], 500);
         }

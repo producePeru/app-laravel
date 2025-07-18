@@ -538,9 +538,8 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 
 CREATE TABLE empresas (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  ruc VARCHAR(11) NOT NULL,
+  ruc VARCHAR(11) NOT NULL UNIQUE,
   razonSocial VARCHAR(255) NOT NULL,
-  tipoContribuyente_id BIGINT UNSIGNED,
   sectorEconomico_id BIGINT UNSIGNED,
   rubro_id BIGINT UNSIGNED,
   actividadComercial_id BIGINT UNSIGNED,
@@ -549,8 +548,11 @@ CREATE TABLE empresas (
   distrito_id BIGINT UNSIGNED,
   direccion VARCHAR(255) NULL,
   estado VARCHAR(255) NULL,
-  condicion VARCHAR(255) NULL
+  condicion VARCHAR(255) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
 
 CREATE TABLE empresarios (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -561,5 +563,41 @@ CREATE TABLE empresarios (
   middlename VARCHAR(100),
   gender_id BIGINT UNSIGNED,
   birthday DATE,
-  phone VARCHAR(9)
+  phone VARCHAR(9),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+
+INSERT INTO empresas (
+  ruc,
+  razonSocial,
+  sectorEconomico_id,
+  rubro_id,
+  actividadComercial_id,
+  region_id,
+  provincia_id,
+  distrito_id,
+  direccion
+)
+SELECT
+  p.ruc,
+  p.socialReason,
+  p.economicsector_id,
+  p.category_id,
+  p.comercialactivity_id,
+  p.city_id,
+  p.province_id,
+  p.district_id,
+  p.address
+FROM
+  ugse_postulantes p
+WHERE
+  p.ruc IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1
+    FROM empresas e
+    WHERE e.ruc = p.ruc
+  );
+
+

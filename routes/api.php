@@ -6,7 +6,7 @@ use App\Http\Controllers\Agreement\CommitmentsController;
 use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\Attendance\EventsUgoController;
 use App\Http\Controllers\Attendance\EventsUgseController;
-use App\Http\Controllers\User\TokenController;
+
 // use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\EmailSendController;
@@ -42,7 +42,6 @@ use App\Http\Controllers\Formalization\ReportController;
 use App\Http\Controllers\Google\GoogleCalendarController;
 
 use App\Http\Controllers\Notary\QRNotaryController;
-// use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
 use App\Http\Controllers\Room\RoomController;
@@ -52,7 +51,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Captcha\CaptchaController;
 use App\Http\Controllers\Download\SedAsistentesController;
 use App\Http\Controllers\Email\EmailController;
-use App\Http\Controllers\Event\PublicEventsController;
+
 use App\Http\Controllers\Event\UgsePostulanteController;
 use App\Http\Controllers\Image\ImageController;
 use App\Http\Controllers\Import\ImportEventsUgoController;
@@ -81,8 +80,8 @@ Route::group(['prefix' => 'pnte-event'  ], function () {
 
 Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function () {
 
-    Route::post('consult-company-ruc/{ruc}',                    [PublicEventsController::class, 'rucConsultCompany']);                    //consultar RUC empresa
-    Route::post('consult-businessman-dni/{dni}',                [PublicEventsController::class, 'dniConsultBusinessman']);                    //consultar DNI empresario
+    // Route::post('consult-company-ruc/{ruc}',                    [PublicEventsController::class, 'rucConsultCompany']);                    //consultar RUC empresa
+    // Route::post('consult-businessman-dni/{dni}',                [PublicEventsController::class, 'dniConsultBusinessman']);                    //consultar DNI empresario
 
     Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
     Route::post('formalization-digital', [FormalizationDigitalController::class, 'formalizationDigital']);
@@ -139,10 +138,26 @@ Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], functi
 });
 
 
-Route::group(['prefix' => 'page', 'middleware' => 'auth:sanctum'], function () {
-    // creamos una pagina para luego darles privilegios a los usuarios
-    Route::post('new-page',                 [PageController::class, 'store']);
-    Route::get('permissions',               [PageController::class, 'index']);
+Route::prefix('page')->middleware('auth:sanctum')->group(function () {
+    require __DIR__.'/api/pages.php';
+});
+
+Route::prefix('token')->middleware('auth:sanctum')->group(function () {
+    require __DIR__.'/api/token.php';
+});
+
+Route::prefix('events-ugo')->middleware('auth:sanctum')->group(function () {
+    require __DIR__.'/api/eventsugo.php';
+});
+
+
+Route::prefix('events-pnte')->group(function () {
+    require __DIR__.'/api/publicEvents.php';            // creamos empresarios & empresas
+    require __DIR__.'/api/publicEventRegister.php';
+});
+
+Route::prefix('api')->group(function () {
+    require __DIR__.'/api/apis.php';
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -297,11 +312,7 @@ Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'midd
     Route::post('events-ugo',                    [ImportEventsUgoController::class, 'importEventsUgo']);
 });
 
-Route::group(['prefix' => 'sen', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list', [TokenController::class, 'index']);
-    Route::post('create', [TokenController::class, 'store']);
-    Route::put('update-status/{id}', [TokenController::class, 'updateStatus']);
-});
+
 
 Route::group(['prefix' => 'config', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('cdes',                          [CdeController::class, 'index']);
@@ -525,6 +536,7 @@ Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('type-fair/{slug}',              [UgsePostulanteController::class, 'showFairBySlug']);            // devuelve datos de la feria desde un slug
     Route::put('sed-update-data-user/{slug}',   [UgsePostulanteController::class, 'update']);            // devuelve datos de la feria desde un slug
     Route::delete('sed-delete-user/{dni}',      [UgsePostulanteController::class, 'deleteParticipante']);            // devuelve datos de la feria desde un slug
+    Route::put('update-attended-status',        [UgsePostulanteController::class, 'updateAttendedStatus']);            // devuelve datos de la feria desde un slug
 
 
 });

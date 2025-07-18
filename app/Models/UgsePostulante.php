@@ -42,7 +42,6 @@ class UgsePostulante extends Model
         'province_id',
         'district_id',
         'address'
-
     ];
 
     // Relaciones
