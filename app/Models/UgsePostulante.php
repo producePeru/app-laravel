@@ -37,7 +37,12 @@ class UgsePostulante extends Model
         'instagram',
         'facebook',
         'web',
-        'attended'
+        'attended',
+        'age',
+        'province_id',
+        'district_id',
+        'address'
+
     ];
 
     // Relaciones
@@ -60,6 +65,16 @@ class UgsePostulante extends Model
     public function city()
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function province()
+    {
+        return $this->belongsTo('App\Models\Province');
+    }
+
+    public function district()
+    {
+        return $this->belongsTo('App\Models\District');
     }
 
     public function typedocument()

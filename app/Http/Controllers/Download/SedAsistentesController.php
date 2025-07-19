@@ -30,7 +30,7 @@ class SedAsistentesController extends Controller
                     'gender',
                     'howKnowEvent',
                     'event',
-                ]);
+                ])->orderBy('created_at', 'desc');
 
             $postulantes = $query->get();
 
@@ -45,7 +45,10 @@ class SedAsistentesController extends Controller
                     $item->economicsector?->name,
                     $item->comercialactivity?->name,
                     $item->category?->name,
-                    $item->city?->name,
+                    $item->city?->name ?? null,
+                    $item->province->name ?? null,
+                    $item->district->name ?? null,
+                    $item->address,
                     $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
                     $item->typedocument?->name,
                     $item->documentnumber,
@@ -57,6 +60,7 @@ class SedAsistentesController extends Controller
                     $item->phone,
                     $item->email,
                     $item->birthday,
+                    $item->age ?? null,
                     $item->positionCompany,
                     $item->howKnowEvent?->name,
                     $item->instagram,

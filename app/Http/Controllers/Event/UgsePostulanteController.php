@@ -619,4 +619,36 @@ class UgsePostulanteController extends Controller
             ], 500);
         }
     }
+
+    public function registerSedEvent(Request $request)
+    {
+        try {
+            $fair = Fair::where('slug', $request->slug)->firstOrFail();
+
+            $data = $request->all();
+            $data['event_id'] = $fair->id;
+            $data['attended'] = Carbon::now()->format('d/m/Y h:i a');
+
+            // Busca si ya existe el registro
+            $postulante = UgsePostulante::where('event_id', $fair->id)
+                ->where('documentnumber', $request->documentnumber)
+                ->where('ruc', $request->ruc)
+                ->first();
+
+            if ($postulante) {
+                // Actualiza los datos existentes
+                $postulante->update($data);
+                return response()->json(['message' => 'Datos actualizados correctamente', 'status' => 200]);
+            } else {
+                // Crea nuevo registro
+                UgsePostulante::create($data);
+                return response()->json(['message' => 'Registro exitoso', 'status' => 200]);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Ocurrió un error al procesar el registro',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

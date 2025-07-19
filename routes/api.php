@@ -52,6 +52,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Captcha\CaptchaController;
 use App\Http\Controllers\Download\SedAsistentesController;
 use App\Http\Controllers\Email\EmailController;
+use App\Http\Controllers\Event\PublicEventsController;
 use App\Http\Controllers\Event\UgsePostulanteController;
 use App\Http\Controllers\Image\ImageController;
 use App\Http\Controllers\Import\ImportEventsUgoController;
@@ -66,13 +67,23 @@ Route::post('create', [UserController::class, 'store']);
 
 Route::post('/verify-captcha', [CaptchaController::class, 'verify']);
 
-Route::group(['prefix' => 'pnte-event', 'middleware' => ['recaptcha']], function () {
-    Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // sed
+Route::group(['prefix' => 'pnte-event'], function () {
+    // Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);    // sed1
+
+    Route::post('register-sed-event',        [UgsePostulanteController::class, 'registerSedEvent']);   // sed asistencia                 // sed
+
+
+    // eventos-publicos = 'middleware' => ['recaptcha']
+
 });
 
 
 
 Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function () {
+
+    Route::post('consult-company-ruc/{ruc}',                    [PublicEventsController::class, 'rucConsultCompany']);                    //consultar RUC empresa
+    Route::post('consult-businessman-dni/{dni}',                [PublicEventsController::class, 'dniConsultBusinessman']);                    //consultar DNI empresario
+
     Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
     Route::post('formalization-digital', [FormalizationDigitalController::class, 'formalizationDigital']);
     Route::post('formalization-digital/exist-number', [FormalizationDigitalController::class, 'getStatusByDocumentNumber']);
@@ -290,7 +301,7 @@ Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'midd
     Route::post('events-ugo',                    [ImportEventsUgoController::class, 'importEventsUgo']);
 });
 
-Route::group(['prefix' => 'token', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+Route::group(['prefix' => 'sen', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list', [TokenController::class, 'index']);
     Route::post('create', [TokenController::class, 'store']);
     Route::put('update-status/{id}', [TokenController::class, 'updateStatus']);
@@ -418,6 +429,9 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('annual-sales', [SelectController::class, 'getAnnualSales']);
     Route::get('propaganda-media', [SelectController::class, 'getPropagandaMedia']);
     Route::get('fair-types', [SelectController::class, 'getFairTypes']);
+
+    Route::get('type-taxpayer', [SelectController::class, 'getTaxpayerTypes']);         // tipo de contribuyente
+
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {

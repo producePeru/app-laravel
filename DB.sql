@@ -270,20 +270,16 @@ VALUES
   ('400');
 
 
-//- CREATE TABLE propagandaMedia  (
-//-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-//-     name VARCHAR(50) NOT NULL,
-//-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-//- );
 
-//- INSERT INTO propagandaMedia (name)
-//- VALUES
-//-   ('CENTRO DE DESARROLLO (CDE)'),
-//-   ('CAPACITACIONES'),
-//-   ('FACEBOOK'),
-//-   ('INSTAGRAM'),
-//-   ('GRUPOS DE WHATSAPP')
+
+
+
+
+
+
+
+
+
 
 
 
@@ -508,3 +504,62 @@ CREATE TABLE emails (
 
 INSERT INTO pages (name) VALUES ('Usuarios lista');
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ CREATE TABLE typeTaxpayers  (
+     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+     name VARCHAR(50) NOT NULL,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+ );
+
+ INSERT INTO typeTaxpayers (name)
+ VALUES
+   ('E.I.R.L - EMPRESA INDIVIDUAL DE RESP. LTDA'),
+   ('S.A - SOCIEDAD ANÓNIMA'),
+   ('S.A.A - SOCIEDAD ANÓNIMA ABIERTA'),
+   ('S.A.C - SOCIEDAD ANÓNIMA CERRADA'),
+   ('S.R.Ltda. - SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA'),
+   ('PERSONA NATURAL CON NEGOCIO');
+
+
+
+CREATE TABLE empresas (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ruc VARCHAR(11) NOT NULL,
+  razonSocial VARCHAR(255) NOT NULL,
+  tipoContribuyente_id BIGINT UNSIGNED,
+  sectorEconomico_id BIGINT UNSIGNED,
+  rubro_id BIGINT UNSIGNED,
+  actividadComercial_id BIGINT UNSIGNED,
+  region_id BIGINT UNSIGNED,
+  provincia_id BIGINT UNSIGNED,
+  distrito_id BIGINT UNSIGNED,
+  direccion VARCHAR(255) NULL,
+  estado VARCHAR(255) NULL,
+  condicion VARCHAR(255) NULL
+);
+
+CREATE TABLE empresarios (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  typedocument_id BIGINT UNSIGNED,
+  dni VARCHAR(11) NOT NULL UNIQUE,
+  name VARCHAR(100),
+  lastname VARCHAR(100),
+  middlename VARCHAR(100),
+  gender_id BIGINT UNSIGNED,
+  birthday DATE,
+  phone VARCHAR(9)
+);
