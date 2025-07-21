@@ -195,14 +195,17 @@ class AgreementController extends Controller
 
     public function deleteAgreement($id)
     {
-        $user_role = getUserRole();
-        $role_array = $user_role['role_id'];
-        $user_id = $user_role['user_id'];
+        if (!Agreement::where('id', $id)->exists()) {
+            return response()->json(['message' => 'Convenio no encontrado', 'status' => 404], 404);
+        }
 
-        if (in_array(5, $role_array) || in_array(7, $role_array) || in_array(8, $role_array)) {
+        try {
+
             $agreement = Agreement::findOrFail($id);
             $agreement->delete();
             return response()->json(['message' => 'Eliminado del registro', 'status' => 200]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al eliminar el convenio', 'error' => $e->getMessage(), 'status' => 500], 500);
         }
     }
 
@@ -482,8 +485,8 @@ class AgreementController extends Controller
         }
 
         $commitment = AgreementCommitments::where('id', $id)
-                ->where('user_id', $user_id)
-                ->first();
+            ->where('user_id', $user_id)
+            ->first();
 
         if ($commitment) {
             $commitment->delete();
@@ -515,9 +518,9 @@ class AgreementController extends Controller
             'profile:id,user_id,name,lastname,middlename',
             'commitments'
         ])
-        ->where('agreement_id', $id)
-        ->orderBy('created_at', 'desc') // Ordenar por los más recientes
-        ->get();
+            ->where('agreement_id', $id)
+            ->orderBy('created_at', 'desc') // Ordenar por los más recientes
+            ->get();
 
         return response()->json(['data' => $commitments, 'status' => 200]);
     }
@@ -579,7 +582,4 @@ class AgreementController extends Controller
             'menores_a_1_mes' => $countUnderOneMonth,  // Acuerdos con menos de 1 mes
         ]);
     }
-
-
-
 }
