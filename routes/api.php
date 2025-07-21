@@ -510,6 +510,8 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
     Route::post('/invitaciones-capacitaciones-pp093',       [EmailSendController::class, 'invitacionesCapacitacionesPP93']);            // envia correos para PP093 usa outlook PRODUCE
     Route::post('/invitaciones-capacitaciones-provincia',   [EmailSendController::class, 'invitacionesCapacitacionesProvincia']);       // envia correos para invitaciones a Provincia
 
+    Route::post('/send-emails',                     [EmailSendController::class, 'sendEmailsMasivos']);            // nuevo desde home-25
+
 });
 
 Route::group(['prefix' => 'email', 'middleware' => 'auth:sanctum'], function () {
