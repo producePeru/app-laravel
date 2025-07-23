@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\Profile;
 use App\Models\Role;
 use App\Models\User;
@@ -18,14 +20,14 @@ class UserController extends Controller
     public function index(Request $request)
     {
 
-        $permission = getPermission('usuarios-lista');
+        // $permission = getPermission('usuarios-pnte');
 
-        if (!$permission['hasPermission']) {
-            return response()->json([
-                'message' => 'No tienes permiso para acceder a esta sección',
-                'status' => 403
-            ]);
-        }
+        // if (!$permission['hasPermission']) {
+        //     return response()->json([
+        //         'message' => 'No tienes permiso para acceder a esta sección',
+        //         'status' => 403
+        //     ]);
+        // }
 
         $filters = [
             'name'      => $request->input('name')
@@ -51,23 +53,24 @@ class UserController extends Controller
             'id'                => $item->id,
             'email'             => $item->email,
             'name'              => isset($item->name) ? strtoupper($item->name) : null,
+            'lastname'          => $item->lastname,
+            'middlename'        => $item->middlename,
             'fullname'          => trim(
-                                    (isset($item->lastname) ? strtoupper($item->lastname) : '') . ' ' .
-                                    (isset($item->middlename) ? strtoupper($item->middlename) : '')
-                                ) ?: null,
+                (isset($item->lastname) ? strtoupper($item->lastname) : '') . ' ' .
+                    (isset($item->middlename) ? strtoupper($item->middlename) : '')
+            ) ?: null,
 
             'dni'               => $item->dni ?? null,
             'phone'             => $item->phone ?? null,
             'personalemail'     => $item->personalemail ?? null,
-            'birthday'          => $item->birthday ? date('d/m/Y', strtotime($item->birthday)) : null,
+            'birthday'          => $item->birthday ? $item->birthday : null,
             'cde_id'           => $item->cde_id ?? null,
             'cde_name'         => isset($item->cde->name) ? strtoupper($item->cde->name) : null,
             'office_id'        => $item->office_id ?? null,
             'office_name'      => isset($item->office->name) ? strtoupper($item->office->name) : null,
+            'gender_id'        => $item->gender_id ?? null
         ];
     }
-
-
 
     private function getUserRole()
     {
@@ -89,115 +92,76 @@ class UserController extends Controller
 
 
 
-    public function store(Request $request)
+    public function registerNewUser(StoreUserRequest $request)
     {
         try {
-            $request->validate([
-                'email' => 'required|email|unique:users',
-                'password' => 'required|string|min:6',
-            ]);
+            $data = $request->validated();
 
-            $user = new User();
-            $user->email = $request->input('email');
-            $user->password = bcrypt($request->input('password'));
-            $user->save();
+            // Generar email basado en la inicial del nombre + apellido
+            $email = strtolower(substr($data['name'], 0, 1) . $data['lastname']) . '@pnte.com';
 
-            // $user->roles()->attach($request->input('role_id'));
-            $user->roles()->attach($request->input('role_id'), ['dniuser' => $request->input('documentnumber')]);
-
-            $profile = new Profile();
-            $profile->name = $request->name;
-            $profile->lastname = $request->lastname;
-            $profile->middlename = $request->middlename;
-            $profile->documentnumber = $request->documentnumber;
-            $profile->birthday = $request->birthday;
-            $profile->sick = $request->sick;
-            $profile->phone = $request->phone;
-            $profile->email = $request->email;
-            $profile->user_id = $user->id;
-            $profile->gender_id = $request->gender_id;
-            $profile->cde_id = $request->cde_id;
-            $profile->office_id = $request->office_id;
-            $profile->save();
-
-            $viewsByRole = [
-                1 => [
-                    "home",
-                    "asesorias",
-                    "solicitudes",
-                    "asesorias",
-                    "asesorias-formalizaciones",
-                    "solicitantes",
-                    "notarias",
-                    "asesores",
-                    "supervisores",
-                    "usuarios",
-                    "usuarios-nuevo",
-                    "usuarios-lista"
-                ], //supervisor
-                2 => ["home", "asesorias", "asesorias-listado", "asesorias-formalizaciones", "solicitantes", "notarias"], //asesor
-                3 => ["drive-mis-archivos", "drive-subir-archivo", "drive-mis-carpetas", "usuarios-nuevo"], //driver admin
-                4 => ["drive-mis-archivos", "drive-subir-archivo"], //driver user
-            ];
-
-            $views = $viewsByRole[$request->role_id] ?? [];
-
-            if (!empty($views)) {
-                $view = new View();
-                $view->user_id = $user->id;
-                $view->views = json_encode($views);
-                $view->save();
-            }
-
-            if ($request->role_id === 1) {
-                $view = new Supervisor();
-                $view->user_id = $user->id;
-                $view->save();
-            }
-
-            if ($request->supervisor_id) {
-                DB::table('supervisor_user')->insert([
-                    'supervisor_id' => $request->supervisor_id,
-                    'supervisado_id' => $user->id,
-                    'created_at' => now(),
-                    'updated_at' => now()
+            // Validar que el correo no exista
+            if (User::where('email', $email)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['email' => ['El correo generado ya existe.']],
+                    'status' => 422
                 ]);
             }
 
-            return response()->json(['message' => 'Usuario creado correctamente'], 200);
+            // Crear usuario
+            $user = User::create([
+                'dni' => $data['dni'],
+                'name' => $data['name'],
+                'lastname' => $data['lastname'],
+                'middlename' => $data['middlename'] ?? null,
+                'birthday' => $data['birthday'],
+                'gender_id' => $data['gender_id'],
+                'office_id' => $data['office_id'],
+                'cde_id' => $data['cde_id'],
+                'phone' => $data['phone'] ?? null,
+                'email' => $email,
+                'password' => Hash::make($data['dni']),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario registrado correctamente',
+                'user' => $user,
+                'status' => 200
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Error al crear el usuario: ' . $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error inesperado.',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ]);
         }
     }
 
 
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $id)
     {
-        $user = Profile::findOrFail($id);
+        try {
+            $user = User::findOrFail($id);
 
-        if (!$user) {
-            return response()->json(['message' => 'El usuario no tiene un perfil'], 404);
+            $user->update($request->validated());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario actualizado correctamente.',
+                'user' => $user,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al actualizar.',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ]);
         }
-
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'middlename' => 'nullable|string|max:255',
-            'birthday' => 'nullable|date',
-            // 'sick' => 'required|in:yes,no',
-            'phone' => 'required|string|max:20',
-            'gender_id' => 'required|integer',
-            'cde_id' => 'required|integer',
-            'office_id' => 'required|integer',
-            // 'city_id' => 'required|integer',
-            // 'province_id' => 'required|integer',
-            // 'district_id' => 'required|integer',
-            // 'address' => 'nullable|string',
-        ]);
-
-        $user->update($validatedData);
-
-        return response()->json(['message' => 'Perfil actualizado con éxito', 'status' => 200]);
     }
 
     public function destroy($id)

@@ -66,7 +66,7 @@ Route::post('create', [UserController::class, 'store']);
 
 Route::post('/verify-captcha', [CaptchaController::class, 'verify']);
 
-Route::group(['prefix' => 'pnte-event'  ], function () {
+Route::group(['prefix' => 'pnte-event'], function () {
     // Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);    // sed1
 
     Route::post('register-sed-event',        [UgsePostulanteController::class, 'registerSedEvent']);   // sed asistencia                 // sed
@@ -134,39 +134,57 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], function () {
     Route::get('dots',                      [EventsController::class, 'getEventsDots']);
     Route::get('events-day',                [EventsController::class, 'getEventsByDate']);
-
 });
 
 
+// nuevos
+
 Route::prefix('page')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/pages.php';
+    require __DIR__ . '/api/pages.php';
 });
 
 Route::prefix('token')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/token.php';
+    require __DIR__ . '/api/token.php';
 });
 
 Route::prefix('events-ugo')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/eventsugo.php';
+    require __DIR__ . '/api/eventsugo.php';
 });
 
 
 Route::prefix('events-pnte')->group(function () {
-    require __DIR__.'/api/publicEvents.php';            // creamos empresarios & empresas
-    require __DIR__.'/api/publicEventRegister.php';
+    require __DIR__ . '/api/publicEvents.php';            // creamos empresarios & empresas
+    require __DIR__ . '/api/publicEventRegister.php';
 });
 
 Route::prefix('api')->group(function () {
-    require __DIR__.'/api/apis.php';
+    require __DIR__ . '/api/apis.php';
+});
+
+Route::prefix('page')->group(function () {
+    require __DIR__ . '/api/apis.php';
+});
+
+
+Route::group(['prefix' => 'page', 'middleware' => 'auth:sanctum'], function () {
+    // creamos una pagina para luego darles privilegios a los usuarios
+    Route::post('new-page',                 [PageController::class, 'store']);
+    Route::get('permissions',               [PageController::class, 'index']);
+
+    Route::get('list',                      [PageController::class, 'allPages']);
+    // Route::get('views-to-user/{id}',        [PageController::class, 'pageToUser']);
+    Route::put('user-assign-view',          [PageController::class, 'userAssignView']);
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',                      [UserController::class, 'index']);      // v2.0
+
+    Route::get('list',                                  [UserController::class, 'index']);                  // v2.0
+    Route::post('register-user-pnte',                   [UserController::class, 'registerNewUser']);        // registrar un usuario v2
+    Route::put('update-user-pnte/{id}',                 [UserController::class, 'update']);                 // actualizar info user
+    Route::post('change-password',                      [AuthController::class, 'updatePassword']);         // RESETEO DE PASSWORD
 
 
-    Route::post('create',                   [UserController::class, 'store']);
     Route::delete('delete/{id}',            [UserController::class, 'destroy']);
-    Route::put('update/{id}',               [UserController::class, 'update']);
 
     Route::get('api/{type}/{num}',          [AuthController::class, 'dniDataUser']);
     Route::get('only-dni/{num}',            [AuthController::class, 'dniDataUser2']);
@@ -186,7 +204,6 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
     Route::post('register-views',   [UserController::class, 'registerViewsSeven']);
 
     Route::post('new-user-views',   [UserController::class, 'newUser']);     // REGISTRO PARA CADA USUARIO
-    Route::post('update-password',  [AuthController::class, 'updatePassword']);     // RESETEO DE PASSWORD
 
 });
 
