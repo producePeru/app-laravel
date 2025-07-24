@@ -9,6 +9,7 @@ use App\Models\District;
 use App\Models\Empresa;
 use App\Models\Empresario;
 use App\Models\Fair;
+use App\Models\Mype;
 use App\Models\Province;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -23,16 +24,17 @@ class PublicEventsController extends Controller
     public function rucConsultCompany($ruc)
     {
         try {
+
             // Buscar en la base de datos local
-            $empresa = Empresa::where('ruc', $ruc)->first([
+            $empresa = Mype::where('ruc', $ruc)->first([
                 'ruc',
-                'razonSocial',
-                'sectorEconomico_id',
-                'rubro_id',
-                'actividadComercial_id',
-                'region_id',
-                'direccion',
-                'estado',
+                'socialReason',                 // razon social
+                'economicsector_id',            // id sector economico
+                'category_id',                  // id rubro
+                'comercialactivity_id',         // id actividad comercial
+                'city_id',                      // id region
+                'address',                      // direccion
+                'nameService',                  // estado
                 'condicion'
             ]);
 
@@ -67,13 +69,13 @@ class PublicEventsController extends Controller
 
                         $empresaData = [
                             'ruc' => $resp['numeroDocumento'],
-                            'razonSocial' => $resp['razonSocial'],
-                            'sectorEconomico_id' => null,
-                            'rubro_id' => null,
-                            'actividadComercial_id' => null,
-                            'region_id' => $region?->id,
-                            'direccion' => $resp['direccion'],
-                            'estado' => $resp['estado'] ?? null,
+                            'socialReason' => $resp['razonSocial'],
+                            'economicsector_id' => null,
+                            'category_id' => null,
+                            'comercialactivity_id' => null,
+                            'city_id' => $region?->id,
+                            'address' => $resp['direccion'],
+                            'nameService' => $resp['estado'] ?? null,
                             'condicion' => $resp['condicion'] ?? null
                         ];
 
@@ -100,7 +102,7 @@ class PublicEventsController extends Controller
 
             return response()->json([
                 'status' => 500,
-                'message' => 'Error al buscar la empresa',
+                'message' => 'No se encontraron datos de la empresa con el RUC proporcionado',
                 'error' => $e->getMessage()
             ], 500);
         }
