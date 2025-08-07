@@ -20,6 +20,8 @@ Route::controller(QuestionnarieController::class)->group(function () {
 Route::controller(DownloadAttendanceController::class)->group(function () {
 
   Route::get('attendance-mercado/{slug}', 'exportFortaleceTuMercado');
+
+  Route::get('attendance/{slug}', 'exportRegistrantsUgoEvents');
 });
 
 

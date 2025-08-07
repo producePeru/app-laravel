@@ -85,7 +85,7 @@ class DownloadAttendanceController extends Controller
     }
 
 
-    public function exportAttendanceInscriptos($slug)
+    public function exportRegistrantsUgoEvents($slug)
     {
 
         $attendance = Attendance::where('slug', $slug)->first();
@@ -115,27 +115,27 @@ class DownloadAttendanceController extends Controller
         $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
             return [
                 'index' => $index + 1,
-                'nameActividad' => $attendance->title,
+                'nameActividad'         => $attendance->title,
 
-                'asesor' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
-                'dateActividad' => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
+                'asesor'                => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
+                'dateActividad'         => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
 
-                'region' => $region->name,
-                'provincia' => $province->name,
-                'distrito' => $district->name,
+                'region'                => $region->name,
+                'provincia'             => $province->name,
+                'distrito'              => $district->name,
 
-                'place' => $attendance->address ?? null,
-                'lastname' => $item->lastname . ' ' . $item->middlename,
-                'name' => $item->name,
-                'typedocument' => $item->typedocument->name,
-                'documentnumber' => $item->documentnumber,
-                'email' => $item->email,
-                'phone' => $item->phone,
-                'gender' => $item->gender->avr,
-                'sick' => $item->sick,
-                'ruc' => $item->ruc ? $item->ruc : '-',
-                'economicsector' => $item->economicsector ? $item->economicsector->name : '-',
-                'comercialActivity' => $item->comercialActivity
+                'place'                 => $attendance->address ?? '-',
+                'lastname'              => $item->lastname . ' ' . $item->middlename,
+                'name'                  => $item->name,
+                'typedocument'          => $item->typedocument->name,
+                'documentnumber'        => $item->documentnumber,
+                'email'                 => $item->email ?? '-',
+                'phone'                 => $item->phone ?? '-',
+                'gender'                => $item->gender->avr,
+                'sick'                  => $item->sick ?? '-',
+                'ruc'                   => $item->ruc ?? '-',
+                'economicsector'        => $item->economicsector ?? '-',
+                'comercialActivity'     => $item->comercialActivity ?? '-'
             ];
         });
 
