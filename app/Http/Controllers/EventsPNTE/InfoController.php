@@ -5,8 +5,9 @@ namespace App\Http\Controllers\EventsPNTE;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\StoreEmpresarioRequest;
-use App\Models\Empresa;
 use App\Models\Empresario;
+use App\Models\Mype;
+use App\Models\People;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
@@ -17,7 +18,7 @@ class InfoController extends Controller
     {
         try {
 
-            $existingCompany = Empresa::where('ruc', $request->ruc)->first();
+            $existingCompany = Mype::where('ruc', $request->ruc)->first();
 
             if ($existingCompany) {
 
@@ -27,7 +28,7 @@ class InfoController extends Controller
                 ]);
             }
 
-            $company = Empresa::create($request->all());
+            $company = Mype::create($request->all());
 
             return response()->json([
                 'message' => 'Company created successfully',
@@ -52,7 +53,7 @@ class InfoController extends Controller
     {
         try {
 
-            $existingEmpresario = Empresario::where('dni', $request->dni)->first();
+            $existingEmpresario = People::where('documentnumber', $request->documentnumber)->first();
 
             if ($existingEmpresario) {
                 return response()->json([
@@ -61,7 +62,7 @@ class InfoController extends Controller
                 ]);
             }
 
-            $empresario = Empresario::create($request->all()); // Usa all() para crear con todos los datos
+            $empresario = People::create($request->all()); // Usa all() para crear con todos los datos
 
             return response()->json([
                 'message' => 'Empresario created successfully',

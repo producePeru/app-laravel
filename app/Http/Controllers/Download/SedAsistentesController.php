@@ -23,6 +23,10 @@ class SedAsistentesController extends Controller
             $query = UgsePostulante::where('event_id', $fair->id)
                 ->withBasicFilters($filters)
                 ->with([
+                    'company:id,ruc,socialReason',
+                    'businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
+                    'businessman.typedocument:id,name',
+                    'businessman.gender:id,name',
                     'economicsector',
                     'category',
                     'city',
@@ -37,12 +41,13 @@ class SedAsistentesController extends Controller
             $rows = $postulantes->map(function ($item, $index) {
                 return [
                     $index + 1,
-                    $item->event->subTitle,
+                    $item->event->title,
                     $item->ruc,
                     $item->attended,
                     $item->comercialName,
-                    $item->socialReason,
+                    $item->company->socialReason,
                     $item->economicsector?->name,
+
                     $item->comercialactivity?->name,
                     $item->category?->name,
                     $item->city?->name ?? null,
@@ -50,16 +55,18 @@ class SedAsistentesController extends Controller
                     $item->district->name ?? null,
                     $item->address,
                     $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
-                    $item->typedocument?->name,
+                    $item->businessman->typedocument->name,
                     $item->documentnumber,
-                    $item->lastname,
-                    $item->middlename,
-                    $item->name,
-                    $item->gender?->name,
+                    $item->businessman->lastname,
+                    $item->businessman->middlename,
+                    $item->businessman->name,
+                    $item->businessman->gender->name == 'FEMENINO' ? 'F' : 'M',
                     $item->sick == 'no' ? 'No' : 'Si',
                     $item->phone,
                     $item->email,
-                    $item->birthday,
+
+                    $item->businessman->birthday,
+
                     $item->age ?? null,
                     $item->positionCompany,
                     $item->howKnowEvent?->name,
@@ -82,7 +89,6 @@ class SedAsistentesController extends Controller
                     $col++;
                 }
             }
-
 
             // ✅ CORRECTO: solo este return
             return new StreamedResponse(function () use ($spreadsheet) {

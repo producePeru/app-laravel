@@ -10,6 +10,7 @@ use App\Models\Empresa;
 use App\Models\Empresario;
 use App\Models\Fair;
 use App\Models\Mype;
+use App\Models\People;
 use App\Models\Province;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -18,6 +19,17 @@ use App\Models\UgsePostulante;
 use GuzzleHttp\Client;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+// pdf
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use App\Mail\FairSedInfoMail;
+use App\Models\Attendance;
+use App\Models\AttendanceList;
+use PDF; // Alias para DomPDF (probablemente registrado en config/app.php como 'PDF')
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\PngWriter;
+use Illuminate\Support\Facades\DB;
 
 class PublicEventsController extends Controller
 {
@@ -98,8 +110,6 @@ class PublicEventsController extends Controller
 
             return response()->json(['status' => 404, 'message' => 'Empresa no encontrada o sin tokens válidos']);
         } catch (\Exception $e) {
-            Log::error('Error en rucConsultCompany: ' . $e->getMessage());
-
             return response()->json([
                 'status' => 500,
                 'message' => 'No se encontraron datos de la empresa con el RUC proporcionado',
@@ -113,9 +123,9 @@ class PublicEventsController extends Controller
     {
         try {
             // Buscar empresario local
-            $empresario = Empresario::where('dni', $dni)->first([
+            $empresario = People::where('documentnumber', $dni)->first([
                 'typedocument_id',
-                'dni',
+                'documentnumber',
                 'name',
                 'lastname',
                 'middlename',
@@ -155,7 +165,7 @@ class PublicEventsController extends Controller
                         // Datos del empresario
                         $businessmanData = [
                             'typedocument_id' => 1,
-                            'dni' => $resp['numeroDocumento'],
+                            'documentnumber' => $resp['numeroDocumento'],
                             'name' => $resp['nombres'],
                             'lastname' => $resp['apellidoPaterno'],
                             'middlename' => $resp['apellidoMaterno'],
@@ -186,65 +196,210 @@ class PublicEventsController extends Controller
 
             return response()->json([
                 'status' => 500,
-                'message' => 'Error al buscar el empresario',
+                'message' => 'No se pudo verificar al empresario',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
+    public function isThisUserRegistered(Request $request)
+    {
+        try {
+            $fair = Fair::where('slug', $request->slug)->firstOrFail();
+
+            $existingPostulanteExists = UgsePostulante::where('documentnumber', $request->documentnumber)
+                ->where('event_id', $fair->id)
+                ->exists();
+
+            if ($existingPostulanteExists) {
+                return response()->json([
+                    'message' => 'El usuario ya está registrado en este evento.',
+                    'status' => 200
+                ]);
+            } else {
+                return response()->json([
+                    'message' => 'Este usuario ya esta inscrito en este evento.',
+                    'status' => 404
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error inesperado: ' . $e->getMessage(),
+                'status' => 'error',
+                'code' => 500
+            ], 500);
+        }
+    }
+
+    public function isThisUserRegisteredMercado(Request $request)
+    {
+        try {
+
+            $event = Attendance::where('slug', $request->slug)->firstOrFail();
+
+            $existingPostulanteExists = AttendanceList::where('documentnumber', $request->documentnumber)
+                ->where('attendancelist_id', $event->id)
+                ->exists();
+
+            if ($existingPostulanteExists) {
+                return response()->json([
+                    'message' => 'El usuario ya está registrado en este evento.',
+                    'status' => 200
+                ]);
+            } else {
+                return response()->json([
+                    'message' => 'Usuario Nuevo.',
+                    'status' => 404
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error inesperado: ' . $e->getMessage(),
+                'status' => 'error',
+                'code' => 500
+            ], 500);
+        }
+    }
 
 
     public function participantRegistrationSed(StoreSedRequest $request)
     {
         try {
-            // Verificar si el 'slug' existe en el modelo 'Fair'
             $fair = Fair::where('slug', $request->slug)->firstOrFail();
-
-            // Aquí asignamos el 'event_id' con el ID del evento encontrado
             $request->merge(['event_id' => $fair->id]);
 
-            // Verificar si ya existe un postulante con el mismo 'event_id' y 'documentnumber'
-            $existingPostulante = UgsePostulante::where('event_id', $request->event_id)
-                ->where('documentnumber', $request->documentnumber)
-                ->first();
+            // Crear el nuevo postulante
+            $ugsePostulante = UgsePostulante::create($request->all());
 
-            if ($existingPostulante) {
-                // Si el postulante ya existe, se actualizan los datos
-                $existingPostulante->update($request->all());  // Usa all() para actualizar con todos los datos
-
+            if (!$ugsePostulante) {
                 return response()->json([
-                    'message' => 'Postulante actualizado correctamente',
-                    'data' => $existingPostulante,
-                    'status' => 200
-                ], 200);
-            } else {
-                // Si no existe, creamos el nuevo postulante
-                $ugsePostulante = UgsePostulante::create($request->all());
-
-                return response()->json([
-                    'message' => 'Postulante creado correctamente',
-                    'data' => $ugsePostulante,
-                    'status' => 200
-                ], 200);
+                    'message' => 'Error al registrar al postulante.',
+                    'status' => 500
+                ], 500);
             }
+
+            $mailer = $request->mailer ?? 'digitalization';
+
+            // Codificar logo en base64
+            $logoPath = public_path('images/logo/sed.png');
+            $logoBase64 = base64_encode(file_get_contents($logoPath));
+            $logoMime = mime_content_type($logoPath);
+            $logoDataUri = "data:$logoMime;base64,$logoBase64";
+
+            // Generar QR en base64
+            $qrResult = Builder::create()
+                ->writer(new PngWriter())
+                ->data($ugsePostulante->documentnumber)
+                ->size(200)
+                ->margin(10)
+                ->build();
+
+            $qrBase64 = base64_encode($qrResult->getString());
+
+            $qrResult = Builder::create()
+                ->writer(new PngWriter())
+                ->data($ugsePostulante->documentnumber)
+                ->size(200)
+                ->margin(10)
+                ->build();
+
+
+            $qrBase64 = base64_encode($qrResult->getString());
+
+            // Generar PDF
+            $pdf = PDF::loadView('pdf.ticket_entry', [
+                'fair' => $fair,
+                'participantName' => "{$ugsePostulante->name} {$ugsePostulante->lastname}",
+                'qrBase64' => $qrBase64,
+                'logoDataUri' => $logoDataUri,
+            ]);
+
+            $filename = 'entrada_' . Str::random(10) . '.pdf';
+            $filepath = storage_path("app/public/entradas/{$filename}");
+            Storage::makeDirectory('public/entradas');
+            $pdf->save($filepath);
+
+            $participantName = "{$ugsePostulante->name} {$ugsePostulante->lastname}";
+            $messageContent = strip_tags($fair->msgSendEmail);
+
+            Mail::mailer($mailer)
+                ->to($ugsePostulante->email)
+                ->send(new FairSedInfoMail(
+                    $messageContent,
+                    $filepath,
+                    $participantName,
+                    $fair
+                ));
+
+            return response()->json([
+                'message' => 'Postulante creado correctamente y correo enviado.',
+                'data' => $ugsePostulante,
+                'status' => 200
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            // Si el slug no se encuentra en la tabla 'Fair', devuelve un error
             return response()->json([
                 'message' => 'El evento con el slug proporcionado no existe.',
                 'status' => 404
             ], 404);
         } catch (ValidationException $e) {
-            // Si ocurre un error de validación (por ejemplo, datos incorrectos o faltantes)
             return response()->json([
                 'message' => 'Validation error',
-                'errors' => $e->errors(), // Los errores de validación
-                'status' => 422 // Código HTTP para errores de validación
+                'errors' => $e->errors(),
+                'status' => 422
             ], 422);
         } catch (\Exception $e) {
-            // Si ocurre cualquier otro tipo de error
             return response()->json([
                 'message' => 'Unexpected error: ' . $e->getMessage(),
                 'status' => 500
+            ], 500);
+        }
+    }
+
+    // pregunta & respuesta de formalizacion 
+    public function formalizationsQuestionsAndAnswers(Request $request)
+    {
+        try {
+            // Validación de campos esperados
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'question_1' => 'required|string',
+                'answer_1' => 'required|string',
+                'question_2' => 'required|string',
+                'answer_2' => 'required|string',
+                'question_3' => 'required|string',
+                'answer_3' => 'required|string',
+                'question_4' => 'required|string',
+                'answer_4' => 'required|string',
+                'question_5' => 'required|string',
+                'answer_5' => 'required|string',
+            ]);
+
+            $entries = [];
+
+            for ($i = 1; $i <= 5; $i++) {
+                $entries[] = [
+                    'user_id'    => $request->user_id,
+                    'question'   => $request->input("question_$i"),
+                    'answer'     => $request->input("answer_$i"),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            DB::table('questions_answers')->insert($entries);
+
+            return response()->json([
+                'message' => 'Preguntas y respuestas registradas correctamente.',
+                'status'  => 200
+            ]);
+        } catch (\Exception $e) {
+            // Registrar el error para debugging
+            Log::error('Error al registrar preguntas y respuestas: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Ocurrió un error al guardar los datos.',
+                'error'   => $e->getMessage(),
+                'status'  => 500
             ], 500);
         }
     }

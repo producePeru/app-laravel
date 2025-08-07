@@ -20,20 +20,20 @@ class StoreCompanyRequest extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
 
-     public function rules()
+    public function rules()
     {
         return [
             'ruc' => 'required|string|max:11', // Validación para el RUC
-            'razonSocial' => 'required|string|max:255',
-            'sectorEconomico_id' => 'required|integer',
-            'rubro_id' => 'required|integer',
-            'actividadComercial_id' => 'required|integer',
-            'region_id' => 'required|integer',
-            'provincia_id' => 'required|integer',
-            'distrito_id' => 'required|integer',
-            'direccion' => 'required|string|max:255',
-            'estado' => 'string|max:50',
-            'condicion' => 'string|max:50',
+            'socialReason' => 'required|string|max:255',
+            'economicsector_id' => 'required|integer',
+            'category_id' => 'required|integer',
+            'comercialactivity_id' => 'required|integer',
+            'city_id' => 'required|integer',
+            'province_id' => 'required|integer',
+            'district_id' => 'required|integer',
+            'address' => 'required|string|max:255',
+            'estado' => 'nullable|string|max:50',
+            'condicion' => 'nullable|string|max:50',
         ];
     }
 
