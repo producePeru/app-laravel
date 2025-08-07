@@ -117,7 +117,7 @@ class DownloadAttendanceController extends Controller
                 'index' => $index + 1,
                 'nameActividad'         => $attendance->title,
 
-                'asesor'                => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
+                'asesor'                => strtoupper($asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename),
                 'dateActividad'         => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
 
                 'region'                => $region->name,
@@ -125,8 +125,8 @@ class DownloadAttendanceController extends Controller
                 'distrito'              => $district->name,
 
                 'place'                 => $attendance->address ?? '-',
-                'lastname'              => $item->lastname . ' ' . $item->middlename,
-                'name'                  => $item->name,
+                'lastname'              => strtoupper($item->lastname . ' ' . $item->middlename),
+                'name'                  => strtoupper($item->name),
                 'typedocument'          => $item->typedocument->name,
                 'documentnumber'        => $item->documentnumber,
                 'email'                 => $item->email ?? '-',
@@ -134,8 +134,8 @@ class DownloadAttendanceController extends Controller
                 'gender'                => $item->gender->avr,
                 'sick'                  => $item->sick ?? '-',
                 'ruc'                   => $item->ruc ?? '-',
-                'economicsector'        => $item->economicsector ?? '-',
-                'comercialActivity'     => $item->comercialActivity ?? '-'
+                'economicsector'        => $item->economicsector ? $item->economicsector->name : '-',
+                'comercialActivity'     => strtoupper($item->comercialActivity ?? '-'),
             ];
         });
 
