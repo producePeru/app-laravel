@@ -34,6 +34,7 @@ class UpdateUgoParticipantRequest extends FormRequest
             'comercialName'      => 'nullable|string|max:150',
             'comercialActivity'  => 'nullable|string|max:100',
             'mercado'            => 'nullable|string|max:100',
+            'sick'               => 'nullable'
         ];
     }
 }

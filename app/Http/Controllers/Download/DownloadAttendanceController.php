@@ -132,7 +132,7 @@ class DownloadAttendanceController extends Controller
                 'email'                 => $item->email ?? '-',
                 'phone'                 => $item->phone ?? '-',
                 'gender'                => $item->gender->avr,
-                'sick'                  => $item->sick ?? '-',
+                'sick'                  => strtoupper($item->sick) ?? '-',
                 'ruc'                   => $item->ruc ?? '-',
                 'economicsector'        => $item->economicsector ? $item->economicsector->name : '-',
                 'comercialActivity'     => strtoupper($item->comercialActivity ?? '-'),
