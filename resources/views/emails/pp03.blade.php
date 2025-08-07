@@ -56,15 +56,14 @@
               >
                 <p style="margin-top: 0">Estimado(a) empresario(a),</p>
                 <p>
-                  Reciba Ud. el cordial saludo del
-                  <b>Ministerio de la Producción</b>, que mediante el
-                  <b>Programa Nacional Tu Empresa</b>, se complace en invitarlo
-                  a participar de las Capacitaciones Empresariales
+                  Reciba Ud. el cordial saludo del Ministerio de la Producción,
+                  que mediante el Programa Nacional Tu Empresa, se complace en
+                  invitarlo a participar de las Capacitaciones Empresariales
                   <b>"TU EMPRESA CAPACITA-TEC 2025"</b>, mediante el cual se
-                  brindarán los siguientes cursos:
+                  brindarán los siguientes cursos
                 </p>
                 <img
-                  src="https://apituempresa.soporte-pnte.com/images/pp03/07_2025/5.png"
+                  src="https://apituempresa.soporte-pnte.com/images/pp03/08_2025/tabla.png"
                   alt="Banner capacitación"
                   style="display: block; width: 100%; margin: 2px 0"
                 />
@@ -84,6 +83,7 @@
                 <p align="center" style="margin: 20px 0">
                   <a
                     href="https://docs.google.com/forms/d/e/1FAIpQLSdO9FnCwnmdsGdhv7ycCl4O2sSXkfOITAZtQe0XXjCH1aCTlA/viewform"
+                    target="_blank"
                     style="
                       background-color: #d31b1b;
                       color: #ffffff;
@@ -101,54 +101,33 @@
                 <ul
                   style="padding-left: 20px; font-size: 16px; line-height: 24px"
                 >
-                  <li>
-                    Para acceder a los cursos seleccionado, recibirá un correo
-                    con el enlace del curso en la mañana del día que se brinda
-                    el curso.
-                  </li>
-                  <li>
-                    Se tomará prueba de entrada al iniciar curso y prueba de
-                    salida al terminar el mismo.
-                  </li>
-                  <li>
-                    Se dejará trabajo práctico al finalizar cada curso, el cual
-                    deberá ser entregado como máximo a las 3 horas después de
-                    finalizado el curso.
-                  </li>
-                  <li>
-                    Se considera nota aprobatoria mínima: 12 en la prueba de
-                    salida.
-                  </li>
-                  <li>
-                    Las constancias de participación y material de curso se
-                    emitirán a nombre de la Razón Social del Ruc de la MYPE
-                    participante.
-                  </li>
+
+                <li>Para acceder a los cursos seleccionados, recibirá un correo con el enlace del curso en la mañana del día que se brinda el curso.</li>
+<li>Se tomará prueba de entrada al iniciar el curso y prueba de salida al terminar el mismo.</li>
+<li>Se dejará trabajo práctico al finalizar cada curso, el cual deberá ser entregado como máximo a las 3 horas después de finalizado el curso.</li>
+<li>Se considera nota aprobatoria mínima: 12 en la prueba de salida.</li>
+<li>Las constancias de participación y material de curso se emitirán a nombre de la Razón Social del RUC de la MYPE participante.</li>
+
+
                 </ul>
 
                 <p style="color: #315496"><b>Información adicional:</b></p>
-                <p>📅 <b>Fechas:</b> mes de julio del 2025.</p>
+                <p>📅 <b>Fechas:</b> mes de agosto del 2025</p>
                 <p>
-                  🕗 <b>Horarios:</b> Lunes a Viernes de 2:00 pm a 5:00 pm o
-                  de 5:30 pm a 8:30 pm
+                  🕗 <b>Horarios:</b> Lunes a Viernes / de 2:00 pm a 5:00 pm o de 5:30 pm a 8:30 pm
                 </p>
 
                 <p style="color: #315496">
-                  <b>Se otorgará constancia de participación a las MYPE</b>
+                  <b>Se otorgará constancia de participación a las MYPE que:</b>
                 </p>
                 <ul
                   style="padding-left: 20px; font-size: 16px; line-height: 24px"
                 >
-                  <li>Que haya registrado correctamente RUC y correo.</li>
-                  <li>Que rinda su prueba de entrada y de salida. .</li>
-                  <li>
-                    Que adjunten el trabajo práctico desarrollado en el link de
-                    salida.
-                  </li>
-                  <li>
-                    Que tengan nota aprobatoria mínima de 12 en la prueba de
-                    salida.
-                  </li>
+                <li>Que haya registrado correctamente RUC y correo.</li>
+                <li>Que rinda su prueba de entrada y de salida.</li>
+                <li>Que adjunten el trabajo práctico desarrollado en el link de salida.</li>
+                <li>Que tengan nota aprobatoria mínima de 12 en la prueba de salida.</li>
+
                 </ul>
 
                 <p style="font-size: 20px; color: #d31c1c; font-weight: bold">
@@ -165,7 +144,7 @@
                   target="_blank"
                 >
                   <img
-                    src="https://apituempresa.soporte-pnte.com/images/pp03/07_2025/1.jpg"
+                    src="https://apituempresa.soporte-pnte.com/images/pp03/08_2025/pp_1.png"
                     alt="Curso 1"
                     style="display: block; width: 100%; margin: 8px 0"
                   />
@@ -175,7 +154,7 @@
                   target="_blank"
                 >
                   <img
-                    src="https://apituempresa.soporte-pnte.com/images/pp03/07_2025/2.jpg"
+                    src="https://apituempresa.soporte-pnte.com/images/pp03/08_2025/pp_2.png"
                     alt="Curso 2"
                     style="display: block; width: 100%; margin: 8px 0"
                   />
@@ -185,7 +164,7 @@
                   target="_blank"
                 >
                   <img
-                    src="https://apituempresa.soporte-pnte.com/images/pp03/07_2025/3.jpg"
+                    src="https://apituempresa.soporte-pnte.com/images/pp03/08_2025/pp_3.png"
                     alt="Curso 3"
                     style="display: block; width: 100%; margin: 8px 0"
                   />
@@ -195,7 +174,7 @@
                   target="_blank"
                 >
                   <img
-                    src="https://apituempresa.soporte-pnte.com/images/pp03/07_2025/4.jpg"
+                    src="https://apituempresa.soporte-pnte.com/images/pp03/08_2025/pp_4.png"
                     alt="Curso 4"
                     style="display: block; width: 100%; margin: 8px 0"
                   />

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Storage;
 
 class FairController extends Controller
 {
-    public function index(Request $request)
+    public function sedList(Request $request)
     {
         $filters = [
             'year'      =>  $request->input('year'),
@@ -28,6 +28,8 @@ class FairController extends Controller
         ];
 
         $query = Fair::query();
+
+        $query->where('fairtype_id', 1);
 
         $query->withItems($filters);
 
@@ -65,7 +67,7 @@ class FairController extends Controller
             'registered' => $item->postulantes_count,
             'metaMypes' => $item->metaMypes ?? null,
             'city_id' => $item->region->id ?? null,
-            'fecha' => $item->fecha ?? null,
+            'fecha' => $item->fecha ? Carbon::parse($item->fecha)->format('d/m/Y') : null,
             'city_name' => $item->region->name ?? null,
             'place' => $item->place ?? null,
             'hours' => $item->hours ?? null,
@@ -136,35 +138,62 @@ class FairController extends Controller
     }
 
 
-    public function show($slug)
+    public function sedDetailsEvent($slug)
     {
-        $today = Carbon::now();
+        try {
+            $today = Carbon::now();
 
-        $fair = Fair::where('slug', $slug)->first();
+            $fair = Fair::where('slug', $slug)->where('fairtype_id', 1)->first();
 
-        if ($fair) {
+            if ($fair) {
+                if ($today->gt(Carbon::parse($fair->endDate)->endOfDay())) {
+                    return response()->json([
+                        'data' => [
+                            'title' => '¡Evento Finalizado!',
+                            'message' => '
+                            El evento que estabas buscando ya ha caducado o no se encuentra disponible en este momento. </br>
+                            Pero no te detengas 🚀, </br>
+                            nuevas oportunidades están en camino.</br>
+                            Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos </br>
+                            para seguir fortaleciendo tu emprendimiento.
+                            ',
+                            'status' => 404
+                        ]
+                    ]);
+                }
 
-            if ($today->gt(Carbon::parse($fair->endDate)->endOfDay())) {
-                return response()->json(['message' => 'La feria ya no está vigente.', 'status' => 500]);
+                return response()->json([
+                    'data' => [
+                        'slug' => $fair->slug,
+                        'title' => $fair->title,
+                        'subTitle' => $fair->subTitle,
+                        'description' => $fair->description,
+                        'modality' => $fair->modality,
+                        'typeFair' => $fair->fairtype_id,
+                        'fecha' => $fair->fecha,
+                        'place' => $fair->place,
+                        'schedule' => $fair->hours
+                    ],
+                    'status' => 200
+                ]);
             }
 
-            return response()->json(['data' => [
-                'slug' => $fair->slug,
-                'title' => $fair->title,
-                'subTitle' => $fair->subTitle,
-                'description' => $fair->description,
-                'modality' => $fair->modality,
-                'typeFair' => $fair->fairtype_id,
-
-                'fecha' => $fair->fecha,
-                'place' => $fair->place,
-                'schedule' => $fair->hours
-
-            ], 'status' => 200]);
+            return response()->json([
+                'data' => [
+                    'title' => 'No se encontró el evento.',
+                    'message' => 'No existe una feria con este registro.',
+                    'status' => 404
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los detalles del evento.',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
         }
-
-        return response()->json(['message' => 'Feria no encontrada.', 'status' => 400]);
     }
+
 
     public function showEventCount($slug)
     {
@@ -479,6 +508,24 @@ class FairController extends Controller
             return response()->json(['message' => 'Participante no encontrado'], 404);
         } else {
             return response()->json(['message' => 'Sin acceso', 'status' => 500]);
+        }
+    }
+
+    public function messageFormCompleted($slug)
+    {
+        try {
+            $fair = Fair::where('slug', $slug)->firstOrFail();
+
+            return response()->json([
+                'message' => $fair->msgEndForm,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener el mensaje del formulario.',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ]);
         }
     }
 }

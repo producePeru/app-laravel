@@ -23,12 +23,12 @@ class StoreEmpresarioRequest extends FormRequest
     {
         return [
             'typedocument_id' => 'required|integer',
-            'dni' => 'required|string|max:15',
+            'documentnumber' => 'required|string|max:15',
             'name' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'middlename' => 'nullable|string|max:255',
             'gender_id' => 'required|integer',
-            'birthday' => 'required|date',
+            'birthday' => 'required',
             'phone' => 'required|string|max:15',
         ];
     }
@@ -37,7 +37,7 @@ class StoreEmpresarioRequest extends FormRequest
     public function messages()
     {
         return [
-            'dni.unique' => 'El DNI ya está registrado.',
+            'documentnumber.unique' => 'El DNI ya está registrado.',
             // Puedes agregar otros mensajes personalizados si lo necesitas
         ];
     }

@@ -193,23 +193,23 @@ class DownloadAttendanceController extends Controller
         $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
             return [
                 'index' => $index + 1,
-                'fechaCapacitacion' => $item->fechaRegistro,
-                'name' => $item->name,
-                'lastName' => $item->lastname,
-                'middleName' => $item->middlename,
-                'documentType' => $item->typedocument->name,
-                'numberDocument' => $item->documentnumber,
-                'gender' => $item->gender->avr,
-                'email' => $item->email ? $item->email : '-',
-                'phone' => $item->phone,
-                'ruc' => $item->ruc ? $item->ruc : '-',
-                'region' => $region->name,
-                'provincia' => $province->name,
-                'distrito' => $district->name,
-                'comercialActivity' => $item->comercialName ? $item->comercialName : '-',            // rubro *
-                'tema' => $item->list->title,                                      // Tema de la capacitación *
-                'place' => $attendance->address ?? null,
-                'mercadoPertenece' => $item->mercado ?? null
+                'fechaCapacitacion'     => Carbon::parse($item->startDate)->format('d/m/Y'),
+                'name'                  => mb_strtoupper($item->name, 'UTF-8'),
+                'lastName'              => mb_strtoupper($item->lastname, 'UTF-8'),
+                'middleName'            => mb_strtoupper($item->middlename, 'UTF-8'),
+                'documentType'          => $item->typedocument->name,
+                'numberDocument'        => $item->documentnumber,
+                'gender'                => mb_strtoupper($item->gender->avr, 'UTF-8'),
+                'email'                 => $item->email ? $item->email : '-',
+                'phone'                 => $item->phone ?? '-',
+                'ruc'                   => $item->ruc ?? '-',
+                'region'                => $region->name,
+                'provincia'             => $province->name,
+                'distrito'              => $district->name,
+                'comercialActivity'     => $item->comercialActivity ?? '-',            // rubro *
+                'tema'                  => $item->list->title,                                      // Tema de la capacitación *
+                'place'                 => $attendance->address ?? '-',
+                'mercadoPertenece'      => $item->mercado ?? '-'
             ];
         });
 
