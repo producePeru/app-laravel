@@ -19,4 +19,4 @@ Route::controller(AttendanceController::class)->group(function () {
 });
 
 
-// events-ugo 🔒
+// events-ugo 🔒 *
