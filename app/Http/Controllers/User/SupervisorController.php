@@ -23,21 +23,30 @@ class SupervisorController extends Controller
     public function userHasCompletedFormalizationForm()
     {
         try {
-            $userId = auth()->id(); // ID del usuario autenticado
 
-            if (!$userId) {
+            $userId = auth()->id(); // ID del usuario autenticado
+            $user = auth()->user();
+
+            // Obtener el cde_id del usuario
+            $cdeId = $user->cde_id;
+
+            // Obtener el 'name' de la tabla 'cdes' usando el cde_id
+            $cdeName = DB::table('cdes')
+                ->where('id', $cdeId)
+                ->value('name');
+
+            // Verificar si el 'name' contiene 'agente'
+            if (stripos($cdeName, 'agente') !== false) {
                 return response()->json([
-                    'message' => 'Usuario no autenticado.',
-                    'completed' => false,
-                    'status' => 401
-                ], 401);
+                    'completed' => true,
+                    'status' => 200
+                ]);
             }
 
             $hasQuestions = DB::table('questions_answers')
                 ->where('user_id', $userId)
                 ->exists();
 
-            // Si el usuario ya tiene registros, ya completó => return true
             return response()->json([
                 'completed' => $hasQuestions,
                 'status' => 200
@@ -50,6 +59,7 @@ class SupervisorController extends Controller
             ], 500);
         }
     }
+
 
     public function listQuestionsAnswersFormalizations()
     {
