@@ -71,10 +71,10 @@ class UgsePostulanteController extends Controller
             'id'                        => $item->id,
 
             'typedocument_id'           => $item->businessman->typedocument_id ?? null,
-            'documentnumber'            => $item->businessman->documentnumber,
-            'name'                      => $item->businessman->name,
-            'lastname'                  => $item->businessman->lastname,
-            'middlename'                => $item->businessman->middlename,
+            'documentnumber'            => $item->businessman->documentnumber ?? $item->documentnumber,
+            'name'                      => $item->businessman->name ?? $item->name,
+            'lastname'                  => $item->businessman->lastname ?? $item->lastname,
+            'middlename'                => $item->businessman->middlename ?? $item->middlename,
 
             'email'                     => $item->email,
             'phone'                     => $item->phone,
@@ -90,15 +90,17 @@ class UgsePostulanteController extends Controller
             'socialReason'              => $item->socialReason,
             'typeAsistente'             => $item->typeAsistente,
             'sick'                      => $item->sick == 'si' ? 'SI' : 'NO',
-            'birthday'                  => $item->businessman->birthday,
+            'birthday'                  => $item->businessman->birthday ?? $item->birthday,
             'created_at'                => $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : null,
 
             'asistio'                   => $item->attended ? true : false,
 
             'howKnowEvent_id'           => $item->howKnowEvent->id,
             'howKnowEvent_name'         => $item->howKnowEvent->name,
-            'gender_id'                 => $item->businessman->gender->id,
-            'gender_name'               => $item->businessman->gender->name == 'FEMENINO' ? 'F' : 'M',
+            'gender_id'                 => $item->businessman->gender->id ?? '-',
+            'gender_name' => $item->businessman
+                ? ($item->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
+                : ($item->gender_id == 1 ? 'M' : 'F'),
             'economicsector_id'         => $item->economicsector->id,
             'economicsector_name'       => $item->economicsector->name,
             'comercialactivity_id'      => $item->comercialactivity->id,

@@ -45,7 +45,7 @@ class SedAsistentesController extends Controller
                     $item->ruc,
                     $item->attended,
                     $item->comercialName,
-                    $item->company->socialReason,
+                    $item->company->socialReason ?? $item->socialReason,
                     $item->economicsector?->name,
 
                     $item->comercialactivity?->name,
@@ -55,17 +55,21 @@ class SedAsistentesController extends Controller
                     $item->district->name ?? null,
                     $item->address,
                     $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
-                    $item->businessman->typedocument->name,
-                    $item->documentnumber,
-                    $item->businessman->lastname,
-                    $item->businessman->middlename,
-                    $item->businessman->name,
-                    $item->businessman->gender->name == 'FEMENINO' ? 'F' : 'M',
+                    $item->businessman->typedocument->name ?? '-',
+
+                    $item->businessman->documentnumber ?? $item->documentnumber,
+                    $item->businessman->name ?? $item->name,
+                    $item->businessman->lastname ?? $item->lastname,
+                    $item->businessman->middlename ?? $item->middlename,
+
+                    $item->businessman
+                        ? ($item->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
+                        : ($item->gender_id == 1 ? 'M' : 'F'),
                     $item->sick == 'no' ? 'No' : 'Si',
                     $item->phone,
                     $item->email,
 
-                    $item->businessman->birthday,
+                    $item->businessman->birthday ?? $item->birthday,
 
                     $item->age ?? null,
                     $item->positionCompany,
@@ -82,6 +86,8 @@ class SedAsistentesController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
 
             $startRow = 2;
+
+
             foreach ($rows as $i => $row) {
                 $col = 'A';
                 foreach ($row as $value) {
