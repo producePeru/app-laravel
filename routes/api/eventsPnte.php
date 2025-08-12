@@ -19,6 +19,8 @@ Route::controller(PublicEventsController::class)->group(function () {
     Route::post('is-this-user-registered', 'isThisUserRegistered');
 
     Route::post('is-this-user-registered-mercado', 'isThisUserRegisteredMercado');
+
+    Route::post('finally-questions-extras-sed', 'finallyQuestionsExtrasSed');
 });
 
 // events-pnte 🌎

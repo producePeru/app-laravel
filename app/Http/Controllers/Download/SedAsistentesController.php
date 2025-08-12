@@ -34,6 +34,7 @@ class SedAsistentesController extends Controller
                     'gender',
                     'howKnowEvent',
                     'event',
+                    'sedQuestion'
                 ])->orderBy('created_at', 'desc');
 
             $postulantes = $query->get();
@@ -46,10 +47,11 @@ class SedAsistentesController extends Controller
                     $item->attended,
                     $item->comercialName,
                     $item->company->socialReason ?? $item->socialReason,
-                    $item->economicsector?->name,
 
-                    $item->comercialactivity?->name,
-                    $item->category?->name,
+                    $item->economicsector?->name,           // sector economico
+                    $item->category?->name,                 // rubro
+                    $item->comercialactivity?->name,        // actividad comercial
+
                     $item->city?->name ?? null,
                     $item->province->name ?? null,
                     $item->district->name ?? null,
@@ -78,6 +80,12 @@ class SedAsistentesController extends Controller
                     $item->facebook,
                     $item->web,
                     $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : '',
+
+                    $item->sedQuestion->question_1 ?? '-',
+                    $item->sedQuestion->question_2 ?? '-',
+                    $item->sedQuestion->question_3 ?? '-',
+                    $item->sedQuestion->question_4 ?? '-',
+                    $item->sedQuestion->question_5 ?? '-'
                 ];
             });
 
@@ -86,7 +94,6 @@ class SedAsistentesController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
 
             $startRow = 2;
-
 
             foreach ($rows as $i => $row) {
                 $col = 'A';

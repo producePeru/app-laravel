@@ -54,16 +54,16 @@ class UgsePostulante extends Model
     {
         return $this->belongsTo(EconomicSector::class);
     }
-
-    public function comercialactivity()
-    {
-        return $this->belongsTo(ComercialActivities::class);
-    }
-
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
+    public function comercialactivity()
+    {
+        return $this->belongsTo(Activity::class);
+    }
+
+
 
     public function city()
     {
@@ -108,6 +108,12 @@ class UgsePostulante extends Model
     public function businessman()
     {
         return $this->belongsTo(People::class, 'documentnumber', 'documentnumber');
+    }
+
+    public function sedQuestion()
+    {
+        return $this->hasOne(SedQuestion::class, 'documentnumber', 'documentnumber')
+            ->whereColumn('event_id', 'event_id');
     }
 
 

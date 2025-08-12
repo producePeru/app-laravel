@@ -1,5 +1,5 @@
 
-//- CREATE TABLE pnteSoft (
+ CREATE TABLE pnteSoft (
 //-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 //-     name VARCHAR(255) NOT NULL,
 //-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -258,23 +258,7 @@ CREATE TABLE images (
 //- 'logo' => $item->mype->logo_path ? $urlBase . $item->mype->logo_path : null,
 
 
-//- CREATE TABLE rooms (
-//-   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-//-   sala VARCHAR(100) NOT NULL,
-//-   inicio DATETIME NOT NULL,
-//-   fin DATETIME NOT NULL,
-//-   descripcion TEXT,
-//-   unidad VARCHAR(50),
 
-//-   created_by BIGINT UNSIGNED NOT NULL,
-//-   updated_by BIGINT UNSIGNED NULL,
-//-   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
-//-   FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
-
-//-   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//-   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-//-   deleted_at TIMESTAMP NULL DEFAULT NULL
-//- );
 
 
 
@@ -493,10 +477,31 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 
 
 
-CREATE TABLE activities  (
+
+
+
+CREATE TABLE activities (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    rubro_id es el id de la tabla categories
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    name VARCHAR(100) NOT NULL,
+    rubro_id BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+
+ CREATE TABLE sedQuestions (
+   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+   question_1 VARCHAR(100) NULL,
+   question_2 VARCHAR(100) NULL,
+   question_3 VARCHAR(100) NULL,
+   question_4 VARCHAR(100) NULL,
+   question_5 VARCHAR(100) NULL,
+   documentnumber VARCHAR(12) NULL,
+    
+   event_id BIGINT UNSIGNED NOT NULL,
+   FOREIGN KEY (event_id) REFERENCES fairs(id) ON DELETE CASCADE,
+ 
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   deleted_at TIMESTAMP NULL DEFAULT NULL
+ );

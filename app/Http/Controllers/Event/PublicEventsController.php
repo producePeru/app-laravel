@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SedQuestionStoreRequest;
 use App\Http\Requests\StoreSedRequest;
 use App\Models\City;
 use App\Models\District;
@@ -26,6 +27,7 @@ use Illuminate\Support\Str;
 use App\Mail\FairSedInfoMail;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
+use App\Models\SedQuestion;
 use PDF; // Alias para DomPDF (probablemente registrado en config/app.php como 'PDF')
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
@@ -402,5 +404,41 @@ class PublicEventsController extends Controller
                 'status'  => 500
             ], 500);
         }
+    }
+
+
+
+    public function finallyQuestionsExtrasSed(SedQuestionStoreRequest $request)
+    {
+        $fair = Fair::where('slug', $request->slug)->firstOrFail();
+
+        // Evita duplicados manualmente (solo crear)
+        $exists = SedQuestion::where('event_id', $fair->id)
+            ->where('documentnumber', $request->documentnumber)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Ya existe un registro para este evento y documento.'
+            ], 409); // Conflict
+        }
+
+        // Crear
+        $sedQuestion = SedQuestion::create([
+            'event_id'       => $fair->id,
+            'slug'           => $request->slug,
+            'documentnumber' => $request->documentnumber,
+            'question_1'     => $request->question_1,
+            'question_2'     => $request->question_2,
+            'question_3'     => $request->question_3,
+            'question_4'     => $request->question_4,
+            'question_5'     => $request->question_5,
+        ]);
+
+        return response()->json([
+            'message' => 'Creado correctamente',
+            'data'    => $sedQuestion,
+            'status'  => 200
+        ], 200);
     }
 }

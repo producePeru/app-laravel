@@ -456,7 +456,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('fair-types', [SelectController::class, 'getFairTypes']);
 
     Route::get('type-taxpayer', [SelectController::class, 'getTaxpayerTypes']);         // tipo de contribuyente
-
+    Route::get('activity-by-rubro/{id}', [SelectController::class, 'getActivities']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {

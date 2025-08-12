@@ -37,6 +37,7 @@ class SupervisorController extends Controller
 
             // Verificar si el 'name' contiene 'agente'
             if (stripos($cdeName, 'agente') !== false) {
+                // Si el 'name' contiene 'agente', devolver false
                 return response()->json([
                     'completed' => true,
                     'status' => 200
