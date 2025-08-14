@@ -9,5 +9,12 @@ class Image extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'url', 'mime_type', 'size', 'from_origin', 'id_origin'];
+    protected $fillable = [
+        'name',
+        'url',
+        'mime_type',
+        'size',
+        'from_origin',
+        'id_origin'
+    ];
 }

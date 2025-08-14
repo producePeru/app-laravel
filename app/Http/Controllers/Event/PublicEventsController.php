@@ -220,7 +220,7 @@ class PublicEventsController extends Controller
                 ]);
             } else {
                 return response()->json([
-                    'message' => 'Este usuario ya esta inscrito en este evento.',
+                    'message' => 'Nuevo participante.',
                     'status' => 404
                 ]);
             }
@@ -280,7 +280,7 @@ class PublicEventsController extends Controller
                 ], 500);
             }
 
-            $mailer = $request->mailer ?? 'digitalization';
+            $mailer = $request->mailer ?? 'hostinger';
 
             // Codificar logo en base64
             $logoPath = public_path('images/logo/sed.png');
