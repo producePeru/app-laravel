@@ -280,7 +280,7 @@ class PublicEventsController extends Controller
                 ], 500);
             }
 
-            $mailer = $request->mailer ?? 'hostinger';
+            $mailer = $request->mailer ?? 'digitalization';
 
             // Codificar logo en base64
             $logoPath = public_path('images/logo/sed.png');
