@@ -27,9 +27,10 @@ Route::controller(PublicEventsController::class)->group(function () {
 
 Route::controller(CoffeEventController::class)->group(function () {
 
-    Route::get('show-all-photos-thumb-from-coffee-event', 'showAllPhotosThumbFromCoffeeEvent');
-});
+    Route::get('show-all-photos-from-coffee-event', 'showAllPhotosFromCoffeeEvent');
 
+    Route::delete('remove-image-from-coffee-event/{idPhoto}', 'removeImageFromCoffeeEvent');
+});
 
 
 // events-pnte 🌎

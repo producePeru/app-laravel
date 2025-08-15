@@ -10,24 +10,30 @@ use Illuminate\Support\Str;
 
 class CoffeEventController extends Controller
 {
-    public function showAllPhotosThumbFromCoffeeEvent()
+    public function showAllPhotosFromCoffeeEvent(Request $request)
     {
-        // 1) Traer imágenes del origen 'coffe'
+        // Tipos válidos
+        $allowedTypes = ['thumb', 'medium', 'original'];
+
+        // type solicitado (default: original o lo que prefieras)
+        $type = strtolower($request->query('type', 'original'));
+        if (!in_array($type, $allowedTypes)) {
+            return response()->json([
+                'status'  => 422,
+                'message' => "El parámetro 'type' debe ser: " . implode(', ', $allowedTypes),
+            ], 422);
+        }
+
+        // Traer imágenes del origen 'coffe'
         $images = Image::query()
             ->where('from_origin', 'coffe')
             ->latest('id')
             ->get();
 
-        // 2) Mapear a payload con URL pública desde /storage/thumb/{filename}
-        $data = $images->map(function ($img) {
-            // Si en 'url' viene un http(s), lo respetamos. Si no, asumimos que es un filename.
-            $filename = $img->url ?: $img->name;
-            $filename = basename($filename); // limpia rutas tipo .../thumb/archivo.jpg
+        $data = $images->map(function ($img) use ($type) {
 
-            // URL pública (requiere `php artisan storage:link`)
-            $publicUrl = Str::startsWith($img->url, ['http://', 'https://'])
-                ? $img->url
-                : Storage::disk('public')->url('thumb/' . $filename);
+            $filename = basename(parse_url((string) $img->url, PHP_URL_PATH));
+            $publicUrl = url("storage/images/{$type}/{$filename}");
 
             return [
                 'id'          => $img->id,
@@ -36,10 +42,33 @@ class CoffeEventController extends Controller
                 'size'        => $img->size,
                 'from_origin' => $img->from_origin,
                 'id_origin'   => $img->id_origin,
-                'url'         => $publicUrl,
+                'url'         => $publicUrl
             ];
         });
 
-        return response()->json(['data' => $data], 200);
+        return response()->json(['data' => $data, 'status' => 200]);
+    }
+
+    public function removeImageFromCoffeeEvent($id)
+    {
+        $image = Image::query()
+            ->where('id', $id)
+            ->where('from_origin', 'coffe')
+            ->first();
+
+        if (!$image) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Imagen no encontrada'
+            ], 404);
+        }
+
+        // Soft delete: marca deleted_at sin borrar físicamente
+        $image->delete();
+
+        return response()->json([
+            'status'  => 200,
+            'message' => 'Registro eliminado correctamente'
+        ]);
     }
 }
