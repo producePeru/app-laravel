@@ -124,82 +124,82 @@ class PublicEventsController extends Controller
     public function dniConsultBusinessman($dni)
     {
         try {
-            // Buscar empresario local
-            $empresario = People::where('documentnumber', $dni)->first([
-                'typedocument_id',
-                'documentnumber',
-                'name',
-                'lastname',
-                'middlename',
-                'gender_id',
-                'birthday'
-            ]);
+            $person = People::where('documentnumber', $dni)->first();
 
-            if ($empresario) {
-                return response()->json(['status' => 200, 'data' => $empresario]);
-            }
+            if (!$person) {
 
-            $apiUrl = "https://api.apis.net.pe/v2/reniec/dni?numero={$dni}";
-            $client = new Client();
+                $apiUrl = "https://api.decolecta.com/v1/reniec/dni?numero={$dni}";
 
-            // Obtener todos los tokens (orden ascendente por id para tener prioridad)
-            $tokens = Token::orderBy('id')->get();
+                $tokens = Token::where('name', 'decolecta')
+                    ->pluck('token')
+                    ->toArray();
 
-            foreach ($tokens as $tokenRecord) {
-                try {
-                    $response = $client->request('GET', $apiUrl, [
-                        'headers' => [
-                            'Authorization' => $tokenRecord->token,
-                            'Accept' => 'application/json',
-                        ],
-                        'timeout' => 5,
-                    ]);
+                $client = new Client();
+                $responseData = null;
 
-                    $resp = json_decode($response->getBody(), true);
+                foreach ($tokens as $token) {
+                    try {
+                        $response = $client->request('GET', $apiUrl, [
+                            'headers' => [
+                                'Authorization' => $token,
+                                'Accept' => 'application/json',
+                            ],
+                            'timeout' => 5,
+                        ]);
 
-                    if (isset($resp['numeroDocumento'])) {
-                        // Marcar todos los demás tokens como inactivos
-                        Token::where('id', '!=', $tokenRecord->id)->update(['status' => 0]);
+                        $responseData = json_decode($response->getBody(), true);
 
-                        // Marcar este token como activo
-                        $tokenRecord->update(['status' => 1]);
-
-                        // Datos del empresario
-                        $businessmanData = [
-                            'typedocument_id' => 1,
-                            'documentnumber' => $resp['numeroDocumento'],
-                            'name' => $resp['nombres'],
-                            'lastname' => $resp['apellidoPaterno'],
-                            'middlename' => $resp['apellidoMaterno'],
-                            'gender_id' => null,
-                            'birthday' => null
-                        ];
-
-                        return response()->json(['status' => 200, 'data' => $businessmanData]);
-                    }
-
-                    break; // Si obtuvo datos pero no válidos, salir
-                } catch (\GuzzleHttp\Exception\ClientException $e) {
-                    $statusCode = $e->getResponse()->getStatusCode();
-
-                    if ($statusCode == 429) {
-                        // Token superó su límite → lo desactivamos
-                        $tokenRecord->update(['status' => 0]);
-                        continue; // Probar siguiente token
-                    } else {
-                        throw $e;
+                        if (!empty($responseData['document_number'])) {
+                            break;
+                        }
+                    } catch (\Exception $e) {
+                        // Si hay error, pasa al siguiente token
+                        continue;
                     }
                 }
+
+                if ($responseData && !empty($responseData['document_number'])) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Información obtenida',
+                        'data' => [
+                            'numeroDocumento' => $responseData['document_number'],
+                            'name' => $responseData['first_name'] ?? null,
+                            'lastname' => $responseData['first_last_name'] ?? null,
+                            'middlename' => $responseData['second_last_name'] ?? null,
+                            'gender_id' => null,
+                            'sick' => null,
+                            'phone' => null,
+                            'email' => null
+                        ]
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 404,
+                        'message' => 'No se pudo obtener información con los tokens disponibles'
+                    ], 404);
+                }
+            } else {
+                // Si se encuentra
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Usuario',
+                    'data' => [
+                        'name' => $person->name ?? null,
+                        'lastname' => $person->lastname ?? null,
+                        'middlename' => $person->middlename ?? null,
+                        'gender_id' => $person->gender_id ?? null,
+                        'sick' => $person->sick ?? null,
+                        'phone' => $person->phone ?? null,
+                        'email' => $person->email ?? null
+                    ]
+                ]);
             }
-
-            return response()->json(['status' => 404, 'message' => 'DNI no encontrado o sin tokens válidos']);
-        } catch (\Exception $e) {
-            Log::error('Error en dniConsultBusinessman: ' . $e->getMessage());
-
+        } catch (\Throwable $th) {
             return response()->json([
-                'status' => 500,
-                'message' => 'No se pudo verificar al empresario',
-                'error' => $e->getMessage()
+                'message' => 'Error al procesar la solicitud',
+                'error' => $th->getMessage(),
+                'status' => 500
             ], 500);
         }
     }
