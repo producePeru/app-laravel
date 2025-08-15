@@ -13,6 +13,9 @@ class ImageController extends Controller
 {
     public function upload(Request $request)
     {
+
+        return "Hoooola";
+
         // Validación |max:5120
         $request->validate([
             'file' => 'required|image|mimes:jpeg,png,jpg,webp,gif',
@@ -65,6 +68,7 @@ class ImageController extends Controller
         return response()->json([
             'data' => $imageModel,
             'status' => 200,
+            'message' => 'Imagen cargada',
             // 'message' => 'Imagen cargada y optimizada correctamente',
             // 'original' => Storage::url($originalPath),
             // 'medium' => Storage::url($mediumPath),
