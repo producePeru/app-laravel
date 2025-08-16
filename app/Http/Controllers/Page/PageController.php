@@ -13,7 +13,7 @@ class PageController extends Controller
     /**
      * Asignamos...
      */
-    public function index(Request $request)
+    public function permissions(Request $request)
     {
         try {
             $user = $request->user();
@@ -24,13 +24,14 @@ class PageController extends Controller
             $pivot = $user->pages()->where('page_id', $page->id)->first()?->pivot;
 
             return response()->json([
-                'can_create' => $pivot->can_create == 1 ? true : false,
-                'can_update' => $pivot->can_update == 1 ? true : false,
-                'can_delete' => $pivot->can_delete == 1 ? true : false,
-                'can_download' => $pivot->can_download == 1 ? true : false,
+                'can_view_all'  =>  $pivot->can_view_all == 1 ? true : false,
+                'can_create'    =>  $pivot->can_create == 1 ? true : false,
+                'can_update'    =>  $pivot->can_update == 1 ? true : false,
+                'can_delete'    =>  $pivot->can_delete == 1 ? true : false,
+                'can_download'  =>  $pivot->can_download == 1 ? true : false,
 
-                'can_finish' => $pivot->can_finish == 1 ? true : false,
-                'can_import' => $pivot->can_import == 1 ? true : false,
+                'can_finish'    =>  $pivot->can_finish == 1 ? true : false,
+                'can_import'    =>  $pivot->can_import == 1 ? true : false,
 
 
             ]);
@@ -65,6 +66,27 @@ class PageController extends Controller
     {
         try {
             $pages = Page::orderBy('id', 'asc')->paginate(150);
+
+            return response()->json([
+                'success' => true,
+                'data' => $pages,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al obtener las páginas.',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
+        }
+    }
+
+    public function allPagesTypeUgo()
+    {
+        try {
+
+            $pages = Page::where('office', 'UGO')->orderBy('id', 'asc')->paginate(150);
 
             return response()->json([
                 'success' => true,

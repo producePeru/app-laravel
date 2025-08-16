@@ -154,27 +154,6 @@ class Advisory extends Model
             });
     }
 
-    // public function scopeAllNotaries($query)
-    // {
-    //     return $query->with([
-    //         'modality',
-    //         'people.gender:id,name',
-    //         'supervisor.supervisorUser.profile',
-    //         'supervisado.supervisadoUser.profile',
-    //         'supervisado.supervisadoUser.profile.cde:id,name',
-    //         'theme',
-    //         'component',
-    //         'city',
-    //         'province',
-    //         'district'
-    //     ])
-    //     ->orderBy('created_at', 'desc')->get()->map(function ($item) {
-    //         $item->asesorsupervisor = optional($item->supervisor)->supervisorUser->profile ?? auth()->user()->profile;
-    //         return $item;
-    //     });
-    // }
-
-
     // todas las asesorias y paginadas...
     public function scopeWithAllAdvisories($query)
     {
@@ -221,64 +200,25 @@ class Advisory extends Model
         });
     }
 
-    //filters
-    // public function scopeWithAdvisoryRangeDate($query, $filters)
-    // {
-    //     $query = $query->with([
-    //         'modality',
-    //         'people.gender:id,name',
-    //         'people.typedocument:id,avr',
-    //         'supervisor.supervisorUser.profile',
-    //         'supervisado.supervisadoUser.profile',
-    //         'user.profile',
-    //         'supervisado.supervisadoUser.profile.cde:id,name',
-    //         'sede',
-    //         'theme',
-    //         'component',
-    //         'city',
-    //         'province',
-    //         'district'
-    //     ])->orderBy('created_at', 'desc');
-
-    //     if ($filters['user_id'] !== null) {
-    //         $query->whereIn('user_id', $filters['user_id']);
-    //     }
-
-    //     if ($filters['dateStart'] && $filters['dateEnd']) {
-    //         $endDate = date('Y-m-d', strtotime($filters['dateEnd']));
-    //         $endDate = date('Y-m-d', strtotime($endDate . ' + 1 day'));
-    //         $query->whereBetween('created_at', [$filters['dateStart'], $endDate]);
-    //     }
-
-    //     if (!empty($filters['year'])) {
-    //         $query->whereYear('created_at', $filters['year']);
-    //     }
-
-    //     return $query->paginate(150);
-    // }
-
-
-
     // ULTIMO 2025 ***
     public function scopeWithAdvisoryRangeDate($query, $filters)
     {
         $query = $query->with([
-            'modality',
+
+            'city:id,name',
+            'comercialactivity:id,name',
+            'component:id,name',
+            'district:id,name',
+            'economicsector:id,name',
+            'modality:id,name',
+            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email',
             'people.gender:id,name',
-            'people.typedocument:id,avr',
             'people.pais:id,name',
-            'supervisor.supervisorUser.profile',
-            'supervisado.supervisadoUser.profile',
-            'user.profile',
-            'supervisado.supervisadoUser.profile.cde:id,name',
+            'people.typedocument:id,avr',
+            'province:id,name',
             'sede',
-            'theme',
-            'component',
-            'economicsector',
-            'comercialactivity',
-            'city',
-            'province',
-            'district'
+            'theme:id,name',
+            'user:id,name,lastname,middlename',
         ])->orderBy('created_at', 'desc');
 
         if (!empty($filters['asesor'])) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\Page;
 use App\Models\Profile;
 use App\Models\Role;
 use App\Models\User;
@@ -17,34 +18,132 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
+
+    public function registerNewUser(StoreUserRequest $request)
     {
+        try {
+            $data = $request->validated();
 
-        // $permission = getPermission('usuarios-pnte');
+            // Generar email basado en la inicial del nombre + apellido
+            $email = strtolower(substr($data['name'], 0, 1) . $data['lastname']) . '@pnte.com';
 
-        // if (!$permission['hasPermission']) {
-        //     return response()->json([
-        //         'message' => 'No tienes permiso para acceder a esta sección',
-        //         'status' => 403
-        //     ]);
-        // }
+            // Validar que el correo no exista
+            if (User::where('email', $email)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['email' => ['El correo generado ya existe.']],
+                    'status' => 422
+                ]);
+            }
 
-        $filters = [
-            'name'      => $request->input('name')
-        ];
+            // Crear usuario
+            $user = User::create([
+                'dni' => $data['dni'],
+                'name' => $data['name'],
+                'lastname' => $data['lastname'],
+                'middlename' => $data['middlename'] ?? null,
+                'birthday' => $data['birthday'],
+                'gender_id' => $data['gender_id'],
+                'office_id' => $data['office_id'],
+                'rol' => $data['rol'] ?? null,
+                'cde_id' => $data['cde_id'],
+                'phone' => $data['phone'] ?? null,
+                'email' => $email,
+                'password' => Hash::make($data['dni']),
+            ]);
 
-        $query = User::where('active', 1)->orderBy('id', 'desc');
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario registrado correctamente',
+                'user' => $user,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error inesperado.',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ]);
+        }
+    }
 
-        $query->withDataItems($filters);
+    public function usersPnte(Request $request)
+    {
+        try {
 
-        $users = $query->paginate(150)->through(function ($advisory) {
-            return $this->mapEvents($advisory);
-        });
+            $permission = getPermission('usuarios-pnte');
 
-        return response()->json([
-            'data'   => $users,
-            'status' => 200
-        ]);
+            if (!$permission['hasPermission']) {
+                return response()->json([
+                    'message' => 'No tienes permiso para acceder a esta sección',
+                    'status' => 403
+                ]);
+            }
+
+            $filters = [
+                'name' => $request->input('name')
+            ];
+
+            $query = User::where(['active' => 1])->orderBy('id', 'desc');
+
+            $query->withDataItems($filters);
+
+            $users = $query->paginate(150)->through(function ($advisory) {
+                return $this->mapEvents($advisory);
+            });
+
+            return response()->json([
+                'data'   => $users,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al obtener los usuarios',
+                'message' => $e->getMessage(),
+                'status' => 500,
+                'trace' => config('app.debug') ? $e->getTrace() : null
+            ], 500);
+        }
+    }
+
+    public function usersUgo(Request $request)
+    {
+        try {
+
+            $permission = getPermission('usuarios-ugo');
+
+            if (!$permission['hasPermission']) {
+                return response()->json([
+                    'message' => 'No tienes permiso para acceder a esta sección',
+                    'status' => 403
+                ]);
+            }
+
+            $filters = [
+                'name'      => $request->input('name')
+            ];
+
+            $query = User::where(['active' => 1, 'office_id' => 1])->orderBy('id', 'desc');
+
+            $query->withDataItems($filters);
+
+            $users = $query->paginate(150)->through(function ($advisory) {
+                return $this->mapEvents($advisory);
+            });
+
+            return response()->json([
+                'data'   => $users,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al obtener los usuarios',
+                'message' => $e->getMessage(),
+                'status' => 500,
+                'trace' => config('app.debug') ? $e->getTrace() : null
+            ], 500);
+        }
     }
 
     private function mapEvents($item)
@@ -92,53 +191,7 @@ class UserController extends Controller
 
 
 
-    public function registerNewUser(StoreUserRequest $request)
-    {
-        try {
-            $data = $request->validated();
 
-            // Generar email basado en la inicial del nombre + apellido
-            $email = strtolower(substr($data['name'], 0, 1) . $data['lastname']) . '@pnte.com';
-
-            // Validar que el correo no exista
-            if (User::where('email', $email)->exists()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => ['email' => ['El correo generado ya existe.']],
-                    'status' => 422
-                ]);
-            }
-
-            // Crear usuario
-            $user = User::create([
-                'dni' => $data['dni'],
-                'name' => $data['name'],
-                'lastname' => $data['lastname'],
-                'middlename' => $data['middlename'] ?? null,
-                'birthday' => $data['birthday'],
-                'gender_id' => $data['gender_id'],
-                'office_id' => $data['office_id'],
-                'cde_id' => $data['cde_id'],
-                'phone' => $data['phone'] ?? null,
-                'email' => $email,
-                'password' => Hash::make($data['dni']),
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Usuario registrado correctamente',
-                'user' => $user,
-                'status' => 200
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Ocurrió un error inesperado.',
-                'error' => $e->getMessage(),
-                'status' => 500
-            ]);
-        }
-    }
 
 
     public function update(UpdateUserRequest $request, $id)

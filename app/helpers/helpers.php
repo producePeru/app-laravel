@@ -9,10 +9,10 @@ function getUserRole()
     $user_id = Auth::user()->id;
 
     $roleUser = DB::table('role_user')
-    ->where('user_id', $user_id)
-    ->pluck('role_id')
-    ->unique()
-    ->toArray();
+        ->where('user_id', $user_id)
+        ->pluck('role_id')
+        ->unique()
+        ->toArray();
 
     return [
         "role_id" => $roleUser,
@@ -40,8 +40,13 @@ if (!function_exists('getPermission')) {
         // ✅ Verificamos si el usuario tiene relación con esa página
         $pivot = $user->pages()->where('page_id', $page->id)->first()?->pivot;
 
+
+        if (!$pivot) {
+            return ['hasPermission' => false];
+        }
+
         return [
-            'hasPermission' => $pivot ? true : false,
+            'hasPermission' => $pivot->can_view_all == 1 ? true : false,
         ];
     }
 }

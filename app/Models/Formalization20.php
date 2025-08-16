@@ -218,22 +218,21 @@ class Formalization20 extends Model
     public function scopeWithFormalizationRangeDate($query, $filters)
     {
         $query->with([
-            'modality',
-            'people.gender:id,name',
-            'people.typedocument:id,avr',
-            'supervisor.supervisorUser.profile',
-            'user.profile',
-            'supervisado.supervisadoUser.profile',
-            'supervisado.supervisadoUser.profile.cde:id,name',
-            'sede',
+
+            'city:id,name',
+            'comercialactivity:id,name',
+            'district:id,name',
+            'economicsector:id,name',
+            'modality:id,name',
             'mype:id,name,ruc',
-            'comercialactivity',
-            'regime',
             'notary:id,name',
-            'economicsector',
-            'city',
-            'province',
-            'district'
+            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email',
+            'people.typedocument:id,avr',
+            'province:id,name',
+            'regime',
+            'sede',
+            'user'
+
         ])->orderBy('created_at', 'desc');
 
         if (!empty($filters['asesor'])) {

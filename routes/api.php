@@ -57,7 +57,7 @@ use App\Http\Controllers\Image\ImageController;
 use App\Http\Controllers\Import\ImportEventsUgoController;
 use App\Http\Controllers\Page\PageController;
 use App\Http\Controllers\PP03\Pp03Controller;
-
+use Illuminate\Support\Facades\Auth;
 
 Route::post('login', [AuthController::class, 'login']);
 
@@ -139,6 +139,19 @@ Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], functi
 
 // nuevos
 
+Route::prefix('advisory')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/advisory.php';
+});
+
+Route::prefix('formalization')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/formalization.php';
+});
+
+Route::prefix('download')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/download.php';
+});
+
+
 Route::prefix('page')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/pages.php';
 });
@@ -152,33 +165,38 @@ Route::prefix('events-ugo')->middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::prefix('events-pnte')->group(function () {
-    require __DIR__ . '/api/publicEvents.php';            // creamos empresarios & empresas
-    require __DIR__ . '/api/publicEventRegister.php';
+Route::prefix('users')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/users.php';
 });
 
+Route::prefix('businessman')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/businessman.php';
+});
+
+// publicas
 Route::prefix('api')->group(function () {
     require __DIR__ . '/api/apis.php';
 });
 
-Route::prefix('page')->group(function () {
-    require __DIR__ . '/api/apis.php';
+Route::prefix('events-pnte')->group(function () {
+    require __DIR__ . '/api/publicEvents.php';            // creamos empresarios & empresas
+    require __DIR__ . '/api/publicEventRegister.php';
 });
 
 
 Route::group(['prefix' => 'page', 'middleware' => 'auth:sanctum'], function () {
     // creamos una pagina para luego darles privilegios a los usuarios
     Route::post('new-page',                 [PageController::class, 'store']);
-    Route::get('permissions',               [PageController::class, 'index']);
+    // Route::get('permissions',               [PageController::class, 'index']);
 
-    Route::get('list',                      [PageController::class, 'allPages']);
+
     // Route::get('views-to-user/{id}',        [PageController::class, 'pageToUser']);
     Route::put('user-assign-view',          [PageController::class, 'userAssignView']);
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
-    Route::get('list',                                  [UserController::class, 'index']);                  // v2.0
+    // Route::get('list',                                  [UserController::class, 'index']);                  // v2.0
     Route::post('register-user-pnte',                   [UserController::class, 'registerNewUser']);        // registrar un usuario v2
     Route::put('update-user-pnte/{id}',                 [UserController::class, 'update']);                 // actualizar info user
     Route::post('change-password',                      [AuthController::class, 'updatePassword']);         // RESETEO DE PASSWORD
@@ -227,9 +245,9 @@ Route::group(['prefix' => 'drive', 'namespace' => 'App\Http\Controllers', 'middl
 });
 
 Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',                  [PersonController::class, 'index']);
+
     Route::get('found/{type}/{dni}',    [PersonController::class, 'dniFoundUser']);
-    Route::post('create',               [PersonController::class, 'store']);
+
     Route::delete('delete/{id}',        [PersonController::class, 'destroy']);
     Route::put('update/{id}',           [PersonController::class, 'update']);
     Route::get('data/{dni}',            [PersonController::class, 'findUserById']);            //busca people x id
@@ -237,7 +255,7 @@ Route::group(['prefix' => 'person', 'namespace' => 'App\Http\Controllers', 'midd
 
 Route::group(['prefix' => 'advisory', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list', [AdvisoryController::class, 'index']);
-    Route::post('create', [AdvisoryController::class, 'store']);
+    // Route::post('create', [AdvisoryController::class, 'store']);
     Route::delete('delete/{id}', [AdvisoryController::class, 'destroy']);
     Route::get('find/{id}', [AdvisoryController::class, 'getDataAdvisoryById']);
     Route::put('update/{id}', [AdvisoryController::class, 'update']);
@@ -251,12 +269,14 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     Route::get('list-ruc-10', [Formalization10Controller::class, 'indexRuc10']);
     Route::get('list-ruc-20', [Formalization20Controller::class, 'indexRuc20']);
     Route::get('list-ruc-20/{idPerson}', [Formalization20Controller::class, 'allFormalizationsRuc20ByPersonId']);
-    Route::post('create-ruc-10', [Formalization10Controller::class, 'storeRuc10']);
 
-    Route::post('ruc20-step1', [Formalization20Controller::class, 'ruc20Step1']);
-    Route::post('ruc20-step2/{codesunarp}', [Formalization20Controller::class, 'ruc20Step2']);
-    Route::post('ruc20-step3/{codesunarp}', [Formalization20Controller::class, 'ruc20Step3']);
-    Route::post('create-ruc20', [Formalization20Controller::class, 'ruc20All']);
+
+    // Route::post('create-ruc-10', [Formalization10Controller::class, 'storeRuc10']);
+
+    // Route::post('ruc20-step1', [Formalization20Controller::class, 'ruc20Step1']);
+    // Route::post('ruc20-step2/{codesunarp}', [Formalization20Controller::class, 'ruc20Step2']);
+    // Route::post('ruc20-step3/{codesunarp}', [Formalization20Controller::class, 'ruc20Step3']);
+    // Route::post('create-ruc20', [Formalization20Controller::class, 'ruc20All']);
 
     Route::delete('delete-ruc-10/{id}', [Formalization10Controller::class, 'destroy']);         //ACTUALIZACIONES 10
     Route::get('find-ruc-10/{id}', [Formalization10Controller::class, 'getDataF10ById']);
@@ -303,9 +323,9 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
 });
 
 Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::post('asesories',                    [DownloadFormalizationsController::class, 'exportAsesories']);
-    Route::post('formalizations-ruc10',         [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
-    Route::post('formalizations-ruc20',         [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
+    // Route::post('asesories',                    [DownloadFormalizationsController::class, 'exportAsesories']);
+    // Route::post('formalizations-ruc10',         [DownloadFormalizationsController::class, 'exportFormalizationsRuc10']);
+    // Route::post('formalizations-ruc20',         [DownloadFormalizationsController::class, 'exportFormalizationsRuc20']);
     Route::post('actions-plans',                [DownloadActionsPlanController::class, 'exportActionPlans']);
     Route::get('fair-participants/{slug}',      [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
@@ -527,6 +547,8 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
     Route::post('/invitaciones-capacitaciones-pp093',       [EmailSendController::class, 'invitacionesCapacitacionesPP93']);            // envia correos para PP093 usa outlook PRODUCE
     Route::post('/invitaciones-capacitaciones-provincia',   [EmailSendController::class, 'invitacionesCapacitacionesProvincia']);       // envia correos para invitaciones a Provincia
 
+    Route::post('/send-emails',                             [EmailSendController::class, 'sendEmailsMasivos']);            // nuevo desde home-25
+
 });
 
 Route::group(['prefix' => 'email', 'middleware' => 'auth:sanctum'], function () {
@@ -559,7 +581,7 @@ Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middle
 });
 
 Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list',                          [AttendanceController::class, 'index']);
+    // Route::get('list',                          [AttendanceController::class, 'index']);
     Route::get('list-all',                      [AttendanceController::class, 'allWithoutPagination']);
     Route::post('create',                       [AttendanceController::class, 'create']);
     Route::put('update/{id}',                   [AttendanceController::class, 'update']);
@@ -631,4 +653,17 @@ Route::group(['prefix' => 'pp03', 'namespace' => 'App\Http\Controllers', 'middle
 Route::group(['prefix' => 'image', 'namespace' => 'App\Http\Controllers'], function () {
     Route::post('upload-image',                     [ImageController::class, 'upload']);
     Route::put('origin-image/{id}',                 [ImageController::class, 'setOriginImage']);
+});
+
+
+
+
+Route::get('/debug-auth', function () {
+    return response()->json([
+        'auth_check' => Auth::check(),
+        'user_id' => Auth::id(),
+        'user' => Auth::user(),
+        'guest' => Auth::guest(),
+        'is_logged_in' => !Auth::guest()
+    ]);
 });

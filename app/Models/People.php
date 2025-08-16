@@ -30,7 +30,7 @@ class People extends Model
         'address',
         'typedocument_id',
         'gender_id',
-        'user_id',
+        'user_id',              // id quien lo registró
         'updated_by'
     ];
 

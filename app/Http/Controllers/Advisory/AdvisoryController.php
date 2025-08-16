@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Advisory;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreAdvisoryRequest;
 use Illuminate\Http\Request;
 use App\Models\Advisory;
 
@@ -16,28 +17,30 @@ class AdvisoryController extends Controller
         return response()->json($advisory, 200);
     }
 
-    public function store(Request $request)
+    public function store(StoreAdvisoryRequest $request)
     {
-        $data = $request->validate([
-            'economicsector_id' => 'required|integer|exists:economicsectors,id',
-            'comercialactivity_id' => 'required|integer|exists:comercialactivities,id',
-            'observations' => 'nullable|string',
-            'user_id' => 'required|integer',
-            'people_id' => 'required|integer',
-            'component_id' => 'required|integer',
-            'theme_id' => 'required|integer',
-            'modality_id' => 'required|integer',
-            'ruc' => 'nullable|string',
-            'dni' => 'required|string',
-            'city_id' => 'required|integer',
-            'province_id' => 'required|integer',
-            'district_id' => 'required|integer',
-            'cde_id' => 'integer',
-        ]);
+        try {
 
-        Advisory::create($data);
+            $validatedData = $request->validated();
 
-        return response()->json(['message' => 'Asesoría creada correctamente', 'status' => 200]);
+            // Agregar el user_id del usuario autenticado
+            $validatedData['user_id'] = auth()->id();
+
+            // Crear la asesoría
+            $advisory = Advisory::create($validatedData);
+
+            return response()->json([
+                'data' => $advisory,
+                'message' => 'Asesoría creada correctamente',
+                'status' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al crear la asesoría',
+                'message' => 'Consulta con tu administrador',
+                'status' => 500
+            ], 500);
+        }
     }
 
     public function destroy($id)
