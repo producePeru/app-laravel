@@ -13,64 +13,81 @@ class ImageController extends Controller
 {
     public function upload(Request $request)
     {
-
-        // Validación |max:5120
+        // Validación
         $request->validate([
-            'file' => 'required|image|mimes:jpeg,png,jpg,webp,gif',
+            'file'        => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:5120', // 5 MB
             'from_origin' => 'required|string|max:50',
         ]);
 
-        // Obtener archivo
-        $file = $request->file('file');
+        $file         = $request->file('file');
         $originalName = $file->getClientOriginalName();
-        $extension = $file->getClientOriginalExtension();
-        $filename = Str::uuid() . '.' . $extension;
+        $extOriginal  = strtolower($file->getClientOriginalExtension());
 
-        // Crear instancia del ImageManager
+        // Rutas base en public/ (sin symlink)
+        $basePublicStorage = public_path('storage');
+        $dirOriginal = $basePublicStorage . '/images/original';
+        $dirMedium   = $basePublicStorage . '/images/medium';
+        $dirThumb    = $basePublicStorage . '/images/thumb';
+
+        // Asegurar carpetas (775 si tu hosting lo permite; 755 si no)
+        foreach ([$dirOriginal, $dirMedium, $dirThumb] as $dir) {
+            if (!File::exists($dir)) {
+                File::makeDirectory($dir, 0775, true, true);
+            }
+        }
+
+        // Nombre para el original: preserva extensión original
+        $uuid                 = (string) Str::uuid();
+        $filenameOriginal     = $uuid . '.' . $extOriginal;
+        $pathOriginalAbsolute = $dirOriginal . '/' . $filenameOriginal;
+
+        // Mover el archivo original directo a public/storage/images/original
+        $file->move($dirOriginal, $filenameOriginal);
+
+        // Manager de imágenes (Intervention Image v3)
         $manager = ImageManager::gd();
 
-        // Rutas
-        $originalPath = "images/original/{$filename}";
-        $mediumPath = "images/medium/{$filename}";
-        $thumbPath = "images/thumb/{$filename}";
+        // Nombres y rutas para derivados (siempre JPG)
+        $filenameJpg          = $uuid . '.jpg';
+        $pathMediumAbsolute   = $dirMedium . '/' . $filenameJpg;
+        $pathThumbAbsolute    = $dirThumb . '/' . $filenameJpg;
 
-        // Asegurar que las carpetas existan
-        Storage::disk('public')->makeDirectory('images/original');
-        Storage::disk('public')->makeDirectory('images/medium');
-        Storage::disk('public')->makeDirectory('images/thumb');
+        // Fuente para procesar: usa el original ya movido
+        $imageSource = $pathOriginalAbsolute;
 
-        // Guardar original sin modificar
-        Storage::disk('public')->put($originalPath, file_get_contents($file));
-
-        // Procesar mediana (800x600 máximo, calidad 75)
-        $manager->read($file->getRealPath())
+        // Procesar mediana (máx 800x600, calidad 75) → JPG
+        $manager->read($imageSource)
             ->resizeDown(800, 600)
             ->toJpeg(75)
-            ->save(storage_path('app/public/') . $mediumPath);
+            ->save($pathMediumAbsolute);
 
-        // Procesar thumbnail (120x120, calidad 60)
-        $manager->read($file->getRealPath())
+        // Procesar thumbnail (120x120, calidad 60) → JPG
+        $manager->read($imageSource)
             ->resizeDown(120, 120)
             ->toJpeg(60)
-            ->save(storage_path('app/public/') . $thumbPath);
+            ->save($pathThumbAbsolute);
 
-        // Guardar datos en base de datos
+        // URLs públicas
+        $urlOriginal = asset('storage/images/original/' . $filenameOriginal);
+        $urlMedium   = asset('storage/images/medium/' . $filenameJpg);
+        $urlThumb    = asset('storage/images/thumb/' . $filenameJpg);
+
+        // Guardar en BD (URL del original; puedes agregar campos para medium/thumb si tu tabla los tiene)
         $imageModel = Image::create([
-            'name' => $originalName,
-            'url' => Storage::url($originalPath),
-            'mime_type' => $file->getClientMimeType(),
-            'size' => $file->getSize(),
+            'name'        => $originalName,
+            'url'         => 'storage/images/original/' . $filenameOriginal, // ruta pública relativa
+            'mime_type'   => $file->getClientMimeType(),
+            'size'        => filesize($pathOriginalAbsolute),
             'from_origin' => $request->input('from_origin'),
         ]);
 
         return response()->json([
-            'data' => $imageModel,
-            'status' => 200,
-            'message' => 'Imagen cargada',
-            // 'message' => 'Imagen cargada y optimizada correctamente',
-            // 'original' => Storage::url($originalPath),
-            // 'medium' => Storage::url($mediumPath),
-            'thumb' => Storage::url($thumbPath),
+            'data'       => $imageModel,
+            'status'     => 200,
+            'message'    => 'Imagen cargada',
+            'original'   => $urlOriginal,
+            'medium'     => $urlMedium,
+            'thumb'      => $urlThumb,
         ]);
     }
 
