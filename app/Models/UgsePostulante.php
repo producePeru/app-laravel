@@ -11,6 +11,8 @@ class UgsePostulante extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'ugse_postulantes';
+
     protected $fillable = [
         'ruc',
         'comercialName',
@@ -42,25 +44,26 @@ class UgsePostulante extends Model
         'province_id',
         'district_id',
         'address'
-
     ];
 
     // Relaciones
+
+
 
     public function economicsector()
     {
         return $this->belongsTo(EconomicSector::class);
     }
-
-    public function comercialactivity()
-    {
-        return $this->belongsTo(ComercialActivities::class);
-    }
-
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
+    public function comercialactivity()
+    {
+        return $this->belongsTo(Activity::class);
+    }
+
+
 
     public function city()
     {
@@ -79,7 +82,7 @@ class UgsePostulante extends Model
 
     public function typedocument()
     {
-        return $this->belongsTo(Typedocument::class, 'typedocument_id');
+        return $this->belongsTo(Typedocument::class, 'typedocument_id', 'id');
     }
 
     public function gender()
@@ -95,6 +98,22 @@ class UgsePostulante extends Model
     public function event()
     {
         return $this->belongsTo(Fair::class, 'event_id');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Mype::class, 'ruc', 'ruc');
+    }
+
+    public function businessman()
+    {
+        return $this->belongsTo(People::class, 'documentnumber', 'documentnumber');
+    }
+
+    public function sedQuestion()
+    {
+        return $this->hasOne(SedQuestion::class, 'documentnumber', 'documentnumber')
+            ->whereColumn('event_id', 'event_id');
     }
 
 

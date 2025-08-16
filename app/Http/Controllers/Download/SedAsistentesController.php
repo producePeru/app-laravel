@@ -23,6 +23,10 @@ class SedAsistentesController extends Controller
             $query = UgsePostulante::where('event_id', $fair->id)
                 ->withBasicFilters($filters)
                 ->with([
+                    'company:id,ruc,socialReason',
+                    'businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
+                    'businessman.typedocument:id,name',
+                    'businessman.gender:id,name',
                     'economicsector',
                     'category',
                     'city',
@@ -30,6 +34,7 @@ class SedAsistentesController extends Controller
                     'gender',
                     'howKnowEvent',
                     'event',
+                    'sedQuestion'
                 ])->orderBy('created_at', 'desc');
 
             $postulantes = $query->get();
@@ -37,29 +42,37 @@ class SedAsistentesController extends Controller
             $rows = $postulantes->map(function ($item, $index) {
                 return [
                     $index + 1,
-                    $item->event->subTitle,
+                    $item->event->title,
                     $item->ruc,
                     $item->attended,
                     $item->comercialName,
-                    $item->socialReason,
-                    $item->economicsector?->name,
-                    $item->comercialactivity?->name,
-                    $item->category?->name,
+                    $item->company->socialReason ?? $item->socialReason,
+
+                    $item->economicsector?->name,           // sector economico
+                    $item->category?->name,                 // rubro
+                    $item->comercialactivity?->name,        // actividad comercial
+
                     $item->city?->name ?? null,
                     $item->province->name ?? null,
                     $item->district->name ?? null,
                     $item->address,
                     $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
-                    $item->typedocument?->name,
-                    $item->documentnumber,
-                    $item->lastname,
-                    $item->middlename,
-                    $item->name,
-                    $item->gender?->name,
+                    $item->businessman->typedocument->name ?? '-',
+
+                    $item->businessman->documentnumber ?? $item->documentnumber,
+                    $item->businessman->name ?? $item->name,
+                    $item->businessman->lastname ?? $item->lastname,
+                    $item->businessman->middlename ?? $item->middlename,
+
+                    $item->businessman
+                        ? ($item->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
+                        : ($item->gender_id == 1 ? 'M' : 'F'),
                     $item->sick == 'no' ? 'No' : 'Si',
                     $item->phone,
                     $item->email,
-                    $item->birthday,
+
+                    $item->businessman->birthday ?? $item->birthday,
+
                     $item->age ?? null,
                     $item->positionCompany,
                     $item->howKnowEvent?->name,
@@ -67,6 +80,12 @@ class SedAsistentesController extends Controller
                     $item->facebook,
                     $item->web,
                     $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : '',
+
+                    $item->sedQuestion->question_1 ?? '-',
+                    $item->sedQuestion->question_2 ?? '-',
+                    $item->sedQuestion->question_3 ?? '-',
+                    $item->sedQuestion->question_4 ?? '-',
+                    $item->sedQuestion->question_5 ?? '-'
                 ];
             });
 
@@ -75,6 +94,7 @@ class SedAsistentesController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
 
             $startRow = 2;
+
             foreach ($rows as $i => $row) {
                 $col = 'A';
                 foreach ($row as $value) {
@@ -82,7 +102,6 @@ class SedAsistentesController extends Controller
                     $col++;
                 }
             }
-
 
             // ✅ CORRECTO: solo este return
             return new StreamedResponse(function () use ($spreadsheet) {

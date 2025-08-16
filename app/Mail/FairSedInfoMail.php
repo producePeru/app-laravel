@@ -26,7 +26,7 @@ class FairSedInfoMail extends Mailable
     public function build()
     {
         return $this->view('emails.fair_info')
-            ->subject('Información de la feria')
+            ->subject('Detalles del evento')
             ->attach($this->qrPath, [
                 'as' => 'entrada.pdf',
                 'mime' => 'application/pdf',

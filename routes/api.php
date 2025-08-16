@@ -6,7 +6,7 @@ use App\Http\Controllers\Agreement\CommitmentsController;
 use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\Attendance\EventsUgoController;
 use App\Http\Controllers\Attendance\EventsUgseController;
-use App\Http\Controllers\User\TokenController;
+
 // use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\EmailSendController;
@@ -42,7 +42,6 @@ use App\Http\Controllers\Formalization\ReportController;
 use App\Http\Controllers\Google\GoogleCalendarController;
 
 use App\Http\Controllers\Notary\QRNotaryController;
-// use App\Http\Controllers\User\TokenController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\PDF\PDFConveniosGeneralController;
 use App\Http\Controllers\Room\RoomController;
@@ -52,7 +51,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Captcha\CaptchaController;
 use App\Http\Controllers\Download\SedAsistentesController;
 use App\Http\Controllers\Email\EmailController;
-use App\Http\Controllers\Event\PublicEventsController;
+
 use App\Http\Controllers\Event\UgsePostulanteController;
 use App\Http\Controllers\Image\ImageController;
 use App\Http\Controllers\Import\ImportEventsUgoController;
@@ -81,8 +80,8 @@ Route::group(['prefix' => 'pnte-event'], function () {
 
 Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], function () {
 
-    Route::post('consult-company-ruc/{ruc}',                    [PublicEventsController::class, 'rucConsultCompany']);                    //consultar RUC empresa
-    Route::post('consult-businessman-dni/{dni}',                [PublicEventsController::class, 'dniConsultBusinessman']);                    //consultar DNI empresario
+    // Route::post('consult-company-ruc/{ruc}',                    [PublicEventsController::class, 'rucConsultCompany']);                    //consultar RUC empresa
+    // Route::post('consult-businessman-dni/{dni}',                [PublicEventsController::class, 'dniConsultBusinessman']);                    //consultar DNI empresario
 
     Route::get('dni/{num}', [AuthController::class, 'dniDataUser']);
     Route::post('formalization-digital', [FormalizationDigitalController::class, 'formalizationDigital']);
@@ -98,7 +97,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
 
     // FERIAS EMPRESARIALES
-    Route::get('data/{slug}',                       [FairController::class, 'show']);                       // TRAE LA FERIA POR SLUG
+    // Route::get('data/{slug}',                       [FairController::class, 'show']);                       // TRAE LA FERIA POR SLUG
     Route::get('data-event-count/{slug}',           [FairController::class, 'showEventCount']);                       // REALIZA EL CONTADOR 12/100
 
     Route::get('search-api-ruc/{ruc}',              [MypeController::class, 'apiRUC']);                     // BUSCA DATOS A PARTIR DEL RUC     *******************
@@ -112,7 +111,7 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     Route::get('surveys',                           [SurveysController::class, 'index']);              // ENCUESTAS 3° PISO
 
     Route::get('data-attendance/{slug}',            [AttendanceController::class, 'show']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
-    Route::post('attendance-present',               [AttendanceController::class, 'userPresent']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
+    // Route::post('attendance-present',               [AttendanceController::class, 'userPresent']);                       // TRAE LA LAS ASISTENCIAS POR SLUG
 
 
     // // EVENTOS SR CARLOS
@@ -138,15 +137,46 @@ Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], functi
 });
 
 
-Route::group(['prefix' => 'page', 'middleware' => 'auth:sanctum'], function () {
-    // creamos una pagina para luego darles privilegios a los usuarios
-    Route::post('new-page',                 [PageController::class, 'store']);
-    Route::get('permissions',               [PageController::class, 'index']);
-
-    Route::get('list',                      [PageController::class, 'allPages']);
-    Route::get('views-to-user/{id}',        [PageController::class, 'pageToUser']);
-    Route::put('user-assign-view',          [PageController::class, 'userAssignView']);
+Route::prefix('page')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/pages.php';
 });
+
+Route::prefix('token')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/token.php';
+});
+
+Route::prefix('events-ugo')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/eventsugo.php';
+});
+
+Route::prefix('events-ugse')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/eventsugse.php';
+});
+
+Route::prefix('download')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/download.php';
+});
+
+Route::prefix('questionnaire')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/questionnaire.php';
+});
+
+
+
+
+Route::prefix('events-pnte')->group(function () {
+    require __DIR__ . '/api/eventsPnte.php';            // creamos empresarios & empresas
+});
+
+Route::prefix('api')->group(function () {
+    require __DIR__ . '/api/apis.php';
+});
+
+Route::prefix('public')->group(function () {
+    require __DIR__ . '/api/public.php';
+});
+
+
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
@@ -283,8 +313,8 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('digital-routes',               [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
 
     Route::post('attendance-ugo',                       [DownloadAttendanceController::class, 'exportAttendance']);
-    Route::get('attendance/{slug}',                     [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
-    Route::get('attendance-mercado/{slug}',             [DownloadAttendanceController::class, 'exportFortaleceTuMercado']);         // lista de ventos ugo Fortalece tu Mercado
+    // Route::get('attendance/{slug}',                     [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
+    // Route::get('attendance-mercado/{slug}',             [DownloadAttendanceController::class, 'exportFortaleceTuMercado']);         // lista de ventos ugo Fortalece tu Mercado
     Route::post('list-ugo-by-components-id/{id}',       [DownloadAttendanceController::class, 'exportAttendanceByComponentsId']);         // lista de ventos ugo Fortalece tu Mercado
 
 
@@ -293,7 +323,7 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('notaries',                     [DownloadNotariesController::class, 'exportNotaries']);
     Route::post('cdes',                         [DownloadCdesController::class, 'exportCdes']);
     Route::post('events',                       [DownloadEventsController::class, 'exportEvents']);
-    Route::post('sed-asistentes/{slug}',        [SedAsistentesController::class, 'exportList']);                 // asistentes de sed
+    // Route::post('sed-asistentes/{slug}',        [SedAsistentesController::class, 'exportList']);                 // asistentes de sed
 
 });
 
@@ -301,11 +331,7 @@ Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'midd
     Route::post('events-ugo',                    [ImportEventsUgoController::class, 'importEventsUgo']);
 });
 
-Route::group(['prefix' => 'sen', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::get('list', [TokenController::class, 'index']);
-    Route::post('create', [TokenController::class, 'store']);
-    Route::put('update-status/{id}', [TokenController::class, 'updateStatus']);
-});
+
 
 Route::group(['prefix' => 'config', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('cdes',                          [CdeController::class, 'index']);
@@ -431,7 +457,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('fair-types', [SelectController::class, 'getFairTypes']);
 
     Route::get('type-taxpayer', [SelectController::class, 'getTaxpayerTypes']);         // tipo de contribuyente
-
+    Route::get('activity-by-rubro/{id}', [SelectController::class, 'getActivities']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
@@ -503,6 +529,8 @@ Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], f
     Route::post('/invitaciones-capacitaciones-pp093',       [EmailSendController::class, 'invitacionesCapacitacionesPP93']);            // envia correos para PP093 usa outlook PRODUCE
     Route::post('/invitaciones-capacitaciones-provincia',   [EmailSendController::class, 'invitacionesCapacitacionesProvincia']);       // envia correos para invitaciones a Provincia
 
+    Route::post('/send-emails',                             [EmailSendController::class, 'sendEmailsMasivos']);            // nuevo desde home-25
+
 });
 
 Route::group(['prefix' => 'email', 'middleware' => 'auth:sanctum'], function () {
@@ -515,7 +543,7 @@ Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middlew
 
 Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::post('create',                       [FairController::class, 'create']);
-    Route::get('list',                          [FairController::class, 'index']);
+    // Route::get('list',                          [FairController::class, 'index']);
 
 
     Route::put('update/{id}',                   [FairController::class, 'update']);
@@ -525,10 +553,11 @@ Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middle
 
 
     // SED LUCHOOO
-    Route::get('list-event-sed/{slug}',         [UgsePostulanteController::class, 'index']);
+    // Route::get('list-event-sed/{slug}',         [UgsePostulanteController::class, 'index']);
     Route::get('type-fair/{slug}',              [UgsePostulanteController::class, 'showFairBySlug']);            // devuelve datos de la feria desde un slug
     Route::put('sed-update-data-user/{slug}',   [UgsePostulanteController::class, 'update']);            // devuelve datos de la feria desde un slug
     Route::delete('sed-delete-user/{dni}',      [UgsePostulanteController::class, 'deleteParticipante']);            // devuelve datos de la feria desde un slug
+    Route::put('update-attended-status',        [UgsePostulanteController::class, 'updateAttendedStatus']);            // devuelve datos de la feria desde un slug
 
 
 });
@@ -539,7 +568,11 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
     Route::post('create',                       [AttendanceController::class, 'create']);
     Route::put('update/{id}',                   [AttendanceController::class, 'update']);
     Route::delete('delete/{id}',                [AttendanceController::class, 'delete']);
+
     Route::get('applicants/{slug}',             [AttendanceController::class, 'attendaceApplicants']);     // LISTA LOS PARTICIPANTES EN LA FERIA
+
+
+
     Route::put('status-participant/{id}',       [AttendanceController::class, 'toggleStatus']);       // TOGGLE PARTICIPARA O NO
     Route::delete('delete-participant/{id}',    [AttendanceController::class, 'destroyParticipant']);       // delete PARTICIPAnte
 

@@ -12,7 +12,7 @@ class Empresa extends Model
     protected $fillable = [
         'ruc',
         'razonSocial',
-        'tipoContribuyente_id',
+        // 'tipoContribuyente_id',
         'sectorEconomico_id',
         'rubro_id',
         'actividadComercial_id',

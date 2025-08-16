@@ -85,7 +85,7 @@ class DownloadAttendanceController extends Controller
     }
 
 
-    public function exportAttendanceInscriptos($slug)
+    public function exportRegistrantsUgoEvents($slug)
     {
 
         $attendance = Attendance::where('slug', $slug)->first();
@@ -115,27 +115,27 @@ class DownloadAttendanceController extends Controller
         $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
             return [
                 'index' => $index + 1,
-                'nameActividad' => $attendance->title,
+                'nameActividad'         => $attendance->title,
 
-                'asesor' => $asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename,
-                'dateActividad' => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
+                'asesor'                => strtoupper($asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename),
+                'dateActividad'         => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
 
-                'region' => $region->name,
-                'provincia' => $province->name,
-                'distrito' => $district->name,
+                'region'                => $region->name,
+                'provincia'             => $province->name,
+                'distrito'              => $district->name,
 
-                'place' => $attendance->address ?? null,
-                'lastname' => $item->lastname . ' ' . $item->middlename,
-                'name' => $item->name,
-                'typedocument' => $item->typedocument->name,
-                'documentnumber' => $item->documentnumber,
-                'email' => $item->email,
-                'phone' => $item->phone,
-                'gender' => $item->gender->avr,
-                'sick' => $item->sick,
-                'ruc' => $item->ruc ? $item->ruc : '-',
-                'economicsector' => $item->economicsector ? $item->economicsector->name : '-',
-                'comercialActivity' => $item->comercialActivity
+                'place'                 => $attendance->address ?? '-',
+                'lastname'              => strtoupper($item->lastname . ' ' . $item->middlename),
+                'name'                  => strtoupper($item->name),
+                'typedocument'          => $item->typedocument->name,
+                'documentnumber'        => $item->documentnumber,
+                'email'                 => $item->email ?? '-',
+                'phone'                 => $item->phone ?? '-',
+                'gender'                => $item->gender->avr,
+                'sick'                  => strtoupper($item->sick) ?? '-',
+                'ruc'                   => $item->ruc ?? '-',
+                'economicsector'        => $item->economicsector ? $item->economicsector->name : '-',
+                'comercialActivity'     => strtoupper($item->comercialActivity ?? '-'),
             ];
         });
 
@@ -193,23 +193,23 @@ class DownloadAttendanceController extends Controller
         $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
             return [
                 'index' => $index + 1,
-                'fechaCapacitacion' => $item->fechaRegistro,
-                'name' => $item->name,
-                'lastName' => $item->lastname,
-                'middleName' => $item->middlename,
-                'documentType' => $item->typedocument->name,
-                'numberDocument' => $item->documentnumber,
-                'gender' => $item->gender->avr,
-                'email' => $item->email ? $item->email : '-',
-                'phone' => $item->phone,
-                'ruc' => $item->ruc ? $item->ruc : '-',
-                'region' => $region->name,
-                'provincia' => $province->name,
-                'distrito' => $district->name,
-                'comercialActivity' => $item->comercialName ? $item->comercialName : '-',            // rubro *
-                'tema' => $item->list->title,                                      // Tema de la capacitación *
-                'place' => $attendance->address ?? null,
-                'mercadoPertenece' => $item->mercado ?? null
+                'fechaCapacitacion'     => Carbon::parse($item->startDate)->format('d/m/Y'),
+                'name'                  => mb_strtoupper($item->name, 'UTF-8'),
+                'lastName'              => mb_strtoupper($item->lastname, 'UTF-8'),
+                'middleName'            => mb_strtoupper($item->middlename, 'UTF-8'),
+                'documentType'          => $item->typedocument->name,
+                'numberDocument'        => $item->documentnumber,
+                'gender'                => mb_strtoupper($item->gender->avr, 'UTF-8'),
+                'email'                 => $item->email ? $item->email : '-',
+                'phone'                 => $item->phone ?? '-',
+                'ruc'                   => $item->ruc ?? '-',
+                'region'                => $region->name,
+                'provincia'             => $province->name,
+                'distrito'              => $district->name,
+                'comercialActivity'     => $item->comercialActivity ?? '-',            // rubro *
+                'tema'                  => $item->list->title,                                      // Tema de la capacitación *
+                'place'                 => $attendance->address ?? '-',
+                'mercadoPertenece'      => $item->mercado ?? '-'
             ];
         });
 

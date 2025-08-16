@@ -23,7 +23,7 @@ class UgsePostulanteController extends Controller
 {
 
 
-    public function index(Request $request, $slug)
+    public function usersRegisteredList(Request $request, $slug)
     {
         // Buscar la feria por su slug
         $fair = Fair::where('slug', $slug)->firstOrFail();
@@ -43,12 +43,11 @@ class UgsePostulanteController extends Controller
         // Eager Loading de relaciones
         $query->with([
             'economicsector',
-            // 'comercialactivity',
+            'businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
+            'businessman.gender:id,name',
             'category',
-            'city',
-            'typedocument',
-            'gender',
-            'howKnowEvent',
+            'city:id,name',
+            'howKnowEvent:id,name',
             'event',
         ]);
 
@@ -58,6 +57,10 @@ class UgsePostulanteController extends Controller
 
         return response()->json([
             'data'   => $postulantes,
+            'event' => [
+                'id'   => $fair->id,
+                'name' => $fair->title,
+            ],
             'status' => 200
         ]);
     }
@@ -65,69 +68,47 @@ class UgsePostulanteController extends Controller
     private function mapEvents($item)
     {
         return [
-            'id'               => $item->id,
-            'name'             => $item->name,
-            'lastname'         => $item->lastname,
-            'middlename'       => $item->middlename,
-            'documentnumber'   => $item->documentnumber,
-            'email'            => $item->email,
-            'phone'            => $item->phone,
-            'event_id'         => $item->event_id,
-            'positionCompany'  => $item->positionCompany,
-            'instagram'        => $item->instagram,
-            'facebook'         => $item->facebook,
-            'web'              => $item->web,
-            'ruc'              => $item->ruc,
-            'attended'         => $item->attended ?? null,
-            'comercialName'    => $item->comercialName,
-            'socialReason'     => $item->socialReason,
-            'typeAsistente'    => $item->typeAsistente,
-            'sick'             => $item->sick,
-            'birthday'         => $item->birthday,
-            'created_at' => $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : null,
+            'id'                        => $item->id,
 
+            'typedocument_id'           => $item->businessman->typedocument_id ?? null,
+            'documentnumber'            => $item->businessman->documentnumber ?? $item->documentnumber,
+            'name'                      => $item->businessman->name ?? $item->name,
+            'lastname'                  => $item->businessman->lastname ?? $item->lastname,
+            'middlename'                => $item->businessman->middlename ?? $item->middlename,
 
-            // Relaciones
-            'economicsector' => $item->economicsector ? [
-                'id'   => $item->economicsector->id,
-                'name' => $item->economicsector->name
-            ] : null,
+            'email'                     => $item->email,
+            'phone'                     => $item->phone,
 
-            'comercialactivity' => $item->comercialactivity ? [
-                'id'   => $item->comercialactivity->id,
-                'name' => $item->comercialactivity->name
-            ] : null,
+            'event_id'                  => $item->event_id,
+            'positionCompany'           => $item->positionCompany,
+            'instagram'                 => $item->instagram,
+            'facebook'                  => $item->facebook,
+            'web'                       => $item->web,
+            'ruc'                       => $item->ruc,
+            'attended'                  => $item->attended ?? null,
+            'comercialName'             => $item->comercialName,
+            'socialReason'              => $item->socialReason,
+            'typeAsistente'             => $item->typeAsistente,
+            'sick'                      => $item->sick == 'si' ? 'SI' : 'NO',
+            'birthday'                  => $item->businessman->birthday ?? $item->birthday,
+            'created_at'                => $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : null,
 
-            'economicsector' => $item->economicsector ? [
-                'id'   => $item->economicsector->id,
-                'name' => $item->economicsector->name
-            ] : null,
+            'asistio'                   => $item->attended ? true : false,
 
-            'category' => $item->category ? [
-                'id'   => $item->category->id,
-                'name' => $item->category->name
-            ] : null,
-
-            'city' => $item->city ? [
-                'id'   => $item->city->id,
-                'name' => $item->city->name
-            ] : null,
-
-            'typedocument' => $item->typedocument ? [
-                'id'   => $item->typedocument->id,
-                'name' => $item->typedocument->name
-            ] : null,
-
-            'gender' => $item->gender ? [
-                'id'   => $item->gender->id,
-                'name' => $item->gender->name
-            ] : null,
-
-            'howKnowEvent' => $item->howKnowEvent ? [
-                'id'   => $item->howKnowEvent->id,
-                'name' => $item->howKnowEvent->name
-            ] : null,
-
+            'howKnowEvent_id'           => $item->howKnowEvent->id,
+            'howKnowEvent_name'         => $item->howKnowEvent->name,
+            'gender_id'                 => $item->businessman->gender->id ?? '-',
+            'gender_name' => $item->businessman
+                ? ($item->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
+                : ($item->gender_id == 1 ? 'M' : 'F'),
+            'economicsector_id'         => $item->economicsector->id,
+            'economicsector_name'       => $item->economicsector->name,
+            'comercialactivity_id'      => $item->comercialactivity->id,
+            'comercialactivity_name'    => $item->comercialactivity->name,
+            'category_id'               => $item->category->id,
+            'category_name'             => $item->category->name,
+            'city_id'                   => $item->city->id,
+            'city_name'                 => $item->city->name,
             'event' => $item->event ? [
                 'id'   => $item->event->id,
                 'name' => $item->event->title  // suponiendo que el evento tiene "title"
@@ -647,6 +628,35 @@ class UgsePostulanteController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Ocurrió un error al procesar el registro',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateAttendedStatus(Request $request)
+    {
+        try {
+            // 1. Buscar el evento por slug
+            $fair = Fair::where('slug', $request->slug)->firstOrFail();
+
+            // 2. Buscar al postulante por event_id, ruc y documentnumber
+            $postulante = UgsePostulante::where('event_id', $fair->id)
+                ->where('documentnumber', $request->documentnumber)
+                ->firstOrFail();
+
+            // 3. Actualizar el campo 'attended' según el valor de check
+            if ($request->check) {
+                $postulante->attended = $request->date;
+            } else {
+                $postulante->attended = null;
+            }
+
+            $postulante->save();
+
+            return response()->json(['message' => 'Estado de asistencia actualizado correctamente.', 'status' => 200]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar asistencia.',
                 'error' => $e->getMessage()
             ], 500);
         }
