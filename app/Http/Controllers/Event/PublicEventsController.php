@@ -39,82 +39,85 @@ class PublicEventsController extends Controller
     {
         try {
 
-            // Buscar en la base de datos local
-            $empresa = Mype::where('ruc', $ruc)->first([
-                'ruc',
-                'socialReason',                 // razon social
-                'economicsector_id',            // id sector economico
-                'category_id',                  // id rubro
-                'comercialactivity_id',         // id actividad comercial
-                'city_id',                      // id region
-                'address',                      // direccion
-                'nameService',                  // estado
-                'condicion'
-            ]);
+            $empresa = Mype::where('ruc', $ruc)->first();
 
-            if ($empresa) {
-                return response()->json(['status' => 200, 'data' => $empresa]);
-            }
+            if (!$empresa) {
 
-            $apiUrl = "https://api.apis.net.pe/v2/sunat/ruc/full?numero={$ruc}";
-            $client = new Client();
+                $apiUrl = "https://api.decolecta.com/v1/sunat/ruc?numero={$ruc}";
 
-            // Obtener todos los tokens ordenados por ID
-            $tokens = Token::orderBy('id')->get();
+                $tokens = Token::where('name', 'decolecta')
+                    ->pluck('token')
+                    ->toArray();
 
-            foreach ($tokens as $tokenRecord) {
-                try {
-                    $response = $client->request('GET', $apiUrl, [
-                        'headers' => [
-                            'Authorization' => $tokenRecord->token,
-                            'Accept' => 'application/json',
-                        ],
-                        'timeout' => 5,
-                    ]);
+                $client = new Client();
 
-                    $resp = json_decode($response->getBody(), true);
+                $responseData = null;
 
-                    if (isset($resp['numeroDocumento'])) {
-                        // Activar este token y desactivar los demás
-                        Token::where('id', '!=', $tokenRecord->id)->update(['status' => 0]);
-                        $tokenRecord->update(['status' => 1]);
+                foreach ($tokens as $token) {
 
-                        $region = City::where('name', $resp['departamento'])->first();
+                    try {
+                        $response = $client->request('GET', $apiUrl, [
+                            'headers' => [
+                                'Authorization' => $token,
+                                'Accept' => 'application/json',
+                            ],
+                            'timeout' => 5,
+                        ]);
 
-                        $empresaData = [
-                            'ruc' => $resp['numeroDocumento'],
-                            'socialReason' => $resp['razonSocial'],
-                            'economicsector_id' => null,
-                            'category_id' => null,
-                            'comercialactivity_id' => null,
-                            'city_id' => $region?->id,
-                            'address' => $resp['direccion'],
-                            'nameService' => $resp['estado'] ?? null,
-                            'condicion' => $resp['condicion'] ?? null
-                        ];
+                        $responseData = json_decode($response->getBody(), true);
 
-                        return response()->json(['status' => 200, 'data' => $empresaData]);
-                    }
-
-                    break; // Salimos del bucle si no hay datos válidos pero sin error
-                } catch (\GuzzleHttp\Exception\ClientException $e) {
-                    $statusCode = $e->getResponse()->getStatusCode();
-
-                    if ($statusCode == 429) {
-                        // Token alcanzó su límite → desactivar
-                        $tokenRecord->update(['status' => 0]);
-                        continue; // Probar siguiente token
-                    } else {
-                        throw $e; // Otro error, relanzar
+                        if (!empty($responseData['numero_documento'])) {
+                            break;
+                        }
+                    } catch (\Exception $e) {
+                        continue;
                     }
                 }
-            }
 
-            return response()->json(['status' => 404, 'message' => 'Empresa no encontrada o sin tokens válidos']);
+
+                if ($responseData && !empty($responseData['numero_documento'])) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Información obtenida',
+                        'data' => [
+                            'ruc'                   => $responseData['numero_documento'] ?? null,
+                            'socialReason'          => $responseData['razon_social'] ?? null,
+                            'economicsector_id'     => null,
+                            'category_id'           => null,
+                            'comercialactivity_id'  => null,
+                            'city_id'               => null,
+                            'address'               => $responseData['direccion'] ?? null,
+                            'estado'                => $responseData['estado'] ?? null,
+                            'condicion'             => $responseData['condicion']
+                        ]
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 404,
+                        'message' => 'No se pudo obtener información con los tokens disponibles'
+                    ], 404);
+                }
+            } else {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Usuario',
+                    'data' => [
+                        'name'                  => $empresa->ruc ?? null,
+                        'socialReason'          => $empresa->socialReason ?? null,
+                        'economicsector_id'     => $empresa->economicsector_id,
+                        'category_id'           => $empresa->category_id ?? null,
+                        'comercialactivity_id'  => $empresa->comercialactivity_id ?? null,
+                        'city_id'               => $empresa->city_id ?? null,
+                        'address'               => $empresa->address ?? null,
+                        'estado'                => $empresa->estado ?? null,
+                        'condicion'             => $empresa->condicion ?? null
+                    ]
+                ]);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'No se encontraron datos de la empresa con el RUC proporcionado',
+                'message' => 'Error al procesar la solicitud',
                 'error' => $e->getMessage()
             ], 500);
         }
