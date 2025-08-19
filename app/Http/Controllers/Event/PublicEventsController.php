@@ -140,6 +140,8 @@ class PublicEventsController extends Controller
                 $client = new Client();
                 $responseData = null;
 
+                return $tokens;
+
                 foreach ($tokens as $token) {
                     try {
                         $response = $client->request('GET', $apiUrl, [
@@ -160,6 +162,8 @@ class PublicEventsController extends Controller
                         continue;
                     }
                 }
+
+
 
                 if ($responseData && !empty($responseData['document_number'])) {
                     return response()->json([

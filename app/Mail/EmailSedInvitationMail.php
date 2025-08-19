@@ -21,8 +21,13 @@ class EmailSedInvitationMail extends Mailable implements ShouldQueue
 
     public function build()
     {
-        return $this->subject('¡Impulsa tus Ventas Digitales - Con las Sesiones de Entrenamiento Digital -Evento Gratuito presencial ! 💼🚀')
-            ->view('emails.sed')
+        return $this->subject('Gestión de Tecnologías de la Información 🚀')
+            ->view('emails.invitacionProvincia')
             ->with('content', $this->messageContent);
     }
 }
+
+
+
+// sed
+// invitacionProvincia

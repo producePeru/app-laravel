@@ -177,6 +177,12 @@ Route::prefix('public')->group(function () {
 });
 
 
+Route::prefix('image')->group(function () {
+    require __DIR__ . '/api/image.php';
+});
+
+
+
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list',                      [UserController::class, 'index']);      // v2.0
@@ -635,7 +641,7 @@ Route::group(['prefix' => 'pp03', 'namespace' => 'App\Http\Controllers', 'middle
 });
 
 
-Route::group(['prefix' => 'image', 'namespace' => 'App\Http\Controllers'], function () {
-    Route::post('upload-image',                     [ImageController::class, 'upload']);
-    Route::put('origin-image/{id}',                 [ImageController::class, 'setOriginImage']);
-});
+// Route::group(['prefix' => 'image', 'namespace' => 'App\Http\Controllers'], function () {
+//     Route::post('upload-image',                     [ImageController::class, 'upload']);
+//     Route::put('origin-image/{id}',                 [ImageController::class, 'setOriginImage']);
+// });

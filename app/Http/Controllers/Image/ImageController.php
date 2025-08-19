@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 class ImageController extends Controller
 {
@@ -122,5 +123,28 @@ class ImageController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function download($id)
+    {
+        $image = Image::find($id);
+
+        if (!$image) {
+            return response()->json(['error' => 'Imagen no encontrada'], 404);
+        }
+
+        // Elimina `/storage/` de la URL para obtener la ruta relativa
+        $path = str_replace('storage/', '', $image->url); // OJO: sin la primera barra
+
+        $fullPath = storage_path('app/public/' . $path);
+
+        if (!file_exists($fullPath)) {
+            return response()->json(['error' => 'Archivo no encontrado'], 404);
+        }
+
+        // Usa el nombre original que tienes en base de datos
+        return response()->download($fullPath, $image->name, [
+            'Content-Type' => $image->mime_type,
+        ]);
     }
 }

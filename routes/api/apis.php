@@ -9,3 +9,5 @@ Route::controller(PublicEventsController::class)->group(function () {
 
     Route::post('consult-businessman-dni/{dni}', 'dniConsultBusinessman');
 });
+
+// api

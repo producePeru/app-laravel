@@ -56,14 +56,12 @@ class UgsePostulante extends Model
     }
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class);           // RUBROS
     }
     public function comercialactivity()
     {
         return $this->belongsTo(Activity::class);
     }
-
-
 
     public function city()
     {
