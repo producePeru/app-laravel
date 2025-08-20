@@ -50,7 +50,7 @@ class ImageController extends Controller
         $manager = ImageManager::gd();
 
         // Nombres y rutas para derivados (siempre JPG)
-        $filenameJpg          = $uuid . '.jpg';
+        $filenameJpg          = $uuid . '.' . $extOriginal;
         $pathMediumAbsolute   = $dirMedium . '/' . $filenameJpg;
         $pathThumbAbsolute    = $dirThumb . '/' . $filenameJpg;
 
