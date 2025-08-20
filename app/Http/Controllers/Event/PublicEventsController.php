@@ -140,8 +140,6 @@ class PublicEventsController extends Controller
                 $client = new Client();
                 $responseData = null;
 
-                return $tokens;
-
                 foreach ($tokens as $token) {
                     try {
                         $response = $client->request('GET', $apiUrl, [

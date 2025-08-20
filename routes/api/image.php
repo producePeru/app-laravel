@@ -9,7 +9,7 @@ Route::controller(ImageController::class)->group(function () {
 
   Route::put('origin-image/{id}', 'setOriginImage');
 
-  Route::get('download/{idImage}', 'download');
+  Route::get('download/{folder}/{idImage}', 'download');
 });
 
 

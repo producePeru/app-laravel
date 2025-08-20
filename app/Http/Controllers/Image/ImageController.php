@@ -125,7 +125,7 @@ class ImageController extends Controller
         }
     }
 
-    public function download($id)
+    public function download($folder, $id)
     {
         $image = Image::find($id);
 
@@ -133,16 +133,23 @@ class ImageController extends Controller
             return response()->json(['error' => 'Imagen no encontrada'], 404);
         }
 
-        // Elimina `/storage/` de la URL para obtener la ruta relativa
-        $path = str_replace('storage/', '', $image->url); // OJO: sin la primera barra
+        // Validar que solo se acepten carpetas válidas para seguridad
+        $allowedFolders = ['original', 'medium', 'thumb'];
+        if (!in_array($folder, $allowedFolders)) {
+            return response()->json(['error' => 'Carpeta inválida'], 400);
+        }
 
-        $fullPath = storage_path('app/public/' . $path);
+        // Extraer solo el nombre del archivo desde la URL completa
+        $filename = basename($image->url); // ej. 9f2bab62-d848-4806-a7d7-0d1b1fe1aabd.jpg
+
+        // Construir ruta final: public/storage/images/{folder}/{filename}
+        $fullPath = public_path("storage/images/{$folder}/{$filename}");
 
         if (!file_exists($fullPath)) {
+
             return response()->json(['error' => 'Archivo no encontrado'], 404);
         }
 
-        // Usa el nombre original que tienes en base de datos
         return response()->download($fullPath, $image->name, [
             'Content-Type' => $image->mime_type,
         ]);
