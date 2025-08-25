@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Token;
 use GuzzleHttp\Client;
+use Illuminate\Support\Arr;
 
 class PersonController extends Controller
 {
@@ -397,6 +398,110 @@ class PersonController extends Controller
             );
         } else {
             return response()->json(['message' => 'No se encuentra registrado', 'status' => 300]);
+        }
+    }
+
+
+    // cleannds
+    public function registerOrUpdateBusinessman(Request $request)
+    {
+        $authId = Auth::id();
+
+        $data = $request->all();
+
+        // Normalizar campos
+        if (!empty($data['birthday'])) {
+            $data['birthday'] = Carbon::parse($data['birthday'])->toDateString();
+        }
+        if (isset($data['hasSoon'])) {
+            $data['hasSoon'] = strtolower($data['hasSoon']) === 'si' ? 'SI' : 'NO';
+        }
+
+        // Campos que sí vamos a guardar
+        $FIELDS = [
+            'typedocument_id',
+            'documentnumber',
+            'lastname',
+            'middlename',
+            'name',
+            'country_id',
+            'city_id',
+            'province_id',
+            'district_id',
+            'address',
+            'birthday',
+            'phone',
+            'email',
+            'gender_id',
+            'sick',
+            'hasSoon',
+        ];
+        $payload = Arr::only($data, $FIELDS);
+
+        // Buscar o crear por documentnumber
+        $person = \App\Models\People::firstOrNew([
+            'documentnumber' => $data['documentnumber'],
+        ]);
+        $isNew = !$person->exists;
+
+        // Asignar valores
+        $person->fill($payload);
+        if ($authId) {
+            $isNew ? $person->user_id = $authId : $person->updated_by = $authId;
+        }
+        $person->save();
+
+        return response()->json([
+            'message' => $isNew ? 'Persona registrada correctamente.' : 'Persona actualizada correctamente.',
+            'action'  => $isNew ? 'created' : 'updated',
+            'data'    => $person->only(array_merge(['id'], $FIELDS, $isNew ? ['user_id'] : ['updated_by'])),
+        ], $isNew ? 201 : 200);
+    }
+
+    public function getBusinessmanData($numberDocument)
+    {
+        try {
+            $person = People::where('documentnumber', $numberDocument)
+                ->select(
+                    'id',
+                    'documentnumber',
+                    'name',
+                    'lastname',
+                    'middlename',
+                    'address',
+                    'phone',
+                    'email',
+                    'birthday',
+                    'sick',
+                    'hasSoon',
+                    'country_id',
+                    'city_id',
+                    'province_id',
+                    'district_id',
+                    'address',
+                    'typedocument_id',
+                    'gender_id',
+                    'user_id'
+                )->first();
+
+            if ($person) {
+                return response()->json([
+                    'status'  => 200,
+                    'message' => 'Registro encontrado',
+                    'data'    => $person
+                ]);
+            }
+
+            return response()->json([
+                'status'  => 404,
+                'message' => 'No se encontró el registro'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Ocurrió un error al obtener la información',
+                'error'   => $e->getMessage()
+            ], 500);
         }
     }
 }

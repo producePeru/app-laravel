@@ -17,7 +17,7 @@ class ImageController extends Controller
     {
         // Validación
         $request->validate([
-            'file'        => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:5120', // 5 MB
+            'file'        => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:10240', // 5 MB
             'from_origin' => 'required|string|max:50',
         ]);
 

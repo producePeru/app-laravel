@@ -94,8 +94,8 @@ class PublicEventsController extends Controller
                 } else {
                     return response()->json([
                         'status' => 404,
-                        'message' => 'No se pudo obtener información con los tokens disponibles'
-                    ], 404);
+                        'message' => 'No se pudo obtener información con los tokens disponibles 404'
+                    ]);
                 }
             } else {
                 return response()->json([
