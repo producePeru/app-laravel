@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Attendance;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateUgoParticipantRequest;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
 use App\Models\City;
@@ -265,58 +266,39 @@ class AttendanceController extends Controller
     {
         $attendance = Attendance::where('slug', $request->slug)->first();
 
-        if ($attendance) {
-            $attendancelist_id = $attendance->id;
-
-            $existingUser = AttendanceList::where('attendancelist_id', $attendancelist_id)
-                ->where('documentnumber', $request->documentnumber)
-                ->first();
-
-            if ($existingUser) {
-                return response()->json([
-                    'message' => 'El documento ya está registrado en esta lista de asistencia.',
-                    'status' => 400
-                ]);
-            }
-
-            $user = new AttendanceList();
-
-            $user->typedocument_id = $request->typedocument_id;
-            $user->documentnumber = $request->documentnumber;
-            $user->name = $request->name;
-            $user->lastname = $request->lastname;
-            $user->middlename = $request->middlename;
-            $user->gender_id = $request->gender_id;
-            $user->sick = $request->sick ?? null;
-            $user->email = $request->email;
-            $user->phone = $request->phone;
-
-            $user->ruc = $request->ruc;
-            $user->comercialName = $request->comercialName ?? null;
-            $user->socialReason = $request->socialReason;
-            $user->economicsector_id = $request->economicsector_id;
-            $user->comercialactivity_id = $request->comercialactivity_id ?? null;
-            $user->category_id = $request->category_id ?? null;
-            $user->city_id = $request->city_id ?? null;
-            // $user->slug = $request->slug ?? null;
-            $user->howKnowEvent_id = $request->howKnowEvent_id ?? null;
-            $user->comercialactivity = $request->comercialactivity;
-            $user->attendancelist_id = $attendancelist_id;
-            $user->mercado = $request->mercado ?? null;
-            $user->fechaRegistro = $request->fechaRegistro ?? null;
-            $user->save();
-
+        if (!$attendance) {
             return response()->json([
-                'message' => 'Registrado exitosamente',
-                'status' => 200,
-                'data' => $user
-            ]);
-        } else {
-            return response()->json([
-                'message' => 'No se encontró la lista de asistencia proporcionado',
+                'message' => 'No se encontró la lista de asistencia proporcionada.',
                 'status' => 404
             ]);
         }
+
+        $attendancelist_id = $attendance->id;
+
+        // Verificar si el usuario ya existe en la lista
+        $existingUser = AttendanceList::where('attendancelist_id', $attendancelist_id)
+            ->where('documentnumber', $request->documentnumber)
+            ->first();
+
+        if ($existingUser) {
+            return response()->json([
+                'message' => 'El documento ya está registrado en esta lista de asistencia.',
+                'status' => 400
+            ]);
+        }
+
+        // Agregar el ID de la lista al array del request
+        $data = $request->all();
+        $data['attendancelist_id'] = $attendancelist_id;
+
+        // Crear el usuario
+        $user = AttendanceList::create($data);
+
+        return response()->json([
+            'message' => 'Registrado exitosamente.',
+            'status' => 200,
+            'data' => $user
+        ]);
     }
 
     public function attendaceApplicants(Request $request, $slug)
@@ -340,24 +322,28 @@ class AttendanceController extends Controller
             ->searchApplicants($search)
             ->orderBy('created_at', 'desc');
 
-        $data = $query->paginate(50);
+        $data = $query->paginate(150);
 
         $data->getCollection()->transform(function ($item) {
             return [
                 'id' => $item->id,
-                'created_at' => Carbon::parse($item->created_at)->format('d-m-Y H:i'),
-                'lastname' => $item->lastname . ' ' . $item->middlename,
-                'name' => $item->name,
-                'typedocument' => $item->typedocument->name,
-                'documentnumber' => $item->documentnumber,
-                'email' => $item->email,
-                'phone' => $item->phone,
-                'gender' => $item->gender->name,
-                'sick' => $item->sick,
-                'ruc' => $item->ruc ? $item->ruc : '-',
-                'economicsector' => $item->economicsector ? $item->economicsector->name : '-',
-                'comercialActivity' => $item->comercialActivity,
-                // 'comercialactivity' => $item->comercialactivity->name
+                'created_at'            => Carbon::parse($item->created_at)->format('d-m-Y H:i'),
+                'lastname'              => $item->lastname,
+                'middlename'            => $item->middlename,
+                'name'                  => $item->name,
+                'typedocument_name'     => $item->typedocument->name,
+                'typedocument_id'       => $item->typedocument->id,
+                'documentnumber'        => $item->documentnumber,
+                'email'                 => $item->email ?? null,
+                'phone'                 => $item->phone ?? null,
+                'gender_name'           => $item->gender->name,
+                'gender_id'             => $item->gender->id,
+                'sick'                  => $item->sick ?? null,
+
+                'ruc'                   => $item->ruc ?? null,
+                'comercialName'        => $item->comercialName ?? null,
+                'comercialActivity'     => $item->comercialActivity,
+                'mercado'               => $item->mercado
             ];
         });
 
@@ -472,5 +458,47 @@ class AttendanceController extends Controller
             'status' => 200,
             'message' => 'El evento se marco como finalizado'
         ]);
+    }
+
+    public function updateParticipantDataUgoEvent(UpdateUgoParticipantRequest $request, $id)
+    {
+        try {
+            $participant = AttendanceList::findOrFail($id);
+
+            $participant->update($request->validated());
+
+            return response()->json([
+                'message' => 'Datos del participante actualizados correctamente.',
+                'data' => $participant,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el participante.',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
+        }
+    }
+
+    public function removeParticipantUgoEvent($id)
+    {
+        try {
+
+            $participant = AttendanceList::findOrFail($id);
+
+            $participant->delete();
+
+            return response()->json([
+                'message' => 'Participante eliminado correctamente.',
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Ocurrió un error al intentar eliminar el participante.',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
+        }
     }
 }

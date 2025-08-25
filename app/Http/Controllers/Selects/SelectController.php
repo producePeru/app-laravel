@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Selects;
 
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
 use App\Models\Advisory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -527,6 +528,20 @@ class SelectController extends Controller
     public function getTaxpayerTypes()
     {
         $types = TypeTaxpayer::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getActivities($idRubro)
+    {
+        $types = Activity::where('rubro_id', $idRubro)->orderBy('name', 'asc')->get();
 
         $data = $types->map(function ($item) {
             return [

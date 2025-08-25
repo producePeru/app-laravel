@@ -1,66 +1,5 @@
 
-
-
-CREATE TABLE restrict_ips (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    ip VARCHAR(20) NOT NULL,
-    access VARCHAR(20) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL
-);
-
-php artisan make:model RestrictIp
-php artisan make:controller Restrict/RestrictIpController --api
-
-
-
-//- CREATE TABLE eventsoffice (
-//-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-//-     name VARCHAR(50) NOT NULL,
-//-     office VARCHAR(10) NOT NULL,
-//-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-//-     deleted_at TIMESTAMP NULL
-//- );
-
-
-
-//- ALTER TABLE events
-//- ADD COLUMN pnte_id BIGINT UNSIGNED NULL AFTER user_id,
-//- ADD CONSTRAINT fk_pnte_id FOREIGN KEY (pnte_id) REFERENCES eventsoffice(id) ON DELETE SET NULL ON UPDATE CASCADE;
-
-
-//- CREATE TABLE events (
-//-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-//-     id_pnte BIGINT UNSIGNED NOT NULL,
-//-     title VARCHAR(255) NOT NULL,
-//-     organiza VARCHAR(150) NULL,
-//-     numMypes VARCHAR(10) NULL,
-//-     date DATE NOT NULL,
-//-     start TIME NULL,
-//-     end TIME NULL,
-//-     description VARCHAR(255) NULL,
-//-     nameUser VARCHAR(100) NULL,
-//-     link VARCHAR(150) NULL,
-
-//-     user_id BIGINT UNSIGNED NOT NULL,
-//-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-//-     deleted_at TIMESTAMP NULL,
-
-//-     -- Claves foráneas
-//-     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-//-     FOREIGN KEY (id_pnte) REFERENCES eventsoffice(id) ON DELETE CASCADE
-//- );
-
-
-
-
-
-
-//- CREATE TABLE pnteSoft (
+ CREATE TABLE pnteSoft (
 //-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 //-     name VARCHAR(255) NOT NULL,
 //-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -319,23 +258,7 @@ CREATE TABLE images (
 //- 'logo' => $item->mype->logo_path ? $urlBase . $item->mype->logo_path : null,
 
 
-//- CREATE TABLE rooms (
-//-   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-//-   sala VARCHAR(100) NOT NULL,
-//-   inicio DATETIME NOT NULL,
-//-   fin DATETIME NOT NULL,
-//-   descripcion TEXT,
-//-   unidad VARCHAR(50),
 
-//-   created_by BIGINT UNSIGNED NOT NULL,
-//-   updated_by BIGINT UNSIGNED NULL,
-//-   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
-//-   FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
-
-//-   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//-   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-//-   deleted_at TIMESTAMP NULL DEFAULT NULL
-//- );
 
 
 
@@ -518,86 +441,70 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 
 
 
- CREATE TABLE typeTaxpayers  (
-     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-     name VARCHAR(50) NOT NULL,
-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
- );
+--  CREATE TABLE typeTaxpayers  (
+--      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--      name VARCHAR(50) NOT NULL,
+--      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+--  );
 
- INSERT INTO typeTaxpayers (name)
- VALUES
-   ('E.I.R.L - EMPRESA INDIVIDUAL DE RESP. LTDA'),
-   ('S.A - SOCIEDAD ANÓNIMA'),
-   ('S.A.A - SOCIEDAD ANÓNIMA ABIERTA'),
-   ('S.A.C - SOCIEDAD ANÓNIMA CERRADA'),
-   ('S.R.Ltda. - SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA'),
-   ('PERSONA NATURAL CON NEGOCIO');
-
-
-
-CREATE TABLE empresas (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  ruc VARCHAR(11) NOT NULL UNIQUE,
-  razonSocial VARCHAR(255) NOT NULL,
-  sectorEconomico_id BIGINT UNSIGNED,
-  rubro_id BIGINT UNSIGNED,
-  actividadComercial_id BIGINT UNSIGNED,
-  region_id BIGINT UNSIGNED,
-  provincia_id BIGINT UNSIGNED,
-  distrito_id BIGINT UNSIGNED,
-  direccion VARCHAR(255) NULL,
-  estado VARCHAR(255) NULL,
-  condicion VARCHAR(255) NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+--  INSERT INTO typeTaxpayers (name)
+--  VALUES
+--    ('E.I.R.L - EMPRESA INDIVIDUAL DE RESP. LTDA'),
+--    ('S.A - SOCIEDAD ANÓNIMA'),
+--    ('S.A.A - SOCIEDAD ANÓNIMA ABIERTA'),
+--    ('S.A.C - SOCIEDAD ANÓNIMA CERRADA'),
+--    ('S.R.Ltda. - SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA'),
+--    ('PERSONA NATURAL CON NEGOCIO');
 
 
-CREATE TABLE empresarios (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  typedocument_id BIGINT UNSIGNED,
-  dni VARCHAR(11) NOT NULL UNIQUE,
-  name VARCHAR(100),
-  lastname VARCHAR(100),
-  middlename VARCHAR(100),
-  gender_id BIGINT UNSIGNED,
-  birthday DATE,
-  phone VARCHAR(9),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
 
 
-INSERT INTO empresas (
-  ruc,
-  razonSocial,
-  sectorEconomico_id,
-  rubro_id,
-  actividadComercial_id,
-  region_id,
-  provincia_id,
-  distrito_id,
-  direccion
-)
-SELECT
-  p.ruc,
-  p.socialReason,
-  p.economicsector_id,
-  p.category_id,
-  p.comercialactivity_id,
-  p.city_id,
-  p.province_id,
-  p.district_id,
-  p.address
-FROM
-  ugse_postulantes p
-WHERE
-  p.ruc IS NOT NULL
-  AND NOT EXISTS (
-    SELECT 1
-    FROM empresas e
-    WHERE e.ruc = p.ruc
-  );
 
 
+
+
+
+-- CREATE TABLE questions_answers (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     question TEXT NOT NULL,
+--     answer TEXT NOT NULL,
+--     user_id BIGINT UNSIGNED NOT NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     CONSTRAINT fk_questions_answers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+-- );
+
+
+
+-- CREATE TABLE activities (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(100) NOT NULL,
+--     rubro_id BIGINT UNSIGNED NOT NULL,
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- );
+
+
+--  CREATE TABLE sedQuestions (
+--    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--    question_1 VARCHAR(100) NULL,
+--    question_2 VARCHAR(100) NULL,
+--    question_3 VARCHAR(100) NULL,
+--    question_4 VARCHAR(100) NULL,
+--    question_5 VARCHAR(100) NULL,
+--    documentnumber VARCHAR(12) NULL,
+
+--    event_id BIGINT UNSIGNED NOT NULL,
+--    FOREIGN KEY (event_id) REFERENCES fairs(id) ON DELETE CASCADE,
+
+--    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--    deleted_at TIMESTAMP NULL DEFAULT NULL
+--  );
+
+
+
+--  ALTER TABLE images
+--   ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at,
+--   ADD INDEX idx_images_deleted_at (deleted_at);

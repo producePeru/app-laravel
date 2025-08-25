@@ -189,12 +189,7 @@ class UserController extends Controller
         ];
     }
 
-
-
-
-
-
-    public function update(UpdateUserRequest $request, $id)
+    public function updateUserPnte(UpdateUserRequest $request, $id)
     {
         try {
             $user = User::findOrFail($id);
@@ -507,5 +502,26 @@ class UserController extends Controller
             'message' => 'No tienes permiso',
             'status' => 500
         ]);
+    }
+
+    public function deleteUserPnte($idUser)
+    {
+        try {
+            $user = User::find($idUser);
+
+            if ($user) {
+                $user->active = 0;
+                $user->save();
+
+                return response()->json(['message' => 'Usuario desactivado correctamente', 'status' => 200]);
+            }
+
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al desactivar el usuario',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -23,7 +23,7 @@ class StoreSedRequest extends FormRequest
     {
         return [
             'ruc' => 'required', // RUC debe ser único
-            'comercialName' => 'required|integer',
+            'comercialName' => 'required|string',
             'economicsector_id' => 'required|integer',
             'comercialactivity_id' => 'required|integer',
             'category_id' => 'required|integer',

@@ -32,7 +32,7 @@ class UpdateUserRequest extends FormRequest
             'lastname' => 'required|string|max:255',
             'middlename' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
-            'birthday' => 'required|date',
+            'birthday' => 'nullable|date',
             'gender_id' => 'required|integer',
             'office_id' => 'required|integer',
             'cde_id' => 'required|integer',
