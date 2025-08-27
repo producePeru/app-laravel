@@ -403,26 +403,26 @@ CREATE TABLE emails (
 --     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 -- );
 
--- CREATE TABLE page_user (
---     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
---     user_id BIGINT UNSIGNED NOT NULL,
---     page_id BIGINT UNSIGNED NOT NULL,
+CREATE TABLE page_user (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    page_id BIGINT UNSIGNED NOT NULL,
 
---     can_view_all TINYINT(1) DEFAULT 1,
---     can_create TINYINT(1) DEFAULT 0,
---     can_update TINYINT(1) DEFAULT 0,
---     can_delete TINYINT(1) DEFAULT 0,
---     can_download TINYINT(1) DEFAULT 0,
+    can_view_all TINYINT(1) DEFAULT 0,
+    can_create TINYINT(1) DEFAULT 0,
+    can_update TINYINT(1) DEFAULT 0,
+    can_delete TINYINT(1) DEFAULT 0,
+    can_download TINYINT(1) DEFAULT 0,
 
---     can_finish TINYINT(1) DEFAULT 0,
---     can_import TINYINT(1) DEFAULT 0,
+    can_finish TINYINT(1) DEFAULT 0,
+    can_import TINYINT(1) DEFAULT 0,
 
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
---     CONSTRAINT fk_page_user_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
---     CONSTRAINT fk_page_user_page FOREIGN KEY (page_id) REFERENCES pages(id) ON DELETE CASCADE
--- );
+    CONSTRAINT fk_page_user_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_page_user_page FOREIGN KEY (page_id) REFERENCES pages(id) ON DELETE CASCADE
+);
 
 
 INSERT INTO pages (name) VALUES ('Usuarios lista');
@@ -494,10 +494,10 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 --    question_4 VARCHAR(100) NULL,
 --    question_5 VARCHAR(100) NULL,
 --    documentnumber VARCHAR(12) NULL,
-    
+
 --    event_id BIGINT UNSIGNED NOT NULL,
 --    FOREIGN KEY (event_id) REFERENCES fairs(id) ON DELETE CASCADE,
- 
+
 --    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 --    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 --    deleted_at TIMESTAMP NULL DEFAULT NULL

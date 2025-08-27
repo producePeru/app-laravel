@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Formalization;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreFormalization20Request;
 use Illuminate\Http\Request;
 use App\Models\Formalization20;
 use App\Models\Mype;
@@ -41,7 +42,6 @@ class Formalization20Controller extends Controller
             Formalization20::create($data);
 
             return response()->json(['message' => 'Formalizacion tipo RUC 20 registrada correctamente', 'status' => 200]);
-
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al registrar la formalizacion tipo RUC 20', 'status' => $e]);
         }
@@ -52,7 +52,7 @@ class Formalization20Controller extends Controller
     {
         try {
 
-            if($id == 000) {
+            if ($id == 000) {
                 $data = $request->all();
                 Formalization20::create($data);
 
@@ -89,7 +89,6 @@ class Formalization20Controller extends Controller
 
                 return response()->json(['message' => 'Formalizacion tipo RUC 20 registrada correctamente', 'status' => 200]);
             }
-
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al registrar la formalizacion tipo RUC 20', 'status' => $e]);
         }
@@ -113,46 +112,33 @@ class Formalization20Controller extends Controller
                 $existingRecord->save();
 
                 return response()->json(['message' => 'Formalizacion tipo RUC 20 registrada correctamente', 'status' => 200]);
-
             }
-
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al registrar la formalizacion tipo RUC 20', 'status' => $e]);
         }
     }
 
-    public function ruc20All(Request $request)
+    public function storeRuc20(StoreFormalization20Request $request)
     {
-        $validatedData = $request->validate([
-            'codesunarp' => 'nullable|string',
-            'numbernotary' => 'required',
-            'address' => 'required|string',
-            'economicsector_id' => 'required|integer',
-            'comercialactivity_id' => 'required|integer',
-            'regime_id' => 'required|integer',
-            'city_id' => 'required|integer',
-            'province_id' => 'required|integer',
-            'district_id' => 'required|integer',
-            'modality_id' => 'required|integer',
-            'notary_id' => 'required|integer',
-            'user_id' => 'required|integer',
-            'people_id' => 'required|integer',
-            'nameMype' => 'required|string',
-            'dateReception' => 'nullable|date',
-            'dateTramite' => 'nullable|date',
-            'ruc' => 'nullable',
-            'dni' => 'required|string',
-            'typecapital_id' => 'nullable|integer',
-            'isbic' => 'nullable|string',
-            'montocapital' => 'nullable',
-            'cde_id' => 'integer',
-        ]);
+        try {
+            $data = $request->validated();
 
+            // Agregar el user_id del usuario autenticado
+            $data['user_id'] = auth()->id();
 
+            Formalization20::create($data);
 
-        $formalization = Formalization20::create($validatedData);
-
-        return response()->json(['message' => 'Formalización creada exitosamente', 'status' => 200]);
+            return response()->json([
+                'message' => 'Formalización creada correctamente',
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al crear la formalización',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
+        }
     }
 
     public function getDataF20ById($id)

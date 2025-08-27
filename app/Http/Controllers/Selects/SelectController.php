@@ -118,16 +118,22 @@ class SelectController extends Controller
 
     public function getDistricts($id)
     {
-        $districts = District::where('province_id', $id)->get();
+        $districts = District::where('province_id', $id)
+            ->where(function ($q) {
+                $q->whereNull('status')
+                    ->orWhere('status', '!=', 0);
+            })
+            ->orderBy('name', 'asc')
+            ->get();
 
-        $data = $districts->sortBy('name')->map(function ($item) {
-            return [
-                'label' => $item->name,
-                'value' => $item->id
-            ];
-        })->values();
+        $data = $districts->map(fn($item) => [
+            'label' => $item->name,
+            'value' => $item->id,
+        ])->values();
 
-        return response()->json(['data' => $data]);
+        return response()->json([
+            'data' => $data,
+        ]);
     }
 
     public function getOffices()

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Advisory;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreAdvisoryRequest;
 use Illuminate\Http\Request;
 use App\Models\Advisory;
+use Illuminate\Support\Facades\Auth;
 
 class AdvisoryController extends Controller
 {
@@ -16,28 +18,30 @@ class AdvisoryController extends Controller
         return response()->json($advisory, 200);
     }
 
-    public function store(Request $request)
+    public function store(StoreAdvisoryRequest $request)
     {
-        $data = $request->validate([
-            'economicsector_id' => 'required|integer|exists:economicsectors,id',
-            'comercialactivity_id' => 'required|integer|exists:comercialactivities,id',
-            'observations' => 'nullable|string',
-            'user_id' => 'required|integer',
-            'people_id' => 'required|integer',
-            'component_id' => 'required|integer',
-            'theme_id' => 'required|integer',
-            'modality_id' => 'required|integer',
-            'ruc' => 'nullable|string',
-            'dni' => 'required|string',
-            'city_id' => 'required|integer',
-            'province_id' => 'required|integer',
-            'district_id' => 'required|integer',
-            'cde_id' => 'integer',
-        ]);
+        try {
 
-        Advisory::create($data);
+            $validatedData = $request->validated();
 
-        return response()->json(['message' => 'Asesoría creada correctamente', 'status' => 200]);
+            // Agregar el user_id del usuario autenticado
+            $validatedData['user_id'] = auth()->id();
+
+            // Crear la asesoría
+            $advisory = Advisory::create($validatedData);
+
+            return response()->json([
+                'data' => $advisory,
+                'message' => 'Asesoría creada correctamente',
+                'status' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al crear la asesoría',
+                'message' => 'Consulta con tu administrador',
+                'status' => 500
+            ], 500);
+        }
     }
 
     public function destroy($id)
@@ -66,48 +70,56 @@ class AdvisoryController extends Controller
         return response()->json(['data' => $advisory, 'status' => 200]);
     }
 
-    public function update(Request $request, $id)
+    public function updateValuesAdvisory(Request $request, $id)
     {
-        $advisory = Advisory::find($id);
+        // 1) Verificar usuario autenticado
+        $userId = Auth::id();
 
+        if (!$userId) {
+            return response()->json(['message' => 'No autenticado'], 401);
+        }
+
+        // 2) Buscar registro
+        $advisory = Advisory::find($id);
         if (!$advisory) {
             return response()->json(['message' => 'No encontrado'], 404);
         }
 
-        $request->validate([
-            'economicsector_id' => 'required|integer|exists:economicsectors,id',
-            'comercialactivity_id' => 'required|integer|exists:comercialactivities,id',
-            'ruc' => 'nullable|numeric',
-            'observations' => 'nullable|string',
-            'component_id' => 'required|integer',
-            'theme_id' => 'required|integer',
-            'modality_id' => 'required|integer',
-            'city_id' => 'required|integer',
-            'province_id' => 'required|integer',
-            'district_id' => 'required|integer',
-            'updated_by' => 'required|integer'
+        // 3) Validación (sin updated_by en el request)
+        $validated = $request->validate([
+            'economicsector_id'     => 'required|integer|exists:economicsectors,id',
+            'comercialactivity_id'  => 'required|integer|exists:comercialactivities,id',
+            'ruc'                   => 'nullable|digits:11',
+            'observations'          => 'nullable|string',
+            'component_id'          => 'required|integer',
+            'theme_id'              => 'required|integer',
+            'modality_id'           => 'required|integer',
+            'city_id'               => 'required|integer',
+            'province_id'           => 'required|integer',
+            'district_id'           => 'required|integer',
         ]);
 
-        $data = $request->only([
-            'economicsector_id',
-            'comercialactivity_id',
-            'ruc',
-            'observations',
-            'component_id',
-            'theme_id',
-            'modality_id',
-            'city_id',
-            'province_id',
-            'district_id',
-            'updated_by',
-        ]);
+        // 4) Preparar datos y castear RUC a string
+        $data = [
+            'economicsector_id'    => $validated['economicsector_id'],
+            'comercialactivity_id' => $validated['comercialactivity_id'],
+            'ruc'                  => isset($validated['ruc']) ? (string) $validated['ruc'] : null,
+            'observations'         => $validated['observations'] ?? null,
+            'component_id'         => $validated['component_id'],
+            'theme_id'             => $validated['theme_id'],
+            'modality_id'          => $validated['modality_id'],
+            'city_id'              => $validated['city_id'],
+            'province_id'          => $validated['province_id'],
+            'district_id'          => $validated['district_id'],
+            'updated_by'           => $userId, // ← de la sesión
+        ];
 
-        if (isset($data['ruc'])) {
-            $data['ruc'] = (string) $data['ruc'];
-        }
-
+        // 5) Guardar
         $advisory->update($data);
 
-        return response()->json(['message' => 'Datos actualizados correctamente', 'status' => 200]);
+        return response()->json([
+            'message' => 'Datos actualizados correctamente',
+            'status'  => 200,
+        ], 200);
     }
 }

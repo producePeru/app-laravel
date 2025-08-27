@@ -5,6 +5,7 @@ namespace App\Http\Controllers\People;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePersonRequest;
 use App\Models\From;
 use App\Models\People;
 use App\Models\User;
@@ -17,60 +18,45 @@ use Illuminate\Support\Arr;
 
 class PersonController extends Controller
 {
-    private function getUserRole()
-    {
-        $user_id = Auth::user()->id;
-
-        $roleUser = DB::table('role_user')
-            ->where('user_id', $user_id)
-            ->first();
-
-        if ($user_id != $roleUser->user_id) {
-            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
-        }
-
-        return [
-            "role_id" => $roleUser->role_id,
-            'user_id' => $user_id
-        ];
-    }
-
 
     public function index(Request $request)
     {
+        $permission = getPermission('empresarios-ugo');
+
+        if (!$permission['hasPermission']) {
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a esta sección',
+                'status' => 403
+            ]);
+        }
+
         $filters = [
             'asesor'    => $request->input('asesor'),
             'name'      => $request->input('name')
         ];
 
-        $paginate = $request->boolean('paginate', true);
+        $user = Auth::user();
 
-        $userRole = getUserRole();
-        $roleIds  = $userRole['role_id'];
-        $userId   = $userRole['user_id'];
 
         $query = People::query();
 
-        if (in_array(1, $roleIds) || $userId === 1) {
+        if ($user->rol == 1) {
             $query->withProfileAndUser($filters);
-        } elseif (in_array(2, $roleIds) || in_array(7, $roleIds)) {
-            $query->ByUserId($userId)->withProfileAndUser($filters);
-        } else {
-            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        if ($paginate) {
-            $formalizations = $query->paginate(150)->through(function ($item) {
-                return $this->mapPeopleRegisters($item);
-            });
-        } else {
-            $formalizations = $query->get()->map(function ($item) {
-                return $this->mapPeopleRegisters($item);
-            });
+        if ($user->rol == 2) {
+            $query->withProfileAndUser($filters)->where('user_id', $user->id);
         }
+
+
+        $businessman = $query->paginate(150)->through(function ($item) {
+            return $this->mapPeopleRegisters($item);
+        });
+
 
         return response()->json([
-            'data'   => $formalizations,
+            'data'   => $businessman,
+            'rol' => $user->rol,
             'status' => 200
         ]);
     }
@@ -108,56 +94,83 @@ class PersonController extends Controller
         ];
     }
 
-
-
-    public function store(Request $request)
+    public function registerNewBusinessman(StorePersonRequest $request)
     {
         try {
-            $data = $request->validate([
-                'documentnumber' => 'required|string',
-                'lastname' => 'required|string',
-                'middlename' => 'required|string',
-                'name' => 'required|string',
-                'country_id' => 'required',
-                'phone' => 'nullable|string',
-                'email' => 'nullable|email',
-                'birthday' => 'nullable|date',
-                'sick' => 'nullable|in:yes,no',
-                'facebook' => 'nullable|string',
-                'linkedin' => 'nullable|string',
-                'instagram' => 'nullable|string',
-                'tiktok' => 'nullable|string',
-                'city_id' => 'required|integer',
-                'province_id' => 'required|integer',
-                'district_id' => 'required|integer',
-                'address' => 'nullable|string',
-                'typedocument_id' => 'required|integer',
-                'gender_id' => 'nullable|integer',
-                'hasSoon' => 'string',
+
+            $validatedData = $request->validated();
+
+            $validatedData['user_id'] = auth()->id();
+
+            $person = People::create($validatedData);
+
+            return response()->json([
+                'data' => $person,
+                'message' => 'Persona creada exitosamente',
+                'status' => 200
             ]);
-
-            $person = People::create($data);
-
-            $user = User::find($request->input('people_id'));
-            $user->people()->attach($person->id);
-
-            // Attach de la entidad From a la persona
-            $person->from()->attach($request->input('from_id'), ['people_id' => $person->id, 'from_id' => $request->input('from_id')]);
-
-            return response()->json(['message' => 'Usuario creado correctamente', 'status' => 200]);
-        } catch (\Illuminate\Validation\ValidationException $e) {         // DEVUELVE ERRORES DE LA VALIDACION
-
-            if (isset($e->errors()['email'])) {
-                return response()->json(['error' => $e->errors()['email'][0], 'status' => 400]);
-            }
-            if (isset($e->errors()['documentnumber'])) {
-                return response()->json(['status' => 401]);
-            }
-            return $e;
-        } catch (QueryException $e) {
-            return response()->json(['message' => 'El usuario se registró pero la relación ha fallado', 'error' => $e], 400);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Error de validación',
+                'message' => 'Por favor verifica los datos ingresados',
+                'errors' => $e->errors(), // Esto contiene los mensajes específicos
+                'status' => 422
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al crear la persona',
+                'message' => 'Consulta con tu administrador',
+                'status' => 500
+            ], 500);
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private function getUserRole()
+    {
+        $user_id = Auth::user()->id;
+
+        $roleUser = DB::table('role_user')
+            ->where('user_id', $user_id)
+            ->first();
+
+        if ($user_id != $roleUser->user_id) {
+            return response()->json(['message' => 'Este rol no es correcto', 'status' => 404]);
+        }
+
+        return [
+            "role_id" => $roleUser->role_id,
+            'user_id' => $user_id
+        ];
+    }
+
+
+
+
+
+
 
     public function destroy($id)
     {
@@ -413,9 +426,6 @@ class PersonController extends Controller
         if (!empty($data['birthday'])) {
             $data['birthday'] = Carbon::parse($data['birthday'])->toDateString();
         }
-        if (isset($data['hasSoon'])) {
-            $data['hasSoon'] = strtolower($data['hasSoon']) === 'si' ? 'SI' : 'NO';
-        }
 
         // Campos que sí vamos a guardar
         $FIELDS = [
@@ -439,7 +449,7 @@ class PersonController extends Controller
         $payload = Arr::only($data, $FIELDS);
 
         // Buscar o crear por documentnumber
-        $person = \App\Models\People::firstOrNew([
+        $person = People::firstOrNew([
             'documentnumber' => $data['documentnumber'],
         ]);
         $isNew = !$person->exists;
@@ -452,9 +462,10 @@ class PersonController extends Controller
         $person->save();
 
         return response()->json([
-            'message' => $isNew ? 'Persona registrada correctamente.' : 'Persona actualizada correctamente.',
+            'message' => $isNew ? 'Registrada correctamente.' : 'Persona actualizada correctamente.',
             'action'  => $isNew ? 'created' : 'updated',
             'data'    => $person->only(array_merge(['id'], $FIELDS, $isNew ? ['user_id'] : ['updated_by'])),
+            'status'  => 200
         ], $isNew ? 201 : 200);
     }
 

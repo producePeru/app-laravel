@@ -34,63 +34,96 @@ class AuthController extends Controller
         ];
     }
 
+    // public function login(Request $request)
+    // {
+    //     $request->validate([
+    //         'login' => 'required', // Puede ser email o dni
+    //         'password' => 'required',
+    //     ]);
+
+    //     // Determinar el tipo de login: email o dni
+    //     $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'dni';
+
+    //     $credentials = [
+    //         $loginType => $request->login,
+    //         'password' => $request->password,
+    //     ];
+
+    //     // return $credentials;
+
+    //     try {
+    //         if (Auth::attempt($credentials)) {
+    //             $user = Auth::user();
+    //             $token = $user->createToken('AuthToken')->plainTextToken;
+    //             $profile = $user->profile->only(['id', 'name', 'lastname', 'middlename', 'documentnumber', 'user_id', 'cde_id', 'notary_id']);
+    //             $role = $user->roles;
+    //             $email = $user->email;
+
+    //             // Construir un array con las vistas decodificadas
+    //             $views = $user->views->map(function ($view) {
+    //                 return json_decode($view->views, true);
+    //             })->flatten();
+
+    //             return response()->json(['token' => $token, 'profile' => $profile, 'email' => $email, 'role' => $role, 'views' => $views], 200);
+    //         }
+
+    //         return response()->json(['message' => 'Credenciales incorrectas'], 401);
+    //     } catch (\Exception $e) {
+    //         // Manejar cualquier excepción
+    //         return response()->json(['message' => 'Ocurrió un error durante el inicio de sesión', 'error' => $e->getMessage()], 500);
+    //     }
+    // }
+
     public function login(Request $request)
     {
-
-        $request->validate([
-            'login' => 'required', // Puede ser email o dni
-            'password' => 'required',
-        ]);
-
-        // Determinar el tipo de login: email o dni
-        $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'dni';
-
-        $credentials = [
-            $loginType => $request->login,
-            'password' => $request->password,
-        ];
-
-        // return $credentials;
-
         try {
-            if (Auth::attempt($credentials)) {
-                $user = Auth::user();
-                $token = $user->createToken('AuthToken')->plainTextToken;
-                $profile = $user->profile->only(['id', 'name', 'lastname', 'middlename', 'documentnumber', 'user_id', 'cde_id', 'notary_id']);
-                $role = $user->roles;
-                $email = $user->email;
+            $request->validate([
+                'login' => 'required|string',
+                'password' => 'required|string',
+            ]);
 
-                // Construir un array con las vistas decodificadas
-                $views = $user->views->map(function ($view) {
-                    return json_decode($view->views, true);
-                })->flatten();
+            $login = $request->login;
 
-                return response()->json(['token' => $token, 'profile' => $profile, 'email' => $email, 'role' => $role, 'views' => $views], 200);
+            $user = filter_var($login, FILTER_VALIDATE_EMAIL)
+                ? User::where('email', $login)->first()
+                : User::where('dni', $login)->first();
+
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Credenciales inválidas.'
+                ], 401);
             }
 
-            return response()->json(['message' => 'Credenciales incorrectas'], 401);
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            // Cargar y procesar vistas
+            $views = $user->views->map(function ($view) {
+                return json_decode($view->views, true); // Asume que el campo 'views' es JSON
+            })->flatten(1); // Flatten para nivel 1
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Inicio de sesión exitoso.',
+                'profile' => $user,
+                'token' => $token,
+                'views' => $views,
+                'role' => [[
+                    'id' => 5,
+                    'name' => 'Super'
+                ]]
+            ]);
         } catch (\Exception $e) {
-            // Manejar cualquier excepción
-            return response()->json(['message' => 'Ocurrió un error durante el inicio de sesión', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error en el login.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // if (Auth::attempt($request->only('email', 'password'))) {
-        //     $user = Auth::user();
-        //     $token = $user->createToken('AuthToken')->plainTextToken;
-        //     $profile = $user->profile->only(['id', 'name', 'lastname', 'middlename', 'documentnumber', 'user_id', 'cde_id']);
-        //     $role = $user->roles;
-        //     $email = $user->email;
-
-        //     // Construir un array con las vistas decodificadas
-        //     $views = $user->views->map(function ($view) {
-        //         return json_decode($view->views, true);
-        //     })->flatten();
-
-        //     return response()->json(['token' => $token, 'profile' => $profile, 'email' => $email, 'role' => $role, 'views' => $views], 200);
-        // }
-
-        // return response()->json(['message' => 'Credenciales incorrectas'], 401);
     }
+
+
+
 
     public function logout(Request $request)
     {
@@ -191,21 +224,29 @@ class AuthController extends Controller
 
     public function updatePassword(Request $request)
     {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:users,id',
+                'password' => 'required|string|min:8',
+            ]);
 
-        $validated = $request->validate([
-            'id' => 'required|exists:users,id',
-            'password' => 'required|string|min:8',
-        ]);
+            $user = User::findOrFail($validated['id']);
 
+            $user->password = Hash::make($validated['password']);
+            $user->save();
 
-        $user = User::findOrFail($validated['id']);
-
-        $user->password = Hash::make($validated['password']);
-        $user->save();
-
-        return response()->json([
-            'status' => 200,
-            'message' => 'Contraseña actualizada con éxito',
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Contraseña actualizada con éxito.',
+                'status' => 200,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al actualizar la contraseña.',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ]);
+        }
     }
 }

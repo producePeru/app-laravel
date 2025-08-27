@@ -7,8 +7,8 @@ Route::controller(PersonController::class)->group(function () {
 
   Route::get('get-businessman-data/{numberDocument}', 'getBusinessmanData');
 
-  Route::post('register-update-businessman', 'registerOrUpdateBusinessman');
+  Route::post('register-new-businessman', 'registerOrUpdateBusinessman');
 });
 
 
-// 
+// businessman

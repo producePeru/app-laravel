@@ -14,23 +14,24 @@ class People extends Model
     // protected $guarded = ['id'];
 
     protected $fillable = [
+        'typedocument_id',
         'documentnumber',
         'lastname',
         'middlename',
         'name',
-        'phone',
-        'email',
-        'birthday',
-        'sick',
-        'hasSoon',
         'country_id',
         'city_id',
         'province_id',
         'district_id',
         'address',
-        'typedocument_id',
+        'birthday',
+        'phone',
+        'email',
         'gender_id',
-        'user_id',
+        'sick',
+        'hasSoon',
+
+        'user_id',              // id quien lo registró
         'updated_by'
     ];
 

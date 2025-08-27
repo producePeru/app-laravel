@@ -18,8 +18,18 @@ use mysqli;
 
 class AttendanceController extends Controller
 {
-    public function index(Request $request)
+    public function listEventsUgo(Request $request)
     {
+
+        $permission = getPermission('eventos-ugo');
+
+        if (!$permission['hasPermission']) {
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a esta sección',
+                'status' => 403
+            ]);
+        }
+
         $filters = [
             'name'      => $request->input('name'),
             'dateStart' => $request->input('dateStart'),
@@ -28,19 +38,6 @@ class AttendanceController extends Controller
             'orderby'   => $request->input('orderby'),
             'asesor'    => $request->input('asesor')
         ];
-
-        $userRole = getUserRole();
-        $userId = $userRole['user_id'];
-
-        $hasPermission = DB::table('page_user')->where('user_id', $userId)->exists();
-
-        if (!$hasPermission) {
-            return response()->json([
-                'message' => 'No tienes permisos para acceder a esta página.',
-                'status'  => 403
-            ], 403);
-        }
-
 
         $query = Attendance::query();
 

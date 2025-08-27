@@ -13,6 +13,8 @@ Route::controller(EventsUgoController::class)->group(function () {
 
 Route::controller(AttendanceController::class)->group(function () {
 
+    Route::get('list', 'listEventsUgo');
+
     Route::put('update-participant-data-ugo-event/{idParticipant}', 'updateParticipantDataUgoEvent');
 
     Route::delete('remove-participant-ugo-event/{idParticipant}', 'removeParticipantUgoEvent');
