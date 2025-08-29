@@ -24,7 +24,7 @@ class StoreAdvisoryRequest extends FormRequest
         return [
             'economicsector_id' => 'required|integer|exists:economicsectors,id',
             'comercialactivity_id' => 'required|integer|exists:comercialactivities,id',
-            'observations' => 'nullable|string',
+            'observations' => 'nullable',
             'user_id' => 'nullable|integer|exists:users,id',
             'people_id' => 'required|integer',
             'component_id' => 'required|integer|exists:components,id',
