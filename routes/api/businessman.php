@@ -5,9 +5,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::controller(PersonController::class)->group(function () {
 
-  Route::get('get-businessman-data/{numberDocument}', 'getBusinessmanData');
+    Route::get('list', 'index');
 
-  Route::post('register-new-businessman', 'registerOrUpdateBusinessman');
+    Route::get('get-businessman-data/{numberDocument}', 'getBusinessmanData');
+
+    Route::post('register-new-businessman', 'registerOrUpdateBusinessman');
 });
 
 

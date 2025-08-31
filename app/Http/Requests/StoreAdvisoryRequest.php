@@ -30,7 +30,7 @@ class StoreAdvisoryRequest extends FormRequest
             'component_id' => 'required|integer|exists:components,id',
             'theme_id' => 'required|integer',
             'modality_id' => 'required|integer|exists:modalities,id',
-            'ruc' => 'nullable|string|max:11',
+            'ruc' => 'nullable|max:11',
             'dni' => 'required|string|max:20',
             'city_id' => 'required|integer|exists:cities,id',
             'province_id' => 'required|integer|exists:provinces,id',

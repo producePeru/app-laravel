@@ -31,7 +31,7 @@ class StoreFormalization10Request extends FormRequest
             'district_id' => 'required|integer|exists:districts,id',
             'people_id' => 'required|integer',
             'address' => 'nullable|string|max:255',
-            'ruc' => 'nullable|string|max:11',
+            'ruc' => 'nullable|max:11',
             'user_id' => 'nullable|integer',
             'dni' => 'required|string|max:20',
             'cde_id' => 'nullable|integer|exists:cdes,id',
