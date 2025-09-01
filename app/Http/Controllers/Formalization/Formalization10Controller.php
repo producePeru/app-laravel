@@ -27,7 +27,7 @@ class Formalization10Controller extends Controller
             Formalization10::create($data);
 
             return response()->json([
-                'message' => 'Formalización creada correctamente',
+                'message' => 'Formalización registrada correctamente',
                 'status' => 200
             ]);
         } catch (\Exception $e) {

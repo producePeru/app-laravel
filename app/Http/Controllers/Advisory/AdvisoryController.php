@@ -90,7 +90,7 @@ class AdvisoryController extends Controller
             'economicsector_id'     => 'required|integer|exists:economicsectors,id',
             'comercialactivity_id'  => 'required|integer|exists:comercialactivities,id',
             'ruc'                   => 'nullable|digits:11',
-            'observations'          => 'nullable|string',
+            'observations'          => 'nullable',
             'component_id'          => 'required|integer',
             'theme_id'              => 'required|integer',
             'modality_id'           => 'required|integer',

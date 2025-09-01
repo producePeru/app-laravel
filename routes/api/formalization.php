@@ -6,10 +6,10 @@ use App\Http\Controllers\Formalization\Formalization10Controller;
 use App\Http\Controllers\Formalization\Formalization20Controller;
 
 
-Route::controller(AdvisoryController::class)->group(function () {
+// Route::controller(AdvisoryController::class)->group(function () {
 
-    Route::put('update-values-advisory/{id}', 'updateValuesAdvisory');
-});
+//     Route::put('update-values-advisory/{id}', 'updateValuesAdvisory');
+// });
 
 
 Route::controller(Formalization10Controller::class)->group(function () {

@@ -508,3 +508,17 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 --  ALTER TABLE images
 --   ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at,
 --   ADD INDEX idx_images_deleted_at (deleted_at);
+
+
+CREATE TABLE reasons (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    table_name VARCHAR(50) NOT NULL,     -- Renombrado a table_name porque "table" es palabra reservada en MySQL
+    row_id INT NOT NULL,
+    description TEXT,
+    action ENUM('d','c','u','imp','dow') NOT NULL, -- acciones permitidas
+    user_id BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_reasons_user FOREIGN KEY (user_id) REFERENCES users(id)
+);
