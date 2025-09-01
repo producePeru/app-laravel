@@ -86,7 +86,7 @@ class HistorialController extends Controller
     // ULTIMO 2025 ***
     public function filterHistorialAdvisoriesByDates(Request $request)
     {
-        $permission = getPermission('asesorias-formalizaciones-reportes');
+        $permission = getPermission('reportes-asesoria-formalizacion');
 
         if (!$permission['hasPermission']) {
             return response()->json([

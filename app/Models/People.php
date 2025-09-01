@@ -64,7 +64,7 @@ class People extends Model
 
     public function user()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function from()
@@ -127,7 +127,6 @@ class People extends Model
         return $this->hasOne('App\Models\FormalizationDigital', 'documentnumber', 'documentnumber');
     }
 
-
     public function scopeWithProfileAndRelations($query, $filters)       //super
     {
         // return $query->with(['city', 'province', 'district', 'gender', 'typedocument', 'from', 'user.profile'])
@@ -145,7 +144,7 @@ class People extends Model
                 ->orWhere('name', 'LIKE', $filters['search'] . '%');
         }
 
-        return $query->paginate(100);
+        return $query->paginate(150);
     }
 
     public function scopeWithProfileAndUser($query, $filters)        //asesores
@@ -157,7 +156,7 @@ class People extends Model
             'gender',
             'typedocument',
             'from',
-            'user.profile'
+            'user:id,name,lastname,middlename'
         ])->orderBy('created_at', 'desc');
 
         if (!empty($filters['asesor'])) {

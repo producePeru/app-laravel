@@ -522,3 +522,27 @@ CREATE TABLE reasons (
 
     CONSTRAINT fk_reasons_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+
+
+
+INSERT INTO pages (name, slug, office) VALUES
+('Registrar Asesoría Formalización', 'registrar-asesoria-formalizacion', 'UGO'),
+('Reportes Asesoría Formalización', 'reportes-asesoria-formalizacion', 'UGO'),
+('Empresarios UGO', 'empresarios-ugo', 'UGO'),
+('Historial Asesorías Formalizaciones', 'historial-asesorias-formalizaciones', 'UGO'),
+('Correcciones Asesorías Formalizaciones', 'correcciones-asesorias-formalizaciones', 'UGO'),
+('Eventos UGO', 'eventos-ugo', 'UGO'),
+('Asesor Registro Participantes', 'asesor-registro-participantes', 'UGO'),
+('Ruta Digital UGO', 'ruta-digital-ugo', 'UGO'),
+('Convenios UGO Seguimiento Gráfico', 'convenios-ugo-seguimiento-grafico', 'UGO'),
+('Convenios UGO', 'convenios-ugo', 'UGO'),
+('Planes de Acción UGO', 'planes-accion-ugo', 'UGO'),
+('Notarías', 'notarias', 'UGO');
+
+
+INSERT INTO pages (name, slug, office) VALUES
+('USUARIOS PNTE', 'usuarios-pnte', 'ADMIN'),
+('USUARIOS UGO', 'usuarios-ugo', 'UGO');
+
+

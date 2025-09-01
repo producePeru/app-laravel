@@ -49,7 +49,7 @@ class PersonController extends Controller
         }
 
 
-        $businessman = $query->paginate(150)->through(function ($item) {
+        $businessman = $query->paginate(100)->through(function ($item) {
             return $this->mapPeopleRegisters($item);
         });
 
@@ -69,25 +69,29 @@ class PersonController extends Controller
             'document'              => $people->documentnumber,
             'name'                  => isset($people->name) ? strtoupper($people->name) : null,
             'last_name'             => isset($people->lastname, $people->middlename) ? strtoupper(trim($people->lastname . ' ' . $people->middlename)) : (isset($people->lastname) ? strtoupper($people->lastname) : (isset($people->middlename) ? strtoupper($people->middlename) : null)),
-            'city'                  => $people->city->name,
-            'province'              => $people->province->name,
-            'district'              => $people->district->name,
+            'city'                  => $people->city->name ?? null,
+            'province'              => $people->province->name ?? null,
+            'district'              => $people->district->name ?? null,
             'address'               => isset($people->address) ? strtoupper($people->address) : null,
             'phone'                 => $people->phone ?? null,
             'email'                 => $people->email ?? null,
             'gender'                => $people->gender->name ?? null,
             'sick'                  =>  $people->sick == 'yes' ? 'SI' : 'NO',
             'hasSoon'               => $people->hasSoon ?? null,
-            'registered'            => isset($people->user[0]->profile) ? strtoupper(trim(($people->user[0]->profile->name ?? '') . ' ' . ($people->user[0]->profile->lastname ?? ''))) : null,
+            'registered'            => strtoupper(trim(
+                ($people->user->name ?? '') . ' ' .
+                    ($people->user->lastname ?? '') . ' ' .
+                    ($people->user->middlename ?? '')
+            )),
 
             //ids
             'typedocument_id'       => $people->typedocument->id,
             'lastname'              => $people->lastname ?? null,
             'middlename'            => $people->middlename ?? null,
             'country_id'            => $people->pais->id ?? null,
-            'city_id'               => $people->city->id,
-            'province_id'           => $people->province->id,
-            'district_id'           => $people->district->id,
+            'city_id'               => $people->city->id ?? null,
+            'province_id'           => $people->province->id ?? null,
+            'district_id'           => $people->district->id ?? null,
             'address'               => $people->address,
             'birthday'              => $people->birthday,
             'gender_id'             => $people->gender->id ?? null,
