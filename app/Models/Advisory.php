@@ -18,7 +18,7 @@ class Advisory extends Model
     protected $dates = ['deleted_at'];
 
     protected $hidden = [
-        'people_id',
+        // 'people_id',
         'component_id',
         // 'theme_id',
         'modality_id',

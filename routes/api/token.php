@@ -21,4 +21,10 @@ Route::controller(ReasonController::class)->group(function () {
     Route::post('indicate-reason-action', 'indicateReasonAction');
 });
 
+
+Route::controller(ReasonController::class)->group(function () {
+
+    Route::get('how-many-alerts', 'howManyAlerts');
+});
+
 // token

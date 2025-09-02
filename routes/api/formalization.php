@@ -15,6 +15,8 @@ use App\Http\Controllers\Formalization\Formalization20Controller;
 Route::controller(Formalization10Controller::class)->group(function () {
 
     Route::post('create-ruc-10', 'storeRuc10');
+
+    Route::delete('delete-ruc-10/{id}', 'destroy');
 });
 
 

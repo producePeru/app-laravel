@@ -134,11 +134,13 @@ class HistorialController extends Controller
             'id'                    => $advisory->id,
             'date'                  => $advisory->created_at->format('d/m/Y h:i A'),
             'asesor'                => $advisory->user->name . ' ' . $advisory->user->lastname . ' ' . $advisory->user->middlename,
+
             // 'asesor_cde_city'       => $advisory->sede->city ?? null,
             // 'asesor_cde_province'   => $advisory->sede->province ?? null,
             // 'asesor_cde_district'   => $advisory->sede->district ?? null,
-            'asesor_cde'            => strtoupper($advisory->sede->name) ?? null,
             // 'asesor_cde_id'         => $advisory->sede->cdetype_id ?? null,
+
+            'asesor_cde'            => $advisory->sede ? strtoupper($advisory->sede->name) : null,
 
             'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
             'emp_document_number'   => $advisory->people->documentnumber ?? null,
@@ -232,7 +234,7 @@ class HistorialController extends Controller
             'asesor_cde_city'       => $f10->sede->city ?? null,
             'asesor_cde_province'   => $f10->sede->province ?? null,
             'asesor_cde_district'   => $f10->sede->district ?? null,
-            'asesor_cde'            => strtoupper($f10->sede->name) ?? null,
+            'asesor_cde'            => $f10->sede ? strtoupper($f10->sede->name) : null,
 
             'emp_document_type'     => $f10->people->typedocument->avr ?? null,
             'emp_document_number'   => $f10->people->documentnumber ?? null,
@@ -324,7 +326,7 @@ class HistorialController extends Controller
             'asesor_cde_city'       => $f20->sede->city ?? null,
             'asesor_cde_province'   => $f20->sede->province ?? null,
             'asesor_cde_district'   => $f20->sede->district ?? null,
-            'asesor_cde'            => strtoupper($f20->sede->name) ?? null,
+            'asesor_cde'            => $f20->sede ? strtoupper($f20->sede->name) : null,
 
             'emp_document_type'     => $f20->people->typedocument->avr ?? null,
             'emp_document_number'   => $f20->people->documentnumber ?? null,

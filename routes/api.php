@@ -301,7 +301,7 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
     // Route::post('ruc20-step3/{codesunarp}', [Formalization20Controller::class, 'ruc20Step3']);
     // Route::post('create-ruc20', [Formalization20Controller::class, 'ruc20All']);
 
-    Route::delete('delete-ruc-10/{id}', [Formalization10Controller::class, 'destroy']);         //ACTUALIZACIONES 10
+    // Route::delete('delete-ruc-10/{id}', [Formalization10Controller::class, 'destroy']);         //ACTUALIZACIONES 10
     Route::get('find-ruc-10/{id}', [Formalization10Controller::class, 'getDataF10ById']);
     Route::put('update-ruc-10/{id}', [Formalization10Controller::class, 'update']);
 
