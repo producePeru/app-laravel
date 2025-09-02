@@ -27,12 +27,12 @@ class DownloadFormalizationsController extends Controller
         try {
             $permission = getPermission('asesorias-formalizaciones-reportes');
 
-            if (!$permission['hasPermission']) {
-                return response()->json([
-                    'message' => 'No tienes permiso para acceder a esta sección',
-                    'status' => 403
-                ]);
-            }
+            // if (!$permission['hasPermission']) {
+            //     return response()->json([
+            //         'message' => 'No tienes permiso para acceder a esta sección',
+            //         'status' => 403
+            //     ]);
+            // }
 
             $filters = $request->query();
 
@@ -111,12 +111,12 @@ class DownloadFormalizationsController extends Controller
 
             $permission = getPermission('asesorias-formalizaciones-reportes');
 
-            if (!$permission['hasPermission']) {
-                return response()->json([
-                    'message' => 'No tienes permiso para acceder a esta sección',
-                    'status' => 403
-                ]);
-            }
+            // if (!$permission['hasPermission']) {
+            //     return response()->json([
+            //         'message' => 'No tienes permiso para acceder a esta sección',
+            //         'status' => 403
+            //     ]);
+            // }
 
             $filters = $request->query();
 
@@ -200,12 +200,12 @@ class DownloadFormalizationsController extends Controller
         try {
             $permission = getPermission('asesorias-formalizaciones-reportes');
 
-            if (!$permission['hasPermission']) {
-                return response()->json([
-                    'message' => 'No tienes permiso para acceder a esta sección',
-                    'status' => 403
-                ]);
-            }
+            // if (!$permission['hasPermission']) {
+            //     return response()->json([
+            //         'message' => 'No tienes permiso para acceder a esta sección',
+            //         'status' => 403
+            //     ]);
+            // }
 
             $filters = $request->query();
 

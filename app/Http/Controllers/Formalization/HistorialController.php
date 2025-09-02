@@ -88,12 +88,12 @@ class HistorialController extends Controller
     {
         $permission = getPermission('reportes-asesoria-formalizacion');
 
-        if (!$permission['hasPermission']) {
-            return response()->json([
-                'message' => 'No tienes permiso para acceder a esta sección',
-                'status' => 403
-            ]);
-        }
+        // if (!$permission['hasPermission']) {
+        //     return response()->json([
+        //         'message' => 'No tienes permiso para acceder a esta sección',
+        //         'status' => 403
+        //     ]);
+        // }
 
         $filters = [
             'asesor'    => $request->input('asesor'),
@@ -132,7 +132,7 @@ class HistorialController extends Controller
     {
         return [
             'id'                    => $advisory->id,
-            'date'                  => $advisory->created_at->format('d/m/Y'),
+            'date'                  => $advisory->created_at->format('d/m/Y h:i A'),
             'asesor'                => $advisory->user->name . ' ' . $advisory->user->lastname . ' ' . $advisory->user->middlename,
             // 'asesor_cde_city'       => $advisory->sede->city ?? null,
             // 'asesor_cde_province'   => $advisory->sede->province ?? null,
@@ -184,12 +184,12 @@ class HistorialController extends Controller
     {
         $permission = getPermission('asesorias-formalizaciones-reportes');
 
-        if (!$permission['hasPermission']) {
-            return response()->json([
-                'message' => 'No tienes permiso para acceder a esta sección',
-                'status' => 403
-            ]);
-        }
+        // if (!$permission['hasPermission']) {
+        //     return response()->json([
+        //         'message' => 'No tienes permiso para acceder a esta sección',
+        //         'status' => 403
+        //     ]);
+        // }
 
         $filters = [
             'asesor'    => $request->input('asesor'),
@@ -227,7 +227,7 @@ class HistorialController extends Controller
     {
         return [
             'id'                    => $f10->id,
-            'date'                  => $f10->created_at->format('d/m/Y'),
+            'date'                  => $f10->created_at->format('d/m/Y h:i A'),
             'asesor'                => $f10->user->name . ' ' . $f10->user->lastname . ' ' . $f10->user->middlename,
             'asesor_cde_city'       => $f10->sede->city ?? null,
             'asesor_cde_province'   => $f10->sede->province ?? null,
@@ -276,12 +276,12 @@ class HistorialController extends Controller
     {
         $permission = getPermission('asesorias-formalizaciones-reportes');
 
-        if (!$permission['hasPermission']) {
-            return response()->json([
-                'message' => 'No tienes permiso para acceder a esta sección',
-                'status' => 403
-            ]);
-        }
+        // if (!$permission['hasPermission']) {
+        //     return response()->json([
+        //         'message' => 'No tienes permiso para acceder a esta sección',
+        //         'status' => 403
+        //     ]);
+        // }
 
         $filters = [
             'asesor'    => $request->input('asesor'),
@@ -319,7 +319,7 @@ class HistorialController extends Controller
     {
         return [
             'id'                    => $f20->id,
-            'date'                  => $f20->created_at->format('d/m/Y'),
+            'date'                  => $f20->created_at->format('d/m/Y h:i A'),
             'asesor'                => $f20->user->name . ' ' . $f20->user->lastname . ' ' . $f20->user->middlename,
             'asesor_cde_city'       => $f20->sede->city ?? null,
             'asesor_cde_province'   => $f20->sede->province ?? null,
