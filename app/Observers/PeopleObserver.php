@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\Notification;
 use App\Models\People;
 use App\Models\Reason;
 use Illuminate\Support\Facades\Auth;
@@ -54,13 +55,21 @@ class PeopleObserver
 
             $translatedField = $fieldTranslations[$field] ?? $field; // si no está traducido, usa el original
 
+            // Si el valor original es null, mostrar '–'
+            $originalValue = is_null($original[$field]) ? '–' : $original[$field];
+
+            // Si el valor nuevo es null, mostrar '–'
+            $newValueDisplay = is_null($newValue) ? '–' : $newValue;
+
             Reason::create([
                 'table_name'  => 'people',
                 'row_id'      => $people->id,
-                'description' => "{$translatedField} (De: {$original[$field]} A: {$newValue})",
+                'description' => "{$translatedField} (De: {$originalValue} A: {$newValueDisplay})",
                 'action'      => 'u', // update
                 'user_id'     => Auth::id() ?? 1,
             ]);
+
+            Notification::query()->increment('count');
         }
     }
 
@@ -91,6 +100,7 @@ class PeopleObserver
      */
     public function forceDeleted(People $people): void
     {
-        //
+        //    php artisan make:observer AdvisoryObserver --model=People
+        // En AppServiceProvider.php → boot():
     }
 }

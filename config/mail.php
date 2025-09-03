@@ -87,7 +87,7 @@ return [
             ]
         ],
 
-        'office365' => [
+        'office365' => [                       // chipi
             'transport' => env('MAIL_MAILER_OFFICE365', 'smtp'),
             'host' => env('MAIL_HOST_OFFICE365'),
             'port' => env('MAIL_PORT_OFFICE365'),

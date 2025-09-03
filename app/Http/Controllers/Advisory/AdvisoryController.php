@@ -72,54 +72,69 @@ class AdvisoryController extends Controller
 
     public function updateValuesAdvisory(Request $request, $id)
     {
-        // 1) Verificar usuario autenticado
-        $userId = Auth::id();
+        try {
+            // 1) Verificar usuario autenticado
+            $userId = Auth::id();
 
-        if (!$userId) {
-            return response()->json(['message' => 'No autenticado'], 401);
+            if (!$userId) {
+                return response()->json(['message' => 'No autenticado'], 401);
+            }
+
+            // 2) Buscar registro
+            $advisory = Advisory::find($id);
+            if (!$advisory) {
+                return response()->json(['message' => 'No encontrado'], 404);
+            }
+
+            // 3) Validación (sin updated_by en el request)
+            $validated = $request->validate([
+                'economicsector_id'     => 'required|integer|exists:economicsectors,id',
+                'comercialactivity_id'  => 'required|integer|exists:comercialactivities,id',
+                'ruc'                   => 'nullable|digits:11',
+                'observations'          => 'nullable',
+                'component_id'          => 'required|integer',
+                'theme_id'              => 'required|integer',
+                'modality_id'           => 'required|integer',
+                'city_id'               => 'required|integer',
+                'province_id'           => 'required|integer',
+                'district_id'           => 'required|integer',
+            ]);
+
+            // 4) Preparar datos y castear RUC a string
+            $data = [
+                'economicsector_id'    => $validated['economicsector_id'],
+                'comercialactivity_id' => $validated['comercialactivity_id'],
+                'ruc'                  => isset($validated['ruc']) ? (string) $validated['ruc'] : null,
+                'observations'         => $validated['observations'] ?? null,
+                'component_id'         => $validated['component_id'],
+                'theme_id'             => $validated['theme_id'],
+                'modality_id'          => $validated['modality_id'],
+                'city_id'              => $validated['city_id'],
+                'province_id'          => $validated['province_id'],
+                'district_id'          => $validated['district_id'],
+                'updated_by'           => $userId, // ← de la sesión
+            ];
+
+            // 5) Guardar
+            $advisory->update($data);
+
+            return response()->json([
+                'message' => 'Datos actualizados correctamente',
+                'status'  => 200,
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors'  => $e->errors(),
+                'status'  => 422,
+            ], 422);
+        } catch (\Exception $e) {
+            // Manejo genérico de error
+            return response()->json([
+                'message' => 'Error interno en el servidor',
+                'error'   => $e->getMessage(),
+                'status'  => 500,
+            ], 500);
         }
-
-        // 2) Buscar registro
-        $advisory = Advisory::find($id);
-        if (!$advisory) {
-            return response()->json(['message' => 'No encontrado'], 404);
-        }
-
-        // 3) Validación (sin updated_by en el request)
-        $validated = $request->validate([
-            'economicsector_id'     => 'required|integer|exists:economicsectors,id',
-            'comercialactivity_id'  => 'required|integer|exists:comercialactivities,id',
-            'ruc'                   => 'nullable|digits:11',
-            'observations'          => 'nullable',
-            'component_id'          => 'required|integer',
-            'theme_id'              => 'required|integer',
-            'modality_id'           => 'required|integer',
-            'city_id'               => 'required|integer',
-            'province_id'           => 'required|integer',
-            'district_id'           => 'required|integer',
-        ]);
-
-        // 4) Preparar datos y castear RUC a string
-        $data = [
-            'economicsector_id'    => $validated['economicsector_id'],
-            'comercialactivity_id' => $validated['comercialactivity_id'],
-            'ruc'                  => isset($validated['ruc']) ? (string) $validated['ruc'] : null,
-            'observations'         => $validated['observations'] ?? null,
-            'component_id'         => $validated['component_id'],
-            'theme_id'             => $validated['theme_id'],
-            'modality_id'          => $validated['modality_id'],
-            'city_id'              => $validated['city_id'],
-            'province_id'          => $validated['province_id'],
-            'district_id'          => $validated['district_id'],
-            'updated_by'           => $userId, // ← de la sesión
-        ];
-
-        // 5) Guardar
-        $advisory->update($data);
-
-        return response()->json([
-            'message' => 'Datos actualizados correctamente',
-            'status'  => 200,
-        ], 200);
     }
 }

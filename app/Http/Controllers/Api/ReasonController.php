@@ -56,11 +56,22 @@ class ReasonController extends Controller
                     break;
             }
 
-            $businessman = $relatedData
-                ? People::where('id', $relatedData->people_id)
-                ->select('name', 'lastname', 'middlename', 'documentnumber')
-                ->first()
-                : null;
+            $businessman = null;
+
+
+            if ($reason->table_name == 'people') {
+                $businessman = $relatedData
+                    ? People::where('id', $relatedData->id)
+                    ->select('name', 'lastname', 'middlename', 'documentnumber')
+                    ->first()
+                    : null;
+            } else {
+                $businessman = $relatedData
+                    ? People::where('id', $relatedData->people_id)
+                    ->select('name', 'lastname', 'middlename', 'documentnumber')
+                    ->first()
+                    : null;
+            }
 
             $cde = $relatedData ? Cde::where('id', $relatedData->cde_id)->value('name') : null;
 

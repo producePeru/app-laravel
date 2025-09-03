@@ -58,6 +58,15 @@
         <p style="margin-top:20px; font-weight:bold; text-align:center; font-size:16px; color:#16a34a;">
           🎉 Cursos libres de costo – ¡¡¡Los esperamos!!!
         </p>
+
+        <!-- Imágenes agregadas al final -->
+        <div style="margin-top:20px; text-align:center;">
+          <img src="https://apituempresa.soporte-pnte.com/images/pp03/09_2025/1.png" alt="Imagen 1" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
+          <img src="https://apituempresa.soporte-pnte.com/images/pp03/09_2025/2.png" alt="Imagen 2" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
+          <img src="https://apituempresa.soporte-pnte.com/images/pp03/09_2025/3.png" alt="Imagen 3" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
+          <img src="https://apituempresa.soporte-pnte.com/images/pp03/09_2025/4.png" alt="Imagen 4" style="max-width:100%; border-radius:6px;">
+        </div>
+
       </td>
     </tr>
   </table>

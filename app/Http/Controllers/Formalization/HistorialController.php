@@ -117,7 +117,7 @@ class HistorialController extends Controller
             $query->withAdvisoryRangeDate($filters)->where('user_id', $user->id);
         }
 
-        $advisories = $query->paginate(150)->through(function ($advisory) {
+        $advisories = $query->paginate(90)->through(function ($advisory) {
             return $this->mapAdvisory($advisory);
         });
 
@@ -214,7 +214,7 @@ class HistorialController extends Controller
             $query->withFormalizationRangeDate($filters)->where('user_id', $user->id);
         }
 
-        $formalizations = $query->paginate(150)->through(function ($item) {
+        $formalizations = $query->paginate(90)->through(function ($item) {
             return $this->mapFormalization10($item);
         });
 
@@ -306,7 +306,7 @@ class HistorialController extends Controller
             $query->withFormalizationRangeDate($filters)->where('user_id', $user->id);
         }
 
-        $formalizations = $query->paginate(150)->through(function ($item) {
+        $formalizations = $query->paginate(90)->through(function ($item) {
             return $this->mapFormalization20($item);
         });
 

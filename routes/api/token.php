@@ -19,12 +19,14 @@ Route::controller(ReasonController::class)->group(function () {
     Route::get('shows-all-reasons', 'index');
 
     Route::post('indicate-reason-action', 'indicateReasonAction');
-});
-
-
-Route::controller(ReasonController::class)->group(function () {
 
     Route::get('how-many-alerts', 'howManyAlerts');
 });
+
+
+// Route::controller(ReasonController::class)->group(function () {
+
+//     Route::get('how-many-alerts', 'howManyAlerts');
+// });
 
 // token
