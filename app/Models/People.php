@@ -67,6 +67,11 @@ class People extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function userUpdated()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
     public function from()
     {
         return $this->belongsToMany(From::class);
@@ -125,6 +130,11 @@ class People extends Model
     public function formalizationDigital()
     {
         return $this->hasOne('App\Models\FormalizationDigital', 'documentnumber', 'documentnumber');
+    }
+
+    public function cde()
+    {
+        return $this->belongsTo(Cde::class, 'cde_id');
     }
 
     public function scopeWithProfileAndRelations($query, $filters)       //super

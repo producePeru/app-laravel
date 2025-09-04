@@ -189,7 +189,9 @@ Route::prefix('users')->middleware('auth:sanctum')->group(function () {
 //     require __DIR__ . '/api/businessman.php';
 // });
 
-
+Route::prefix('follow')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/follow.php';
+});
 
 
 // PUBLICAS
