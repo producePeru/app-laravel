@@ -204,7 +204,6 @@ class Advisory extends Model
     public function scopeWithAdvisoryRangeDate($query, $filters)
     {
         $query = $query->with([
-
             'city:id,name',
             'comercialactivity:id,name',
             'component:id,name',
@@ -226,8 +225,16 @@ class Advisory extends Model
         }
 
         if (!empty($filters['name'])) {
-            $query->whereHas('people', function ($q) use ($filters) {
-                $q->where('documentnumber', 'like', '%' . $filters['name'] . '%');
+            $name = trim($filters['name']);
+
+            $query->whereHas('people', function ($q) use ($name) {
+                $q->where(function ($sub) use ($name) {
+                    $sub->where('documentnumber', 'like', "%{$name}%")
+                        ->orWhere('name', 'like', "%{$name}%")
+                        ->orWhere('lastname', 'like', "%{$name}%")
+                        ->orWhere('middlename', 'like', "%{$name}%")
+                        ->orWhereRaw("CONCAT_WS(' ', name, lastname, middlename) LIKE ?", ["%{$name}%"]);
+                });
             });
         }
 

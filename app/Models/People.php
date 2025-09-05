@@ -176,7 +176,26 @@ class People extends Model
         }
 
         if (!empty($filters['name'])) {
-            $query->where('documentnumber', 'like', '%' . $filters['name'] . '%');
+            $name = trim($filters['name']);
+
+            $query->where(function ($q) use ($name) {
+                // documentnumber
+                $q->where('documentnumber', 'like', "%{$name}%")
+                    // name
+                    ->orWhere('name', 'like', "%{$name}%")
+                    // lastname
+                    ->orWhere('lastname', 'like', "%{$name}%")
+                    // middlename
+                    ->orWhere('middlename', 'like', "%{$name}%")
+                    // concatenación name + lastname + middlename
+                    ->orWhereRaw("CONCAT_WS(' ', name, lastname, middlename) LIKE ?", ["%{$name}%"])
+                    // phone
+                    ->orWhere('phone', 'like', "%{$name}%")
+                    // relación con city
+                    ->orWhereHas('city', function ($sub) use ($name) {
+                        $sub->where('name', 'like', "%{$name}%");
+                    });
+            });
         }
     }
 

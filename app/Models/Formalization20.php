@@ -105,6 +105,11 @@ class Formalization20 extends Model
         return $this->belongsTo('App\Models\Cde');
     }
 
+    public function asesor()
+    {
+        return $this->belongsTo('App\Models\Profile', 'user_id');
+    }
+
     public function scopeWithFormalizationAndRelations($query)
     {
         return $query->with([
@@ -240,8 +245,16 @@ class Formalization20 extends Model
         }
 
         if (!empty($filters['name'])) {
-            $query->whereHas('people', function ($q) use ($filters) {
-                $q->where('documentnumber', 'like', '%' . $filters['name'] . '%');
+            $name = trim($filters['name']);
+
+            $query->whereHas('people', function ($q) use ($name) {
+                $q->where(function ($sub) use ($name) {
+                    $sub->where('documentnumber', 'like', "%{$name}%")
+                        ->orWhere('name', 'like', "%{$name}%")
+                        ->orWhere('lastname', 'like', "%{$name}%")
+                        ->orWhere('middlename', 'like', "%{$name}%")
+                        ->orWhereRaw("CONCAT_WS(' ', name, lastname, middlename) LIKE ?", ["%{$name}%"]);
+                });
             });
         }
 

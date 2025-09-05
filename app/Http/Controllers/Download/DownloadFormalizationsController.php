@@ -76,8 +76,20 @@ class DownloadFormalizationsController extends Controller
                         'emp_middlename'        => strtoupper($advisory->people->middlename),
                         'emp_name'              => strtoupper($advisory->people->name),
                         'emp_gender'            => $advisory->people->gender->name == 'FEMENINO' ? 'F' : 'M',
-                        'emp_discapabilities'   => trim(strtolower($advisory->people->sick)) === 'yes' ? 'SI' : 'NO',
-                        'emp_soons'             => $advisory->people->hasSoon ?? null,
+
+                        'emp_discapabilities' => match (trim(strtolower($advisory->people->sick ?? ''))) {
+                            'yes' => 'SI',
+                            'no'  => 'NO',
+                            default => 'PREFIERO NO ESPECIFICAR',
+                        },
+
+                        'emp_soons' => match (trim(strtolower($advisory->people->hasSoon ?? ''))) {
+                            'si' => 'SI',
+                            'no' => 'NO',
+                            'na', '' => 'PREFIERO NO ESPECIFICAR',
+                            default => 'PREFIERO NO ESPECIFICAR',
+                        },
+
                         'emp_phone'             => $advisory->people->phone,
                         'emp_email'             => isset($advisory->people->email) ? strtolower($advisory->people->email) : '-',
                         'supervisor'            => 'MILIAN MELENDEZ ALEJANDRIA',
@@ -161,8 +173,23 @@ class DownloadFormalizationsController extends Controller
                         'emp_middlename'        => $f10->people->middlename,
                         'emp_name'              => $f10->people->name,
                         'emp_gender'            => $f10->people->gender->name == 'FEMENINO' ? 'F' : 'M',
-                        'emp_discapabilities'   => trim(strtolower($f10->people->sick)) === 'yes' ? 'SI' : 'NO',
-                        'emp_soons'             => $f10->people->hasSoon ?? null,
+
+                        // 'emp_discapabilities'   => trim(strtolower($f10->people->sick)) === 'yes' ? 'SI' : 'NO',
+                        // 'emp_soons'             => $f10->people->hasSoon ?? null,
+
+                        'emp_discapabilities' => match (trim(strtolower($f10->people->sick ?? ''))) {
+                            'yes' => 'SI',
+                            'no'  => 'NO',
+                            default => 'PREFIERO NO ESPECIFICAR',
+                        },
+
+                        'emp_soons' => match (trim(strtolower($f10->people->hasSoon ?? ''))) {
+                            'si' => 'SI',
+                            'no' => 'NO',
+                            'na', '' => 'PREFIERO NO ESPECIFICAR',
+                            default => 'PREFIERO NO ESPECIFICAR',
+                        },
+
                         'emp_phone'             => $f10->people->phone,
                         'emp_email'             => $f10->people->email ? strtolower($f10->people->email) : '-',
 
@@ -249,8 +276,23 @@ class DownloadFormalizationsController extends Controller
                         'emp_middlename'        => $f20->people->middlename,
                         'emp_name'              => $f20->people->name,
                         'emp_gender'            => $f20->people->gender->name == 'FEMENINO' ? 'F' : 'M',
-                        'emp_discapabilities'   => trim(strtolower($f20->people->sick)) === 'yes' ? 'SI' : 'NO',
-                        'emp_soons'             => $f20->people->hasSoon ?? null,
+
+                        // 'emp_discapabilities'   => trim(strtolower($f20->people->sick)) === 'yes' ? 'SI' : 'NO',
+                        // 'emp_soons'             => $f20->people->hasSoon ?? null,
+
+                        'emp_discapabilities' => match (trim(strtolower($f20->people->sick ?? ''))) {
+                            'yes' => 'SI',
+                            'no'  => 'NO',
+                            default => 'PREFIERO NO ESPECIFICAR',
+                        },
+
+                        'emp_soons' => match (trim(strtolower($f20->people->hasSoon ?? ''))) {
+                            'si' => 'SI',
+                            'no' => 'NO',
+                            'na', '' => 'PREFIERO NO ESPECIFICAR',
+                            default => 'PREFIERO NO ESPECIFICAR',
+                        },
+
                         'emp_phone'             => $f20->people->phone,
                         'emp_email'             => $f20->people->email ? strtolower($f20->people->email) : '-',
 

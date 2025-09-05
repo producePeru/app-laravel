@@ -66,7 +66,7 @@ class PersonController extends Controller
         return [
             'id'                    => $people->id,
             'typedocument'          => $people->typedocument->avr,
-            'document'              => $people->documentnumber,
+            'documentnumber'        => $people->documentnumber,
             'name'                  => isset($people->name) ? strtoupper($people->name) : null,
             'last_name'             => isset($people->lastname, $people->middlename) ? strtoupper(trim($people->lastname . ' ' . $people->middlename)) : (isset($people->lastname) ? strtoupper($people->lastname) : (isset($people->middlename) ? strtoupper($people->middlename) : null)),
             'city'                  => $people->city->name ?? null,
