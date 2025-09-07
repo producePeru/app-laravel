@@ -6,8 +6,6 @@ use App\Http\Controllers\Agreement\CommitmentsController;
 use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\Attendance\EventsUgoController;
 use App\Http\Controllers\Attendance\EventsUgseController;
-
-// use App\Http\Controllers\Mype\MypeController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\EmailSendController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
