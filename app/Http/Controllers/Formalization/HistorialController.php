@@ -111,10 +111,13 @@ class HistorialController extends Controller
 
         if ($user->rol == 1) {
             $query->withAdvisoryRangeDate($filters);
-        }
-
-        if ($user->rol == 2) {
+        } else if ($user->rol == 2) {
             $query->withAdvisoryRangeDate($filters)->where('user_id', $user->id);
+        } else {
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a esta sección',
+                'status' => 403
+            ]);
         }
 
         $advisories = $query->paginate(90)->through(function ($advisory) {
@@ -208,10 +211,13 @@ class HistorialController extends Controller
 
         if ($user->rol == 1) {
             $query->withFormalizationRangeDate($filters);
-        }
-
-        if ($user->rol == 2) {
+        } else if ($user->rol == 2) {
             $query->withFormalizationRangeDate($filters)->where('user_id', $user->id);
+        } else {
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a esta sección',
+                'status' => 403
+            ]);
         }
 
         $formalizations = $query->paginate(90)->through(function ($item) {
@@ -300,10 +306,13 @@ class HistorialController extends Controller
 
         if ($user->rol == 1) {
             $query->withFormalizationRangeDate($filters);
-        }
-
-        if ($user->rol == 2) {
+        } else if ($user->rol == 2) {
             $query->withFormalizationRangeDate($filters)->where('user_id', $user->id);
+        } else {
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a esta sección',
+                'status' => 403
+            ]);
         }
 
         $formalizations = $query->paginate(90)->through(function ($item) {
