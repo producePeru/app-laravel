@@ -109,7 +109,7 @@ class DownloadFormalizationsController extends Controller
                         'city'                  => $advisory->city->name ?? null,
                         'province'              => $advisory->province->name ?? null,
                         'district'              => $advisory->district->name ?? null,
-                        'ruc'                   => $advisory->ruc ?? null,
+                        'ruc'                   => $advisory->ruc ?? '-',
                         'economic_service'      => $advisory->economicsector->name ?? null,
                         'activity_comercial'    => $advisory->comercialactivity->name ?? null,
                         'component'             => $advisory->component->name ?? null,
@@ -230,7 +230,7 @@ class DownloadFormalizationsController extends Controller
                         'province'              => $f10->province->name ?? null,
                         'district'              => $f10->district->name ?? null,
                         'address'               => $f10->address ?? null,
-                        'ruc'                   => $f10->ruc ?? null,
+                        'ruc'                   => $f10->ruc ?? '-',
 
                         'econimic_sector'       => $f10->economicsector->name ?? null,
                         'activity_comercial'    => $f10->comercialactivity->name ?? null,
@@ -347,7 +347,7 @@ class DownloadFormalizationsController extends Controller
                         'province'              => $f20->province->name ?? null,
                         'district'              => $f20->district->name ?? null,
                         'address'               => $f20->address ?? null,
-                        'ruc'                   => $f20->ruc ?? null,
+                        'ruc'                   => $f20->ruc ?? '-',
 
                         'econimic_sector'       => $f20->economicsector->name ?? null,
                         'activity_comercial'    => $f20->comercialactivity->name ?? null,
