@@ -303,7 +303,7 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
 
     // Route::delete('delete-ruc-10/{id}', [Formalization10Controller::class, 'destroy']);         //ACTUALIZACIONES 10
     Route::get('find-ruc-10/{id}', [Formalization10Controller::class, 'getDataF10ById']);
-    Route::put('update-ruc-10/{id}', [Formalization10Controller::class, 'update']);
+    // Route::put('update-ruc-10/{id}', [Formalization10Controller::class, 'update']);
 
     Route::get('find-ruc-20/{id}', [Formalization20Controller::class, 'getDataF20ById']);
     Route::put('update-ruc-20/{id}', [Formalization20Controller::class, 'update']);

@@ -82,6 +82,7 @@ class PublicEventsController extends Controller
                         'data' => [
                             'ruc'                   => $responseData['numero_documento'] ?? null,
                             'socialReason'          => $responseData['razon_social'] ?? null,
+                            'comercialName'         => $responseData['razon_social'] ?? null,
                             'economicsector_id'     => null,
                             'category_id'           => null,
                             'comercialactivity_id'  => null,
@@ -104,6 +105,7 @@ class PublicEventsController extends Controller
                     'data' => [
                         'name'                  => $empresa->ruc ?? null,
                         'socialReason'          => $empresa->socialReason ?? null,
+                        'comercialName'         => $empresa->comercialName ?? null,
                         'economicsector_id'     => $empresa->economicsector_id,
                         'category_id'           => $empresa->category_id ?? null,
                         'comercialactivity_id'  => $empresa->comercialactivity_id ?? null,

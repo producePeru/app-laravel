@@ -17,6 +17,8 @@ Route::controller(Formalization10Controller::class)->group(function () {
     Route::post('create-ruc-10', 'storeRuc10');
 
     Route::delete('delete-ruc-10/{id}', 'destroy');
+
+    Route::put('update-values-ruc-10/{id}', 'updateValueRuc10');
 });
 
 
