@@ -34,18 +34,31 @@ class DownloadFormalizationsController extends Controller
             //     ]);
             // }
 
-            $filters = $request->query();
+            $filters = [
+                'asesor'    => $request->input('asesor'),
+                'name'      => $request->input('name'),
+                'dateStart' => $request->input('dateStart'),
+                'dateEnd'   => $request->input('dateEnd'),
+                'year'      => $request->input('year'),
+                'typeCdes'  => $request->input('typeCdes'),
+            ];
 
             $user = Auth::user();
 
             $query = Advisory::query();
 
             if ($user->rol == 1) {
-                $query->withAdvisoryRangeDate($filters);
-            }
 
-            if ($user->rol == 2) {
+                $query->withAdvisoryRangeDate($filters);
+            } else if ($user->rol == 2) {
+
                 $query->withAdvisoryRangeDate($filters)->where('user_id', $user->id);
+            } else {
+
+                return response()->json([
+                    'message' => 'No tienes permiso para acceder a esta sección',
+                    'status' => 403
+                ]);
             }
 
             ini_set('memory_limit', '2G');
@@ -130,7 +143,15 @@ class DownloadFormalizationsController extends Controller
             //     ]);
             // }
 
-            $filters = $request->query();
+            $filters = [
+                'asesor'    => $request->input('asesor'),
+                'name'      => $request->input('name'),
+                'dateStart' => $request->input('dateStart'),
+                'dateEnd'   => $request->input('dateEnd'),
+                'year'      => $request->input('year'),
+                'typeCdes'  => $request->input('typeCdes'),
+            ];
+
 
             $user = Auth::user();
 
@@ -138,17 +159,25 @@ class DownloadFormalizationsController extends Controller
 
 
             if ($user->rol == 1) {
-                $query->withFormalizationRangeDate($filters);
-            }
 
-            if ($user->rol == 2) {
+                $query->withFormalizationRangeDate($filters);
+            } else if ($user->rol == 2) {
+
                 $query->withFormalizationRangeDate($filters)->where('user_id', $user->id);
+            } else {
+
+                return response()->json([
+                    'message' => 'No tienes permiso para acceder a esta sección',
+                    'status' => 403
+                ]);
             }
 
             ini_set('memory_limit', '2G');
+
             set_time_limit(300);
 
             $fs10 = [];
+
             $globalIndex = 1;
 
             $query->chunk(1000, function ($rows) use (&$fs10, &$globalIndex) {
@@ -234,21 +263,35 @@ class DownloadFormalizationsController extends Controller
             //     ]);
             // }
 
-            $filters = $request->query();
+            $filters = [
+                'asesor'    => $request->input('asesor'),
+                'name'      => $request->input('name'),
+                'dateStart' => $request->input('dateStart'),
+                'dateEnd'   => $request->input('dateEnd'),
+                'year'      => $request->input('year'),
+                'typeCdes'  => $request->input('typeCdes'),
+            ];
 
             $user = Auth::user();
 
             $query = Formalization20::query();
 
             if ($user->rol == 1) {
-                $query->withFormalizationRangeDate($filters);
-            }
 
-            if ($user->rol == 2) {
+                $query->withFormalizationRangeDate($filters);
+            } else if ($user->rol == 2) {
+
                 $query->withFormalizationRangeDate($filters)->where('user_id', $user->id);
+            } else {
+
+                return response()->json([
+                    'message' => 'No tienes permiso para acceder a esta sección',
+                    'status' => 403
+                ]);
             }
 
             ini_set('memory_limit', '2G');
+
             set_time_limit(300);
 
             $fs20 = [];
