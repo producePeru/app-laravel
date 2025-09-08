@@ -99,13 +99,17 @@ class AuthController extends Controller
 
             // Cargar y procesar vistas
             $views = $user->views->map(function ($view) {
-                return json_decode($view->views, true); // Asume que el campo 'views' es JSON
-            })->flatten(1); // Flatten para nivel 1
+                return json_decode($view->views, true);
+            })->flatten(1);
+
+            // Construir profile con user_id
+            $profile = $user->toArray();
+            $profile['user_id'] = $user->id;
 
             return response()->json([
                 'success' => true,
                 'message' => 'Inicio de sesión exitoso.',
-                'profile' => $user,
+                'profile' => $profile, // ✅ ahora sí incluye user_id
                 'token' => $token,
                 'views' => $views,
                 'role' => [[
@@ -121,7 +125,6 @@ class AuthController extends Controller
             ], 500);
         }
     }
-
 
 
 
