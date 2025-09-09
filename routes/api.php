@@ -173,7 +173,7 @@ Route::prefix('download')->middleware('auth:sanctum')->group(function () {
 Route::prefix('questionnaire')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/questionnaire.php';
 });
-Route::prefix('businessman')->middleware('auth:sanctum')->group(function () {
+Route::prefix('businessman')->group(function () {
     require __DIR__ . '/api/businessman.php';
 });
 
