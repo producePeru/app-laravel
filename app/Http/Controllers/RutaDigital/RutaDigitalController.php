@@ -147,9 +147,9 @@ class RutaDigitalController extends Controller
         $role_array = $user_role['role_id'];
 
         $query = Digitalroute::with([
-            'profile',
-            'profile.cde:id,name',
-            'profile.supervisor',
+            'asesor',
+            'asesor.cde:id,name',
+            'asesor.supervisor',
 
             'user.misupervisor.supervisor.profile',
 
@@ -212,10 +212,11 @@ class RutaDigitalController extends Controller
                 'id' => $item->id,
 
                 'date' => Carbon::parse($item->created_at)->format('d/m/Y H:i'),
-                'asesor_documentnumber' => $item->profile->documentnumber,
-                'asesor_name' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
-                'asesor_cde' => $item->profile->cde->name,
-                'supervisador' => strtoupper($supervisador),
+                'asesor_documentnumber' => $item->asesor->documentnumber,
+                'asesor_name' => strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename),
+                'asesor_cde' => $item->asesor->cde->name,
+
+                'supervisador' => 'MILIAN MELENDEZ ALEJANDRIA',
 
                 'documentnumber' => $item->person->documentnumber,
                 'typedocument' => $item->person->typedocument->name,

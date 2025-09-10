@@ -41,6 +41,11 @@ class Digitalroute extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function asesor()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function scopeSearch($query, $search)
     {
         if ($search) {
