@@ -37,6 +37,9 @@ use App\Models\Category;
 use App\Models\AnnualSale;
 use App\Models\FairType;
 use App\Models\PropagandaMedia;
+use App\Models\TrainingDimension;
+use App\Models\TrainingMeta;
+use App\Models\TrainingSpecialist;
 use App\Models\TypeTaxpayer;
 use App\Models\User;
 
@@ -548,6 +551,48 @@ class SelectController extends Controller
     public function getActivities($idRubro)
     {
         $types = Activity::where('rubro_id', $idRubro)->orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getTrainingDimensions()
+    {
+        $types = TrainingDimension::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getTrainingMetas()
+    {
+        $types = TrainingMeta::orderBy('month', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => substr($item->month, 0, 7),
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getTrainingSpecialist()
+    {
+        $types = TrainingSpecialist::orderBy('name', 'asc')->get();
 
         $data = $types->map(function ($item) {
             return [

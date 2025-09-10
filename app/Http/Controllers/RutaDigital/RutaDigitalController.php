@@ -8,6 +8,8 @@ use App\Models\Mype;
 use App\Models\People;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class RutaDigitalController extends Controller
 {
@@ -164,16 +166,24 @@ class RutaDigitalController extends Controller
         ])->search($search)
             ->orderBy('created_at', 'desc');
 
+        $user = Auth::user();
 
-        // Filtrado según roles
-        if (in_array(1, $role_array) || in_array(5, $role_array)) {
-            // Roles 1 y 5 pueden ver todos los registros, no aplicamos filtro adicional
-        } elseif (in_array(2, $role_array) || in_array(7, $role_array)) {
+        if ($user->rol == 2) {
             $user_id = $user_role['user_id'];
             $query->where('user_id', $user_id);
-        } else {
-            return response()->json(['error' => 'Unauthorized', 'status' => 409]);
         }
+
+
+        // if (in_array(1, $role_array) || in_array(5, $role_array)) {
+
+        // } elseif (in_array(2, $role_array) || in_array(7, $role_array)) {
+
+        //     $user_id = $user_role['user_id'];
+        //     $query->where('user_id', $user_id);
+
+        // } else {
+        //     return response()->json(['error' => 'Unauthorized', 'status' => 409]);
+        // }
 
         // Obtener fechas de los parámetros de la URL
         $start = $request->query('start');
