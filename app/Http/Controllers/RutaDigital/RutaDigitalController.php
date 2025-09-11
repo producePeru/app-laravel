@@ -212,7 +212,7 @@ class RutaDigitalController extends Controller
                 'id' => $item->id,
 
                 'date' => Carbon::parse($item->created_at)->format('d/m/Y H:i'),
-                'asesor_documentnumber' => $item->asesor->documentnumber,
+                'asesor_documentnumber' => $item->asesor->dni,
                 'asesor_name' => strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename),
                 'asesor_cde' => $item->asesor->cde->name,
 
@@ -340,23 +340,22 @@ class RutaDigitalController extends Controller
         $user_role = getUserRole();
         $role_array = $user_role['role_id'];
 
-        if (in_array(1, $role_array) || in_array(5, $role_array) || in_array(2, $role_array)) {
-            $digitalroute = Digitalroute::find($id);
 
-            if ($digitalroute) {
-                $digitalroute->status = $digitalroute->status === 0 ? 1 : 0;
-                $digitalroute->save();
+        $digitalroute = Digitalroute::find($id);
 
-                return response()->json([
-                    'message' => 'El estado ha sido cambiado',
-                    'status' => 200
-                ]);
-            }
+        if ($digitalroute) {
+            $digitalroute->status = $digitalroute->status === 0 ? 1 : 0;
+            $digitalroute->save();
 
             return response()->json([
-                'message' => 'No se encontró el registro',
-                'status' => 404
+                'message' => 'El estado ha sido cambiado',
+                'status' => 200
             ]);
         }
+
+        return response()->json([
+            'message' => 'No se encontró el registro',
+            'status' => 404
+        ]);
     }
 }

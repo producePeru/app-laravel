@@ -48,9 +48,12 @@ Route::controller(TrainingController::class)->group(function () {
 
     Route::post('register-training', 'store');
 
-    // Route::put('update-meta/{id}', 'update');
+    Route::put('update-training/{id}', 'update');
+
+    Route::put('update-training-status/{id}', 'updateStatus');
 
     // Route::delete('delete-meta/{id}', 'destroy');
+
 });
 
 // training
