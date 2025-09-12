@@ -34,10 +34,19 @@ Route::controller(AttendanceController::class)->group(function () {
 // DASHBOARD - SERGIO - training
 Route::controller(TrainingController::class)->group(function () {
 
-    Route::get('breakdown-by-month/{year}', 'breakdownByMonth');
+    Route::get('meeting-monthly-goals/{year}/{month}', 'meetingMonthlyGoals');
 
     Route::get('annual-summary/{year}', 'annualSummary');
 
+    Route::get('breakdown-by-month/{year}', 'breakdownByMonth');
 
-    Route::get('meeting-monthly-goals/{year}/{month}', 'meetingMonthlyGoals');
+    Route::get('calendar-events', 'calendarEvents');
+
+    Route::get('top-especialistas', 'topEspecialistas');
+
+    Route::get('estadisticas-dimensiones', 'estadisticasDimensiones');
+
+    Route::get('estadisticas-modalidad', 'estadisticasModalidad');
+
+    Route::get('estadisticas-trainings', 'estadisticasTrainings');
 });

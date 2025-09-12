@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Training;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use App\Models\Training;
+use App\Models\TrainingMeta;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -143,205 +144,293 @@ class TrainingController extends Controller
 
 
     // DASHBOARD
-    public function breakdownByMonth($year)
+    public function meetingMonthlyGoals($year, $month)
     {
-        // Inicializamos un array con los 12 meses
-        $months = [
-            1 => 'Enero',
-            2 => 'Febrero',
-            3 => 'Marzo',
-            4 => 'Abril',
-            5 => 'Mayo',
-            6 => 'Junio',
-            7 => 'Julio',
-            8 => 'Agosto',
-            9 => 'Septiembre',
-            10 => 'Octubre',
-            11 => 'Noviembre',
-            12 => 'Diciembre'
-        ];
+        // Buscar la meta para ese mes y año
+        $meta = TrainingMeta::whereYear('month', $year)
+            ->whereMonth('month', $month)
+            ->first();
 
-        $result = [];
-
-        for ($i = 1; $i <= 12; $i++) {
-            // Filtramos por mes y año
-            $capacitaciones = DB::table('trainings')
-                ->whereYear('fecha', $year)
-                ->whereMonth('fecha', $i)
-                ->count();
-
-            $participantes = DB::table('trainings')
-                ->whereYear('fecha', $year)
-                ->whereMonth('fecha', $i)
-                ->sum('participantes');
-
-            $empresas = DB::table('trainings')
-                ->whereYear('fecha', $year)
-                ->whereMonth('fecha', $i)
-                ->sum('empresas');
-
-            $result[] = [
-                'mes' => $months[$i],
-                'capacitaciones' => $capacitaciones,
-                'participantes' => $participantes,
-                'empresas' => $empresas
-            ];
+        if (!$meta) {
+            // Si no hay meta, devolver estructura con ceros
+            return response()->json([
+                'meta' => [
+                    'month'          => "$year-$month-01",
+                    'capacitaciones' => 0,
+                    'participantes'  => 0,
+                    'empresas'       => 0,
+                ],
+                'totales' => [
+                    'capacitaciones' => 0,
+                    'participantes'  => 0,
+                    'empresas'       => 0,
+                    'especialistas'  => 0,
+                ],
+                'porcentajes' => [
+                    'capacitaciones' => 0,
+                    'participantes'  => 0,
+                    'empresas'       => 0,
+                ]
+            ]);
         }
 
-        return response()->json($result);
+        // Obtener todos los trainings de esa meta
+        $trainings = Training::where('meta_id', $meta->id)->get();
+
+        // Hacer las sumatorias
+        $totalCapacitaciones = $trainings->count();
+        $totalParticipantes  = $trainings->sum('participantes');
+        $totalEmpresas       = $trainings->sum('empresas');
+        $totalEspecialistas  = $trainings->pluck('especialista_id')->unique()->count();
+
+        // Calcular % de avance contra la meta
+        $porcCapacitaciones = $meta->capacitaciones > 0
+            ? round(($totalCapacitaciones / $meta->capacitaciones) * 100, 1)
+            : 0;
+
+        $porcParticipantes = $meta->participantes > 0
+            ? round(($totalParticipantes / $meta->participantes) * 100, 1)
+            : 0;
+
+        $porcEmpresas = $meta->empresas > 0
+            ? round(($totalEmpresas / $meta->empresas) * 100, 1)
+            : 0;
+
+        return response()->json([
+            'meta' => $meta,
+            'totales' => [
+                'capacitaciones'   => $totalCapacitaciones,
+                'participantes'    => $totalParticipantes,
+                'empresas'         => $totalEmpresas,
+                'especialistas'    => $totalEspecialistas,
+            ],
+            'porcentajes' => [
+                'capacitaciones'   => $porcCapacitaciones,
+                'participantes'    => $porcParticipantes,
+                'empresas'         => $porcEmpresas,
+            ]
+        ]);
     }
+
 
 
 
     public function annualSummary($year)
     {
-        // Nombres de los meses
-        $months = [
-            1 => 'Enero',
-            2 => 'Febrero',
-            3 => 'Marzo',
-            4 => 'Abril',
-            5 => 'Mayo',
-            6 => 'Junio',
-            7 => 'Julio',
-            8 => 'Agosto',
-            9 => 'Septiembre',
-            10 => 'Octubre',
-            11 => 'Noviembre',
-            12 => 'Diciembre'
-        ];
+        // Metas del año (puede estar vacío)
+        $metas = TrainingMeta::whereYear('month', $year)->get();
 
-        // Consulta única agrupada por mes
-        $data = DB::table('trainings')
-            ->select(
-                DB::raw('MONTH(fecha) as mes_num'),
-                DB::raw('COUNT(*) as capacitaciones'),
-                DB::raw('SUM(participantes) as participantes'),
-                DB::raw('SUM(empresas) as empresas')
-            )
-            ->whereYear('fecha', $year)
-            ->groupBy(DB::raw('MONTH(fecha)'))
-            ->get()
-            ->keyBy('mes_num');
+        // Sumas de metas anuales
+        $metaCap = $metas->sum('capacitaciones');
+        $metaPart = $metas->sum('participantes');
+        $metaEmp  = $metas->sum('empresas');
 
-        $result = [];
+        // Trainings del año
+        $trainings = Training::whereYear('fecha', $year)->get();
 
-        $totalCap = 0;
-        $totalPart = 0;
-        $totalEmp = 0;
+        // Totales reales del año
+        $totalCapacitaciones = $trainings->count();
+        $totalParticipantes  = $trainings->sum('participantes');
+        $totalEmpresas       = $trainings->sum('empresas');
+        $totalEspecialistas  = $trainings->pluck('especialista_id')->unique()->count();
 
-        for ($i = 1; $i <= 12; $i++) {
-            $cap = $data[$i]->capacitaciones ?? 0;
-            $part = $data[$i]->participantes ?? 0;
-            $emp = $data[$i]->empresas ?? 0;
+        // Porcentajes contra la meta anual (evita división por cero)
+        $porcCap = $metaCap > 0 ? round(($totalCapacitaciones / $metaCap) * 100, 1) : 0;
+        $porcPart = $metaPart > 0 ? round(($totalParticipantes / $metaPart) * 100, 1) : 0;
+        $porcEmp = $metaEmp > 0 ? round(($totalEmpresas / $metaEmp) * 100, 1) : 0;
 
-            $totalCap += $cap;
-            $totalPart += $part;
-            $totalEmp += $emp;
+        // Construir array de 12 meses con totales por mes (útil para grid)
+        $meses = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $key = str_pad($m, 2, '0', STR_PAD_LEFT);
+            $group = $trainings->filter(function ($t) use ($key) {
+                return Carbon::parse($t->fecha)->format('m') === $key;
+            });
 
-            $result[] = [
-                'mes' => $months[$i],
-                'capacitaciones' => $cap,
-                'participantes' => $part,
-                'empresas' => $emp
+            // Nombre del mes en español (fallback a inglés si locale no disponible)
+            try {
+                $mesNombre = Carbon::createFromDate($year, $m, 1)->locale('es')->isoFormat('MMMM');
+            } catch (\Exception $e) {
+                $mesNombre = Carbon::createFromDate($year, $m, 1)->format('F');
+            }
+
+            $meses[] = [
+                'mes_num'        => $m,
+                'mes_nombre'     => ucfirst($mesNombre),
+                'capacitaciones' => $group->count(),
+                'participantes'  => $group->sum('participantes'),
+                'empresas'       => $group->sum('empresas'),
             ];
         }
 
-        // Mejor mes
-        $mejorMes = collect($result)->sortByDesc('capacitaciones')->first();
-
-        // Porcentaje anual de meta (suponiendo 300 capacitaciones como ejemplo)
-        $progAnual = round(($totalCap / 300) * 100);
-        $promedioMensual = round($totalPart / 12);
+        // Mejor mes según capacitaciones
+        $best = collect($meses)->sortByDesc('capacitaciones')->first();
+        $mejorMes = ($best && $best['capacitaciones'] > 0) ? $best : null;
 
         return response()->json([
+            'metaAnual' => [
+                'capacitaciones' => (int)$metaCap,
+                'participantes'  => (int)$metaPart,
+                'empresas'       => (int)$metaEmp,
+            ],
             'totales' => [
-                'capacitaciones' => $totalCap,
-                'participantes' => $totalPart,
-                'empresas' => $totalEmp,
-                'mejorMes' => $mejorMes['mes'],
-                'capacitacionesMejorMes' => $mejorMes['capacitaciones'],
-                'progresoAnual' => $progAnual,
-                'promedioMensual' => $promedioMensual,
-                'cumplimientoMetaAnual' => $progAnual
-            ]
+                'capacitaciones' => (int)$totalCapacitaciones,
+                'participantes'  => (int)$totalParticipantes,
+                'empresas'       => (int)$totalEmpresas,
+                'especialistas'  => (int)$totalEspecialistas,
+            ],
+            'porcentajes' => [
+                'capacitaciones' => $porcCap,
+                'participantes'  => $porcPart,
+                'empresas'       => $porcEmp,
+            ],
+            'mejorMes' => $mejorMes,   // null o { mes_num, mes_nombre, capacitaciones, ... }
+            'meses'    => $meses       // array con los 12 meses (útil para grid)
         ]);
     }
 
 
-    public function meetingMonthlyGoals($year, $month)
+    public function breakdownByMonth($year)
     {
 
+        $trainings = Training::whereYear('fecha', $year)->get();
 
-        // trae todos los que son fecha y mes sean de acuerdo a $year y $month
+        $meses = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $key = str_pad($m, 2, '0', STR_PAD_LEFT);
+            $group = $trainings->filter(function ($t) use ($key) {
+                return Carbon::parse($t->fecha)->format('m') === $key;
+            });
 
-        // $meta = TrainingMeta::whereYear('month', $year)
-        // ->whereMonth('month', $month)
-        // ->first();
+            $mesNombre = ucfirst(
+                Carbon::createFromDate($year, $m, 1)->locale('es')->isoFormat('MMMM')
+            );
+
+            $meses[] = [
+                'mes'            => $mesNombre,
+                'capacitaciones' => $group->count(),
+                'participantes'  => $group->sum('participantes'),
+                'empresas'       => $group->sum('empresas'),
+            ];
+        }
+
+        return response()->json($meses);
+    }
 
 
-        // return $meta;
+    // CALENDARIO 
+    public function calendarEvents(Request $request)
+    {
+        $year = $request->input('year');
+        $month = $request->input('month');
 
+        if (!$year || !$month) {
+            return response()->json(['error' => 'Parámetros year y month son requeridos'], 400);
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-        // Buscar la meta correspondiente al año y mes
-        $meta = DB::table('trainingmetas')
-            ->whereYear('month', $year)
-            ->whereMonth('month', $month)
-            ->first();
-
-        // Datos reales de trainings
-        $real = DB::table('trainings')
-            ->select(
-                DB::raw('COUNT(*) as capacitaciones'),
-                DB::raw('SUM(participantes) as participantes'),
-                DB::raw('SUM(empresas) as empresas')
-            )
+        // Buscar capacitaciones del mes solicitado
+        $trainings = Training::with('especialista') // asumiendo relación Training -> especialista
             ->whereYear('fecha', $year)
             ->whereMonth('fecha', $month)
-            ->first();
+            ->get();
 
-        // Opcional: nombres de los meses
-        $months = [
-            1 => 'Enero',
-            2 => 'Febrero',
-            3 => 'Marzo',
-            4 => 'Abril',
-            5 => 'Mayo',
-            6 => 'Junio',
-            7 => 'Julio',
-            8 => 'Agosto',
-            9 => 'Septiembre',
-            10 => 'Octubre',
-            11 => 'Noviembre',
-            12 => 'Diciembre'
-        ];
+        // Formatear salida
+        $data = $trainings->map(function ($t) {
+            return [
+                'id'            => $t->id,
+                'fecha'         => \Carbon\Carbon::parse($t->fecha)->format('Y-m-d'),
+                'hora'          => Carbon::parse($t->horaInicio)->format('H:i') . ' - ' . Carbon::parse($t->horaFin)->format('H:i'),
+                'tema'          => $t->tema,
+                'especialista'  => $t->especialista?->name,
+                'color'         => $t->especialista?->color ?? '#666666',
+            ];
+        });
+
+        return response()->json($data);
+    }
+
+    public function topEspecialistas()
+    {
+        $top = DB::table('trainings')
+            ->select(
+                'especialista_id',
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('especialista_id')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        $ids = $top->pluck('especialista_id')->toArray();
+
+        $especialistas = \App\Models\TrainingSpecialist::whereIn('id', $ids)->get();
+
+        $result = $top->map(function ($item) use ($especialistas) {
+            $especialista = $especialistas->firstWhere('id', $item->especialista_id);
+
+            return [
+                'id'    => $item->especialista_id,
+                'name' => $especialista
+                    ? ucwords(strtolower($especialista->name))
+                    : 'Desconocido',
+                'color' => $especialista?->color ?? '#666666',
+                'total' => $item->total,
+            ];
+        });
 
         return response()->json([
-            'anio' => $year,
-            'mes' => $month,
-            'nombre_mes' => $months[intval($month)],
-            'reales' => [
-                'capacitaciones' => $real->capacitaciones ?? 0,
-                'participantes' => $real->participantes ?? 0,
-                'empresas' => $real->empresas ?? 0,
-            ],
-            'metas' => [
-                'capacitaciones' => $meta->capacitaciones ?? 0,
-                'participantes' => $meta->participantes ?? 0,
-                'empresas' => $meta->empresas ?? 0,
-            ]
+            'topEspecialistas' => $result
         ]);
+    }
+
+    public function estadisticasDimensiones()
+    {
+        $result = Training::select('dimension_id', DB::raw('COUNT(*) as total'))
+            ->groupBy('dimension_id')
+            ->with('dimension:id,name') // relación en el modelo Training
+            ->orderByDesc('total')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id'   => $item->dimension_id,
+                    'name' => $item->dimension ? strtolower($item->dimension->name) : 'Desconocido',
+                    'total' => $item->total,
+                ];
+            });
+
+        return response()->json($result);
+    }
+
+
+    public function estadisticasModalidad(Request $request)
+    {
+        $result = Training::select('modalidad', DB::raw('COUNT(*) as total'))
+            ->groupBy('modalidad')
+            ->pluck('total', 'modalidad'); // Devuelve en formato [modalidad => total]
+
+        return response()->json([
+            'presencial' => $result[1] ?? 0,
+            'virtual'    => $result[2] ?? 0,
+            'mixta'      => $result[3] ?? 0,
+        ]);
+    }
+
+    public function estadisticasTrainings()
+    {
+        $estadisticas = Training::select('estado', DB::raw('COUNT(*) as total'))
+            ->groupBy('estado')
+            ->pluck('total', 'estado');
+
+
+        // return $estadisticas;
+
+        $data = [
+            'programadas' => $estadisticas[1] ?? 0,
+            'en_curso'    => $estadisticas[2] ?? 0,
+            'completadas' => $estadisticas[3] ?? 0,
+            'canceladas'  => $estadisticas[4] ?? 0,
+        ];
+
+        return response()->json($data);
     }
 }
