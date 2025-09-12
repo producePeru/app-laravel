@@ -9,7 +9,7 @@ class TrainingMeta extends Model
 {
     use HasFactory;
 
-    protected $table = 'trainingmetas';
+    protected $table = 'trainingMetas';
 
     protected $fillable = [
         'month',
