@@ -216,6 +216,9 @@ Route::prefix('public')->group(function () {
     require __DIR__ . '/api/public.php';
 });
 
+Route::prefix('google-api')->group(function () {
+    require __DIR__ . '/api/google.php';
+});
 
 Route::prefix('image')->group(function () {
     require __DIR__ . '/api/image.php';

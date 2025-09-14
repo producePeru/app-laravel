@@ -574,10 +574,10 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 
 -- CREATE TABLE trainingMetas (
 --     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
---     month DATE NOT NULL,          
---     capacitaciones INT UNSIGNED NOT NULL,  
---     participantes INT UNSIGNED NOT NULL,   
---     empresas INT UNSIGNED NOT NULL,        
+--     month DATE NOT NULL,
+--     capacitaciones INT UNSIGNED NOT NULL,
+--     participantes INT UNSIGNED NOT NULL,
+--     empresas INT UNSIGNED NOT NULL,
 --     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 --     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 -- );
@@ -585,7 +585,7 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 
 -- CREATE TABLE trainings (
 --     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    
+
 --     meta_id INT UNSIGNED NOT NULL,
 --     especialista_id INT UNSIGNED NOT NULL,
 --     dimension_id INT UNSIGNED NOT NULL,
@@ -606,13 +606,32 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 --     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 --     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
---     CONSTRAINT fk_trainings_meta 
+--     CONSTRAINT fk_trainings_meta
 --         FOREIGN KEY (meta_id) REFERENCES trainingMetas(id),
---     CONSTRAINT fk_trainings_especialista 
+--     CONSTRAINT fk_trainings_especialista
 --         FOREIGN KEY (especialista_id) REFERENCES trainingSpecialists(id),
---     CONSTRAINT fk_trainings_dimension 
+--     CONSTRAINT fk_trainings_dimension
 --         FOREIGN KEY (dimension_id) REFERENCES trainingDimensions(id)
 -- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+
+pnte-cyberwow@pnte-cyber-wow-2025.iam.gserviceaccount.com
+
+
+ALTER TABLE `users`
+ADD `google_token` LONGTEXT NULL AFTER `rol_id`;
+
+http://127.0.0.1:8000/api/google-api/redirect
+
+
+http://127.0.0.1:8000/api/google-api/create-folder
+{
+  "nombre": "Mi carpeta Gaa",
+  "idCarpeta": "17Ex9ZWzl3r9mFicamIz542JG0eaAEipK"
+}
+
+
+http://127.0.0.1:8000/api/google-api/list-folders?idCarpeta=17Ex9ZWzl3r9mFicamIz542JG0eaAEipK
 
 
