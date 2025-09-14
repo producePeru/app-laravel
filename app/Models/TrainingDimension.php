@@ -9,7 +9,7 @@ class TrainingDimension extends Model
 {
     use HasFactory;
 
-    protected $table = 'trainingdimensions';
+    protected $table = 'trainingDimensions';
 
     protected $fillable = [
         'name',

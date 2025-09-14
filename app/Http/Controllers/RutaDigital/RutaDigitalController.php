@@ -212,7 +212,7 @@ class RutaDigitalController extends Controller
                 'id' => $item->id,
 
                 'date' => Carbon::parse($item->created_at)->format('d/m/Y H:i'),
-                'asesor_documentnumber' => $item->asesor->documentnumber,
+                'asesor_documentnumber' => $item->asesor->dni,
                 'asesor_name' => strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename),
                 'asesor_cde' => $item->asesor->cde->name,
 
@@ -250,6 +250,8 @@ class RutaDigitalController extends Controller
         $user_role = getUserRole();
         $role_array = $user_role['role_id'];
 
+        $user = auth()->user();
+
         $query = Digitalroute::with([
             'profile',
             'profile.cde:id,name',
@@ -269,15 +271,28 @@ class RutaDigitalController extends Controller
             ->search($search)
             ->orderBy('created_at', 'desc');
 
-        // Filtrado según roles
-        if (in_array(1, $role_array) || in_array(5, $role_array)) {
-            // Roles 1 y 5 pueden ver todos los registros, no aplicamos filtro adicional
-        } elseif (in_array(2, $role_array) || in_array(7, $role_array)) {
+
+
+        if ($user->rol == 2) {
             $user_id = $user_role['user_id'];
             $query->where('user_id', $user_id);
-        } else {
-            return response()->json(['error' => 'Unauthorized', 'status' => 409]);
         }
+
+
+
+        // Filtrado según roles
+        // if (in_array(1, $role_array) || in_array(5, $role_array)) {
+        //     // Roles 1 y 5 pueden ver todos los registros, no aplicamos filtro adicional
+        // } elseif (in_array(2, $role_array) || in_array(7, $role_array)) {
+        //     $user_id = $user_role['user_id'];
+        //     $query->where('user_id', $user_id);
+        // } else {
+        //     return response()->json(['error' => 'Unauthorized', 'status' => 409]);
+        // }
+
+
+
+
 
         // Obtener fechas de los parámetros de la URL
         $start = $request->query('start');
@@ -296,17 +311,18 @@ class RutaDigitalController extends Controller
 
         // Transformar los datos
         $transformedData = $data->map(function ($item) {
-            $supervisador = $item->user->misupervisor?->supervisor->profile
-                ? $item->user->misupervisor->supervisor->profile->name . ' ' . $item->user->misupervisor->supervisor->profile->lastname . ' ' . $item->user->misupervisor->supervisor->profile->middlename
-                : 'Sin supervisor';
+            // $supervisador = $item->user->misupervisor?->supervisor->profile
+            //     ? $item->user->misupervisor->supervisor->profile->name . ' ' . $item->user->misupervisor->supervisor->profile->lastname . ' ' . $item->user->misupervisor->supervisor->profile->middlename
+            //     : 'Sin supervisor';
 
             return [
                 'id' => $item->id,
                 'date' => Carbon::parse($item->created_at)->format('d/m/Y H:i'),
-                'asesor_documentnumber' => $item->profile->documentnumber,
-                'asesor_name' => $item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename,
-                'asesor_cde' => $item->profile->cde->name,
-                'supervisador' => $supervisador,
+                'asesor_documentnumber' => $item->user->dni,
+                'asesor_name' => $item->user->name . ' ' . $item->user->lastname . ' ' . $item->user->middlename,
+                'asesor_cde' => $item->user->cde->name,
+                'supervisador' => "MILIAN MELENDEZ",
+
                 'documentnumber' => $item->person->documentnumber,
                 'typedocument' => $item->person->typedocument->name,
                 'country' => $item->person->pais->name,
@@ -317,6 +333,8 @@ class RutaDigitalController extends Controller
                 'sick' => $item->person->sick == 'yes' ? 'SI' : 'NO',
                 'phone' => $item->person->phone,
                 'email' => $item->person->email,
+
+
                 'ruc' => $item->mype->ruc,
                 'region' => $item->mype->region->name,
                 'province' => $item->mype->province->name,
@@ -340,23 +358,22 @@ class RutaDigitalController extends Controller
         $user_role = getUserRole();
         $role_array = $user_role['role_id'];
 
-        if (in_array(1, $role_array) || in_array(5, $role_array) || in_array(2, $role_array)) {
-            $digitalroute = Digitalroute::find($id);
 
-            if ($digitalroute) {
-                $digitalroute->status = $digitalroute->status === 0 ? 1 : 0;
-                $digitalroute->save();
+        $digitalroute = Digitalroute::find($id);
 
-                return response()->json([
-                    'message' => 'El estado ha sido cambiado',
-                    'status' => 200
-                ]);
-            }
+        if ($digitalroute) {
+            $digitalroute->status = $digitalroute->status === 0 ? 1 : 0;
+            $digitalroute->save();
 
             return response()->json([
-                'message' => 'No se encontró el registro',
-                'status' => 404
+                'message' => 'El estado ha sido cambiado',
+                'status' => 200
             ]);
         }
+
+        return response()->json([
+            'message' => 'No se encontró el registro',
+            'status' => 404
+        ]);
     }
 }

@@ -21,6 +21,7 @@ class DownloadDigitalRouterController extends Controller
 
         $data = collect($request->all());
 
+
         // if (in_array(1, $role_array) || in_array(5, $role_array)) {
         //     // Roles 1 y 5 pueden ver todos los registros, no aplicamos filtro adicional
         // } elseif (in_array(2, $role_array) || in_array(7, $role_array)) {
@@ -41,7 +42,9 @@ class DownloadDigitalRouterController extends Controller
                 'asesor_documentnumber' => $item['asesor_documentnumber'] ?? '',
                 'asesor_name' => $item['asesor_name'] ?? '',
                 'asesor_cde' => $item['asesor_cde'] ?? '',
+
                 'supervisador' => $item['supervisador'] ?? '',
+
                 'documentnumber' => $item['documentnumber'] ?? '',
                 'typedocument' => $item['typedocument'] ?? '',
                 'country' => $item['country'] ?? '',

@@ -555,64 +555,64 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 
 
 
-CREATE TABLE trainingSpecialists (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    ocupation VARCHAR(100) NOT NULL,
-    color VARCHAR(7) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+-- CREATE TABLE trainingSpecialists (
+--     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(100) NOT NULL,
+--     ocupation VARCHAR(100) NOT NULL,
+--     color VARCHAR(7) NOT NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- );
 
-CREATE TABLE trainingDimensions (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
-
-CREATE TABLE trainingMetas (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    month DATE NOT NULL,          
-    capacitaciones INT UNSIGNED NOT NULL,  
-    participantes INT UNSIGNED NOT NULL,   
-    empresas INT UNSIGNED NOT NULL,        
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+-- CREATE TABLE trainingDimensions (
+--     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(100) NOT NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- );
 
 
-CREATE TABLE trainings (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+-- CREATE TABLE trainingMetas (
+--     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     month DATE NOT NULL,          
+--     capacitaciones INT UNSIGNED NOT NULL,  
+--     participantes INT UNSIGNED NOT NULL,   
+--     empresas INT UNSIGNED NOT NULL,        
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- );
+
+
+-- CREATE TABLE trainings (
+--     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     
-    meta_id INT UNSIGNED NOT NULL,
-    especialista_id INT UNSIGNED NOT NULL,
-    dimension_id INT UNSIGNED NOT NULL,
+--     meta_id INT UNSIGNED NOT NULL,
+--     especialista_id INT UNSIGNED NOT NULL,
+--     dimension_id INT UNSIGNED NOT NULL,
 
-    fecha DATE NOT NULL,
-    horaInicio TIME NOT NULL,
-    horaFin TIME NOT NULL,
+--     fecha DATE NOT NULL,
+--     horaInicio TIME NOT NULL,
+--     horaFin TIME NOT NULL,
 
-    modalidad TINYINT NOT NULL COMMENT '1=Presencial, 2=Virtual, 3=Mixto',
-    tema VARCHAR(255) NOT NULL,
-    lugar VARCHAR(255),
-    participantes INT UNSIGNED DEFAULT 0,
-    empresas INT UNSIGNED DEFAULT 0,
-    estado TINYINT NOT NULL COMMENT '1=Programada, 2=En curso, 3=Completado, 4=Cancelado',
-    coordinador VARCHAR(150),
-    observaciones TEXT,
+--     modalidad TINYINT NOT NULL COMMENT '1=Presencial, 2=Virtual, 3=Mixto',
+--     tema VARCHAR(255) NOT NULL,
+--     lugar VARCHAR(255),
+--     participantes INT UNSIGNED DEFAULT 0,
+--     empresas INT UNSIGNED DEFAULT 0,
+--     estado TINYINT NOT NULL COMMENT '1=Programada, 2=En curso, 3=Completado, 4=Cancelado',
+--     coordinador VARCHAR(150),
+--     observaciones TEXT,
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_trainings_meta 
-        FOREIGN KEY (meta_id) REFERENCES trainingMetas(id),
-    CONSTRAINT fk_trainings_especialista 
-        FOREIGN KEY (especialista_id) REFERENCES trainingSpecialists(id),
-    CONSTRAINT fk_trainings_dimension 
-        FOREIGN KEY (dimension_id) REFERENCES trainingDimensions(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--     CONSTRAINT fk_trainings_meta 
+--         FOREIGN KEY (meta_id) REFERENCES trainingMetas(id),
+--     CONSTRAINT fk_trainings_especialista 
+--         FOREIGN KEY (especialista_id) REFERENCES trainingSpecialists(id),
+--     CONSTRAINT fk_trainings_dimension 
+--         FOREIGN KEY (dimension_id) REFERENCES trainingDimensions(id)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\Attendance\AttendanceController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Event\PublicEventsController;
 use App\Http\Controllers\Fair\FairController;
+use App\Http\Controllers\Training\TrainingController;
 
 Route::controller(PublicEventsController::class)->group(function () {
 
@@ -25,5 +26,27 @@ Route::controller(FairController::class)->group(function () {
 
 Route::controller(AttendanceController::class)->group(function () {
 
-    Route::post('attendance-present',               'userPresent');
+    Route::post('attendance-present', 'userPresent');
+});
+
+
+
+// DASHBOARD - SERGIO - training
+Route::controller(TrainingController::class)->group(function () {
+
+    Route::get('meeting-monthly-goals/{year}/{month}', 'meetingMonthlyGoals');
+
+    Route::get('annual-summary/{year}', 'annualSummary');
+
+    Route::get('breakdown-by-month/{year}', 'breakdownByMonth');
+
+    Route::get('calendar-events', 'calendarEvents');
+
+    Route::get('top-especialistas', 'topEspecialistas');
+
+    Route::get('estadisticas-dimensiones', 'estadisticasDimensiones');
+
+    Route::get('estadisticas-modalidad', 'estadisticasModalidad');
+
+    Route::get('estadisticas-trainings', 'estadisticasTrainings');
 });
