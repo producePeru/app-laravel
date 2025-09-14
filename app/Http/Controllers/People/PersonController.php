@@ -23,12 +23,12 @@ class PersonController extends Controller
     {
         $permission = getPermission('empresarios-ugo');
 
-        if (!$permission['hasPermission']) {
-            return response()->json([
-                'message' => 'No tienes permiso para acceder a esta sección',
-                'status' => 403
-            ]);
-        }
+        // if (!$permission['hasPermission']) {
+        //     return response()->json([
+        //         'message' => 'No tienes permiso para acceder a esta sección',
+        //         'status' => 403
+        //     ]);
+        // }
 
         $filters = [
             'asesor'    => $request->input('asesor'),

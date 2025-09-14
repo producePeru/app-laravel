@@ -173,8 +173,15 @@ Route::prefix('download')->middleware('auth:sanctum')->group(function () {
 Route::prefix('questionnaire')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/questionnaire.php';
 });
-Route::prefix('businessman')->group(function () {
+
+
+Route::prefix('businessman')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/businessman.php';
+});
+
+
+Route::prefix('training')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/training.php';
 });
 
 
@@ -499,6 +506,10 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
 
     Route::get('type-taxpayer', [SelectController::class, 'getTaxpayerTypes']);         // tipo de contribuyente
     Route::get('activity-by-rubro/{id}', [SelectController::class, 'getActivities']);
+
+    Route::get('training-dimensions', [SelectController::class, 'getTrainingDimensions']);
+    Route::get('training-metas', [SelectController::class, 'getTrainingMetas']);
+    Route::get('training-specialist', [SelectController::class, 'getTrainingSpecialist']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
@@ -681,8 +692,6 @@ Route::group(['prefix' => 'pp03', 'namespace' => 'App\Http\Controllers', 'middle
 //     Route::post('upload-image',                     [ImageController::class, 'upload']);
 //     Route::put('origin-image/{id}',                 [ImageController::class, 'setOriginImage']);
 // });
-
-
 
 
 Route::get('/debug-auth', function () {
