@@ -28,7 +28,15 @@ class DownloadAttendanceController extends Controller
 
         try {
 
-            $filters = $request->query();
+            $filters = [
+                'name'      => $request->input('name'),
+                'dateStart' => $request->input('dateStart'),
+                'dateEnd'   => $request->input('dateEnd'),
+                'year'      => $request->input('year'),
+                'orderby'   => $request->input('orderby'),
+                'asesor'    => $request->input('asesor')
+            ];
+
 
             // $userRole = getUserRole();
             // $roleIds  = $userRole['role_id'];
@@ -67,8 +75,11 @@ class DownloadAttendanceController extends Controller
                         'description' => $item->description ?? null,
                         'created_at' => Carbon::parse($item->created_at)->format('d/m/Y'),
 
-                        'link_participantes' => 'https://programa.soporte-pnte.com/admin/asistencia/inscritos/' . $item->slug,
-                        'link_registro_participantes' => 'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
+                        'link_participantes' => ' https://programa.soporte-pnte.com/admin/ugo/eventos-inscritos/' . $item->slug,
+
+                        'link_registro_participantes' => $item->eventsoffice_id == 3 ?
+                            'https://inscripcion.soporte-pnte.com/fortalece-tu-mercado/' . $item->slug :
+                            'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
 
 
                     ];
