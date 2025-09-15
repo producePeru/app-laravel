@@ -231,6 +231,7 @@ class EventsController extends Controller
             'dateStart' => $request->input('dateStart'),
             'dateEnd'   => $request->input('dateEnd'),
             'offices'   => $request->input('offices'),
+            'type'      => $request->input('type')
         ];
 
         $query = Event::query();

@@ -15,7 +15,15 @@ class DownloadEventsController extends Controller
     {
         try {
 
-            $filters = $request->query();
+            $filters = [
+                'name'      => $request->input('name'),
+                'year'      => $request->input('year'),
+                // 'asesor'    => $request->input('asesor'),
+                'dateStart' => $request->input('dateStart'),
+                'dateEnd'   => $request->input('dateEnd'),
+                'offices'   => $request->input('offices'),
+                'type'      => $request->input('type')
+            ];
 
             $userRole = getUserRole();
             $roleIds  = $userRole['role_id'];
