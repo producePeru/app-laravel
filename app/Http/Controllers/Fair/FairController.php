@@ -17,6 +17,33 @@ use Illuminate\Support\Facades\Storage;
 
 class FairController extends Controller
 {
+
+    public function cyberWowList(Request $request)
+    {
+        $filters = [
+            'year'      =>  $request->input('year'),
+            'startDate' =>  $request->input('dateStart'),
+            'endDate'   =>  $request->input('dateEnd'),
+            'name'      =>  $request->input('name'),
+            'orderby'   =>  $request->input('orderby'),
+        ];
+
+        $query = Fair::query();
+
+        $query->where('fairtype_id', 2);
+
+        $query->withItems($filters);
+
+        $items = $query->paginate(100)->through(function ($item) {
+            return $this->mapItems($item);
+        });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
     public function sedList(Request $request)
     {
         $filters = [

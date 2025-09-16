@@ -7,6 +7,8 @@ use App\Http\Controllers\Event\UgsePostulanteController;
 Route::controller(FairController::class)->group(function () {
 
     Route::get('sed', 'sedList');
+
+    Route::get('cyber-wow', 'cyberWowList');
 });
 
 Route::controller(UgsePostulanteController::class)->group(function () {
