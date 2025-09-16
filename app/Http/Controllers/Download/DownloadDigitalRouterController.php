@@ -57,6 +57,9 @@ class DownloadDigitalRouterController extends Controller
                 'email' => $item['email'] ?? '',
 
                 'ruc' => $item['ruc'] ?? '',
+                'comercialName' => $item['comercialName'] ?? '',
+                'socialReason' => $item['socialReason'] ?? '',
+
                 'region' => $item['region'] ?? '',
                 'province' => $item['province'] ?? '',
                 'district' => $item['district'] ?? '',

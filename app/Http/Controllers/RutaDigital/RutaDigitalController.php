@@ -336,6 +336,9 @@ class RutaDigitalController extends Controller
 
 
                 'ruc' => $item->mype->ruc,
+                'comercialName' => $item->mype->comercialName ?? '-',
+                'socialReason' => $item->mype->socialReason ?? '-',
+
                 'region' => $item->mype->region->name,
                 'province' => $item->mype->province->name,
                 'district' => $item->mype->district->name,
