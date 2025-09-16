@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreFormalization10Request;
 use Illuminate\Http\Request;
 use App\Models\Formalization10;
+use App\Models\Formalization20;
 use Illuminate\Support\Facades\Auth;
 
 class Formalization10Controller extends Controller

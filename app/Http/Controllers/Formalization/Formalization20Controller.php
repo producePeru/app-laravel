@@ -7,6 +7,7 @@ use App\Http\Requests\StoreFormalization20Request;
 use Illuminate\Http\Request;
 use App\Models\Formalization20;
 use App\Models\Mype;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class Formalization20Controller extends Controller
@@ -219,5 +220,87 @@ class Formalization20Controller extends Controller
         $item->delete();
 
         return response()->json(['message' => 'Registro eliminado correctamente'], 200);
+    }
+
+
+    public function updateValueRuc20(Request $request, $id)
+    {
+        try {
+            // 1) Usuario autenticado
+            $userId = Auth::id();
+            if (!$userId) {
+                return response()->json(['message' => 'No autenticado'], 401);
+            }
+
+            // 2) Buscar registro
+            $f10 = Formalization20::find($id);
+            if (!$f10) {
+                return response()->json(['message' => 'No encontrado'], 404);
+            }
+
+            // 3) Validación
+            $validated = $request->validate([
+                'ruc'                  => 'nullable|digits:11',
+                'regime_id'            => 'required|integer',
+                'nameMype'             => 'required|string|max:255',
+                'city_id'              => 'required|integer',
+                'province_id'          => 'required|integer',
+                'district_id'          => 'required|integer',
+                'address'              => 'nullable|string|max:255',
+                'modality_id'          => 'required|integer',
+                'economicsector_id'    => 'required|integer',
+                'comercialactivity_id' => 'required|integer',
+                'numbernotary'         => 'nullable|string|max:50',
+                'notary_id'            => 'nullable|integer',
+                'dateReception'        => 'required|date',
+                'dateTramite'          => 'required|date',
+                'isbic'                => 'nullable|in:SI,NO',
+                'montocapital'         => 'nullable|numeric',
+                'typecapital_id'       => 'nullable|integer',
+            ]);
+
+            // 4) Preparar data para update
+            $data = [
+                'ruc'                  => $validated['ruc'] ?? null,
+                'regime_id'            => $validated['regime_id'],
+                'nameMype'             => $validated['nameMype'],
+                'city_id'              => $validated['city_id'],
+                'province_id'          => $validated['province_id'],
+                'district_id'          => $validated['district_id'],
+                'address'              => $validated['address'] ?? null,
+                'modality_id'          => $validated['modality_id'],
+                'economicsector_id'    => $validated['economicsector_id'],
+                'comercialactivity_id' => $validated['comercialactivity_id'],
+                'numbernotary'         => $validated['numbernotary'] ?? null,
+                'notary_id'            => $validated['notary_id'] ?? null,
+                'dateReception'        => $validated['dateReception'],
+                'dateTramite'          => $validated['dateTramite'],
+                'isbic'                => $validated['isbic'] ?? null,
+                'montocapital'         => $validated['montocapital'] ?? null,
+                'typecapital_id'       => $validated['typecapital_id'] ?? null,
+                'userupdated_id '      => $userId, // 👈 del usuario autenticado
+            ];
+
+            // 5) Actualizar registro
+            $f10->update($data);
+
+            return response()->json([
+                'message' => 'Formalización actualizada correctamente',
+                'status'  => 200,
+                'data'    => $f10
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors'  => $e->errors(),
+                'status'  => 422,
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error interno en el servidor',
+                'error'   => $e->getMessage(),
+                'status'  => 500,
+            ], 500);
+        }
     }
 }

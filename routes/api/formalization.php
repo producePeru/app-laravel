@@ -25,6 +25,8 @@ Route::controller(Formalization10Controller::class)->group(function () {
 Route::controller(Formalization20Controller::class)->group(function () {
 
     Route::post('create-ruc20', 'storeRuc20');
+
+    Route::put('update-values-ruc-20/{id}', 'updateValueRuc20');
 });
 
 
