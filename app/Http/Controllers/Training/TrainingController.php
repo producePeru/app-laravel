@@ -81,10 +81,10 @@ class TrainingController extends Controller
         // ✅ Convertir ISO -> HH:mm:ss
         $data = $request->all();
         if (!empty($data['horaInicio'])) {
-            $data['horaInicio'] = Carbon::parse($data['horaInicio'])->format('H:i:s');
+            $data['horaInicio'] = Carbon::parse($data['horaInicio'])->format('H:i');
         }
         if (!empty($data['horaFin'])) {
-            $data['horaFin'] = Carbon::parse($data['horaFin'])->format('H:i:s');
+            $data['horaFin'] = Carbon::parse($data['horaFin'])->format('H:i');
         }
 
         $training = Training::create($data);
