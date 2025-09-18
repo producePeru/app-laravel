@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Event;
 use App\Http\Controllers\Controller;
 use App\Models\Fair;
 use App\Mail\FairSedInfoMail;
+use App\Models\CyberwowParticipant;
+use App\Models\FairPostulate;
 use App\Models\UgsePostulante;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
@@ -55,7 +57,7 @@ class UgsePostulanteController extends Controller
         ]);
 
         $postulantes = $query->paginate(150)->through(function ($item) {
-            return $this->mapEvents($item);
+            return $this->mapPostulantes($item);
         });
 
         return response()->json([
@@ -673,5 +675,152 @@ class UgsePostulanteController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+
+
+    // ******** Cyber-wow
+
+    // cyberwow registra un nuevo evento
+    public function cyberWowRegisterEvent(Request $request)
+    {
+        // 1) Validar datos mínimos
+        $validated = $request->validate([
+            'title'         => 'required|string|max:255',
+            'description'   => 'nullable|string',
+            'fairtype_id'   => 'required|integer|exists:fairtypes,id',
+            'modality_id'   => 'required|integer|exists:modalities,id',
+            'startDate'     => 'required|date',
+            'endDate'       => 'required|date|after_or_equal:startDate',
+            'metaMypes'     => 'nullable|integer|min:0',
+            'city_id'       => 'nullable|integer|exists:cities,id',
+            'fecha'         => 'nullable|date',
+            'place'         => 'nullable|string|max:255',
+            'hours'         => 'nullable|string|max:255',
+            'msgEndForm'    => 'nullable|string',
+            'msgSendEmail'  => 'nullable|string',
+            'image_id'      => 'nullable|integer|exists:images,id',
+        ]);
+
+        try {
+            // 2) Registrar el evento en fairs
+            $fair = Fair::create([
+                'title'        => $validated['title'],
+                'description'  => $validated['description'] ?? null,
+                'fairtype_id'  => $validated['fairtype_id'],
+                'modality_id'  => $validated['modality_id'],
+                'startDate'    => $validated['startDate'],
+                'endDate'      => $validated['endDate'],
+                'metaMypes'    => $validated['metaMypes'] ?? null,
+                'city_id'      => $validated['city_id'] ?? null,
+                'fecha'        => $validated['fecha'] ?? null,
+                'place'        => $validated['place'] ?? null,
+                'hours'        => $validated['hours'] ?? null,
+                'msgEndForm'   => $validated['msgEndForm'] ?? null,
+                'msgSendEmail' => $validated['msgSendEmail'] ?? null,
+                'image_id'     => $validated['image_id'] ?? null,
+                'slug'         => Str::slug($validated['title']) . '-' . Str::uuid(), // generar slug único
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Evento CyberWow registrado correctamente',
+                'data'    => $fair,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar el evento',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // cyberwow listame todos los asistentes
+
+    public function cyberWowListAssistants(Request $request, $slug)
+    {
+        // 1) Buscar la feria por slug
+        $fair = Fair::where('slug', $slug)->firstOrFail();
+
+        // 2) Armar query base con las relaciones definidas en tu modelo
+        $query = CyberwowParticipant::with([
+            'region',
+            'provincia',
+            'distrito',
+            'sectorEconomico',
+            'actividadComercial',
+            'rubro',
+            'tipoDocumento',
+            'genero',
+            'pais',
+            'medioEntero'
+        ])->where('event_id', $fair->id)
+            ->orderBy('created_at', 'desc');
+
+        // 3) Aplicar filtros dinámicos
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('lastname', 'LIKE', "%{$search}%")
+                    ->orWhere('middlename', 'LIKE', "%{$search}%")
+                    ->orWhere('documentnumber', 'LIKE', "%{$search}%")
+                    ->orWhere('ruc', 'LIKE', "%{$search}%")
+                    ->orWhere('razonSocial', 'LIKE', "%{$search}%")
+                    ->orWhere('nombreComercial', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // 4) Paginación de 100 en 100 con transformación
+        $participants = $query->paginate(100)->through(function ($item) {
+            return $this->mapParticipant($item);
+        });
+
+        // 5) Respuesta JSON estructurada
+        return response()->json([
+            'data'   => $participants,
+            'event'  => [
+                'id'   => $fair->id,
+                'name' => $fair->title,
+            ],
+            'status' => 200,
+        ]);
+    }
+
+    private function mapParticipant($item)
+    {
+        return [
+            'id' => $item->id,
+            'documentnumber' => $item->documentnumber,
+            'lastname' => $item->lastname,
+            'middlename' => $item->middlename,
+            'name' => $item->name,
+            'phone' => $item->phone,
+            'email' => $item->email,
+            'sick' => $item->sick,
+
+            'ruc' => $item->ruc,
+            'razonSocial' => $item->razonSocial,
+            'nombreComercial' => $item->nombreComercial,
+            'socials' => $item->socials, // array gracias al cast
+
+            'sectorEconomico' => $item->sectorEconomico->name ?? null,
+            'actividadComercial' => $item->actividadComercial->name ?? null,
+            'rubro' => $item->rubro->name ?? null,
+
+            'city' => $item->region->name ?? null,
+            'province' => $item->provincia->name ?? null,
+            'district' => $item->distrito->name ?? null,
+
+            'tipoDocumento' => $item->tipoDocumento->name ?? null,
+            'genero' => $item->genero->name ?? null,
+            'pais' => $item->pais->name ?? null,
+            'medioEntero' => $item->medioEntero->name ?? null,
+
+            'created_at' => $item->created_at->format('d/m/Y H:i'),
+        ];
     }
 }

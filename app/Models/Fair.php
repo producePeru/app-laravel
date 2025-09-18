@@ -80,6 +80,11 @@ class Fair extends Model
         return $this->hasMany(UgsePostulante::class, 'event_id');
     }
 
+    public function postulantesWow()
+    {
+        return $this->hasMany(CyberwowParticipant::class, 'event_id');
+    }
+
 
     // SCOPE SEARCH
     public function scopeSearch($query, $search)
@@ -108,7 +113,7 @@ class Fair extends Model
             'region',
             'fairType',
             'image',
-        ])->withCount('postulantes');
+        ])->withCount(['postulantes', 'postulantesWow']);
 
 
         if (!empty($filters['name'])) {

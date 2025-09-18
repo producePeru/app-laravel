@@ -32,6 +32,7 @@ use PDF; // Alias para DomPDF (probablemente registrado en config/app.php como '
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class PublicEventsController extends Controller
 {
@@ -184,7 +185,7 @@ class PublicEventsController extends Controller
                     return response()->json([
                         'status' => 404,
                         'message' => 'No se pudo obtener información con los tokens disponibles'
-                    ], 404);
+                    ]);
                 }
             } else {
                 // Si se encuentra
@@ -447,5 +448,68 @@ class PublicEventsController extends Controller
             'data'    => $sedQuestion,
             'status'  => 200
         ], 200);
+    }
+
+
+
+
+
+
+    // preguntamos si el eveento existe
+
+    public function existEvent($slug, $typeId)
+    {
+        try {
+            $today = Carbon::now();
+
+            $fair = Fair::where('slug', $slug)->where('fairtype_id', $typeId)->first();
+
+            if ($fair) {
+                if ($today->gt(Carbon::parse($fair->endDate)->endOfDay())) {
+                    return response()->json([
+                        'data' => [
+                            'title' => '¡Evento Finalizado!',
+                            'message' => '
+                            El evento que estabas buscando ya ha caducado o no se encuentra disponible en este momento. </br>
+                            Pero no te detengas 🚀, </br>
+                            nuevas oportunidades están en camino.</br>
+                            Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos </br>
+                            para seguir fortaleciendo tu emprendimiento.
+                            ',
+                            'status' => 404
+                        ]
+                    ]);
+                }
+
+                return response()->json([
+                    'data' => [
+                        'slug' => $fair->slug,
+                        'title' => $fair->title,
+                        'subTitle' => $fair->subTitle,
+                        'description' => $fair->description,
+                        'modality' => $fair->modality,
+                        'typeFair' => $fair->fairtype_id,
+                        'fecha' => $fair->fecha,
+                        'place' => $fair->place,
+                        'schedule' => $fair->hours
+                    ],
+                    'status' => 200
+                ]);
+            }
+
+            return response()->json([
+                'data' => [
+                    'title' => 'No se encontró el evento.',
+                    'message' => 'No existe una feria con este registro.',
+                    'status' => 404
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los detalles del evento.',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
+        }
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Download\CyberWowParticipantesController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\Download\QuestionnarieController;
@@ -18,6 +19,11 @@ Route::controller(DownloadFormalizationsController::class)->group(function () {
 Route::controller(SedAsistentesController::class)->group(function () {
 
     Route::post('sed-asistentes/{slug}', 'exportList');
+});
+
+Route::controller(CyberWowParticipantesController::class)->group(function () {
+
+    Route::post('cyber-wow-participants/{slug}', 'exportList');
 });
 
 
