@@ -4,12 +4,11 @@ namespace App\Exports;
 
 use App\Models\Attendance;
 use Carbon\Carbon;
-use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
-class ActividadesExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
+class ActividadesExport implements FromCollection, WithHeadings, ShouldAutoSize
 {
     protected $year;
 
@@ -18,9 +17,9 @@ class ActividadesExport implements FromQuery, WithHeadings, WithMapping, ShouldA
         $this->year = $year;
     }
 
-    public function query()
+    public function collection()
     {
-        return Attendance::with([
+        $attendances = Attendance::with([
             'asesor:id,name,lastname,middlename',
             'pnte:id,name',
             'region:id,name',
@@ -30,35 +29,62 @@ class ActividadesExport implements FromQuery, WithHeadings, WithMapping, ShouldA
             'attendanceList.typedocument:id,name',
             'attendanceList.gender:id,avr',
             'attendanceList.economicsector:id,name'
-        ])->whereYear('created_at', $this->year)->orderBy('id', 'desc');
-    }
+        ])
+            ->whereYear('created_at', $this->year)
+            ->orderBy('id', 'desc')
+            ->get();
 
-    public function map($attendance): array
-    {
-        $rows = [];
+        $rows = collect();
 
-        foreach ($attendance->attendanceList as $asistente) {
-            $rows[] = [
-                $attendance->asesor ? $attendance->asesor->name . ' ' . $attendance->asesor->lastname . ' ' . $attendance->asesor->middlename : '-',
-                $attendance->pnte->name ?? '-',
-                $attendance->title ?? '-',
-                $attendance->startDate ? Carbon::parse($attendance->startDate)->format('d/m/Y') : '-',
-                $attendance->region->name ?? '-',
-                $attendance->provincia->name ?? '-',
-                $attendance->distrito->name ?? '-',
-                $attendance->address ?? '-',
-                $asistente->typedocument->name ?? '-',
-                $asistente->documentnumber ?? '-',
-                $asistente->lastname ?? '-',
-                $asistente->middlename ?? '-',
-                $asistente->name ?? '-',
-                $asistente->phone ?? '-',
-                $asistente->email ?? '-',
-                $asistente->gender->avr ?? '-',
-                $asistente->ruc ?? '-',
-                $asistente->comercialName ?? '-',
-                $asistente->economicsector->name ?? '-',
-            ];
+        foreach ($attendances as $attendance) {
+            // Si NO tiene asistentes, igual agregamos fila vacía
+            if ($attendance->attendanceList->isEmpty()) {
+                $rows->push([
+                    $attendance->asesor ? $attendance->asesor->name . ' ' . $attendance->asesor->lastname . ' ' . $attendance->asesor->middlename : '-',
+                    $attendance->pnte->name ?? '-',
+                    $attendance->title ?? '-',
+                    $attendance->startDate ? Carbon::parse($attendance->startDate)->format('d/m/Y') : '-',
+                    $attendance->region->name ?? '-',
+                    $attendance->provincia->name ?? '-',
+                    $attendance->distrito->name ?? '-',
+                    $attendance->address ?? '-',
+                    '--',
+                    '--',
+                    '--',
+                    '--',
+                    '--',
+                    '--',
+                    '--',
+                    '--',
+                    '--',
+                    '--',
+                    '--',
+                ]);
+            } else {
+                foreach ($attendance->attendanceList as $asistente) {
+                    $rows->push([
+                        $attendance->asesor ? $attendance->asesor->name . ' ' . $attendance->asesor->lastname . ' ' . $attendance->asesor->middlename : '-',
+                        $attendance->pnte->name ?? '-',
+                        $attendance->title ?? '-',
+                        $attendance->startDate ? Carbon::parse($attendance->startDate)->format('d/m/Y') : '-',
+                        $attendance->region->name ?? '-',
+                        $attendance->provincia->name ?? '-',
+                        $attendance->distrito->name ?? '-',
+                        $attendance->address ?? '-',
+                        $asistente->typedocument->name ?? '-',
+                        $asistente->documentnumber ?? '-',
+                        $asistente->lastname ?? '-',
+                        $asistente->middlename ?? '-',
+                        $asistente->name ?? '-',
+                        $asistente->phone ?? '-',
+                        $asistente->email ?? '-',
+                        $asistente->gender->avr ?? '-',
+                        $asistente->ruc ?? '-',
+                        $asistente->comercialName ?? '-',
+                        $asistente->economicsector->name ?? '-',
+                    ]);
+                }
+            }
         }
 
         return $rows;
