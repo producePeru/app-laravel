@@ -96,7 +96,7 @@ class FairController extends Controller
                 : $item->postulantes_wow_count,      // sed - cyberwow
             'metaMypes' => $item->metaMypes ?? null,
             'city_id' => $item->region->id ?? null,
-            'fecha' => $item->fecha ? Carbon::parse($item->fecha)->format('d/m/Y') : null,
+            // 'fecha' => $item->fecha ? Carbon::parse($item->fecha)->format('d/m/Y') : null,
             'city_name' => $item->region->name ?? null,
             'place' => $item->place ?? null,
             'hours' => $item->hours ?? null,

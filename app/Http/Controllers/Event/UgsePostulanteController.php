@@ -70,7 +70,7 @@ class UgsePostulanteController extends Controller
         ]);
     }
 
-    private function mapEvents($item)
+    private function mapPostulantes($item)
     {
         return [
             'id'                        => $item->id,
@@ -124,10 +124,10 @@ class UgsePostulanteController extends Controller
             'city_name'                 => $item->city->name ?? null,
 
 
-            // 'event' => $item->event ? [
-            //     'id'   => $item->event->id,
-            //     'name' => $item->event->title  // suponiendo que el evento tiene "title"
-            // ] : null,
+            'event' => $item->event ? [
+                'id'   => $item->event->id,
+                'name' => $item->event->title  // suponiendo que el evento tiene "title"
+            ] : null,
 
         ];
     }

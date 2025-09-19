@@ -10,7 +10,7 @@ class CyberwowParticipant extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'cyberwowParticipants';
+    protected $table = 'cyberwowparticipants';
 
     protected $fillable = [
         'event_id',
