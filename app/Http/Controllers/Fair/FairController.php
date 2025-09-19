@@ -17,6 +17,33 @@ use Illuminate\Support\Facades\Storage;
 
 class FairController extends Controller
 {
+
+    public function cyberWowList(Request $request)
+    {
+        $filters = [
+            'year'      =>  $request->input('year'),
+            'startDate' =>  $request->input('dateStart'),
+            'endDate'   =>  $request->input('dateEnd'),
+            'name'      =>  $request->input('name'),
+            'orderby'   =>  $request->input('orderby'),
+        ];
+
+        $query = Fair::query();
+
+        $query->where('fairtype_id', 2);
+
+        $query->withItems($filters);
+
+        $items = $query->paginate(100)->through(function ($item) {
+            return $this->mapItems($item);
+        });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
     public function sedList(Request $request)
     {
         $filters = [
@@ -64,10 +91,12 @@ class FairController extends Controller
             'endDate' => $item->endDate ?? null,
             'dateStartFormat' => $item->startDate ? Carbon::parse($item->startDate)->format('d/m/Y') : null,
             'dateEndFormat' => $item->endDate ? Carbon::parse($item->endDate)->format('d/m/Y') : null,
-            'registered' => $item->postulantes_count,
+            'registered' => $item->fairType == '1'
+                ? $item->postulantes_count
+                : $item->postulantes_wow_count,      // sed - cyberwow
             'metaMypes' => $item->metaMypes ?? null,
             'city_id' => $item->region->id ?? null,
-            'fecha' => $item->fecha ? Carbon::parse($item->fecha)->format('d/m/Y') : null,
+            // 'fecha' => $item->fecha ? Carbon::parse($item->fecha)->format('d/m/Y') : null,
             'city_name' => $item->region->name ?? null,
             'place' => $item->place ?? null,
             'hours' => $item->hours ?? null,

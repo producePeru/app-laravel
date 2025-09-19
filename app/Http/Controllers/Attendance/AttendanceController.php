@@ -12,6 +12,7 @@ use App\Models\Event;
 use App\Models\Province;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use mysqli;
@@ -43,7 +44,7 @@ class AttendanceController extends Controller
 
         $query->withItems($filters);
 
-        $query->withItems($filters);
+        // $query->withItems($filters);
 
         $items = $query->paginate(150)->through(function ($item) {
             return $this->mapAdvisory($item);
@@ -500,5 +501,101 @@ class AttendanceController extends Controller
                 'status' => 500
             ], 500);
         }
+    }
+
+
+
+
+
+
+
+
+    // LISTA DE LOS ASESORES - EVENTOS ASIGNADOS A ELLOS 
+    public function eventsAssignedAdvisor()
+    {
+        $userId = Auth::id();
+
+
+        // return $userId;
+
+        // Base query con relación si quieres cargar algo más
+        $query = Attendance::where('asesorId', $userId)
+            ->orderBy('id', 'desc');
+
+        // Paginar y mapear
+        $items = $query->paginate(100)->through(function ($item) {
+            return $this->mapAdvisories($item);
+        });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
+    private function mapAdvisories($item)
+    {
+        return [
+            'id' => $item->id,
+            'attendance_list_count' => $item->attendanceList?->count() ?? 0,
+            'eventsoffice_id' => $item->eventsoffice_id,
+            'slug' => $item->slug,
+            'title' => strtoupper($item->title),
+            'finally' => $item->finally,
+            'pnte' => $item->pnte->name,
+            'id_pnte' => $item->pnte->id,
+            'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
+            'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
+            'startDate2' => $item->startDate,
+            'endDate2' => $item->endDate,
+            'modality' => $item->modality,
+            'city' => $item->region->name ?? null,
+            'province' => $item->provincia->name ?? null,
+            'district' => $item->distrito->name ?? null,
+            'city_id' => $item->region->id ?? null,
+            'address' => $item->address ?? null,
+            'fecha' => $item->fecha ?? null,
+            'hora' => $item->hora ?? null,
+            'mercado' => $item->mercado ?? null,
+            'province_id' => $item->provincia->id ?? null,
+            'district_id' => $item->distrito->id ?? null,
+            // 'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
+            'people_id' => $item->asesor->id ?? null,
+            'asesor' => $item->asesor
+                ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
+                : null,
+            'description' => $item->description ?? null,
+            'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
+
+        ];
+    }
+
+    // dashboard evento del asesor
+    public function eventsAssignedDashboard()
+    {
+        $userId = Auth::id();
+
+        // Total de eventos asignados al asesor
+        $totalEventos = Attendance::where('asesorId', $userId)->count();
+
+        // Total de inscritos (sumando todos los eventos del asesor)
+        $totalInscritos = Attendance::where('asesorId', $userId)
+            ->withCount('attendanceList')
+            ->get()
+            ->sum('attendance_list_count');
+
+        // Total de regiones distintas (city_id)
+        $totalRegiones = Attendance::where('asesorId', $userId)
+            ->distinct('city_id')
+            ->count('city_id');
+
+        return response()->json([
+            'status' => 200,
+            'data' => [
+                'total_eventos'   => $totalEventos,
+                'total_inscritos' => $totalInscritos,
+                'total_regiones'  => $totalRegiones,
+            ]
+        ]);
     }
 }

@@ -101,7 +101,8 @@ class Attendance extends Model
         if (!empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('title', 'like', '%' . $filters['name'] . '%')
-                    ->orWhere('description', 'like', '%' . $filters['name'] . '%');
+                    ->orWhere('description', 'like', '%' . $filters['name'] . '%')
+                    ->orWhere('slug', 'like', '%' . $filters['name'] . '%');
             });
         }
 
@@ -133,5 +134,23 @@ class Attendance extends Model
 
             $query->orderBy('created_at', 'desc');
         }
+    }
+
+
+
+
+    // eventos asignados a un asesor
+
+    public function scopeWithEvents($query, $filters)
+    {
+        $query = $query->with([
+            'attendanceList',
+            'region',
+            'provincia',
+            'distrito',
+            'profile:id,user_id,name,lastname,middlename',
+            'asesor',
+            'pnte'
+        ])->withCount('attendanceList');
     }
 }

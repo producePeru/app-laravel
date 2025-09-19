@@ -18,6 +18,13 @@ Route::controller(AttendanceController::class)->group(function () {
     Route::put('update-participant-data-ugo-event/{idParticipant}', 'updateParticipantDataUgoEvent');
 
     Route::delete('remove-participant-ugo-event/{idParticipant}', 'removeParticipantUgoEvent');
+
+
+    // Eventos de los asesores
+
+    Route::get('events-assigned-advisor', 'eventsAssignedAdvisor');
+
+    Route::get('events-assigned-dashboard', 'eventsAssignedDashboard');
 });
 
 

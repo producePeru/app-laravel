@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Attendance\AttendanceController;
+use App\Http\Controllers\Event\CyberwowParticipantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Event\PublicEventsController;
 use App\Http\Controllers\Fair\FairController;
@@ -13,6 +14,8 @@ Route::controller(PublicEventsController::class)->group(function () {
     Route::post('consult-businessman-dni/{dni}', 'dniConsultBusinessman');
 
     Route::post('questions-answers-formalization', 'formalizationsQuestionsAndAnswers');
+
+    Route::get('exist-event/{slug}/{typeId}', 'existEvent');          // existe formulario de wow
 });
 
 
@@ -49,4 +52,11 @@ Route::controller(TrainingController::class)->group(function () {
     Route::get('estadisticas-modalidad', 'estadisticasModalidad');
 
     Route::get('estadisticas-trainings', 'estadisticasTrainings');
+});
+
+
+
+Route::controller(CyberwowParticipantController::class)->group(function () {
+
+    Route::post('register-cyber-wow', 'store');
 });

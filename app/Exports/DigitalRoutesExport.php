@@ -47,14 +47,13 @@ class DigitalRoutesExport implements FromCollection, WithHeadings, WithTitle, Wi
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:X1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('e9e9e9');
+        $sheet->getStyle('A1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('e9e9e9');
 
-        $sheet->getStyle('A1:X1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:Z1')->getFont()->setBold(true);
 
         $sheet->getRowDimension(1)->setRowHeight(20);
 
-        $sheet->getStyle('A1:X1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
-
+        $sheet->getStyle('A1:Z1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
     }
 
     public function collection()
@@ -84,7 +83,10 @@ class DigitalRoutesExport implements FromCollection, WithHeadings, WithTitle, Wi
             'CORREO',
 
             'NÚMERO DE RUC',
-            'REGION DE LA MYPE',
+            'NOMBRE COMERCIAL',
+            'RAZÓN SOCIAL',
+
+            'REGIÓN DE LA MYPE',
             'PROVINCIA DE LA MYPE',
             'DISTRITO DE LA MYPE',
             'DIRECCIÓN',
@@ -94,4 +96,3 @@ class DigitalRoutesExport implements FromCollection, WithHeadings, WithTitle, Wi
         ];
     }
 }
-

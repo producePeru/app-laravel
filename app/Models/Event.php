@@ -28,7 +28,7 @@ class Event extends Model
         'description',
         'nameUser',
         'link',
-    
+
         'gps',
         'start',
         'end',
@@ -80,6 +80,11 @@ class Event extends Model
             }
         }
 
+        if (!empty($filters['type'])) {
+            $types = is_array($filters['type']) ? $filters['type'] : [$filters['type']];
+            $query->whereIn('id_pnte', $types);
+        }
+
         if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
             $dateStart = Carbon::createFromFormat('Y/m/d', $filters['dateStart'])->format('Y-m-d');
             $dateEnd = Carbon::createFromFormat('Y/m/d', $filters['dateEnd'])->format('Y-m-d');
@@ -94,6 +99,7 @@ class Event extends Model
             });
         }
     }
+
 
     // public function recurrences()
     // {

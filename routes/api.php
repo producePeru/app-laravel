@@ -595,7 +595,7 @@ Route::group(['prefix' => 'pdf', 'namespace' => 'App\Http\Controllers', 'middlew
 
 Route::group(['prefix' => 'fair', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::post('create',                       [FairController::class, 'create']);
-    // Route::get('list',                          [FairController::class, 'index']);
+    // Route::get('list',                          [FairController::class, 'sedList']);
 
 
     Route::put('update/{id}',                   [FairController::class, 'update']);
