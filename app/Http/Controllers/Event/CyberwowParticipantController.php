@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCyberwowParticipantRequest;
 use App\Models\CyberwowParticipant;
 use App\Models\Fair;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
 class CyberwowParticipantController extends Controller
@@ -63,7 +64,7 @@ class CyberwowParticipantController extends Controller
                 'sick' => $request->sick ?? 'no',
                 'phone' => $request->phone,
                 'email' => $request->email,
-                'birthday' => $request->birthday,
+                'birthday' => $this->normalizeDate($request->birthday),
                 'age' => $request->age,
                 'country_id' => $request->country_id,
                 'question_1' => $request->question_1,
@@ -122,5 +123,29 @@ class CyberwowParticipantController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    private function normalizeDate($date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $formats = ['d/m/Y', 'Y-m-d', 'Y/m/d']; // formatos que recibes
+
+        foreach ($formats as $format) {
+            try {
+                return Carbon::createFromFormat($format, $date)->format('Y-m-d');
+            } catch (\Exception $e) {
+                continue; // intenta con el siguiente formato
+            }
+        }
+
+        // último intento: parsear automáticamente
+        try {
+            return Carbon::parse($date)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null; // si no puede parsear
+        }
     }
 }
