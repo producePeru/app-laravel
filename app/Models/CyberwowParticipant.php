@@ -38,6 +38,7 @@ class CyberwowParticipant extends Model
         'birthday',
         'age',
         'country_id',               // pais
+        'cargo',
         'question_1',
         'question_2',
         'question_3',
@@ -90,7 +91,7 @@ class CyberwowParticipant extends Model
 
     public function tipoDocumento()
     {
-        return $this->belongsTo(TypeDocument::class, 'typedocument_id');
+        return $this->belongsTo(Typedocument::class, 'typedocument_id');
     }
 
     public function genero()

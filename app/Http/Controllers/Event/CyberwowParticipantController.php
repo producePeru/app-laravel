@@ -67,6 +67,7 @@ class CyberwowParticipantController extends Controller
                 'birthday' => $this->normalizeDate($request->birthday),
                 'age' => $request->age,
                 'country_id' => $request->country_id,
+                'cargo' => $request->cargo,
                 'question_1' => $request->question_1,
                 'question_2' => $request->question_2,
                 'question_3' => $request->question_3,

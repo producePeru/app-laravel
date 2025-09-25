@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CyberwowParticipant;
 use App\Models\Fair;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class CyberWowParticipantesController extends Controller
 {
@@ -20,8 +21,8 @@ class CyberWowParticipantesController extends Controller
                 'provincia',
                 'distrito',
                 'sectorEconomico',
-                'actividadComercial',
-                'rubro',
+                'actividadComercial:id,name',
+                'rubro:id,name',
                 'tipoDocumento',
                 'genero',
                 'pais',
@@ -46,9 +47,32 @@ class CyberWowParticipantesController extends Controller
 
             $postulantes = $query->get();
 
+            $rows = $postulantes->map(function ($item, $index) {
+                return [
+                    $index + 1,
+                    $item->ruc,
+                    $item->razonSocial,
+                    $item->nombreComercial,
+                    $item->region->name,
+                    $item->provincia->name,
+                    $item->distrito->name,
+                    $item->direccion,
+                    // 'web',
+                    // 'facebook',
+                    // 'instagram',
+                    $item->sectorEconomico->name,
+                    $item->rubro->name,
+                    $item->actividadComercial->name,
+                    $item->descripcion,
+
+                    $item->tipoDocumento->name,
+                    $item->documentnumber,
+                    $item
+                ];
+            });
 
 
-            return $postulantes;
+            return $rows;
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al exportar: ' . $e->getMessage()
