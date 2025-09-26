@@ -21,6 +21,8 @@ Route::controller(UgsePostulanteController::class)->group(function () {
     Route::get('cyber-wow-list-assistants/{slug}', 'cyberWowListAssistants');
 
     Route::post('cyber-wow-register-event', 'cyberWowRegisterEvent');
+
+    Route::delete('cyber-wow-delete-participant/{id}', 'cyberWowDeleteParticipant');
 });
 
 // events-ugse
