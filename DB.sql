@@ -617,68 +617,74 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 
 
 
+-- CREATE TABLE cyberwowParticipants (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     event_id BIGINT UNSIGNED NOT NULL, -- referencia a fairs.id
+    
+--     ruc VARCHAR(20) NOT NULL,
+--     razonSocial VARCHAR(255) NOT NULL,
+--     nombreComercial VARCHAR(255),
+
+--     city_id BIGINT UNSIGNED NOT NULL,
+--     province_id BIGINT UNSIGNED NOT NULL,
+--     district_id BIGINT UNSIGNED NOT NULL,
+--     direccion VARCHAR(255),
+
+--     economicsector_id BIGINT UNSIGNED NOT NULL,
+--     comercialactivity_id BIGINT UNSIGNED NOT NULL,
+--     rubro_id BIGINT UNSIGNED NOT NULL,
+--     descripcion TEXT,
+    
+--     socials JSON,
+
+--     typedocument_id BIGINT UNSIGNED NOT NULL,
+--     documentnumber VARCHAR(20) NOT NULL,
+--     lastname VARCHAR(100),
+--     middlename VARCHAR(100),
+--     name VARCHAR(100),
+--     gender_id BIGINT UNSIGNED NOT NULL,
+    
+--     sick VARCHAR(4) DEFAULT 'no',
+--     phone VARCHAR(10),
+--     email VARCHAR(150),
+--     birthday DATE,
+--     age INT CHECK (age BETWEEN 18 AND 100),
+--     country_id BIGINT UNSIGNED NOT NULL,
+
+--     question_1 VARCHAR(5),
+--     question_2 VARCHAR(5),
+--     question_3 VARCHAR(5),
+--     question_4 VARCHAR(5),
+--     question_5 VARCHAR(5),
+--     question_6 VARCHAR(5),
+--     question_7 VARCHAR(5),
+
+--     howKnowEvent_id BIGINT UNSIGNED NOT NULL,
+--     autorization TINYINT(1) NOT NULL DEFAULT 0,
+
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL,
+
+--     -- Relaciones (foreign keys)
+--     CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES fairs(id),
+--     CONSTRAINT fk_city FOREIGN KEY (city_id) REFERENCES cities(id),
+--     CONSTRAINT fk_province FOREIGN KEY (province_id) REFERENCES provinces(id),
+--     CONSTRAINT fk_district FOREIGN KEY (district_id) REFERENCES districts(id),
+--     CONSTRAINT fk_economicsector FOREIGN KEY (economicsector_id) REFERENCES economicsectors(id),
+--     CONSTRAINT fk_comercialactivity FOREIGN KEY (comercialactivity_id) REFERENCES activities(id),
+--     CONSTRAINT fk_typedocument FOREIGN KEY (typedocument_id) REFERENCES typedocuments(id),
+--     CONSTRAINT fk_gender FOREIGN KEY (gender_id) REFERENCES genders(id),
+--     CONSTRAINT fk_country FOREIGN KEY (country_id) REFERENCES countries(id),
+--     CONSTRAINT fk_howknow FOREIGN KEY (howKnowEvent_id) REFERENCES propagandamedia(id)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 
-
-CREATE TABLE cyberwowParticipants (
+CREATE TABLE cyberwowleader (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    event_id BIGINT UNSIGNED NOT NULL, -- referencia a fairs.id
-    
-    ruc VARCHAR(20) NOT NULL,
-    razonSocial VARCHAR(255) NOT NULL,
-    nombreComercial VARCHAR(255),
-
-    city_id BIGINT UNSIGNED NOT NULL,
-    province_id BIGINT UNSIGNED NOT NULL,
-    district_id BIGINT UNSIGNED NOT NULL,
-    direccion VARCHAR(255),
-
-    economicsector_id BIGINT UNSIGNED NOT NULL,
-    comercialactivity_id BIGINT UNSIGNED NOT NULL,
-    rubro_id BIGINT UNSIGNED NOT NULL,
-    descripcion TEXT,
-    
-    socials JSON,
-
-    typedocument_id BIGINT UNSIGNED NOT NULL,
-    documentnumber VARCHAR(20) NOT NULL,
-    lastname VARCHAR(100),
-    middlename VARCHAR(100),
-    name VARCHAR(100),
-    gender_id BIGINT UNSIGNED NOT NULL,
-    
-    sick VARCHAR(4) DEFAULT 'no',
-    phone VARCHAR(10),
-    email VARCHAR(150),
-    birthday DATE,
-    age INT CHECK (age BETWEEN 18 AND 100),
-    country_id BIGINT UNSIGNED NOT NULL,
-
-    question_1 VARCHAR(5),
-    question_2 VARCHAR(5),
-    question_3 VARCHAR(5),
-    question_4 VARCHAR(5),
-    question_5 VARCHAR(5),
-    question_6 VARCHAR(5),
-    question_7 VARCHAR(5),
-
-    howKnowEvent_id BIGINT UNSIGNED NOT NULL,
-    autorization TINYINT(1) NOT NULL DEFAULT 0,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-
-    -- Relaciones (foreign keys)
-    CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES fairs(id),
-    CONSTRAINT fk_city FOREIGN KEY (city_id) REFERENCES cities(id),
-    CONSTRAINT fk_province FOREIGN KEY (province_id) REFERENCES provinces(id),
-    CONSTRAINT fk_district FOREIGN KEY (district_id) REFERENCES districts(id),
-    CONSTRAINT fk_economicsector FOREIGN KEY (economicsector_id) REFERENCES economicsectors(id),
-    CONSTRAINT fk_comercialactivity FOREIGN KEY (comercialactivity_id) REFERENCES activities(id),
-    CONSTRAINT fk_typedocument FOREIGN KEY (typedocument_id) REFERENCES typedocuments(id),
-    CONSTRAINT fk_gender FOREIGN KEY (gender_id) REFERENCES genders(id),
-    CONSTRAINT fk_country FOREIGN KEY (country_id) REFERENCES countries(id),
-    CONSTRAINT fk_howknow FOREIGN KEY (howKnowEvent_id) REFERENCES propagandamedia(id)
+    user_id BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_cyberwowleader_user FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

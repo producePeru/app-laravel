@@ -420,7 +420,7 @@ class PersonController extends Controller
 
 
     // cleannds
-    public function registerOrUpdateBusinessman(Request $request)
+    public function registerOrUpdateBusinessman(Request $request, $id)
     {
         $authId = Auth::id();
 
@@ -517,6 +517,31 @@ class PersonController extends Controller
                 'message' => 'Ocurrió un error al obtener la información',
                 'error'   => $e->getMessage()
             ], 500);
+        }
+    }
+
+    // actualiza los datos
+    public function updateDataBusinessman(Request $request, $id)
+    {
+        try {
+            $person = People::find($id);
+
+            if (!$person) {
+                return response()->json(['message' => 'Persona no encontrada', 'status' => 404]);
+            }
+
+            // Verificar si el documentnumber ya existe
+            if (People::where('documentnumber', $request->input('documentnumber'))
+                ->where('id', '!=', $id) // Aseguramos que no sea el mismo registro
+                ->exists()
+            ) {
+                return response()->json(['message' => 'El número de documento ya existe. No se puede editar.', 'status' => 409]);
+            }
+
+            $person->update($request->all());
+            return response()->json(['message' => 'Datos actualizados correctamente', 'status' => 200]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al actualizar los datos: ' . $e->getMessage(), 'status' => 500]);
         }
     }
 }
