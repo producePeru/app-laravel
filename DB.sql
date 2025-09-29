@@ -684,7 +684,9 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 CREATE TABLE cyberwowleader (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL,
+    wow_id BIGINT UNSIGNED NOT NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_cyberwowleader_user FOREIGN KEY (user_id) REFERENCES users(id)
+    CONSTRAINT fk_cyberwowleader_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_cyberwowleader_fair FOREIGN KEY (wow_id) REFERENCES fairs(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

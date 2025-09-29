@@ -510,6 +510,8 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('training-dimensions', [SelectController::class, 'getTrainingDimensions']);
     Route::get('training-metas', [SelectController::class, 'getTrainingMetas']);
     Route::get('training-specialist', [SelectController::class, 'getTrainingSpecialist']);
+
+    Route::get('all-users-pnte', [SelectController::class, 'getAllUsersPnte']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {

@@ -336,12 +336,22 @@ class TrainingController extends Controller
 
         $data = $trainings->map(function ($t) {
             return [
-                'id'           => $t->id,
-                'fecha'        => \Carbon\Carbon::parse($t->fecha)->format('Y-m-d'),
-                'hora'         => \Carbon\Carbon::parse($t->horaInicio)->format('H:i') . ' - ' . \Carbon\Carbon::parse($t->horaFin)->format('H:i'),
-                'tema'         => $t->tema,
-                'especialista' => $t->especialista?->name,
-                'color'        => $t->especialista?->color ?? '#666666',
+                'id'            => $t->id,
+                'tema'          => $t->tema,
+                'fecha'         => \Carbon\Carbon::parse($t->fecha)->format('Y-m-d'),
+                'hora'          => \Carbon\Carbon::parse($t->horaInicio)->format('H:i') . ' - ' . \Carbon\Carbon::parse($t->horaFin)->format('H:i'),
+                'especialista'  => $t->especialista?->name,
+                'color'         => $t->especialista?->color ?? '#666666',
+                'lugar'         => $t->lugar,
+                'participantes' => $t->participantes,
+                'empresas'      => $t->empresas,
+                'estado'        => match ($t->estado) {
+                    1 => 'Programado',
+                    2 => 'En curso',
+                    3 => 'Completado',
+                    4 => 'Cancelado',
+                    default => 'Desconocido'
+                },
             ];
         })->values();
 
@@ -393,7 +403,7 @@ class TrainingController extends Controller
             ->map(function ($item) {
                 return [
                     'id'   => $item->dimension_id,
-                    'name' => $item->dimension ? strtolower($item->dimension->name) : 'Desconocido',
+                    'name' => $item->dimension ? $item->dimension->name : 'Desconocido',
                     'total' => $item->total,
                 ];
             });

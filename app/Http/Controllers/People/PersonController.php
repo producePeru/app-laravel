@@ -420,7 +420,7 @@ class PersonController extends Controller
 
 
     // cleannds
-    public function registerOrUpdateBusinessman(Request $request, $id)
+    public function registerOrUpdateBusinessman(Request $request)
     {
         $authId = Auth::id();
 
