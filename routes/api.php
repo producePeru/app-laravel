@@ -512,6 +512,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('training-specialist', [SelectController::class, 'getTrainingSpecialist']);
 
     Route::get('all-users-pnte', [SelectController::class, 'getAllUsersPnte']);
+    Route::get('get-all-leaders-wow/{slug}', [SelectController::class, 'getAllLeadersWow']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {

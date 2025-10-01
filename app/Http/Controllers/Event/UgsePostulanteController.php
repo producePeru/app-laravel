@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Event;
 use App\Http\Controllers\Controller;
 use App\Models\Fair;
 use App\Mail\FairSedInfoMail;
+use App\Models\CyberwowBrand;
+use App\Models\CyberwowLeader;
 use App\Models\CyberwowParticipant;
 use App\Models\FairPostulate;
 use App\Models\UgsePostulante;
@@ -19,6 +21,7 @@ use PDF;
 use Illuminate\Support\Str;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
+use Illuminate\Support\Facades\Auth;
 
 
 class UgsePostulanteController extends Controller
@@ -679,7 +682,7 @@ class UgsePostulanteController extends Controller
 
 
 
-    // ******** Cyber-wow
+    // ******** Cyber-wow *************
 
     // cyberwow registra un nuevo evento
     public function cyberWowRegisterEvent(Request $request)
@@ -741,6 +744,8 @@ class UgsePostulanteController extends Controller
 
     public function cyberWowListAssistants(Request $request, $slug)
     {
+        $user = Auth::user();
+
         // 1) Buscar la feria por slug
         $fair = Fair::where('slug', $slug)->firstOrFail();
 
@@ -759,19 +764,36 @@ class UgsePostulanteController extends Controller
         ])->where('event_id', $fair->id)
             ->orderBy('created_at', 'desc');
 
+        if ($user->rol != 1) {
+            $query->where('user_id', $user->id);
+        }
+
         // 3) Aplicar filtros dinámicos
-        if ($request->filled('search')) {
-            $search = $request->input('search');
+
+        if ($request->filled('name')) {
+            $search = trim($request->input('name'));
 
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
+                $q->where('razonSocial', 'LIKE', "%{$search}%")
+                    ->orWhere('nombreComercial', 'LIKE', "%{$search}%")
+                    ->orWhere('ruc', 'LIKE', "%{$search}%")
+                    ->orWhere('documentnumber', 'LIKE', "%{$search}%")
+                    ->orWhere('name', 'LIKE', "%{$search}%")
                     ->orWhere('lastname', 'LIKE', "%{$search}%")
                     ->orWhere('middlename', 'LIKE', "%{$search}%")
-                    ->orWhere('documentnumber', 'LIKE', "%{$search}%")
-                    ->orWhere('ruc', 'LIKE', "%{$search}%")
-                    ->orWhere('razonSocial', 'LIKE', "%{$search}%")
-                    ->orWhere('nombreComercial', 'LIKE', "%{$search}%");
+                    ->orWhereRaw("CONCAT_WS(' ', name, lastname, middlename) LIKE ?", ["%{$search}%"]);
             });
+        }
+
+        if ($request->filled('typeStatus')) {
+            $typeStatus = $request->input('typeStatus');
+
+            if ($typeStatus === 'asignados') {
+                $query->whereNotNull('user_id');
+            } elseif ($typeStatus === 'no_asignados') {
+                $query->whereNull('user_id');
+            }
+            // si es "todos", no se aplica filtro
         }
 
         // 4) Paginación de 100 en 100 con transformación
@@ -820,6 +842,12 @@ class UgsePostulanteController extends Controller
             'pais' => $item->pais->name ?? null,
             'medioEntero' => $item->medioEntero->name ?? null,
 
+            'user_id' => $item->user_id,
+
+            'paso1' => $item->paso1,
+            'paso2' => $item->paso2,
+            'paso3' => $item->paso3,
+
             'created_at' => $item->created_at->format('d/m/Y H:i'),
         ];
     }
@@ -843,5 +871,239 @@ class UgsePostulanteController extends Controller
                 'status'  => 500
             ], 500);
         }
+    }
+
+    // Agregar un lider al evento
+    public function selectLeaderForThisEvent(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'slug'    => 'required|string|exists:fairs,slug',
+        ]);
+
+        // Buscar el evento en Fair por slug
+        $fair = Fair::where('slug', $request->input('slug'))->first();
+
+        if (!$fair) {
+            return response()->json([
+                'message' => 'Evento no encontrado',
+                'status'  => 404
+            ]);
+        }
+
+        // Verificar si ya existe ese líder para el evento
+        $exists = CyberwowLeader::where('user_id', $request->input('user_id'))
+            ->where('wow_id', $fair->id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'El usuario ya está registrado como líder en este evento',
+                'status'  => 409 // conflicto
+            ]);
+        }
+
+        // Crear registro con el modelo
+        $leader = CyberwowLeader::create([
+            'user_id' => $request->input('user_id'),
+            'wow_id'  => $fair->id,
+            'status'  => 1
+        ]);
+
+        return response()->json([
+            'message' => 'Líder asignado correctamente',
+            'data'    => $leader,
+            'status'  => 200
+        ]);
+    }
+
+    // asignar un lider a una empresa
+    public function aCompanyToLeader(Request $request)
+    {
+        $request->validate([
+            'slug'       => 'required|string|exists:fairs,slug',
+            'user_id'    => 'required|integer|exists:users,id',
+            'company_id' => 'required|integer'
+        ]);
+
+        $fair = Fair::where('slug', $request->input('slug'))->first();
+
+        if (!$fair) {
+            return response()->json([
+                'message' => 'Evento no encontrado',
+                'status'  => 404
+            ]);
+        }
+
+        $participant = CyberwowParticipant::where('event_id', $fair->id)
+            ->where('id', $request->input('company_id'))
+            ->first();
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'La empresa no está registrada en este evento',
+                'status'  => 404
+            ]);
+        }
+
+        $participant->user_id = $request->input('user_id');
+        $participant->save();
+        return response()->json([
+            'message' => 'Líder asignado a la empresa correctamente',
+            'data'    => $participant,
+            'status'  => 200
+        ]);
+    }
+
+
+    // cyberwow Empresas mini-dashboard
+    public function cyberwowCompanyCount($slug)
+    {
+        $fair = Fair::where('slug', $slug)->first();
+
+        if (!$fair) {
+            return response()->json([
+                'message' => 'Evento no encontrado',
+                'status'  => 404
+            ]);
+        }
+
+        $total       = CyberwowParticipant::where('event_id', $fair->id)->count();
+        $no_asignadas = CyberwowParticipant::where('event_id', $fair->id)
+            ->whereNull('user_id')
+            ->count();
+        $asignadas   = CyberwowParticipant::where('event_id', $fair->id)
+            ->whereNotNull('user_id')
+            ->count();
+
+        return response()->json([
+            'total'        => $total,
+            'no_asignadas' => $no_asignadas,
+            'asignadas'    => $asignadas,
+            'status'       => 200
+        ]);
+    }
+
+    // pasar al paso 2
+    public function cyberwowStep1(Request $request)
+    {
+        $request->validate([
+            'slug' => 'required|string',
+            'company_id' => 'required|integer'
+        ]);
+
+        // Buscamos la feria por slug
+        $fair = Fair::where('slug', $request->slug)->first();
+
+        if (!$fair) {
+            return response()->json([
+                'message' => 'Evento no encontrado',
+                'status'  => 404
+            ]);
+        }
+
+        $participant = CyberwowParticipant::where('event_id', $fair->id)
+            ->where('id', $request->company_id)
+            ->first();
+
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'Participante no encontrado',
+                'status'  => 404
+            ]);
+        }
+
+        $participant->paso1 = 1;
+        $participant->save();
+
+        return response()->json([
+            'message' => 'Datos actualizados correctamente',
+            'status'  => 200
+        ]);
+    }
+
+    public function cyberwowStep2(Request $request)
+    {
+        $request->validate([
+            'isService'   => 'required|string|max:2',
+            'logo256_id'  => 'required|exists:images,id',
+            'logo160_id'  => 'required|exists:images,id',
+            'description' => 'nullable|string|max:1000',
+            'slug'        => 'required|string|exists:fairs,slug',
+            'url'         => 'required|url|max:255',
+            'company_id'  => 'required|integer'
+        ]);
+
+        $fair = Fair::where('slug', $request->slug)->first();
+
+        if (!$fair) {
+            return response()->json([
+                'message' => 'Feria no encontrada',
+                'status'  => 404
+            ]);
+        }
+
+        $brand = CyberwowBrand::create([
+            'isService'   => $request->isService,
+            'description' => $request->description,
+            'url'         => $request->url,
+            'logo256_id'  => $request->logo256_id,
+            'logo160_id'  => $request->logo160_id,
+            'wow_id'      => $fair->id,
+            'company_id'  => $request->company_id,
+            'user_id'     => Auth::id(), // usuario logueado
+        ]);
+
+        $participant = CyberwowParticipant::where('event_id', $fair->id)
+            ->where('id', $request->company_id)
+            ->first();
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'Participante no encontrado',
+                'status'  => 404
+            ], 404);
+        }
+
+        $participant->paso2 = 1;
+        $participant->save();
+
+        return response()->json([
+            'message' => 'Registro completado',
+            'status'  => 200,
+            'brand'   => $brand,
+            'participant' => $participant
+        ]);
+    }
+
+
+    public function cyberwowCountMyProgress($slug)
+    {
+        // Buscar la feria
+        $fair = Fair::where('slug', $slug)->firstOrFail();
+
+        // Usuario autenticado
+        $userId = Auth::id();
+
+        // Query base (filtra por feria y usuario)
+        $query = CyberwowParticipant::where('event_id', $fair->id)
+            ->where('user_id', $userId);
+
+        // Clones del query
+        $asignados   = (clone $query)->count();
+        $completados = (clone $query)->where('paso3', 1)->count();
+        $pendientes  = (clone $query)->whereNull('paso3')->count();
+
+        // Calcular porcentaje (evitar división por 0)
+        $porcentaje = $asignados > 0 ? round(($completados / $asignados) * 100, 2) : 0;
+
+        return response()->json([
+            'status'      => 200,
+            'asignados'   => $asignados,
+            'completados' => $completados,
+            'pendientes'  => $pendientes,
+            'porcentaje'  => $porcentaje,
+        ]);
     }
 }

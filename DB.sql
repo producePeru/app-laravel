@@ -685,8 +685,53 @@ CREATE TABLE cyberwowleader (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL,
     wow_id BIGINT UNSIGNED NOT NULL,
+    status TINYINT(1) NOT NULL DEFAULT 1 COMMENT '0 = inactivo, 1 = activo',
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_cyberwowleader_user FOREIGN KEY (user_id) REFERENCES users(id),
     CONSTRAINT fk_cyberwowleader_fair FOREIGN KEY (wow_id) REFERENCES fairs(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE cyberwowparticipants
+ADD COLUMN user_id BIGINT UNSIGNED AFTER autorization,
+ADD CONSTRAINT fk_cyberwowparticipants_user FOREIGN KEY (user_id) REFERENCES users(id);
+
+
+ALTER TABLE cyberwowparticipants
+ADD COLUMN paso1 TINYINT(1) UNSIGNED NULL DEFAULT NULL AFTER user_id,
+ADD COLUMN paso2 TINYINT(1) UNSIGNED NULL DEFAULT NULL AFTER paso1,
+ADD COLUMN paso3 TINYINT(1) UNSIGNED NULL DEFAULT NULL AFTER paso2;
+
+
+
+
+
+CREATE TABLE cyberwowbrand (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    
+    -- campos propios
+    isService VARCHAR(2) NOT NULL,            -- 's' o 'n'
+    description VARCHAR(1000) NULL,           -- hasta 1000 caracteres
+    url VARCHAR(255) NOT NULL,                -- enlace a la red social
+    
+    -- relaciones
+    logo256_id BIGINT UNSIGNED NOT NULL,
+    logo160_id BIGINT UNSIGNED NOT NULL,
+    wow_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    company_id BIGINT UNSIGNED NOT NULL,      -- relación con cyberwowparticipants
+    
+    -- timestamps
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    
+    -- foreign keys
+    CONSTRAINT fk_cyberwowbrand_logo256 FOREIGN KEY (logo256_id) REFERENCES images(id),
+    CONSTRAINT fk_cyberwowbrand_logo160 FOREIGN KEY (logo160_id) REFERENCES images(id),
+    CONSTRAINT fk_cyberwowbrand_wow FOREIGN KEY (wow_id) REFERENCES fairs(id),
+    CONSTRAINT fk_cyberwowbrand_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_cyberwowbrand_company FOREIGN KEY (company_id) REFERENCES cyberwowparticipants(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

@@ -47,7 +47,11 @@ class CyberwowParticipant extends Model
         'question_6',
         'question_7',
         'howKnowEvent_id',          // medioEntero
-        'autorization'
+        'autorization',
+
+        'paso1',
+        'poso2',
+        'paso3'
     ];
 
 
