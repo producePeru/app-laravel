@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Event\CyberwowParticipantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Fair\FairController;
 use App\Http\Controllers\Event\UgsePostulanteController;
@@ -38,5 +39,12 @@ Route::controller(UgsePostulanteController::class)->group(function () {
 
     Route::get('cyberwow-count-my-progress/{slug}', 'cyberwowCountMyProgress');
 });
+
+
+Route::controller(CyberwowParticipantController::class)->group(function () {
+
+    Route::put('update-participant-data/{id}', 'updateParticipantData');
+});
+
 
 // events-ugse
