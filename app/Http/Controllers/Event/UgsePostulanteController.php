@@ -823,4 +823,25 @@ class UgsePostulanteController extends Controller
             'created_at' => $item->created_at->format('d/m/Y H:i'),
         ];
     }
+
+
+    // eliminar participante del cyber-wow
+    public function cyberWowDeleteParticipant($id)
+    {
+        try {
+            $participant = CyberwowParticipant::findOrFail($id);
+            $participant->delete();
+
+            return response()->json([
+                'message' => 'Participante eliminado correctamente',
+                'status'  => 200
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al eliminar el participante',
+                'error'   => $e->getMessage(),
+                'status'  => 500
+            ], 500);
+        }
+    }
 }

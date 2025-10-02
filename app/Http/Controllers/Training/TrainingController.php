@@ -328,26 +328,36 @@ class TrainingController extends Controller
             return response()->json(['error' => 'Parámetros year y month son requeridos'], 400);
         }
 
-        // Buscar capacitaciones del mes solicitado
-        $trainings = Training::with('especialista') // asumiendo relación Training -> especialista
+        $trainings = Training::with('especialista')
             ->whereYear('fecha', $year)
             ->whereMonth('fecha', $month)
+            ->orderBy('horaInicio', 'desc') // ⬅️ ordenar por hora DESC
             ->get();
 
-        // Formatear salida
         $data = $trainings->map(function ($t) {
             return [
                 'id'            => $t->id,
-                'fecha'         => \Carbon\Carbon::parse($t->fecha)->format('Y-m-d'),
-                'hora'          => Carbon::parse($t->horaInicio)->format('H:i') . ' - ' . Carbon::parse($t->horaFin)->format('H:i'),
                 'tema'          => $t->tema,
+                'fecha'         => \Carbon\Carbon::parse($t->fecha)->format('Y-m-d'),
+                'hora'          => \Carbon\Carbon::parse($t->horaInicio)->format('H:i') . ' - ' . \Carbon\Carbon::parse($t->horaFin)->format('H:i'),
                 'especialista'  => $t->especialista?->name,
                 'color'         => $t->especialista?->color ?? '#666666',
+                'lugar'         => $t->lugar,
+                'participantes' => $t->participantes,
+                'empresas'      => $t->empresas,
+                'estado'        => match ($t->estado) {
+                    1 => 'Programado',
+                    2 => 'En curso',
+                    3 => 'Completado',
+                    4 => 'Cancelado',
+                    default => 'Desconocido'
+                },
             ];
-        });
+        })->values();
 
         return response()->json($data);
     }
+
 
     public function topEspecialistas()
     {
@@ -393,7 +403,7 @@ class TrainingController extends Controller
             ->map(function ($item) {
                 return [
                     'id'   => $item->dimension_id,
-                    'name' => $item->dimension ? strtolower($item->dimension->name) : 'Desconocido',
+                    'name' => $item->dimension ? $item->dimension->name : 'Desconocido',
                     'total' => $item->total,
                 ];
             });

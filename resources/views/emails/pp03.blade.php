@@ -18,14 +18,14 @@
           <strong>Capacitaciones Empresariales "TU EMPRESA CAPACITA-TEC 2025"</strong>, mediante el cual se brindarán los siguientes cursos.
         </p>
 
-        <h3 style="margin-top:20px;">📝 Inscripción y selección de curso:</h3>
+        <h3 style="margin-top:20px;">📝 Aprende con Produce: Fácil, rápido y gratis:</h3>
         <p>
           Las capacitaciones programadas para este 2025 se desarrollarán vía <strong>TEAMS</strong>.
           Seleccione el día y la hora de capacitación en el siguiente enlace:
         </p>
         <p style="text-align:center; margin:20px 0;">
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSdO9FnCwnmdsGdhv7ycCl4O2sSXkfOITAZtQe0XXjCH1aCTlA/viewform?usp=header"
-            style="background:#2563eb; color:#fff; padding:12px 20px; border-radius:6px; text-decoration:none; font-weight:bold;">
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSdO9FnCwnmdsGdhv7ycCl4O2sSXkfOITAZtQe0XXjCH1aCTlA/viewform"
+            style="color: white; font-weight: bold; background-color: #d72713; text-decoration: none; border-radius: 6px; padding: 12px 37px; font-size: 16px; display: block; margin: 24px 0;">
             👉 Inscribirme aquí
           </a>
         </p>
@@ -41,7 +41,7 @@
 
         <h3 style="margin-top:20px;">ℹ️ Información adicional:</h3>
         <p>
-          📅 <strong>Fechas:</strong> Mes de setiembre del 2025 <br>
+          📅 <strong>Fechas:</strong> Mes de octubre del 2025. <br>
           ⏰ <strong>Horarios:</strong> Lunes a Viernes <br>
           – 2:00 pm a 5:00 pm <br>
           – 5:30 pm a 8:30 pm
@@ -61,10 +61,10 @@
 
         <!-- Imágenes agregadas al final -->
         <div style="margin-top:20px; text-align:center;">
-          <img src="https://apituempresa.soporte-pnte.com/images/pp03/09_2025/1.png" alt="Imagen 1" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
-          <img src="https://apituempresa.soporte-pnte.com/images/pp03/09_2025/2.png" alt="Imagen 2" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
-          <img src="https://apituempresa.soporte-pnte.com/images/pp03/09_2025/3.png" alt="Imagen 3" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
-          <img src="https://apituempresa.soporte-pnte.com/images/pp03/09_2025/4.png" alt="Imagen 4" style="max-width:100%; border-radius:6px;">
+          <img src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/oct1.png" alt="Imagen 1" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
+          <img src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/oct2.png" alt="Imagen 2" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
+          <img src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/oct3.png" alt="Imagen 3" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
+          <img src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/oct4.png" alt="Imagen 4" style="max-width:100%; border-radius:6px;">
         </div>
 
       </td>

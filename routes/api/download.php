@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Download\ActividadesUgoController;
 use App\Http\Controllers\Download\CyberWowParticipantesController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
@@ -38,6 +39,11 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
     Route::get('attendance-mercado/{slug}', 'exportFortaleceTuMercado');
 
     Route::get('attendance/{slug}', 'exportRegistrantsUgoEvents');
+});
+
+Route::controller(ActividadesUgoController::class)->group(function () {
+
+    Route::post('all-activities-the-year', 'allActivitiesTheYear');
 });
 
 

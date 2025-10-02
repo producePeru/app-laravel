@@ -603,4 +603,22 @@ class SelectController extends Controller
 
         return response()->json(['data' => $data]);
     }
+
+    public function getAllUsersPnte()
+    {
+        $types = User::where('active', 1) // solo usuarios activos
+            ->with('office')              // eager load para evitar N+1
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label'  => trim("{$item->name} {$item->lastname} {$item->middlename}"),
+                'value'  => $item->id,
+                'office' => $item->office?->name ?? null, // nombre de la oficina
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
 }

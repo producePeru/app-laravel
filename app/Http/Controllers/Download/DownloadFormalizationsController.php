@@ -69,10 +69,10 @@ class DownloadFormalizationsController extends Controller
 
             $globalIndex = 1;
 
-            $query->chunk(1000, function ($rows) use (&$advisories, &$globalIndex) {
+            $query->chunk(1000, function ($rows) use (&$advisories, &$globalIndex, $user) {
                 foreach ($rows as $advisory) {
                     $advisories[] = [
-                        'index'                 => $globalIndex++,
+                        'index' => ($user->rol == 1) ? $advisory->id : $globalIndex++,
                         'date'                  => $advisory->created_at->format('d/m/Y'),
                         'asesor'                => strtoupper($advisory->user->name . ' ' . $advisory->user->lastname . ' ' . $advisory->user->middlename),
 
@@ -114,7 +114,7 @@ class DownloadFormalizationsController extends Controller
                         'activity_comercial'    => $advisory->comercialactivity->name ?? null,
                         'component'             => $advisory->component->name ?? null,
                         'theme'                 => isset($advisory->theme->name) ? strtoupper($advisory->theme->name) : null,
-                        'observations'          => $advisory->observations ?? null,
+                        'observations'          => $advisory->observations ? 'Z' . $advisory->observations : '-',
                         'modality'              => $advisory->modality->name ?? null,
                     ];
                 }

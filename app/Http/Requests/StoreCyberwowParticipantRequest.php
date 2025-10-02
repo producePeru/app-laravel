@@ -32,9 +32,13 @@ class StoreCyberwowParticipantRequest extends FormRequest
             'rubro_id' => 'required|exists:categories,id',
             'descripcion' => 'nullable|string',
 
+            // 'socials' => 'nullable|array',
+            // 'socials.*.name' => 'required_with:socials|string|max:100',
+            // 'socials.*.link' => 'required_with:socials|string|max:255',
+
             'socials' => 'nullable|array',
-            'socials.*.name' => 'required_with:socials|string|max:100',
-            'socials.*.link' => 'required_with:socials|string|max:255',
+            'socials.*.name' => 'nullable|string|max:100',
+            'socials.*.link' => 'nullable|string|max:255',
 
             'typedocument_id' => 'required|exists:typedocuments,id',
             'documentnumber' => 'required|string|max:20',
