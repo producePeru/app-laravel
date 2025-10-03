@@ -765,9 +765,9 @@ class UgsePostulanteController extends Controller
         ])->where('event_id', $fair->id)
             ->orderBy('created_at', 'desc');
 
-        if ($user->rol != 1) {
-            $query->where('user_id', $user->id);
-        }
+        // if ($user->rol != 1) {
+        //     $query->where('user_id', $user->id);
+        // }
 
         // 3) Aplicar filtros dinámicos
 
