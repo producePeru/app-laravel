@@ -184,6 +184,9 @@ Route::prefix('training')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/training.php';
 });
 
+Route::prefix('email')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/email.php';
+});
 
 
 Route::prefix('users')->middleware('auth:sanctum')->group(function () {
