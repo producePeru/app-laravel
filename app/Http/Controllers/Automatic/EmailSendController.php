@@ -60,7 +60,7 @@ class EmailSendController extends Controller
 
             $emails = $validatedData['emails'];
             $message = 'SED';
-            $mailer = 'digitalization';
+            $mailer = 'capacitaciones';
 
             // Procesar cada correo y enviarlo a la cola
             foreach ($emails as $email) {

@@ -38,13 +38,17 @@ Route::controller(UgsePostulanteController::class)->group(function () {
     Route::post('cyberwow-step-2', 'cyberwowStep2');
 
     Route::get('cyberwow-count-my-progress/{slug}', 'cyberwowCountMyProgress');
+
+    Route::get('cyberwow-count-principal-panel/{slug}', 'cyberwowCountPrincipalPanel');
+
+    Route::get('cyberwow-leaders-report/{slug}', 'resumenPorUsuarios');
 });
 
 
-Route::controller(CyberwowParticipantController::class)->group(function () {
+// Route::controller(CyberwowParticipantController::class)->group(function () {
 
-    Route::put('update-participant-data/{id}', 'updateParticipantData');
-});
+//     Route::put('update-participant-data/{id}', 'updateParticipantData');
+// });
 
 
 // events-ugse
