@@ -11,9 +11,9 @@
 |
 */
 
-// $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../', '.env.local');
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../', '.env.local');
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../', '.env'); // Para entorno de producción
+// $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../', '.env'); // Para entorno de producción
 
 $dotenv->load();
 
