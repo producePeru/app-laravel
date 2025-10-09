@@ -37,6 +37,8 @@ Route::controller(UgsePostulanteController::class)->group(function () {
 
     Route::post('cyberwow-step-2', 'cyberwowStep2');
 
+    Route::post('cyberwow-step-3', 'cyberwowStep3');
+
     Route::get('cyberwow-count-my-progress/{slug}', 'cyberwowCountMyProgress');
 
     Route::get('cyberwow-count-principal-panel/{slug}', 'cyberwowCountPrincipalPanel');

@@ -188,10 +188,17 @@ class ImageController extends Controller
 
         // Procesar main (ej: 800x600)
         $pathMainAbsolute = $dirMain . '/' . $filename;
+
         $manager->read($file->getRealPath())
-            ->resizeDown(800, 600)
+            ->resizeDown(1080, 1080)
             ->toJpeg(85)
             ->save($pathMainAbsolute);
+
+        // $manager->read($file->getRealPath())
+        //     ->cover(1080, 1080)
+        //     ->toJpeg(90)
+        //     ->save($pathMainAbsolute);
+
 
         // URL pública
         $urlMain  = asset('storage/images/cyberwow/main/' . $filename);

@@ -681,59 +681,59 @@ INSERT INTO pages (name) VALUES ('Usuarios lista');
 
 
 
-CREATE TABLE cyberwowleader (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT UNSIGNED NOT NULL,
-    wow_id BIGINT UNSIGNED NOT NULL,
-    status TINYINT(1) NOT NULL DEFAULT 1 COMMENT '0 = inactivo, 1 = activo',
-    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_cyberwowleader_user FOREIGN KEY (user_id) REFERENCES users(id),
-    CONSTRAINT fk_cyberwowleader_fair FOREIGN KEY (wow_id) REFERENCES fairs(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE cyberwowleader (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     user_id BIGINT UNSIGNED NOT NULL,
+--     wow_id BIGINT UNSIGNED NOT NULL,
+--     status TINYINT(1) NOT NULL DEFAULT 1 COMMENT '0 = inactivo, 1 = activo',
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     CONSTRAINT fk_cyberwowleader_user FOREIGN KEY (user_id) REFERENCES users(id),
+--     CONSTRAINT fk_cyberwowleader_fair FOREIGN KEY (wow_id) REFERENCES fairs(id)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-ALTER TABLE cyberwowparticipants
-ADD COLUMN user_id BIGINT UNSIGNED AFTER autorization,
-ADD CONSTRAINT fk_cyberwowparticipants_user FOREIGN KEY (user_id) REFERENCES users(id);
+-- ALTER TABLE cyberwowparticipants
+-- ADD COLUMN user_id BIGINT UNSIGNED AFTER autorization,
+-- ADD CONSTRAINT fk_cyberwowparticipants_user FOREIGN KEY (user_id) REFERENCES users(id);
 
 
-ALTER TABLE cyberwowparticipants
-ADD COLUMN paso1 TINYINT(1) UNSIGNED NULL DEFAULT NULL AFTER user_id,
-ADD COLUMN paso2 TINYINT(1) UNSIGNED NULL DEFAULT NULL AFTER paso1,
-ADD COLUMN paso3 TINYINT(1) UNSIGNED NULL DEFAULT NULL AFTER paso2;
+-- ALTER TABLE cyberwowparticipants
+-- ADD COLUMN paso1 TINYINT(1) UNSIGNED NULL DEFAULT NULL AFTER user_id,
+-- ADD COLUMN paso2 TINYINT(1) UNSIGNED NULL DEFAULT NULL AFTER paso1,
+-- ADD COLUMN paso3 TINYINT(1) UNSIGNED NULL DEFAULT NULL AFTER paso2;
 
 
 
 
 
-CREATE TABLE cyberwowbrand (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+-- CREATE TABLE cyberwowbrand (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
-    -- campos propios
-    isService VARCHAR(2) NOT NULL,            -- 's' o 'n'
-    description VARCHAR(1000) NULL,           -- hasta 1000 caracteres
-    url VARCHAR(255) NOT NULL,                -- enlace a la red social
+--     -- campos propios
+--     isService VARCHAR(2) NOT NULL,            -- 's' o 'n'
+--     description VARCHAR(1000) NULL,           -- hasta 1000 caracteres
+--     url VARCHAR(800) NOT NULL,                -- enlace a la red social
 
-    -- relaciones
-    logo256_id BIGINT UNSIGNED NOT NULL,
-    logo160_id BIGINT UNSIGNED NOT NULL,
-    wow_id BIGINT UNSIGNED NOT NULL,
-    user_id BIGINT UNSIGNED NOT NULL,
-    company_id BIGINT UNSIGNED NOT NULL,      -- relación con cyberwowparticipants
+--     -- relaciones
+--     logo256_id BIGINT UNSIGNED NOT NULL,
+--     logo160_id BIGINT UNSIGNED NOT NULL,
+--     wow_id BIGINT UNSIGNED NOT NULL,
+--     user_id BIGINT UNSIGNED NOT NULL,
+--     company_id BIGINT UNSIGNED NOT NULL,      -- relación con cyberwowparticipants
 
-    -- timestamps
-    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL,
+--     -- timestamps
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL DEFAULT NULL,
 
-    -- foreign keys
-    CONSTRAINT fk_cyberwowbrand_logo256 FOREIGN KEY (logo256_id) REFERENCES images(id),
-    CONSTRAINT fk_cyberwowbrand_logo160 FOREIGN KEY (logo160_id) REFERENCES images(id),
-    CONSTRAINT fk_cyberwowbrand_wow FOREIGN KEY (wow_id) REFERENCES fairs(id),
-    CONSTRAINT fk_cyberwowbrand_user FOREIGN KEY (user_id) REFERENCES users(id),
-    CONSTRAINT fk_cyberwowbrand_company FOREIGN KEY (company_id) REFERENCES cyberwowparticipants(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--     -- foreign keys
+--     CONSTRAINT fk_cyberwowbrand_logo256 FOREIGN KEY (logo256_id) REFERENCES images(id),
+--     CONSTRAINT fk_cyberwowbrand_logo160 FOREIGN KEY (logo160_id) REFERENCES images(id),
+--     CONSTRAINT fk_cyberwowbrand_wow FOREIGN KEY (wow_id) REFERENCES fairs(id),
+--     CONSTRAINT fk_cyberwowbrand_user FOREIGN KEY (user_id) REFERENCES users(id),
+--     CONSTRAINT fk_cyberwowbrand_company FOREIGN KEY (company_id) REFERENCES cyberwowparticipants(id)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 
@@ -746,3 +746,53 @@ CREATE TABLE email_templates (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+
+
+
+
+-- CREATE TABLE cyberwowoffers (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+--     -- Relaciones principales
+--     wow_id BIGINT UNSIGNED NOT NULL,             -- id de la tabla fairs
+--     company_id BIGINT UNSIGNED NOT NULL,         -- id de la tabla cyberwowparticipants
+
+--     imgFull BIGINT UNSIGNED NULL,                -- id de la tabla images (imagen desktop)
+--     img BIGINT UNSIGNED NULL,                    -- id de la tabla images (imagen phone)
+
+--     -- Datos de la oferta
+--     title VARCHAR(255) NOT NULL,
+--     link VARCHAR(255) DEFAULT NULL,
+--     category VARCHAR(120) DEFAULT NULL,
+--     tipo VARCHAR(80) DEFAULT NULL,
+--     beneficio VARCHAR(255) DEFAULT NULL,
+
+--     moneda VARCHAR(10) NULL,
+--     precioAnterior DECIMAL(10,2) DEFAULT 0.00,
+--     precioOferta DECIMAL(10,2) DEFAULT 0.00,
+--     descripcion TEXT DEFAULT NULL,
+
+--     -- Día de la oferta (1, 2 o 3)
+--     dia TINYINT UNSIGNED NOT NULL CHECK (dia IN (1, 2, 3)),
+
+--     -- Fechas de auditoría
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+--     -- Claves foráneas
+--     CONSTRAINT fk_cyberwow_offers_fairs FOREIGN KEY (wow_id)
+--         REFERENCES fairs(id) ON DELETE CASCADE,
+
+--     CONSTRAINT fk_cyberwow_offers_company FOREIGN KEY (company_id)
+--         REFERENCES cyberwowparticipants(id) ON DELETE CASCADE,
+
+--     CONSTRAINT fk_cyberwow_offers_imgFull FOREIGN KEY (imgFull)
+--         REFERENCES images(id) ON DELETE SET NULL,
+
+--     CONSTRAINT fk_cyberwow_offers_img FOREIGN KEY (img)
+--         REFERENCES images(id) ON DELETE SET NULL,
+
+--     -- Limitar máximo 3 ofertas por empresa/evento (una por día)
+--     CONSTRAINT unique_offer_per_day UNIQUE (wow_id, company_id, dia)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

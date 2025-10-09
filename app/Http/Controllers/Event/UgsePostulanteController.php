@@ -7,6 +7,7 @@ use App\Models\Fair;
 use App\Mail\FairSedInfoMail;
 use App\Models\CyberwowBrand;
 use App\Models\CyberwowLeader;
+use App\Models\CyberwowOffer;
 use App\Models\CyberwowParticipant;
 use App\Models\FairPostulate;
 use App\Models\UgsePostulante;
@@ -1078,6 +1079,131 @@ class UgsePostulanteController extends Controller
             'participant' => $participant
         ]);
     }
+
+
+    public function cyberwowStep3(Request $request)
+    {
+        try {
+            // Validación base del payload
+            $validated = $request->validate([
+                'days' => 'required|array|min:1',
+                'days.*.data.slug' => 'required|string|exists:fairs,slug',
+                'days.*.data.company_id' => 'required|integer|exists:cyberwowparticipants,id',
+                'days.*.data.imgFull' => 'nullable|integer|exists:images,id',
+                'days.*.data.img' => 'nullable|integer|exists:images,id',
+                'days.*.data.dia' => 'required|integer|in:1,2,3', // solo se permiten 1, 2 o 3
+            ]);
+
+            $processed = [];
+
+            DB::beginTransaction();
+
+            foreach ($request->days as $day) {
+                $data = $day['data'];
+
+                // Buscar la feria por slug
+                $fair = Fair::where('slug', $data['slug'])->firstOrFail();
+
+                // Buscar si ya existe una oferta con mismo wow_id, company_id y dia
+                $offer = CyberwowOffer::where('wow_id', $fair->id)
+                    ->where('company_id', $data['company_id'])
+                    ->where('dia', $data['dia'])
+                    ->first();
+
+                // Si existe → actualizar
+                if ($offer) {
+                    $offer->update([
+                        'imgFull'        => $data['imgFull'] ?? null,
+                        'img'            => $data['img'] ?? null,
+                        'title'          => $data['title'] ?? '',
+                        'link'           => $data['link'] ?? null,
+                        'category'       => $data['category'] ?? null,
+                        'tipo'           => $data['tipo'] ?? null,
+                        'beneficio'      => $data['beneficio'] ?? null,
+                        'moneda'         => $data['moneda'] ?: 'S/',
+                        'precioAnterior' => $data['precioAnterior'] ?? 0,
+                        'precioOferta'   => $data['precioOferta'] ?? 0,
+                        'descripcion'    => $data['descripcion'] ?? null,
+                    ]);
+
+                    $processed[] = [
+                        'action' => 'updated',
+                        'dia' => $data['dia'],
+                        'offer' => $offer
+                    ];
+                }
+                // Si no existe → crear nueva (solo si no excede 3 por empresa)
+                else {
+                    $count = CyberwowOffer::where('wow_id', $fair->id)
+                        ->where('company_id', $data['company_id'])
+                        ->count();
+
+                    if ($count < 3) {
+                        $newOffer = CyberwowOffer::create([
+                            'wow_id'         => $fair->id,
+                            'company_id'     => $data['company_id'],
+                            'imgFull'        => $data['imgFull'] ?? null,
+                            'img'            => $data['img'] ?? null,
+                            'title'          => $data['title'] ?? '',
+                            'link'           => $data['link'] ?? null,
+                            'category'       => $data['category'] ?? null,
+                            'tipo'           => $data['tipo'] ?? null,
+                            'beneficio'      => $data['beneficio'] ?? null,
+                            'moneda'         => $data['moneda'] ?: 'S/',
+                            'precioAnterior' => $data['precioAnterior'] ?? 0,
+                            'precioOferta'   => $data['precioOferta'] ?? 0,
+                            'descripcion'    => $data['descripcion'] ?? null,
+                            'dia'            => $data['dia'],
+                        ]);
+
+                        $processed[] = [
+                            'action' => 'created',
+                            'dia' => $data['dia'],
+                            'offer' => $newOffer
+                        ];
+                    } else {
+                        $processed[] = [
+                            'action' => 'skipped',
+                            'dia' => $data['dia'],
+                            'message' => 'Ya tiene 3 ofertas registradas para este evento',
+                        ];
+                    }
+                }
+            }
+
+            DB::commit();
+
+            // Actualizar paso3 del participante (solo si hubo creación o edición)
+            if (!empty($processed)) {
+                $firstData = $request->days[0]['data'];
+                $fair = Fair::where('slug', $firstData['slug'])->first();
+                $participant = CyberwowParticipant::where('event_id', $fair->id)
+                    ->where('id', $firstData['company_id'])
+                    ->first();
+
+                if ($participant) {
+                    $participant->paso3 = 1;
+                    $participant->save();
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ofertas procesadas correctamente.',
+                'resultados' => $processed,
+                'status' => 200
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar o actualizar las ofertas.',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
 
 
     public function cyberwowCountMyProgress($slug)
