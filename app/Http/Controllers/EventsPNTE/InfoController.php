@@ -52,33 +52,44 @@ class InfoController extends Controller
     public function createEmpresario(StoreEmpresarioRequest $request)
     {
         try {
-
+            // Verificar si ya existe empresario
             $existingEmpresario = People::where('documentnumber', $request->documentnumber)->first();
 
             if ($existingEmpresario) {
                 return response()->json([
                     'message' => 'Empresario ya registrado con este DNI.',
-                    'status' => 200
+                    'status'  => 200
                 ]);
             }
 
-            $empresario = People::create($request->all()); // Usa all() para crear con todos los datos
+            // 🔹 Normalizar fecha a formato YYYY-MM-DD si viene con "/"
+            if ($request->filled('birthday')) {
+                $birthday = $request->birthday;
+
+                // Detectar formato dd/mm/yyyy
+                if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $birthday, $matches)) {
+                    $normalized = "{$matches[3]}-{$matches[2]}-{$matches[1]}";
+                    $request->merge(['birthday' => $normalized]);
+                }
+            }
+
+            // Crear empresario
+            $empresario = People::create($request->all());
 
             return response()->json([
-                'message' => 'Empresario created successfully',
-                'data' => $empresario,
-                'status' => 200 // Código HTTP para éxito
+                'message' => 'Empresario creado correctamente.',
+                'data'    => $empresario,
+                'status'  => 200
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'Model not found error: ' . $e->getMessage(),
-                'status' => 404
+                'status'  => 404
             ]);
-        } catch (Exception $e) {
-            // Si ocurre otro tipo de error, devolver un error genérico 500
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error: ' . $e->getMessage(),
-                'status' => 500
+                'status'  => 500
             ]);
         }
     }

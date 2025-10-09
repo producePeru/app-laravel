@@ -154,4 +154,69 @@ class ImageController extends Controller
             'Content-Type' => $image->mime_type,
         ]);
     }
+
+
+
+
+    public function uploadLogoCyberWow(Request $request)
+    {
+        // Validación
+        $request->validate([
+            'file'        => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:10240',
+            'from_origin' => 'required|string|max:50',
+        ]);
+
+        $file         = $request->file('file');
+        $originalName = $file->getClientOriginalName();
+        $extOriginal  = strtolower($file->getClientOriginalExtension());
+
+        // Base
+        $basePublicStorage = public_path('storage');
+        $dirMain  = $basePublicStorage . '/images/cyberwow/main';
+
+        // Crear directorio si no existe
+        if (!file_exists($dirMain)) {
+            mkdir($dirMain, 0755, true);
+        }
+
+        // Nombre único
+        $uuid = (string) Str::uuid();
+        $filename = $uuid . '.jpg'; // siempre a JPG
+
+        // Manager
+        $manager = ImageManager::gd();
+
+        // Procesar main (ej: 800x600)
+        $pathMainAbsolute = $dirMain . '/' . $filename;
+
+        $manager->read($file->getRealPath())
+            ->resizeDown(1080, 1080)
+            ->toJpeg(85)
+            ->save($pathMainAbsolute);
+
+        // $manager->read($file->getRealPath())
+        //     ->cover(1080, 1080)
+        //     ->toJpeg(90)
+        //     ->save($pathMainAbsolute);
+
+
+        // URL pública
+        $urlMain  = asset('storage/images/cyberwow/main/' . $filename);
+
+        // Guardar en BD
+        $imageModel = Image::create([
+            'name'        => $originalName,
+            'url'         => $urlMain,
+            'mime_type'   => $file->getClientMimeType(),
+            'size'        => $file->getSize(),
+            'from_origin' => $request->input('from_origin'),
+        ]);
+
+        return response()->json([
+            'status'  => 200,
+            'message' => 'Imagen generada',
+            'main'    => $urlMain,
+            'data'    => $imageModel,
+        ]);
+    }
 }

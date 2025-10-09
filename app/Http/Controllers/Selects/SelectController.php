@@ -35,6 +35,8 @@ use App\Models\Attendance;
 use App\Models\TypeCompany;
 use App\Models\Category;
 use App\Models\AnnualSale;
+use App\Models\CyberwowLeader;
+use App\Models\Fair;
 use App\Models\FairType;
 use App\Models\PropagandaMedia;
 use App\Models\TrainingDimension;
@@ -616,6 +618,41 @@ class SelectController extends Controller
                 'label'  => trim("{$item->name} {$item->lastname} {$item->middlename}"),
                 'value'  => $item->id,
                 'office' => $item->office?->name ?? null, // nombre de la oficina
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+
+
+    public function getAllLeadersWow($slug)
+    {
+        $fair = Fair::where('slug', $slug)->first();
+
+        if (!$fair) {
+            return response()->json([
+                'message' => 'Evento no encontrado',
+                'status'  => 404
+            ]);
+        }
+
+        $leaders = CyberwowLeader::where('wow_id', $fair->id)
+            ->with('user:id,name,lastname,middlename') // relación user en el modelo CyberwowLeader
+            ->get();
+
+        $data = $leaders->map(function ($leader) {
+            $user = $leader->user;
+
+            $fullName = trim(
+                ($user->name ?? '') . ' ' .
+                    ($user->lastname ?? '') . ' ' .
+                    ($user->middlename ?? '')
+            );
+
+            return [
+                'label' => $fullName !== '' ? $fullName : 'Sin nombre',
+                'value' => $user->id
             ];
         });
 

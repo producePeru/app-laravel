@@ -34,44 +34,43 @@ return [
     */
 
     'mailers' => [
-        'cyberwow' => [
-            'transport' => env('MAIL_MAILER_WOW', 'smtp'),
-            'host' => env('MAIL_HOST_WOW'),
-            'port' => env('MAIL_PORT_WOW'),
-            'username' => env('MAIL_USERNAME_WOW'),
-            'password' => env('MAIL_PASSWORD_WOW'),
-            'encryption' => env('MAIL_ENCRYPTION_WOW'),
+        'capacitaciones' => [
+            'transport'     => env('MAIL_MAILER_CAPACITACIONES', 'smtp'),
+            'host'          => env('MAIL_HOST_CAPACITACIONES'),
+            'port'          => env('MAIL_PORT_CAPACITACIONES'),
+            'username'      => env('MAIL_USERNAME_CAPACITACIONES'),
+            'password'      => env('MAIL_PASSWORD_CAPACITACIONES'),
+            'encryption'    => env('MAIL_ENCRYPTION_CAPACITACIONES'),
             'from' => [
-                'address' => env('MAIL_FROM_ADDRESS_WOW'),
-                'name' => env('MAIL_FROM_NAME_WOW'),
+                'address'   => env('MAIL_FROM_ADDRESS_CAPACITACIONES'),
+                'name'      => env('MAIL_FROM_NAME_CAPACITACIONES'),
+            ],
+        ],
+        'notificaciones' => [
+            'transport'     => env('MAIL_MAILER_NOTIFICACIONES', 'smtp'),
+            'host'          => env('MAIL_HOST_NOTIFICACIONES'),
+            'port'          => env('MAIL_PORT_NOTIFICACIONES'),
+            'username'      => env('MAIL_USERNAME_NOTIFICACIONES'),
+            'password'      => env('MAIL_PASSWORD_NOTIFICACIONES'),
+            'encryption'    => env('MAIL_ENCRYPTION_NOTIFICACIONES'),
+            'from' => [
+                'address'   => env('MAIL_FROM_ADDRESS_NOTIFICACIONES'),
+                'name'      => env('MAIL_FROM_NAME_NOTIFICACIONES'),
+            ],
+        ],
+        'cyberpnte' => [
+            'transport'     => env('MAIL_MAILER_CYBERPNTE', 'smtp'),
+            'host'          => env('MAIL_HOST_CYBERPNTE'),
+            'port'          => env('MAIL_PORT_CYBERPNTE'),
+            'username'      => env('MAIL_USERNAME_CYBERPNTE'),
+            'password'      => env('MAIL_PASSWORD_CYBERPNTE'),
+            'encryption'    => env('MAIL_ENCRYPTION_CYBERPNTE'),
+            'from' => [
+                'address'   => env('MAIL_FROM_ADDRESS_CYBERPNTE'),
+                'name'      => env('MAIL_FROM_NAME_CYBERPNTE'),
             ],
         ],
 
-        'digitalization' => [                                                           //
-            'transport' => env('MAIL_MAILER_DIGITAL', 'smtp'),
-            'host' => env('MAIL_HOST_DIGITAL'),
-            'port' => env('MAIL_PORT_DIGITAL'),
-            'username' => env('MAIL_USERNAME_DIGITAL'),
-            'password' => env('MAIL_PASSWORD_DIGITAL'),
-            'encryption' => env('MAIL_ENCRYPTION_DIGITAL'),
-            'from' => [
-                'address' => env('MAIL_FROM_ADDRESS_DIGITAL'),
-                'name' => env('MAIL_FROM_NAME_DIGITAL'),
-            ],
-        ],
-
-        'presencial' => [                                                                   //sed
-            'transport' => env('MAIL_MAILER_CAPACITACIONPRESENCIAL', 'smtp'),
-            'host' => env('MAIL_HOST_CAPACITACIONPRESENCIAL'),
-            'port' => env('MAIL_PORT_CAPACITACIONPRESENCIAL'),
-            'username' => env('MAIL_USERNAME_CAPACITACIONPRESENCIAL'),
-            'password' => env('MAIL_PASSWORD_CAPACITACIONPRESENCIAL'),
-            'encryption' => env('MAIL_ENCRYPTION_CAPACITACIONPRESENCIAL'),
-            'from' => [
-                'address' => env('MAIL_FROM_ADDRESS_CAPACITACIONPRESENCIAL'),
-                'name' => env('MAIL_FROM_NAME_CAPACITACIONPRESENCIAL'),
-            ],
-        ],
 
         'hostinger' => [
             'transport'  => env('MAIL_MAILER_HOSTINGER', 'smtp'),
