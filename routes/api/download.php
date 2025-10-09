@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Download\ActividadesUgoController;
+use App\Http\Controllers\Download\CyberWowCarpetaLiderController;
 use App\Http\Controllers\Download\CyberWowParticipantesController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
@@ -41,11 +42,16 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
     Route::get('attendance/{slug}', 'exportRegistrantsUgoEvents');
 });
 
+
 Route::controller(ActividadesUgoController::class)->group(function () {
 
     Route::post('all-activities-the-year', 'allActivitiesTheYear');
 });
 
 
+Route::controller(CyberWowCarpetaLiderController::class)->group(function () {
+
+    Route::get('cyber-wow-folder-leader', 'downloadUserFolders');
+});
 
 // download
