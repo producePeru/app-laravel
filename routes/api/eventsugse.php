@@ -47,10 +47,10 @@ Route::controller(UgsePostulanteController::class)->group(function () {
 });
 
 
-// Route::controller(CyberwowParticipantController::class)->group(function () {
+Route::controller(CyberwowParticipantController::class)->group(function () {
 
-//     Route::put('update-participant-data/{id}', 'updateParticipantData');
-// });
+    Route::put('update-participant-data/{id}', 'updateParticipantData');
+});
 
 
 // events-ugse
