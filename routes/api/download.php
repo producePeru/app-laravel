@@ -5,6 +5,7 @@ use App\Http\Controllers\Download\CyberWowCarpetaLiderController;
 use App\Http\Controllers\Download\CyberWowParticipantesController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
+use App\Http\Controllers\Download\DownloadTemplateUgoActividadesController;
 use App\Http\Controllers\Download\QuestionnarieController;
 use App\Http\Controllers\Download\SedAsistentesController;
 use Illuminate\Support\Facades\Route;
@@ -53,5 +54,12 @@ Route::controller(CyberWowCarpetaLiderController::class)->group(function () {
 
     Route::get('cyber-wow-folder-leader', 'downloadUserFolders');
 });
+
+Route::controller(DownloadTemplateUgoActividadesController::class)->group(function () {
+
+    Route::get('download-ugo-activities', 'downloadUgoActividades');
+});
+
+
 
 // download

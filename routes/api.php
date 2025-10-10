@@ -188,9 +188,12 @@ Route::prefix('email')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/email.php';
 });
 
-
 Route::prefix('users')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/users.php';
+});
+
+Route::prefix('import')->group(function () {
+    require __DIR__ . '/api/import.php';
 });
 
 // Route::prefix('businessman')->middleware('auth:sanctum')->group(function () {
@@ -378,9 +381,9 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
 
 });
 
-Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
-    Route::post('events-ugo',                    [ImportEventsUgoController::class, 'importEventsUgo']);
-});
+// Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+//     Route::post('events-ugo',                    [ImportEventsUgoController::class, 'importEventsUgo']);
+// });
 
 
 
