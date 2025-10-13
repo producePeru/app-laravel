@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Event\CyberWowController;
 use App\Http\Controllers\Event\CyberwowParticipantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Fair\FairController;
@@ -52,5 +53,14 @@ Route::controller(CyberwowParticipantController::class)->group(function () {
     Route::put('update-participant-data/{id}', 'updateParticipantData');
 });
 
+
+Route::controller(CyberWowController::class)->group(function () {
+
+    Route::put('cyberwow-back-step-1/{idCompany}', 'cyberwowBackStep1');
+
+    Route::put('cyberwow-back-step-2/{idCompany}', 'cyberwowBackStep2');
+
+    Route::get('cyberwow-data-step-2/{idWow}/{idParticipante}', 'cyberwowDataStep2');
+});
 
 // events-ugse

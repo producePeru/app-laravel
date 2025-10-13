@@ -29,7 +29,7 @@ class CyberwowParticipantController extends Controller
 
             // Validar si ya existe participante con mismo event_id + documentnumber
             $exists = CyberwowParticipant::where('event_id', $fair->id)
-                ->where('documentnumber', $request->documentnumber)
+                ->where('ruc', $request->ruc)
                 ->exists();
 
             if ($exists) {

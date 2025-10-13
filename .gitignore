@@ -9,6 +9,8 @@
 .env.local
 .htaccessx
 .david.pug
+
+/public/storage/images/cyberwow
 # .phpunit.result.cache
 # Homestead.json
 # Homestead.yaml

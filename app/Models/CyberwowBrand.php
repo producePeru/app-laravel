@@ -21,4 +21,26 @@ class CyberwowBrand extends Model
         'user_id',
         'company_id'
     ];
+
+    // 🔗 Relación con la tabla de imágenes (Image)
+    public function logo256()
+    {
+        return $this->belongsTo(Image::class, 'logo256_id');
+    }
+
+    public function logo160()
+    {
+        return $this->belongsTo(Image::class, 'logo160_id');
+    }
+
+    // (Opcional) Si tienes relación con participante o usuario
+    public function participant()
+    {
+        return $this->belongsTo(CyberwowParticipant::class, 'company_id', 'company_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

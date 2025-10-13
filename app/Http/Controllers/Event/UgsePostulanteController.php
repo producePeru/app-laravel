@@ -1026,6 +1026,7 @@ class UgsePostulanteController extends Controller
         ]);
     }
 
+
     public function cyberwowStep2(Request $request)
     {
         $request->validate([
@@ -1038,47 +1039,76 @@ class UgsePostulanteController extends Controller
             'company_id'  => 'required|integer'
         ]);
 
-        $fair = Fair::where('slug', $request->slug)->first();
+        try {
+            // Buscar la feria
+            $fair = Fair::where('slug', $request->slug)->first();
 
-        if (!$fair) {
+            if (!$fair) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Feria no encontrada',
+                ], 404);
+            }
+
+            // Buscar si ya existe una marca registrada para esa empresa en este evento
+            $brand = CyberwowBrand::where('company_id', $request->company_id)
+                ->where('wow_id', $fair->id)
+                ->first();
+
+            if ($brand) {
+                // 🔄 Actualizar registro existente
+                $brand->update([
+                    'isService'   => $request->isService,
+                    'description' => $request->description,
+                    'url'         => $request->url,
+                    'logo256_id'  => $request->logo256_id,
+                    'logo160_id'  => $request->logo160_id,
+                    'user_id'     => Auth::id(),
+                ]);
+
+                $action = 'actualizado';
+            } else {
+                // 🆕 Crear nuevo registro
+                $brand = CyberwowBrand::create([
+                    'isService'   => $request->isService,
+                    'description' => $request->description,
+                    'url'         => $request->url,
+                    'logo256_id'  => $request->logo256_id,
+                    'logo160_id'  => $request->logo160_id,
+                    'wow_id'      => $fair->id,
+                    'company_id'  => $request->company_id,
+                    'user_id'     => Auth::id(),
+                ]);
+
+                $action = 'creado';
+            }
+
+            // Actualizar paso 2 del participante
+            $participant = CyberwowParticipant::where('event_id', $fair->id)
+                ->where('id', $request->company_id)
+                ->first();
+
+            if ($participant) {
+                $participant->paso2 = 1;
+                $participant->save();
+            }
+
             return response()->json([
-                'message' => 'Feria no encontrada',
-                'status'  => 404
+                'success' => true,
+                'message' => "Registro {$action} correctamente",
+                'brand'   => $brand,
+                'participant' => $participant,
+                'status' => 200
+
             ]);
-        }
-
-        $brand = CyberwowBrand::create([
-            'isService'   => $request->isService,
-            'description' => $request->description,
-            'url'         => $request->url,
-            'logo256_id'  => $request->logo256_id,
-            'logo160_id'  => $request->logo160_id,
-            'wow_id'      => $fair->id,
-            'company_id'  => $request->company_id,
-            'user_id'     => Auth::id(), // usuario logueado
-        ]);
-
-        $participant = CyberwowParticipant::where('event_id', $fair->id)
-            ->where('id', $request->company_id)
-            ->first();
-
-        if (!$participant) {
+        } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Participante no encontrado',
-                'status'  => 404
-            ], 404);
+                'success' => false,
+                'message' => 'Error al procesar: ' . $e->getMessage()
+            ], 500);
         }
-
-        $participant->paso2 = 1;
-        $participant->save();
-
-        return response()->json([
-            'message' => 'Registro completado',
-            'status'  => 200,
-            'brand'   => $brand,
-            'participant' => $participant
-        ]);
     }
+
 
 
     public function cyberwowStep3(Request $request)
