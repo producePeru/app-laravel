@@ -844,6 +844,7 @@ class UgsePostulanteController extends Controller
             'genero' => $item->genero->name ?? null,
             'pais' => $item->pais->name ?? null,
             'medioEntero' => $item->medioEntero->name ?? null,
+            'description' => $item->descripcion,
 
             'user_id' => $item->user_id,
 
@@ -1036,7 +1037,8 @@ class UgsePostulanteController extends Controller
             'description' => 'nullable|string|max:1000',
             'slug'        => 'required|string|exists:fairs,slug',
             'url'         => 'required|url|max:255',
-            'company_id'  => 'required|integer'
+            'company_id'  => 'required|integer',
+            'red'         => 'integer'
         ]);
 
         try {
@@ -1064,6 +1066,7 @@ class UgsePostulanteController extends Controller
                     'logo256_id'  => $request->logo256_id,
                     'logo160_id'  => $request->logo160_id,
                     'user_id'     => Auth::id(),
+                    'red'         => $request->red,
                 ]);
 
                 $action = 'actualizado';
@@ -1078,6 +1081,7 @@ class UgsePostulanteController extends Controller
                     'wow_id'      => $fair->id,
                     'company_id'  => $request->company_id,
                     'user_id'     => Auth::id(),
+                    'red'         => $request->red,
                 ]);
 
                 $action = 'creado';

@@ -62,7 +62,12 @@ Route::controller(CyberWowController::class)->group(function () {
 
     Route::get('cyberwow-data-step-2/{idWow}/{idParticipante}', 'cyberwowDataStep2');
 
+    Route::get('cyberwow-data-step-3/{slug}/{company_id}', 'cyberwowDataStep3');
+
     Route::put('update-leader-supervisor', 'updateLeadertoSupervisor');
 });
 
 // events-ugse
+
+
+// Route::get('cyberwow-step-3/{slug}/{company_id}', [CyberWowController::class, 'getCyberwowStep3']);

@@ -13,6 +13,7 @@ class CyberwowBrand extends Model
 
     protected $fillable = [
         'isService',
+        'red',
         'description',
         'url',
         'logo256_id',

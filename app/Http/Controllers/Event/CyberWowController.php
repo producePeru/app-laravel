@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Event;
 use App\Http\Controllers\Controller;
 use App\Models\CyberwowBrand;
 use App\Models\CyberwowLeader;
+use App\Models\CyberwowOffer;
 use App\Models\CyberwowParticipant;
 use App\Models\Fair;
 use Illuminate\Http\Request;
@@ -102,6 +103,7 @@ class CyberWowController extends Controller
                 'wow_id'       => $brand->wow_id,
                 'user_id'      => $brand->user_id,
                 'company_id'   => $brand->company_id,
+                'red'          => $brand->red,
                 'participante' => [
                     'id'          => $participante->id,
                     'name'        => $participante->name ?? null,
@@ -124,6 +126,52 @@ class CyberWowController extends Controller
             ], 500);
         }
     }
+
+    public function cyberwowDataStep3($slug, $company_id)
+    {
+        try {
+            // Buscar la feria por slug
+            $fair = Fair::where('slug', $slug)->first();
+
+            if (!$fair) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Feria no encontrada.',
+                ], 404);
+            }
+
+            // Obtener las ofertas por empresa y evento
+            $offers = CyberwowOffer::with(['imageFull', 'imagePhone'])
+                ->where('wow_id', $fair->id)
+                ->where('company_id', $company_id)
+                ->orderBy('dia')
+                ->get();
+
+            // Verificar si existen ofertas
+            if ($offers->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'No hay ofertas registradas aún para esta empresa.',
+                    'offers' => [],
+                    'status' => 204
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ofertas obtenidas correctamente.',
+                'offers' => $offers,
+                'status' => 200
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las ofertas.',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
 
     function updateLeadertoSupervisor(Request $request)
     {
