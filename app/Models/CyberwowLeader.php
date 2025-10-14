@@ -14,6 +14,7 @@ class CyberwowLeader extends Model
     protected $fillable = [
         'user_id',
         'wow_id',
+        'supervisor',
         'status'
     ];
 

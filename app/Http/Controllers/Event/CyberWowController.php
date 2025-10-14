@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
 use App\Models\CyberwowBrand;
+use App\Models\CyberwowLeader;
 use App\Models\CyberwowParticipant;
+use App\Models\Fair;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -119,6 +121,35 @@ class CyberWowController extends Controller
                 'success' => false,
                 'message' => 'Error al obtener la información.',
                 'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    function updateLeadertoSupervisor(Request $request)
+    {
+        try {
+
+            $slug = $request->input('slug');
+            $supervisor = $request->input('supervisor');
+            $user_id = $request->input('user_id');
+
+            $fair = Fair::where('slug', $slug)->firstOrFail();
+
+            $wow_id = $fair->id;
+
+            CyberwowLeader::where('wow_id', $wow_id)
+                ->where('user_id', $user_id)
+                ->update(['supervisor' => $supervisor]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Supervisor actualizado correctamente.',
+                'status' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar el supervisor: ' . $e->getMessage()
             ], 500);
         }
     }

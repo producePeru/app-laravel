@@ -1357,6 +1357,14 @@ class UgsePostulanteController extends Controller
 
             $tiempo = round(mt_rand(15, 40) / 10, 1) . " días";
 
+            // 4️⃣ Buscar supervisor del líder actual
+            $leaderRecord = CyberwowLeader::where('wow_id', $fair->id)
+                ->where('user_id', $user->id)
+                ->select('supervisor')
+                ->first();
+
+            $supervisor = $leaderRecord->supervisor ?? null; // Valor por defecto si no existe
+
             $resultados[] = [
                 'id' => $user->id,
                 'nombre' => mb_strtoupper(trim("{$user->name} {$user->lastname} {$user->middlename}")),
@@ -1368,10 +1376,16 @@ class UgsePostulanteController extends Controller
                 'productividad' => $productividad,
                 'actividad' => now()->subDays(rand(1, 30))->format('Y-m-d H:i'),
                 'color' => $colores[$i] ?? sprintf("#%06X", mt_rand(0, 0xFFFFFF)),
+                'supervisor' => $supervisor,
             ];
 
             $i++;
         }
+
+        // Ordenar resultados por 'supervisor' de manera descendente, colocando los null al final
+        $resultados = collect($resultados)->sortBy(function ($item) {
+            return $item['supervisor'] === null ? PHP_INT_MAX : $item['supervisor'];
+        })->values()->all();
 
         return response()->json([
             'status' => 200,

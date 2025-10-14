@@ -796,3 +796,8 @@ CREATE TABLE email_templates (
 --     -- Limitar máximo 3 ofertas por empresa/evento (una por día)
 --     CONSTRAINT unique_offer_per_day UNIQUE (wow_id, company_id, dia)
 -- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+-- ALTER TABLE `cyberwowleader`
+-- ADD COLUMN `supervisor` VARCHAR(3) NULL AFTER `wow_id`;

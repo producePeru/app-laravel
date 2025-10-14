@@ -5,6 +5,7 @@ use App\Http\Controllers\Download\CyberWowCarpetaLiderController;
 use App\Http\Controllers\Download\CyberWowParticipantesController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
+use App\Http\Controllers\Download\DownloadLiderAsesorController;
 use App\Http\Controllers\Download\DownloadTemplateUgoActividadesController;
 use App\Http\Controllers\Download\QuestionnarieController;
 use App\Http\Controllers\Download\SedAsistentesController;
@@ -61,5 +62,9 @@ Route::controller(DownloadTemplateUgoActividadesController::class)->group(functi
 });
 
 
+Route::controller(DownloadLiderAsesorController::class)->group(function () {
+
+    Route::post('resumen-by-users/{slug}', 'resumenPorUsuarios');
+});
 
 // download
