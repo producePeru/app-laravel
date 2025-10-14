@@ -804,5 +804,5 @@ CREATE TABLE email_templates (
 
 
 -- ALTER TABLE cyberwowbrand
--- ADD COLUMN red TINYINT NULL CHECK (red IN (1,2,3,4,5)) AFTER description;
+-- ADD COLUMN red TINYINT NULL CHECK (red IN (1,2,3,4,5)) AFTER description;  ....
 
