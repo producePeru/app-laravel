@@ -26,7 +26,7 @@ class UpdateUserRequest extends FormRequest
             'dni' => [
                 'required',
                 'string',
-                Rule::unique('users', 'dni')->ignore($this->route('id')),
+                // Rule::unique('users', 'dni')->ignore($this->route('id')),
             ],
             'name' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',

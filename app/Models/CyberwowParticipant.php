@@ -49,6 +49,8 @@ class CyberwowParticipant extends Model
         'howKnowEvent_id',          // medioEntero
         'autorization',
 
+        'user_id',
+
         'paso1',
         'poso2',
         'paso3'
@@ -111,5 +113,12 @@ class CyberwowParticipant extends Model
     public function medioEntero()
     {
         return $this->belongsTo(PropagandaMedia::class, 'howKnowEvent_id');
+    }
+
+
+
+    public function brands()
+    {
+        return $this->hasMany(\App\Models\CyberwowBrand::class, 'company_id', 'id');
     }
 }

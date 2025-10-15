@@ -4,6 +4,7 @@ use App\Http\Controllers\Download\ActividadesUgoController;
 use App\Http\Controllers\Download\CyberWowCarpetaLiderController;
 use App\Http\Controllers\Download\CyberWowParticipantesController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
+use App\Http\Controllers\Download\DownloadCyberWowMarcaController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\Download\DownloadLiderAsesorController;
 use App\Http\Controllers\Download\DownloadTemplateUgoActividadesController;
@@ -65,6 +66,13 @@ Route::controller(DownloadTemplateUgoActividadesController::class)->group(functi
 Route::controller(DownloadLiderAsesorController::class)->group(function () {
 
     Route::post('resumen-by-users/{slug}', 'resumenPorUsuarios');
+});
+
+Route::controller(DownloadCyberWowMarcaController::class)->group(function () {
+
+    Route::post('export-cyber-wow-marca/{slug}', 'exportCyberWowMarca');
+
+    Route::post('export-cyber-wow-products/{slug}', 'exportCyberWowOfertas');
 });
 
 // download

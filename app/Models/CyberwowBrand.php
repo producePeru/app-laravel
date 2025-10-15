@@ -37,7 +37,7 @@ class CyberwowBrand extends Model
     // (Opcional) Si tienes relación con participante o usuario
     public function participant()
     {
-        return $this->belongsTo(CyberwowParticipant::class, 'company_id', 'company_id');
+        return $this->belongsTo(CyberwowParticipant::class, 'company_id', 'id');
     }
 
     public function user()
