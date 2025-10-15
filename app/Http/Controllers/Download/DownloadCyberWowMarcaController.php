@@ -28,7 +28,7 @@ class DownloadCyberWowMarcaController extends Controller
             // 👤 Usuario autenticado
             $userId = Auth::id();
 
-            // 🔗 LEFT JOIN: Traer todos los participantes (aunque no tengan marca)
+            // 🔗 LEFT JOIN: Trae todos los participantes (aunque no tengan marca)
             $data = DB::table('cyberwowparticipants as p')
                 ->leftJoin('cyberwowbrand as b', 'p.id', '=', 'b.company_id')
                 ->leftJoin('images as i256', 'b.logo256_id', '=', 'i256.id')
@@ -38,6 +38,11 @@ class DownloadCyberWowMarcaController extends Controller
                     'p.id as participante_id',
                     'p.nombreComercial',
                     'p.razonSocial',
+                    'p.documentnumber',
+                    'p.name',
+                    'p.phone',
+                    'p.email',
+                    'p.ruc',
                     'b.isService',
                     'b.description as brand_description',
                     'b.url as brand_url',
@@ -55,11 +60,17 @@ class DownloadCyberWowMarcaController extends Controller
             $rows = $data->map(function ($item, $index) {
                 return [
                     $index + 1,                                           // IDX
-                    $item->nombreComercial ?? '-',                        // MARCA
-                    '-',                                                  // URL CYBERWOW
-                    $item->razonSocial ?? '-',                            // RAZÓN SOCIAL
+                    $item->ruc ?? '-',
+                    $item->nombreComercial ?? '-',
+                    $item->razonSocial ?? '-',
+                    $item->documentnumber ?? '-',
+                    $item->name ?? '-',
+                    $item->phone ?? '-',
+                    $item->email ?? '-',
                     'emprendedor',                                        // TIPO SPONSOR
-                    $item->isService === 's' ? 'Si' : ($item->isService === 'n' ? 'No' : '-'), // ES SERVICIO?
+                    $item->isService === 's'
+                        ? 'Si'
+                        : ($item->isService === 'n' ? 'No' : '-'),       // ES SERVICIO?
                     $item->logo256_url ?? '-',                            // LOGOTIPO_256
                     $item->logo160_url ?? '-',                            // LOGOTIPO_160
                     $item->brand_url ?? '-',                              // URL ENLACE
@@ -78,12 +89,14 @@ class DownloadCyberWowMarcaController extends Controller
             }
 
             // 🚀 Enviar el archivo como descarga
+            $fileName = 'cyberwow_marcas_' . $slug . '.xlsx';
+
             return new StreamedResponse(function () use ($spreadsheet) {
                 $writer = new Xlsx($spreadsheet);
                 $writer->save('php://output');
             }, 200, [
                 'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="cyberwow_marcas.xlsx"',
+                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -91,6 +104,7 @@ class DownloadCyberWowMarcaController extends Controller
             ], 500);
         }
     }
+
 
     public function exportCyberWowOfertas($slug)
     {
