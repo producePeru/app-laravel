@@ -329,7 +329,7 @@ class CyberWowController extends Controller
             }
 
             // 3️⃣ Obtener el logo (si existe)
-            $image = $brand->logo256_id ? Image::find($brand->logo256_id) : null;
+            $image = $brand->logo160_id ? Image::find($brand->logo160_id) : null;
 
             // 4️⃣ Preparar la respuesta
             $data = [
