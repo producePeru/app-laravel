@@ -65,6 +65,14 @@ Route::controller(CyberWowController::class)->group(function () {
     Route::get('cyberwow-data-step-3/{slug}/{company_id}', 'cyberwowDataStep3');
 
     Route::put('update-leader-supervisor', 'updateLeadertoSupervisor');
+
+    Route::POST('get-list-leaders-supervisor', 'getListLeadersToSupervisor');
+
+    Route::POST('follow-up-leader-to-company', 'followUpLeaderToCompany');
+
+    Route::POST('follow-up-leader-to-brand', 'followUpLeaderToBrand');
+
+    Route::POST('follow-up-leader-to-products', 'followUpLeaderToProducts');
 });
 
 // events-ugse

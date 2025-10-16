@@ -8,6 +8,7 @@ use App\Models\CyberwowLeader;
 use App\Models\CyberwowOffer;
 use App\Models\CyberwowParticipant;
 use App\Models\Fair;
+use App\Models\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -198,6 +199,215 @@ class CyberWowController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar el supervisor: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getListLeadersToSupervisor(Request $request)
+    {
+        try {
+            $slug = $request->input('slug');
+            $supervisor = $request->input('supervisor');
+
+            $fair = Fair::where('slug', $slug)->first();
+
+            if (!$fair) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Feria no encontrada.',
+                ], 404);
+            }
+
+            $leaders = CyberwowLeader::where('wow_id', $fair->id)
+                ->where('supervisor', $supervisor)
+                ->with('user:id,name,lastname')
+                ->get();
+
+            $formatted = $leaders->map(function ($leader) {
+                $fullName = "{$leader->user->name} {$leader->user->lastname}";
+                return [
+                    'label' => mb_strtoupper($fullName, 'UTF-8'),
+                    'value' => $leader->user_id,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $formatted,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los líderes.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function followUpLeaderToCompany(Request $request)
+    {
+        try {
+            $slug = $request->input('slug');
+            $userId = $request->input('user_id');
+
+            // 1️⃣ Buscar la feria por el slug
+            $fair = Fair::where('slug', $slug)->first();
+
+            if (!$fair) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Feria no encontrada.',
+                ], 404);
+            }
+
+            // 2️⃣ Buscar los participantes que coincidan con el event_id (id de la feria) y el user_id
+            $participants = CyberwowParticipant::with(['user'])
+                ->where('event_id', $fair->id)
+                ->where('user_id', $userId)
+                ->get();
+
+            // 3️⃣ Transformar los datos al formato requerido
+            $data = $participants->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'nombre' => $item->nombreComercial,
+                    'razonSocial' => $item->razonSocial,
+                    'ruc' => $item->ruc ?? 'Sin RUC',
+                    'representante' => $item->name . ' ' . $item->lastname,
+                    'dni' => $item->documentnumber,
+                    'celular' => $item->phone,
+                    'asesor' => $item->user ? "{$item->user->name} {$item->user->lastname}" : 'No asignado',
+
+
+                    // 'estado' => $item->status ?? 'pendiente',
+                ];
+            });
+
+            // 4️⃣ Retornar respuesta
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las empresas.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function followUpLeaderToBrand(Request $request)
+    {
+        try {
+            $slug = $request->input('slug');
+            $companyId = $request->input('company_id');
+
+            // 1️⃣ Buscar la feria por el slug
+            $fair = Fair::where('slug', $slug)->first();
+
+            if (!$fair) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Feria no encontrada.',
+                ], 404);
+            }
+
+            // 2️⃣ Buscar una sola marca que coincida con wow_id y company_id
+            $brand = CyberwowBrand::where('wow_id', $fair->id)
+                ->where('company_id', $companyId)
+                ->first();
+
+            if (!$brand) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontró una marca para esta empresa.',
+                    'data' => null,
+                ]);
+            }
+
+            // 3️⃣ Obtener el logo (si existe)
+            $image = $brand->logo256_id ? Image::find($brand->logo256_id) : null;
+
+            // 4️⃣ Preparar la respuesta
+            $data = [
+                'id' => $brand->id,
+                'isService' => $brand->isService,
+                'description' => $brand->description,
+                'url' => $brand->url,
+                'logo' => $image ? [
+                    'id' => $image->id,
+                    'name' => $image->name,
+                    'url' => $image->url,
+                ] : null,
+            ];
+
+            // 5️⃣ Retornar resultado
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener la marca.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function followUpLeaderToProducts(Request $request)
+    {
+        try {
+            $slug = $request->input('slug');
+            $companyId = $request->input('company_id');
+
+            // 1️⃣ Buscar la feria por el slug
+            $fair = Fair::where('slug', $slug)->first();
+
+            if (!$fair) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Feria no encontrada.',
+                    'data' => [],
+                ], 404);
+            }
+
+            // 2️⃣ Buscar las ofertas que coincidan con wow_id y company_id
+            $offers = CyberwowOffer::where('wow_id', $fair->id)
+                ->where('company_id', $companyId)
+                ->get();
+
+            // 3️⃣ Mapear resultados con la estructura esperada
+            $productos = $offers->map(function ($offer) {
+                $image = $offer->imgFull
+                    ? Image::find($offer->imgFull)
+                    : ($offer->img ? Image::find($offer->img) : null);
+
+                return [
+                    'nombre'         => $offer->title,
+                    'categoria'      => $offer->category,
+                    'tipo'           => $offer->tipo,
+                    'precioOriginal' => $offer->precioAnterior,
+                    'precioActual'   => $offer->precioOferta,
+                    'imagen'         => $image ? $image->url : null,
+                    'link'           => $offer->link,
+                ];
+            });
+
+            // 4️⃣ Retornar siempre un array, aunque esté vacío
+            return response()->json([
+                'success' => true,
+                'data' => $productos->toArray(), // Si no hay, devuelve []
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los productos.',
+                'error' => $e->getMessage(),
+                'data' => [],
             ], 500);
         }
     }

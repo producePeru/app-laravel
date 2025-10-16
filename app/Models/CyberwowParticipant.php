@@ -115,6 +115,10 @@ class CyberwowParticipant extends Model
         return $this->belongsTo(PropagandaMedia::class, 'howKnowEvent_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
 
     public function brands()
