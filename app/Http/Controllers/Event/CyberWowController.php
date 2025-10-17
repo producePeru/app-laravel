@@ -251,7 +251,7 @@ class CyberWowController extends Controller
             $slug = $request->input('slug');
             $userId = $request->input('user_id');
 
-            // 1️⃣ Buscar la feria por el slug
+            // 1️⃣ Buscar la feria
             $fair = Fair::where('slug', $slug)->first();
 
             if (!$fair) {
@@ -261,14 +261,31 @@ class CyberWowController extends Controller
                 ], 404);
             }
 
-            // 2️⃣ Buscar los participantes que coincidan con el event_id (id de la feria) y el user_id
+            // 2️⃣ Buscar los participantes de ese user y feria
             $participants = CyberwowParticipant::with(['user'])
                 ->where('event_id', $fair->id)
                 ->where('user_id', $userId)
                 ->get();
 
-            // 3️⃣ Transformar los datos al formato requerido
+            // 3️⃣ Transformar datos
             $data = $participants->map(function ($item) {
+
+                // 🟢🟡🔴 Semáforo de pasos
+                $paso1 = $item->paso1;
+                $paso2 = $item->paso2;
+                $paso3 = $item->paso3;
+
+                if ($paso1 == 1 && $paso2 == 1 && $paso3 == 1) {
+                    $estado = 'green';
+                    $estadoName = 'Ofertas';
+                } elseif ($paso1 == 1 && $paso2 == 1) {
+                    $estado = '#ffa700';
+                    $estadoName = 'Marca';
+                } else {
+                    $estado = '#ff626a';
+                    $estadoName = 'Validación';
+                }
+
                 return [
                     'id' => $item->id,
                     'nombre' => $item->nombreComercial,
@@ -278,9 +295,8 @@ class CyberWowController extends Controller
                     'dni' => $item->documentnumber,
                     'celular' => $item->phone,
                     'asesor' => $item->user ? "{$item->user->name} {$item->user->lastname}" : 'No asignado',
-
-
-                    // 'estado' => $item->status ?? 'pendiente',
+                    'estado' => $estado,
+                    'estadoName' => $estadoName
                 ];
             });
 
