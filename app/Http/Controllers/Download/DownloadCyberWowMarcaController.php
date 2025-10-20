@@ -255,7 +255,7 @@ class DownloadCyberWowMarcaController extends Controller
                 'RUC' => $item->participant ? $item->participant->ruc : null,
                 'MARCA' => $item->participant ? $item->participant->nombreComercial : null,
                 'RAZÓN SOCIAL' => $item->participant ? $item->participant->nombreComercial : null,
-                'ES SERVICIO?' => $item->isService ? 'Sí' : 'No',
+                'ES SERVICIO?' => $item->isService == 's' ? 'SI' : 'NO',
                 'LOGOTIPO (256)' => $item->logo256 ? $item->logo256->name : null,
                 'LOGOTIPO (160)' => $item->logo160 ? $item->logo160->name : null,
                 'URL ENLACE' => $item->url,
