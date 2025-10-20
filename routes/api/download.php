@@ -55,6 +55,8 @@ Route::controller(ActividadesUgoController::class)->group(function () {
 Route::controller(CyberWowCarpetaLiderController::class)->group(function () {
 
     Route::get('cyber-wow-folder-leader', 'downloadUserFolders');
+
+    Route::get('cyber-wow-folder-all-brands/{slug}', 'cyberWowFolderAllBrands');
 });
 
 Route::controller(DownloadTemplateUgoActividadesController::class)->group(function () {
@@ -73,6 +75,8 @@ Route::controller(DownloadCyberWowMarcaController::class)->group(function () {
     Route::post('export-cyber-wow-marca/{slug}', 'exportCyberWowMarca');
 
     Route::post('export-cyber-wow-products/{slug}', 'exportCyberWowOfertas');
+
+    Route::post('export-cyber-wow-brands-all/{slug}', 'exportCyberWowBrandsAll');
 });
 
 // download

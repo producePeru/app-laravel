@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class DownloadCyberWowMarcaController extends Controller
@@ -214,5 +215,82 @@ class DownloadCyberWowMarcaController extends Controller
                 'message' => 'Error al exportar: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+
+
+
+    public function exportCyberWowBrandsAll($slug)
+    {
+        // 1️⃣ Buscar el ID de la feria (Fair)
+        $fair = Fair::where('slug', $slug)->first();
+
+        if (!$fair) {
+            return response()->json(['error' => 'Fair no encontrada'], 404);
+        }
+
+        // 2️⃣ Buscar todas las marcas relacionadas con ese wow_id
+        $brands = CyberwowBrand::with(['logo256', 'logo160', 'participant'])
+            ->where('wow_id', $fair->id)
+            ->get([
+                'id',
+                'isService',
+                'red',
+                'description',
+                'url',
+                'logo256_id',
+                'logo160_id',
+                'wow_id',
+                'user_id',
+                'company_id',
+            ]);
+
+        if ($brands->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron marcas para este CyberWow.'], 404);
+        }
+
+        // 3️⃣ Mapear datos incluyendo el nombre del logo y datos de la empresa (participant)
+        $data = $brands->map(function ($item) {
+            return [
+                'RUC' => $item->participant ? $item->participant->ruc : null,
+                'MARCA' => $item->participant ? $item->participant->nombreComercial : null,
+                'RAZÓN SOCIAL' => $item->participant ? $item->participant->nombreComercial : null,
+                'ES SERVICIO?' => $item->isService ? 'Sí' : 'No',
+                'LOGOTIPO (256)' => $item->logo256 ? $item->logo256->name : null,
+                'LOGOTIPO (160)' => $item->logo160 ? $item->logo160->name : null,
+                'URL ENLACE' => $item->url,
+                'DESCRIPCIÓN' => $item->description
+                // 'Red' => $item->red,
+                // Datos del participante (empresa)
+                // Otros IDs de referencia
+                // 'Usuario ID' => $item->user_id,
+                // 'Empresa ID' => $item->company_id,
+            ];
+        });
+
+        // 4️⃣ Generar y descargar Excel
+        $fileName = 'CyberWow_Brands_' . $fair->slug . '.xlsx';
+
+        return Excel::download(new class($data) implements
+            \Maatwebsite\Excel\Concerns\FromCollection,
+            \Maatwebsite\Excel\Concerns\WithHeadings
+        {
+            protected $data;
+
+            public function __construct($data)
+            {
+                $this->data = $data;
+            }
+
+            public function collection()
+            {
+                return collect($this->data);
+            }
+
+            public function headings(): array
+            {
+                return array_keys($this->data->first() ?? []);
+            }
+        }, $fileName);
     }
 }

@@ -427,4 +427,29 @@ class CyberWowController extends Controller
             ], 500);
         }
     }
+
+    public function removeLeaderFromCompany($idParticipante)
+    {
+        // Buscar al participante por ID
+        $participant = CyberwowParticipant::find($idParticipante);
+
+        // Validar que exista
+        if (!$participant) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Participante no encontrado.'
+            ], 404);
+        }
+
+        // Establecer el user_id en null
+        $participant->user_id = null;
+
+        // Guardar cambios
+        $participant->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Líder eliminado correctamente de la empresa.'
+        ]);
+    }
 }

@@ -73,6 +73,8 @@ Route::controller(CyberWowController::class)->group(function () {
     Route::POST('follow-up-leader-to-brand', 'followUpLeaderToBrand');
 
     Route::POST('follow-up-leader-to-products', 'followUpLeaderToProducts');
+
+    Route::PUT('remove-leader-from-company/{idParticipante}', 'removeLeaderFromCompany');
 });
 
 // events-ugse
