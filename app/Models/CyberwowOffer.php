@@ -47,4 +47,9 @@ class CyberwowOffer extends Model
     {
         return $this->belongsTo(Image::class, 'img');
     }
+
+    public function brand()
+    {
+        return $this->belongsTo(CyberwowBrand::class, 'company_id', 'company_id');
+    }
 }

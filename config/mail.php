@@ -34,7 +34,7 @@ return [
     */
 
     'mailers' => [
-        'capacitaciones' => [
+        'capacitaciones' => [  // capacitaciones.pnte@gmail.com
             'transport'     => env('MAIL_MAILER_CAPACITACIONES', 'smtp'),
             'host'          => env('MAIL_HOST_CAPACITACIONES'),
             'port'          => env('MAIL_PORT_CAPACITACIONES'),
@@ -46,7 +46,7 @@ return [
                 'name'      => env('MAIL_FROM_NAME_CAPACITACIONES'),
             ],
         ],
-        'notificaciones' => [
+        'notificaciones' => [  // notificaciones.pnte@gmail.com
             'transport'     => env('MAIL_MAILER_NOTIFICACIONES', 'smtp'),
             'host'          => env('MAIL_HOST_NOTIFICACIONES'),
             'port'          => env('MAIL_PORT_NOTIFICACIONES'),
@@ -58,7 +58,7 @@ return [
                 'name'      => env('MAIL_FROM_NAME_NOTIFICACIONES'),
             ],
         ],
-        'cyberpnte' => [
+        'cyberpnte' => [    // cyberpnte@gmail.com
             'transport'     => env('MAIL_MAILER_CYBERPNTE', 'smtp'),
             'host'          => env('MAIL_HOST_CYBERPNTE'),
             'port'          => env('MAIL_PORT_CYBERPNTE'),
@@ -72,7 +72,7 @@ return [
         ],
 
 
-        'hostinger' => [
+        'hostinger' => [    // capacitaciones@soporte-pnte.com
             'transport'  => env('MAIL_MAILER_HOSTINGER', 'smtp'),
             'host'       => env('MAIL_HOST_HOSTINGER', 'smtp.hostinger.com'),
             'port'       => env('MAIL_PORT_HOSTINGER', 465),
@@ -86,12 +86,12 @@ return [
             ]
         ],
 
-        'office365' => [                       // chipi
+        'office365' => [   // capacitaciones_tuempresa@produce.gob.pe                      
             'transport' => env('MAIL_MAILER_OFFICE365', 'smtp'),
-            'host' => env('MAIL_HOST_OFFICE365'),
-            'port' => env('MAIL_PORT_OFFICE365'),
-            'username' => env('MAIL_USERNAME_OFFICE365'),
-            'password' => env('MAIL_PASSWORD_OFFICE365'),
+            'host'      => env('MAIL_HOST_OFFICE365'),
+            'port'      => env('MAIL_PORT_OFFICE365'),
+            'username'  => env('MAIL_USERNAME_OFFICE365'),
+            'password'  => env('MAIL_PASSWORD_OFFICE365'),
             'encryption' => env('MAIL_ENCRYPTION_OFFICE365'),
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS_OFFICE365'),
@@ -99,7 +99,7 @@ return [
             ],
         ],
 
-        'lucho' => [
+        'lucho' => [    // tuempresa_temp372@produce.gob.pe
             'transport' => env('MAIL_MAILER_LUCHO', 'smtp'),
             'host' => env('MAIL_HOST_LUCHO'),
             'port' => env('MAIL_PORT_LUCHO'),

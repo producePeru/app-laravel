@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Attendance\AttendanceController;
+use App\Http\Controllers\Download\DownloadImageCyberWowTemplateController;
+use App\Http\Controllers\Event\CyberWowController;
 use App\Http\Controllers\Event\CyberwowParticipantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Event\PublicEventsController;
@@ -59,4 +61,10 @@ Route::controller(TrainingController::class)->group(function () {
 Route::controller(CyberwowParticipantController::class)->group(function () {
 
     Route::post('register-cyber-wow', 'store');
+});
+
+
+Route::controller(DownloadImageCyberWowTemplateController::class)->group(function () {
+
+    Route::POST('merge-with-frame/{idOffert}', 'generateOfferTemplate');
 });

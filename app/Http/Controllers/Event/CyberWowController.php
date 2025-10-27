@@ -11,6 +11,10 @@ use App\Models\Fair;
 use App\Models\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Response;
 
 
 class CyberWowController extends Controller

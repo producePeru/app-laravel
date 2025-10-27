@@ -3,73 +3,184 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Invitación – Tu Empresa Capacita-TEC 2025</title>
+  <title>Invitación - TU EMPRESA CAPACITA-TEC 2025</title>
+  <style>
+    .main {
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px 0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 30px auto;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background-color: #03a3da;
+      color: #fff;
+      text-align: center;
+      padding: 25px 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0.5px;
+    }
+
+    .body {
+      padding: 30px 40px;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .body p {
+      margin-bottom: 15px;
+    }
+
+    .highlight {
+      background-color: #e9f2ff;
+      border-left: 4px solid #004aad;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+
+    a.button {
+      display: inline-block;
+      background-color: #de1a1e;
+      color: #fff !important;
+      text-decoration: none;
+      padding: 12px 25px;
+      border-radius: 6px;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .footer {
+      background-color: #f1f1f1;
+      color: #555;
+      text-align: center;
+      padding: 15px 20px;
+      font-size: 13px;
+    }
+  </style>
 </head>
 
-<body style="font-family: Arial, sans-serif; font-size:14px; color:#333; line-height:1.6; background:#f9fafb; padding:20px;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background:#fff; padding:24px; border-radius:8px;">
-    <tr>
-      <td>
-        <p>👋 <strong>Estimado(a) empresario(a),</strong></p>
+<body class="main">
+  <div class="container">
+    <div class="header">
+      <h1>
+        Invitación a las Capacitaciones Empresariales<br />“TU EMPRESA
+        CAPACITA-TEC 2025”
+      </h1>
+    </div>
 
-        <p>
-          Reciba Ud. el cordial saludo del <strong>Ministerio de la Producción</strong>, que mediante el
-          <strong>Programa Nacional Tu Empresa</strong>, se complace en invitarlo a participar de las
-          <strong>Capacitaciones Empresariales "TU EMPRESA CAPACITA-TEC 2025"</strong>, mediante el cual se brindarán los siguientes cursos.
-        </p>
+    <div class="body">
+      <p>Estimado(a) empresario(a),</p>
 
-        <h3 style="margin-top:20px;">📝 Aprende con Produce: Fácil, rápido y gratis:</h3>
-        <p>
-          Las capacitaciones programadas para este 2025 se desarrollarán vía <strong>TEAMS</strong>.
-          Seleccione el día y la hora de capacitación en el siguiente enlace:
-        </p>
-        <p style="text-align:center; margin:20px 0;">
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSdO9FnCwnmdsGdhv7ycCl4O2sSXkfOITAZtQe0XXjCH1aCTlA/viewform"
-            style="color: white; font-weight: bold; background-color: #d72713; text-decoration: none; border-radius: 6px; padding: 12px 37px; font-size: 16px; display: block; margin: 24px 0;">
-            👉 Inscribirme aquí
-          </a>
-        </p>
+      <p>
+        Reciba el cordial saludo del
+        <strong>Ministerio de la Producción</strong>, que mediante el
+        <strong>Programa Nacional Tu Empresa</strong>, se complace en
+        invitarlo(a) a participar de las
+        <strong>Capacitaciones Empresariales "TU EMPRESA CAPACITA-TEC 2025"</strong>, en las cuales se ofrecerán cursos especializados para fortalecer
+        sus capacidades empresariales.
+      </p>
 
-        <h3 style="margin-top:20px;">📌 Indicaciones generales:</h3>
-        <ul style="padding-left:18px;">
-          <li>📧 Recibirá un correo con el enlace del curso la mañana del día asignado.</li>
-          <li>📝 Se tomará prueba de entrada al inicio y prueba de salida al finalizar.</li>
-          <li>📂 Deberá entregar el trabajo práctico máximo 3 horas después de finalizar.</li>
-          <li>✅ Nota mínima aprobatoria: 12 en la prueba de salida.</li>
-          <li>📜 Constancias y material se emitirán a nombre de la <strong>Razón Social del RUC</strong> de la MYPE participante.</li>
-        </ul>
+      <div class="highlight">
+        <strong>📅 Fechas:</strong> Mes de noviembre del 2025<br />
+        <strong>🕒 Horarios:</strong> Lunes a Viernes / 2:00 p.m. – 5:00 p.m.
+        o 5:30 p.m. – 8:30 p.m.<br />
+        <strong>💻 Modalidad:</strong> Virtual (vía TEAMS)
+      </div>
 
-        <h3 style="margin-top:20px;">ℹ️ Información adicional:</h3>
-        <p>
-          📅 <strong>Fechas:</strong> Mes de octubre del 2025. <br>
-          ⏰ <strong>Horarios:</strong> Lunes a Viernes <br>
-          – 2:00 pm a 5:00 pm <br>
-          – 5:30 pm a 8:30 pm
-        </p>
+      <p>
+        Para inscribirse y seleccionar el curso de su preferencia, ingrese al
+        siguiente enlace:
+      </p>
 
-        <h3 style="margin-top:20px;">🎓 Constancia de participación:</h3>
-        <ul style="padding-left:18px;">
-          <li>📌 Haber registrado correctamente RUC y correo.</li>
-          <li>📝 Rendir prueba de entrada y de salida.</li>
-          <li>📂 Adjuntar el trabajo práctico en el link de salida.</li>
-          <li>✅ Obtener nota aprobatoria mínima de 12 en la prueba de salida.</li>
-        </ul>
+      <p style="text-align: center">
+        <a
+          href="https://docs.google.com/forms/d/e/1FAIpQLSdO9FnCwnmdsGdhv7ycCl4O2sSXkfOITAZtQe0XXjCH1aCTlA/viewform?usp=header"
+          target="_blank" style="color: #fff;"
+          class="button">👉 INSCRÍBETE AQUÍ</a>
+      </p>
 
-        <p style="margin-top:20px; font-weight:bold; text-align:center; font-size:16px; color:#16a34a;">
-          🎉 Cursos libres de costo – ¡¡¡Los esperamos!!!
-        </p>
+      <h3 style="color: #004aad">📘 Indicaciones generales:</h3>
+      <ul>
+        <li>
+          El enlace del curso será enviado por correo el mismo día de la
+          capacitación.
+        </li>
+        <li>Se tomará prueba de entrada y salida por cada curso.</li>
+        <li>
+          Deberá enviar el trabajo práctico dentro de las 3 horas posteriores
+          al curso.
+        </li>
+        <li>
+          La nota mínima aprobatoria es <strong>12</strong> en la prueba de
+          salida.
+        </li>
+        <li>
+          Las constancias y materiales se emitirán a nombre de la
+          <strong>Razón Social del RUC</strong> de la MYPE participante.
+        </li>
+      </ul>
 
-        <!-- Imágenes agregadas al final -->
-        <div style="margin-top:20px; text-align:center;">
-          <img src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/oct1.png" alt="Imagen 1" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
-          <img src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/oct2.png" alt="Imagen 2" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
-          <img src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/oct3.png" alt="Imagen 3" style="max-width:100%; margin-bottom:12px; border-radius:6px;">
-          <img src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/oct4.png" alt="Imagen 4" style="max-width:100%; border-radius:6px;">
-        </div>
+      <h3 style="color: #004aad">
+        🏅 Para obtener constancia de participación:
+      </h3>
+      <ul>
+        <li>Registrar correctamente RUC y correo electrónico.</li>
+        <li>Rendir prueba de entrada y salida.</li>
+        <li>Adjuntar trabajo práctico en el link de salida.</li>
+        <li>Obtener nota mínima aprobatoria (12).</li>
+      </ul>
 
-      </td>
-    </tr>
-  </table>
+      <p style="margin-top: 25px">
+        <strong>✅ Los cursos son totalmente gratuitos.</strong><br />
+        ¡Los esperamos!
+      </p>
+
+      <p>
+        Atentamente,<br /><br />
+        <strong>Programa Nacional Tu Empresa</strong><br />
+        <em>Ministerio de la Producción</em>
+      </p>
+    </div>
+
+    <div>
+      <img
+        src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/img1.png"
+        alt="Imagen 1"
+        style="max-width: 100%; margin-bottom: 12px; border-radius: 6px" />
+      <img
+        src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/img2.png"
+        alt="Imagen 1"
+        style="max-width: 100%; margin-bottom: 12px; border-radius: 6px" />
+      <img
+        src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/img3.png"
+        alt="Imagen 1"
+        style="max-width: 100%; margin-bottom: 12px; border-radius: 6px" />
+      <img
+        src="https://apituempresa.soporte-pnte.com/images/pp03/octubre/img4.png"
+        alt="Imagen 1"
+        style="max-width: 100%; margin-bottom: 12px; border-radius: 6px" />
+    </div>
+
+    <div class="footer">
+      © 2025 Ministerio de la Producción – Programa Nacional Tu Empresa<br />
+      Todos los derechos reservados.
+    </div>
+  </div>
 </body>
 
 </html>

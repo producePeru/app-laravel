@@ -75,6 +75,8 @@ Route::controller(CyberWowController::class)->group(function () {
     Route::POST('follow-up-leader-to-products', 'followUpLeaderToProducts');
 
     Route::PUT('remove-leader-from-company/{idParticipante}', 'removeLeaderFromCompany');
+
+    // Route::GET('merge-with-frame/{idParticipante}', 'mergeWithFrame');
 });
 
 // events-ugse
