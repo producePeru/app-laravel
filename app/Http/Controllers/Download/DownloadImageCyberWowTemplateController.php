@@ -27,6 +27,8 @@ class DownloadImageCyberWowTemplateController extends Controller
             $offerImagePath = $this->getStoragePathFromUrl($offer->imageFull->url);
             $logoPath = $this->getStoragePathFromUrl($offer->brand->logo160->url);
 
+            return $templatePath;
+
             if (!file_exists($templatePath) || !file_exists($offerImagePath) || !file_exists($logoPath)) {
                 return response()->json(['error' => 'No se encontró alguna imagen requerida'], 404);
             }
