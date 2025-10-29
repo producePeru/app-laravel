@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Download;
 
 use App\Http\Controllers\Controller;
 use App\Models\CyberwowBrand;
+use App\Models\CyberwowOffer;
 use App\Models\Fair;
 use App\Models\Image;
 use Illuminate\Http\Request;
@@ -18,6 +19,9 @@ class CyberWowCarpetaLiderController extends Controller
     {
         try {
             $user = Auth::user();
+
+            // 🔹 Cambia esta variable para incluir o no las imágenes FULL
+            $includeImageFull = false; // 👈 TRUE = incluir imageFull, FALSE = no incluir
 
             // 🔹 Construir nombre base (nombre + apellido)
             $fullName = trim(($user->name ?? '') . ' ' . ($user->lastname ?? ''));
@@ -34,7 +38,7 @@ class CyberWowCarpetaLiderController extends Controller
                 return response()->json(['message' => 'No se pudo crear el archivo ZIP.'], 500);
             }
 
-            // Carpeta principal
+            // Carpetas principales
             $mainFolder = "{$folderName}/";
             $empresaFolder = "{$mainFolder}empresa/";
             $productosFolder = "{$mainFolder}productos/";
@@ -48,21 +52,58 @@ class CyberWowCarpetaLiderController extends Controller
             $brands = CyberwowBrand::where('user_id', $user->id)->get();
 
             foreach ($brands as $brand) {
+                // 1️⃣ Agregar logos
                 $images = Image::whereIn('id', [$brand->logo256_id, $brand->logo160_id])
                     ->whereNotNull('url')
                     ->get();
 
+                $baseFileName = Str::slug($brand->name ?? 'marca', '_');
+
                 foreach ($images as $img) {
-                    // Convertir la URL pública a una ruta física
                     $relativePath = str_replace(asset('storage') . '/', '', $img->url);
                     $path = public_path("storage/" . $relativePath);
 
                     if (file_exists($path)) {
-                        // 🧩 Usar el nombre original del campo `name` para el archivo dentro del ZIP
                         $fileName = $img->name ?? basename($path);
-
-                        // Agregar al ZIP con el nombre personalizado
                         $zip->addFile($path, $empresaFolder . $fileName);
+                        $baseFileName = pathinfo($fileName, PATHINFO_FILENAME);
+                    }
+                }
+
+                // 2️⃣ Agregar ofertas una sola vez por marca
+                //    Solo cargamos la relación imageFull si $includeImageFull es true
+                $relations = ['imagePhone'];
+                if ($includeImageFull) {
+                    $relations[] = 'imageFull';
+                }
+
+                $offers = CyberwowOffer::where('company_id', $brand->company_id)
+                    ->with($relations)
+                    ->get();
+
+                foreach ($offers as $index => $offer) {
+                    $offerPrefix = "oferta" . ($index + 1) . "_";
+
+                    // 🔸 Imagen principal (imageFull)
+                    if ($includeImageFull && $offer->imageFull && $offer->imageFull->url) {
+                        $offerPath = public_path('storage/' . str_replace(asset('storage') . '/', '', $offer->imageFull->url));
+                        if (file_exists($offerPath)) {
+                            $zip->addFile(
+                                $offerPath,
+                                $productosFolder . $offerPrefix . ($offer->imageFull->name ?? basename($offerPath))
+                            );
+                        }
+                    }
+
+                    // 🔸 Imagen secundaria (imagePhone)
+                    if ($offer->imagePhone && $offer->imagePhone->url) {
+                        $offerPath = public_path('storage/' . str_replace(asset('storage') . '/', '', $offer->imagePhone->url));
+                        if (file_exists($offerPath)) {
+                            $zip->addFile(
+                                $offerPath,
+                                $productosFolder . $offerPrefix . ($offer->imagePhone->name ?? basename($offerPath))
+                            );
+                        }
                     }
                 }
             }

@@ -21,13 +21,41 @@ class DownloadImageCyberWowTemplateController extends Controller
         }
 
         try {
-            $templatePath = storage_path('app/public/images/cyberwow/template.png');
 
-            // 🧱 Rutas de imágenes
-            $offerImagePath = $this->getStoragePathFromUrl($offer->imageFull->url);
-            $logoPath = $this->getStoragePathFromUrl($offer->brand->logo160->url);
+            // $templatePath = storage_path('app/public/images/cyberwow/template.png');
 
-            return $templatePath;
+            // // 🧱 Rutas de imágenes
+            // $offerImagePath = $this->getStoragePathFromUrl($offer->imageFull->url);
+            // $logoPath = $this->getStoragePathFromUrl($offer->brand->logo160->url);
+
+
+            $templatePath = public_path('cyberwow/template.png'); // esta está bien
+            $offerImagePath = public_path('storage/images/cyberwow/main/' . basename($offer->imageFull->url));
+            $logoPath = public_path('storage/images/cyberwow/main/' . basename($offer->brand->logo160->url));
+
+            $missing = [];
+
+            if (!file_exists($templatePath)) {
+                $missing[] = 'template';
+            }
+            if (!file_exists($offerImagePath)) {
+                $missing[] = 'offerImage';
+            }
+            if (!file_exists($logoPath)) {
+                $missing[] = 'logo';
+            }
+
+            if (!empty($missing)) {
+                return response()->json([
+                    'error' => 'No se encontró alguna imagen requerida',
+                    'faltantes' => $missing,
+                    'rutas' => [
+                        'templatePath' => $templatePath,
+                        'offerImagePath' => $offerImagePath,
+                        'logoPath' => $logoPath,
+                    ],
+                ], 404);
+            }
 
             if (!file_exists($templatePath) || !file_exists($offerImagePath) || !file_exists($logoPath)) {
                 return response()->json(['error' => 'No se encontró alguna imagen requerida'], 404);
@@ -110,6 +138,9 @@ class DownloadImageCyberWowTemplateController extends Controller
                 $precioOferta   = $offer->precioOferta ?? null;
 
                 if ($precioAnterior && $precioOferta) {
+
+                    $moneda = $offer->moneda ?? 'S/';
+
                     $template->text('ANTES:', $textX, $nextY, function ($font) use ($fonts, $blue) {
                         $font->filename($fonts['bold']);
                         $font->size(32);
@@ -120,7 +151,7 @@ class DownloadImageCyberWowTemplateController extends Controller
 
                     // Precio anterior (tachado)
                     $priceX = $textX + 150;
-                    $priceText = 'S/ ' . number_format($precioAnterior, 2);
+                    $priceText = "{$moneda} " . number_format($precioAnterior, 2);
                     $template->text($priceText, $priceX, $nextY, function ($font) use ($fonts, $blue) {
                         $font->filename($fonts['regular']);
                         $font->size(36);
@@ -146,7 +177,7 @@ class DownloadImageCyberWowTemplateController extends Controller
 
                     // Precio de oferta destacado
                     $ofertaY = $nextY + 80;
-                    $template->text('AHORA: S/ ' . number_format($precioOferta, 2), $textX, $ofertaY, function ($font) use ($fonts, $blue) {
+                    $template->text("AHORA: {$moneda} " . number_format($precioOferta, 2), $textX, $ofertaY, function ($font) use ($fonts, $blue) {
                         $font->filename($fonts['bold']);
                         $font->size(50);
                         $font->color('#fc2b72');

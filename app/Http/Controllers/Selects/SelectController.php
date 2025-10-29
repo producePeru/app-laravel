@@ -71,7 +71,7 @@ class SelectController extends Controller
 
         $data = $cities->sortBy('name')->map(function ($item) {
             return [
-                'label' => $item->name,
+                'label' => strtoupper($item->name),
                 'value' => $item->id,
             ];
         })->values();
