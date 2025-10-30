@@ -68,3 +68,9 @@ Route::controller(DownloadImageCyberWowTemplateController::class)->group(functio
 
     Route::POST('merge-with-frame/{idOffert}', 'generateOfferTemplate');
 });
+
+
+Route::controller(CyberWowController::class)->group(function () {
+
+    Route::GET('cyber-pnte/{idWow}', 'offertsCyberWow');
+});

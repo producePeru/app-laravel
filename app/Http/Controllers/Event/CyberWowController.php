@@ -456,4 +456,34 @@ class CyberWowController extends Controller
             'message' => 'Líder eliminado correctamente de la empresa.'
         ]);
     }
+
+
+    public function offertsCyberWow($wowId)
+    {
+        // 🔹 Filtra las ofertas por el wow_id recibido
+        $offers = CyberwowOffer::with(['company', 'imagePhone:id,url'])
+            ->where('wow_id', $wowId)
+            ->inRandomOrder() // 🔹 Orden aleatorio
+            ->paginate(50);   // 🔹 Paginación de 50 en 50
+
+        // 🔹 Mapea los datos con la estructura solicitada
+        $data = $offers->getCollection()->map(function ($offer) {
+            return [
+                'image'         => $offer->imagePhone->url ?? null,
+                'brand'         => $offer->company->nombreComercial ?? null,
+                'name'          => $offer->title,
+                'discount'      => $offer->descripcion,
+                'price'         => $offer->precioOferta,
+                'oldPrice'      => $offer->precioAnterior,
+                'link'          => $offer->link,
+                'moneda'        => $offer->moneda,
+            ];
+        });
+
+        // 🔹 Reemplaza la colección paginada con el nuevo formato
+        $offers->setCollection($data);
+
+        // 🔹 Retorna en formato JSON (con información de paginación incluida)
+        return response()->json($offers);
+    }
 }
