@@ -11,6 +11,7 @@ use App\Models\Fair;
 use App\Models\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 use Illuminate\Support\Str;
@@ -458,32 +459,67 @@ class CyberWowController extends Controller
     }
 
 
-    public function offertsCyberWow($wowId)
+    public function offertsCyberWow(Request $request, $wowId)
     {
-        // 🔹 Filtra las ofertas por el wow_id recibido
-        $offers = CyberwowOffer::with(['company', 'imagePhone:id,url'])
-            ->where('wow_id', $wowId)
-            ->inRandomOrder() // 🔹 Orden aleatorio
-            ->paginate(50);   // 🔹 Paginación de 50 en 50
+        // 🔹 Parámetro opcional de categoría
+        $category = $request->query('category');
 
-        // 🔹 Mapea los datos con la estructura solicitada
+        // 🔹 Query base
+        $query = CyberwowOffer::with(['company', 'imagePhone:id,url'])
+            ->where('wow_id', $wowId);
+
+        // 🔹 Si se pasa una categoría válida (y no "Ver todo"), se filtra
+        if ($category && strtolower($category) !== 'ver todo') {
+            $query->where('category', $category);
+        }
+
+        // 🔹 Paginación y orden aleatorio
+        $offers = $query->inRandomOrder()->paginate(50);
+
+        // 🔹 Mapeo del formato de salida
         $data = $offers->getCollection()->map(function ($offer) {
             return [
-                'image'         => $offer->imagePhone->url ?? null,
-                'brand'         => $offer->company->nombreComercial ?? null,
-                'name'          => $offer->title,
-                'discount'      => $offer->descripcion,
-                'price'         => $offer->precioOferta,
-                'oldPrice'      => $offer->precioAnterior,
-                'link'          => $offer->link,
-                'moneda'        => $offer->moneda,
+                'image'     => $offer->imagePhone->url ?? null,
+                'brand'     => $offer->company->nombreComercial ?? null,
+                'name'      => $offer->title,
+                'discount'  => $offer->descripcion,
+                'price'     => $offer->precioOferta,
+                'oldPrice'  => $offer->precioAnterior,
+                'link'      => $offer->link,
+                'moneda'    => $offer->moneda,
+                'category'  => $offer->category,
             ];
         });
 
-        // 🔹 Reemplaza la colección paginada con el nuevo formato
         $offers->setCollection($data);
 
-        // 🔹 Retorna en formato JSON (con información de paginación incluida)
+        // 🔹 Retorna la respuesta JSON con paginación
         return response()->json($offers);
+    }
+
+    public function categoriesCyberWow($wowId)
+    {
+        $categories = CyberwowOffer::where('wow_id', $wowId)
+            ->select('category', DB::raw('COUNT(*) as total'))
+            ->whereNotNull('category')
+            ->where('category', '<>', '')
+            ->groupBy('category')
+            ->orderBy('category')
+            ->get();
+
+        // 🔹 Calcular el total general
+        $totalGeneral = $categories->sum('total');
+
+        // 🔹 Mapear las categorías con el formato deseado
+        $formatted = $categories->map(function ($item) {
+            return "{$item->category} ({$item->total})";
+        })->toArray();
+
+        // 🔹 Insertar "Ver todo" al inicio con el total general
+        array_unshift($formatted, "Ver todo ({$totalGeneral})");
+
+        return response()->json([
+            'categories' => $formatted
+        ]);
     }
 }

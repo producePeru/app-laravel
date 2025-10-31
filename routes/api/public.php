@@ -73,4 +73,6 @@ Route::controller(DownloadImageCyberWowTemplateController::class)->group(functio
 Route::controller(CyberWowController::class)->group(function () {
 
     Route::GET('cyber-pnte/{idWow}', 'offertsCyberWow');
+
+    Route::GET('categories-cyber-wow/{idWow}', 'categoriesCyberWow');
 });

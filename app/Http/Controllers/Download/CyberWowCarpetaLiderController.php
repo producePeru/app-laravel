@@ -21,7 +21,7 @@ class CyberWowCarpetaLiderController extends Controller
             $user = Auth::user();
 
             // 🔹 Cambia esta variable para incluir o no las imágenes FULL
-            $includeImageFull = false; // 👈 TRUE = incluir imageFull, FALSE = no incluir
+            $includeImageFull = true; // 👈 TRUE = incluir imageFull, FALSE = no incluir
 
             // 🔹 Construir nombre base (nombre + apellido)
             $fullName = trim(($user->name ?? '') . ' ' . ($user->lastname ?? ''));
