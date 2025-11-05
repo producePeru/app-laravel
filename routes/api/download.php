@@ -19,6 +19,10 @@ Route::controller(DownloadFormalizationsController::class)->group(function () {
     Route::post('formalizations-ruc10', 'exportFormalizationsRuc10');
 
     Route::post('formalizations-ruc20', 'exportFormalizationsRuc20');
+
+
+    // todo x año 
+
 });
 
 Route::controller(SedAsistentesController::class)->group(function () {

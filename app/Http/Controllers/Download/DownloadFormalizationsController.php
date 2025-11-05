@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Download;
 
+use App\Exports\AsesoriasAllExport;
 use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Formalization20;
@@ -13,6 +14,12 @@ use Illuminate\Support\Facades\Auth;
 use App\Exports\AsesoriasExport;
 use App\Exports\FormalizationRUC10Export;
 use App\Exports\FormalizationRUC20Export;
+use App\Notifications\ReportReadyNotification;
+use Illuminate\Support\Facades\Notification;
+use App\Jobs\ExportAdvisoriesJob;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+
 
 use Carbon\Carbon;
 
@@ -128,7 +135,6 @@ class DownloadFormalizationsController extends Controller
             ], 500);
         }
     }
-
 
     public function exportFormalizationsRuc10(\Illuminate\Http\Request $request)
     {
@@ -249,8 +255,6 @@ class DownloadFormalizationsController extends Controller
         }
     }
 
-
-
     public function exportFormalizationsRuc20(Request $request)
     {
         try {
@@ -370,6 +374,44 @@ class DownloadFormalizationsController extends Controller
             return response()->json([
                 'message' => 'Ocurri\u00f3 un error al generar el reporte.',
                 'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    public function exportAsesoriesQueued(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'year' => 'required|integer|min:2020|max:2030'
+        ]);
+
+        Log::info("Solicitud de reporte recibida", [
+            'email' => $request->email,
+            'year' => $request->year
+        ]);
+
+        try {
+            ExportAdvisoriesJob::dispatch($request->email, $request->year);
+
+            Log::info("Job despachado exitosamente");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reporte en proceso. Se enviará al correo: ' . $request->email,
+                'data' => [
+                    'email' => $request->email,
+                    'year' => $request->year,
+                    'queued_at' => now()->toDateTimeString()
+                ]
+            ], 202);
+        } catch (\Exception $e) {
+            Log::error('Error al despachar job: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al programar el reporte',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
