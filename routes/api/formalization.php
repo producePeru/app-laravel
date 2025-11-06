@@ -2,9 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Advisory\AdvisoryController;
+use App\Http\Controllers\Formalization\AdvisoryExportController;
 use App\Http\Controllers\Formalization\Formalization10Controller;
 use App\Http\Controllers\Formalization\Formalization20Controller;
-
+use App\Http\Controllers\Formalization\FormalizationRuc10ExportController;
 
 // Route::controller(AdvisoryController::class)->group(function () {
 
@@ -27,6 +28,17 @@ Route::controller(Formalization20Controller::class)->group(function () {
     Route::post('create-ruc20', 'storeRuc20');
 
     Route::put('update-values-ruc-20/{id}', 'updateValueRuc20');
+});
+
+
+Route::controller(AdvisoryExportController::class)->group(function () {
+
+    Route::post('export-asesories', 'exportAsesories');
+});
+
+Route::controller(FormalizationRuc10ExportController::class)->group(function () {
+
+    Route::post('export-formalizations-ppnn', 'exportRuc10');
 });
 
 
