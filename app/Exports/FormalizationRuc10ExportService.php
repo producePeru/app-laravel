@@ -93,7 +93,7 @@ class FormalizationRuc10ExportService
                     $f10->province->name ?? null,
                     $f10->district->name ?? null,
                     $f10->address ?? null,
-                    $f10->ruc ?? '-',
+                    $f10->ruc ?? null,
                     $f10->economicsector->name ?? null,
                     $f10->comercialactivity->name ?? null,
                     $f10->detailprocedure->name ?? null,
