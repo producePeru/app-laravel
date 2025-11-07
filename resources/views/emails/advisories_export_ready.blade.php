@@ -47,13 +47,13 @@
 
 <body>
   <div class="email-box">
-    <h2>Exportación de Asesorías Lista</h2>
-
     <p>Hola,</p>
 
-    <p>La exportación de asesorías ha finalizado correctamente.</p>
+    <p>La exportación ha finalizado correctamente.</p>
 
-    <p>Se adjunta el archivo <strong>{{ $filename }}</strong>.</p>
+    <h2>Exportación de {{ $filename }} está lista</h2>
+
+    <p>Se adjunta el archivo <strong></strong>.</p>
 
     <p>Saludos,<br><strong>Equipo Tu Empresa - Support</strong></p>
 

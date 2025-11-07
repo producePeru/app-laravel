@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AdvisoriesExportReadyMail;
 
-
 class GenerateAdvisoriesExport implements ShouldQueue
 {
   use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -56,16 +55,14 @@ class GenerateAdvisoriesExport implements ShouldQueue
       if (!empty($this->filters['year'])) {
         $query->whereYear('created_at', $this->filters['year']);
       }
-      if (!empty($this->filters['asesor'])) {
-        $query->where('user_id', $this->filters['asesor']);
-      }
 
       $pathFile = public_path('exports/' . $this->filename);
 
       $service->generateFromQuery($query, $pathFile, $this->type);
 
       // ✅ Enviar correo al finalizar
-      Mail::mailer('hostinger')->to($this->email)->send(new AdvisoriesExportReadyMail($this->filename, $pathFile));
+      Mail::mailer('hostinger')->to($this->email)
+        ->send(new AdvisoriesExportReadyMail($this->filename, $pathFile));
 
       Log::info("Archivo {$this->filename} generado y enviado a {$this->email}");
     } catch (\Throwable $e) {
