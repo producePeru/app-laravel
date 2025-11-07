@@ -17,6 +17,8 @@ class GenerateAdvisoriesExport implements ShouldQueue
 {
   use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+  public $timeout = 600;
+
   public array $filters;
   public string $filename;
   public int $userId;

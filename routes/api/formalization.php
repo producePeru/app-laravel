@@ -6,6 +6,7 @@ use App\Http\Controllers\Formalization\AdvisoryExportController;
 use App\Http\Controllers\Formalization\Formalization10Controller;
 use App\Http\Controllers\Formalization\Formalization20Controller;
 use App\Http\Controllers\Formalization\FormalizationRuc10ExportController;
+use App\Http\Controllers\Formalization\FormalizationRuc20ExportController;
 
 // Route::controller(AdvisoryController::class)->group(function () {
 
@@ -42,4 +43,8 @@ Route::controller(FormalizationRuc10ExportController::class)->group(function () 
 });
 
 
+Route::controller(FormalizationRuc20ExportController::class)->group(function () {
+
+    Route::post('export-formalizations-ppjj', 'exportRuc20');
+});
 // formalization

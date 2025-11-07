@@ -32,7 +32,12 @@ class StoreFormalization20Request extends FormRequest
             'province_id' => 'required|integer|exists:provinces,id',
             'district_id' => 'required|integer|exists:districts,id',
             'modality_id' => 'required|integer|exists:modalities,id',
-            'notary_id' => 'required|integer|exists:notaries,id',
+
+
+            // 👇 AQUÍ EL CAMBIO: solo es obligatorio si regime_id ≠ 5
+            'notary_id' => 'nullable|required_unless:regime_id,5|integer|exists:notaries,id',
+
+
             'user_id' => 'nullable|integer',
             'people_id' => 'required|integer',
             'nameMype' => 'required|string|max:100',

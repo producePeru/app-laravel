@@ -116,7 +116,7 @@ class DownloadFormalizationsController extends Controller
                         'city'                  => $advisory->city->name ?? null,
                         'province'              => $advisory->province->name ?? null,
                         'district'              => $advisory->district->name ?? null,
-                        'ruc'                   => $advisory->ruc ?? '-',
+                        'ruc'                   => $advisory->ruc ?? null,
                         'economic_service'      => $advisory->economicsector->name ?? null,
                         'activity_comercial'    => $advisory->comercialactivity->name ?? null,
                         'component'             => $advisory->component->name ?? null,
@@ -236,7 +236,7 @@ class DownloadFormalizationsController extends Controller
                         'province'              => $f10->province->name ?? null,
                         'district'              => $f10->district->name ?? null,
                         'address'               => $f10->address ?? null,
-                        'ruc'                   => $f10->ruc ?? '-',
+                        'ruc'                   => $f10->ruc ?? null,
 
                         'econimic_sector'       => $f10->economicsector->name ?? null,
                         'activity_comercial'    => $f10->comercialactivity->name ?? null,
@@ -351,16 +351,18 @@ class DownloadFormalizationsController extends Controller
                         'province'              => $f20->province->name ?? null,
                         'district'              => $f20->district->name ?? null,
                         'address'               => $f20->address ?? null,
-                        'ruc'                   => $f20->ruc ?? '-',
-
+                        'ruc'                   => $f20->ruc ?? null,
                         'econimic_sector'       => $f20->economicsector->name ?? null,
                         'activity_comercial'    => $f20->comercialactivity->name ?? null,
+
                         'date_reception'        => $f20->dateReception ? \Carbon\Carbon::parse($f20->dateReception)->format('d/m/Y') : null,
                         'date_tramite'          => $f20->dateTramite ? \Carbon\Carbon::parse($f20->dateTramite)->format('d/m/Y') : null,
                         'name_mype'             => strtoupper($f20->nameMype),
                         'type_regimen'          => $f20->regime->name,
                         'bic'                   => $f20->isbic,
                         'num_solicitud'         => $f20->numbernotary,
+
+
                         'notaria'               => isset($f20->notary->name) ? strtoupper($f20->notary->name) : null,
                         'type_aporte'           => optional($f20->typecapital)->name,
                         'monto_capital'         => $f20->montocapital,
