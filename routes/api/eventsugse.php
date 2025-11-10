@@ -5,6 +5,7 @@ use App\Http\Controllers\Event\CyberwowParticipantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Fair\FairController;
 use App\Http\Controllers\Event\UgsePostulanteController;
+use App\Http\Controllers\Foro\ForoController;
 
 Route::controller(FairController::class)->group(function () {
 
@@ -78,6 +79,8 @@ Route::controller(CyberWowController::class)->group(function () {
 
     // Route::GET('merge-with-frame/{idParticipante}', 'mergeWithFrame');
 });
+
+
 
 // events-ugse
 

@@ -272,126 +272,20 @@ class PublicEventsController extends Controller
     }
 
 
-    public function participantRegistrationSed(StoreSedRequest $request)
-    {
-        try {
-            $fair = Fair::where('slug', $request->slug)->firstOrFail();
-            $request->merge(['event_id' => $fair->id]);
-
-            // Crear el nuevo postulante
-            $ugsePostulante = UgsePostulante::create($request->all());
-
-            if (!$ugsePostulante) {
-                return response()->json([
-                    'message' => 'Error al registrar al postulante.',
-                    'status' => 500
-                ], 500);
-            }
-
-            $mailer = $request->mailer ?? 'hostinger';
-
-            // Codificar logo en base64
-            $logoPath = public_path('images/logo/sed.png');
-            $logoBase64 = base64_encode(file_get_contents($logoPath));
-            $logoMime = mime_content_type($logoPath);
-            $logoDataUri = "data:$logoMime;base64,$logoBase64";
-
-            // Generar QR en base64
-            $qrResult = Builder::create()
-                ->writer(new PngWriter())
-                ->data($ugsePostulante->documentnumber)
-                ->size(200)
-                ->margin(10)
-                ->build();
-
-            $qrBase64 = base64_encode($qrResult->getString());
-
-            $qrResult = Builder::create()
-                ->writer(new PngWriter())
-                ->data($ugsePostulante->documentnumber)
-                ->size(200)
-                ->margin(10)
-                ->build();
-
-
-            $qrBase64 = base64_encode($qrResult->getString());
-
-            // Generar PDF
-            $pdf = PDF::loadView('pdf.ticket_entry', [
-                'fair' => $fair,
-                'participantName' => "{$ugsePostulante->name} {$ugsePostulante->lastname}",
-                'qrBase64' => $qrBase64,
-                'logoDataUri' => $logoDataUri,
-            ]);
-
-            $filename = 'entrada_' . Str::random(10) . '.pdf';
-            $filepath = storage_path("app/public/entradas/{$filename}");
-            Storage::makeDirectory('public/entradas');
-            $pdf->save($filepath);
-
-            $participantName = "{$ugsePostulante->name} {$ugsePostulante->lastname}";
-            $messageContent = strip_tags($fair->msgSendEmail);
-
-            Mail::mailer($mailer)
-                ->to($ugsePostulante->email)
-                ->send(new FairSedInfoMail(
-                    $messageContent,
-                    $filepath,
-                    $participantName,
-                    $fair
-                ));
-
-            return response()->json([
-                'message' => 'Postulante creado correctamente y correo enviado.',
-                'data' => $ugsePostulante,
-                'status' => 200
-            ], 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'El evento con el slug proporcionado no existe.',
-                'status' => 404
-            ], 404);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation error',
-                'errors' => $e->errors(),
-                'status' => 422
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Unexpected error: ' . $e->getMessage(),
-                'status' => 500
-            ], 500);
-        }
-    }
-
     // public function participantRegistrationSed(StoreSedRequest $request)
     // {
     //     try {
-    //         // Buscar evento (Feria)
     //         $fair = Fair::where('slug', $request->slug)->firstOrFail();
     //         $request->merge(['event_id' => $fair->id]);
 
-    //         // Buscar si ya existe participante con el mismo evento y documento
-    //         $existing = UgsePostulante::where('event_id', $fair->id)
-    //             ->where('documentnumber', $request->documentnumber)
-    //             ->first();
+    //         // Crear el nuevo postulante
+    //         $ugsePostulante = UgsePostulante::create($request->all());
 
-    //         // Si ya existe, reutilizamos ese registro (no crear otro)
-    //         if ($existing) {
-    //             $ugsePostulante = $existing;
-    //             $alreadyRegistered = true;
-    //         } else {
-    //             // Crear nuevo postulante
-    //             $ugsePostulante = UgsePostulante::create($request->all());
-    //             $alreadyRegistered = false;
-
-    //             if (!$ugsePostulante) {
-    //                 return response()->json([
-    //                     'message' => 'Error al registrar al postulante.',
-    //                     'status' => 500
-    //                 ], 500);
-    //             }
+    //         if (!$ugsePostulante) {
+    //             return response()->json([
+    //                 'message' => 'Error al registrar al postulante.',
+    //                 'status' => 500
+    //             ], 500);
     //         }
 
     //         $mailer = $request->mailer ?? 'hostinger';
@@ -402,7 +296,7 @@ class PublicEventsController extends Controller
     //         $logoMime = mime_content_type($logoPath);
     //         $logoDataUri = "data:$logoMime;base64,$logoBase64";
 
-    //         // Generar QR en base64 (documentnumber)
+    //         // Generar QR en base64
     //         $qrResult = Builder::create()
     //             ->writer(new PngWriter())
     //             ->data($ugsePostulante->documentnumber)
@@ -412,7 +306,17 @@ class PublicEventsController extends Controller
 
     //         $qrBase64 = base64_encode($qrResult->getString());
 
-    //         // Generar PDF de entrada
+    //         $qrResult = Builder::create()
+    //             ->writer(new PngWriter())
+    //             ->data($ugsePostulante->documentnumber)
+    //             ->size(200)
+    //             ->margin(10)
+    //             ->build();
+
+
+    //         $qrBase64 = base64_encode($qrResult->getString());
+
+    //         // Generar PDF
     //         $pdf = PDF::loadView('pdf.ticket_entry', [
     //             'fair' => $fair,
     //             'participantName' => "{$ugsePostulante->name} {$ugsePostulante->lastname}",
@@ -425,7 +329,6 @@ class PublicEventsController extends Controller
     //         Storage::makeDirectory('public/entradas');
     //         $pdf->save($filepath);
 
-    //         // Enviar correo
     //         $participantName = "{$ugsePostulante->name} {$ugsePostulante->lastname}";
     //         $messageContent = strip_tags($fair->msgSendEmail);
 
@@ -438,21 +341,12 @@ class PublicEventsController extends Controller
     //                 $fair
     //             ));
 
-    //         // 🧩 Mensaje adaptado según si fue nuevo o ya registrado
-    //         $msg = $alreadyRegistered
-    //             ? 'El participante ya estaba registrado. Se reenviaron los datos y el correo.'
-    //             : 'Postulante creado correctamente y correo enviado.';
-
     //         return response()->json([
-    //             'success' => true,
-    //             'message' => $msg,
+    //             'message' => 'Postulante creado correctamente y correo enviado.',
     //             'data' => $ugsePostulante,
     //             'status' => 200
     //         ], 200);
-    //     }
-
-    //     // Manejo de errores
-    //     catch (ModelNotFoundException $e) {
+    //     } catch (ModelNotFoundException $e) {
     //         return response()->json([
     //             'message' => 'El evento con el slug proporcionado no existe.',
     //             'status' => 404
@@ -470,6 +364,112 @@ class PublicEventsController extends Controller
     //         ], 500);
     //     }
     // }
+
+    public function participantRegistrationSed(StoreSedRequest $request)
+    {
+        try {
+            // Buscar evento (Feria)
+            $fair = Fair::where('slug', $request->slug)->firstOrFail();
+            $request->merge(['event_id' => $fair->id]);
+
+            // Buscar si ya existe participante con el mismo evento y documento
+            $existing = UgsePostulante::where('event_id', $fair->id)
+                ->where('documentnumber', $request->documentnumber)
+                ->first();
+
+            // Si ya existe, reutilizamos ese registro (no crear otro)
+            if ($existing) {
+                $ugsePostulante = $existing;
+                $alreadyRegistered = true;
+            } else {
+                // Crear nuevo postulante
+                $ugsePostulante = UgsePostulante::create($request->all());
+                $alreadyRegistered = false;
+
+                if (!$ugsePostulante) {
+                    return response()->json([
+                        'message' => 'Error al registrar al postulante.',
+                        'status' => 500
+                    ], 500);
+                }
+            }
+
+            $mailer = $request->mailer ?? 'hostinger';
+
+            // Codificar logo en base64
+            $logoPath = public_path('images/logo/sed.png');
+            $logoBase64 = base64_encode(file_get_contents($logoPath));
+            $logoMime = mime_content_type($logoPath);
+            $logoDataUri = "data:$logoMime;base64,$logoBase64";
+
+            // Generar QR en base64 (documentnumber)
+            $qrResult = Builder::create()
+                ->writer(new PngWriter())
+                ->data($ugsePostulante->documentnumber)
+                ->size(200)
+                ->margin(10)
+                ->build();
+
+            $qrBase64 = base64_encode($qrResult->getString());
+
+            // Generar PDF de entrada
+            $pdf = PDF::loadView('pdf.ticket_entry', [
+                'fair' => $fair,
+                'participantName' => "{$ugsePostulante->name} {$ugsePostulante->lastname}",
+                'qrBase64' => $qrBase64,
+                'logoDataUri' => $logoDataUri,
+            ]);
+
+            $filename = 'entrada_' . Str::random(10) . '.pdf';
+            $filepath = storage_path("app/public/entradas/{$filename}");
+            Storage::makeDirectory('public/entradas');
+            $pdf->save($filepath);
+
+            // Enviar correo
+            $participantName = "{$ugsePostulante->name} {$ugsePostulante->lastname}";
+            $messageContent = strip_tags($fair->msgSendEmail);
+
+            Mail::mailer($mailer)
+                ->to($ugsePostulante->email)
+                ->send(new FairSedInfoMail(
+                    $messageContent,
+                    $filepath,
+                    $participantName,
+                    $fair
+                ));
+
+            // 🧩 Mensaje adaptado según si fue nuevo o ya registrado
+            $msg = $alreadyRegistered
+                ? 'El participante ya estaba registrado. Se reenviaron los datos y el correo.'
+                : 'Postulante creado correctamente y correo enviado.';
+
+            return response()->json([
+                'success' => true,
+                'message' => $msg,
+                'data' => $ugsePostulante,
+                'status' => 200
+            ], 200);
+        }
+
+        // Manejo de errores
+        catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'El evento con el slug proporcionado no existe.',
+                'status' => 404
+            ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $e->errors(),
+                'status' => 422
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Unexpected error: ' . $e->getMessage(),
+                'status' => 500
+            ], 500);
+        }
+    }
 
 
     // pregunta & respuesta de formalizacion

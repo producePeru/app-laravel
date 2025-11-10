@@ -56,9 +56,13 @@ class FairController extends Controller
 
         $query = Fair::query();
 
-        $query->where('fairtype_id', 1);
+        // $query->where('fairtype_id', 1);
 
-        $query->withItems($filters);
+        $query = Fair::query()
+            ->whereIn('fairtype_id', [1, 5]) // ✅ Incluye ambos tipos
+            ->withItems($filters);
+
+        // $query->withItems($filters);
 
         $items = $query->paginate(150)->through(function ($item) {
             return $this->mapItems($item);
@@ -172,7 +176,10 @@ class FairController extends Controller
         try {
             $today = Carbon::now();
 
-            $fair = Fair::where('slug', $slug)->where('fairtype_id', 1)->first();
+            // $fair = Fair::where('slug', $slug)->where('fairtype_id', 1)->first();
+            $fair = Fair::where('slug', $slug)
+                ->whereIn('fairtype_id', [1, 5])
+                ->firstOrFail();
 
             if ($fair) {
                 if ($today->gt(Carbon::parse($fair->endDate)->endOfDay())) {
