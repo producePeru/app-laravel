@@ -39,7 +39,9 @@ class StoreSedRequest extends FormRequest
             'positionCompany' => 'required|string|max:255',
             'howKnowEvent_id' => 'required|integer',
             'slug' => 'required|string',
-            'age' => 'required',
+
+
+            'age' => 'nullable',
         ];
     }
 
