@@ -100,7 +100,8 @@ class FairController extends Controller
 
             'metaMypes' => $item->metaMypes ?? null,
             'city_id' => $item->region->id ?? null,
-            // 'fecha' => $item->fecha ? Carbon::parse($item->fecha)->format('d/m/Y') : null,
+            'fecha_dashboard' => $item->fecha ? Carbon::parse($item->fecha)->format('d/m/Y') : null,
+            'fecha' => $item->fecha,
             'city_name' => $item->region->name ?? null,
             'place' => $item->place ?? null,
             'hours' => $item->hours ?? null,
