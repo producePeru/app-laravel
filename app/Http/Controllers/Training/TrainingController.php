@@ -14,20 +14,41 @@ class TrainingController extends Controller
 
     public function index(Request $request)
     {
-        $query = Training::with(['meta', 'especialista', 'dimension']);
+        try {
+            $validated = $request->validate([
+                'page'  => 'nullable|integer|min:1',
+                'month' => 'nullable|string|regex:/^\d{2}-\d{4}$/', // ahora es opcional
+            ]);
 
-        $items = $query->paginate(100);
+            $query = \App\Models\Training::with(['meta', 'especialista', 'dimension'])
+                ->orderBy('fecha', 'desc');
 
-        // 🔹 transform aplica sobre los elementos de la colección
-        $items->getCollection()->transform(function ($item) {
-            return $this->mapItems($item);
-        });
+            // Si se envía "month", filtra por mes y año
+            if (!empty($validated['month'])) {
+                [$month, $year] = explode('-', $validated['month']);
+                $query->whereYear('fecha', $year)
+                    ->whereMonth('fecha', $month);
+            }
 
-        return response()->json([
-            'data'   => $items,
-            'status' => 200
-        ]);
+            $items = $query->paginate(100);
+
+            $items->getCollection()->transform(function ($item) {
+                return $this->mapItems($item);
+            });
+
+            return response()->json([
+                'data'   => $items,
+                'status' => 200
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al listar los entrenamientos.',
+                'error'   => app()->environment('local') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
+
 
     private function mapItems($item)
     {
@@ -323,6 +344,7 @@ class TrainingController extends Controller
     {
         $year = $request->input('year');
         $month = $request->input('month');
+        $dimensionId = $request->input('dimension_id'); // 🆕 nuevo parámetro opcional
 
         if (!$year || !$month) {
             return response()->json(['error' => 'Parámetros year y month son requeridos'], 400);
@@ -331,7 +353,11 @@ class TrainingController extends Controller
         $trainings = Training::with('especialista')
             ->whereYear('fecha', $year)
             ->whereMonth('fecha', $month)
-            ->orderBy('horaInicio', 'desc') // ⬅️ ordenar por hora DESC
+            ->when($dimensionId, function ($query) use ($dimensionId) {
+                // 🔹 Si se envía dimension_id, filtra por esa dimensión
+                $query->where('dimension_id', $dimensionId);
+            })
+            ->orderBy('horaInicio', 'desc')
             ->get();
 
         $data = $trainings->map(function ($t) {

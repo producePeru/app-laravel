@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -521,6 +522,46 @@ class UserController extends Controller
             return response()->json([
                 'error' => 'Error al desactivar el usuario',
                 'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateCde(Request $request)
+    {
+        try {
+            // Validar datos del payload
+            $validated = $request->validate([
+                'cde_id'  => 'required|integer',
+                'user_id' => 'required|integer',
+            ]);
+
+            $user = User::find($validated['user_id']);
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Usuario no encontrado.',
+                ], 404);
+            }
+
+            // Actualizar el cde_id del usuario
+            $user->cde_id = $validated['cde_id'];
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'CDE actualizado correctamente.',
+                'status'  => 200,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error en updateCde: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al actualizar el CDE.',
+                'error'   => app()->environment('local') ? $e->getMessage() : null,
             ], 500);
         }
     }

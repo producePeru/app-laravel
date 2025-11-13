@@ -244,7 +244,6 @@ Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middle
     Route::get('only-dni/{num}',            [AuthController::class, 'dniDataUser2']);
 
     Route::post('logout',                   [AuthController::class, 'logout']);
-    Route::post('password-reset',           [AuthController::class, 'passwordReset']);
     Route::put('views/{id}',                [UserController::class, 'asignViewsUser']);
     Route::get('views/{id}',                [UserController::class, 'showViewsUser']);
 
@@ -420,6 +419,12 @@ Route::group(['prefix' => 'create', 'namespace' => 'App\Http\Controllers', 'midd
     // Route::post('economic-sector', [CreateController::class, 'createNewEconomicSector']);
     Route::post('cde-notary',                   [CreateController::class, 'createCdeNotary']);            //crea automaticamente la cde del asesor externo notario
     Route::post('cde',                          [CreateController::class, 'createCde']);
+    Route::post('create-province',              [CreateController::class, 'createProvince']);
+    Route::post('create-district',              [CreateController::class, 'createDistrict']);
+
+    Route::put('update-city',                   [CreateController::class, 'updateCity']);
+    Route::put('update-province',               [CreateController::class, 'updateProvince']);
+    Route::put('update-district',               [CreateController::class, 'updatedistrict']);
 });
 
 Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
