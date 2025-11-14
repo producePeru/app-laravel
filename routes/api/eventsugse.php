@@ -11,6 +11,8 @@ Route::controller(FairController::class)->group(function () {
 
     Route::get('sed', 'sedList');
 
+    Route::get('mujer-produce', 'mujerProduceList');
+
     Route::get('cyber-wow', 'cyberWowList');
 });
 

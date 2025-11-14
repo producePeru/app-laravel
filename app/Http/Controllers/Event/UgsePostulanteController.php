@@ -95,6 +95,7 @@ class UgsePostulanteController extends Controller
             'district_name'             => $item->district->name ?? null,
             'address'                   => $item->address ?? null,
             'typedocument_id'           => $item->businessman->typedocument_id ?? null,
+            'typedocument_name'         => $item->businessman->typedocument->name ?? null,
             'documentnumber'            => $item->businessman->documentnumber ?? $item->documentnumber,
             'name'                      => $item->businessman->name ?? $item->name,
             'lastname'                  => $item->businessman->lastname ?? $item->lastname,
@@ -113,14 +114,14 @@ class UgsePostulanteController extends Controller
             'birthday'                  => $item->businessman->birthday ?? $item->birthday,
             'created_at'                => $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : null,
             'asistio'                   => $item->attended ? true : false,
-            'howKnowEvent_id'           => $item->howKnowEvent->id,
-            'howKnowEvent_name'         => $item->howKnowEvent->name,
+            'howKnowEvent_id'           => $item->howKnowEvent->id ?? null,
+            'howKnowEvent_name'         => $item->howKnowEvent->name ?? null,
             'gender_id'                 => $item->businessman->gender->id ?? '-',
             'gender_name' => $item->businessman
                 ? ($item->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
                 : ($item->gender_id == 1 ? 'M' : 'F'),
-            'economicsector_id'         => $item->economicsector->id,
-            'economicsector_name'       => $item->economicsector->name,
+            'economicsector_id'         => $item->economicsector->id ?? null,
+            'economicsector_name'       => $item->economicsector->name ?? null,
             'comercialactivity_id'      => $item->comercialactivity->id ?? null,
             'comercialactivity_name'    => $item->comercialactivity->name ?? null,
             'category_id'               => $item->category->id ?? null,
@@ -130,7 +131,7 @@ class UgsePostulanteController extends Controller
 
 
             'event' => $item->event ? [
-                'id'   => $item->event->id,
+                'id'   => $item->event->id ?? null,
                 'name' => $item->event->title  // suponiendo que el evento tiene "title"
             ] : null,
 

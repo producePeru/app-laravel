@@ -44,6 +44,36 @@ class FairController extends Controller
         ]);
     }
 
+    public function mujerProduceList(Request $request)
+    {
+        $filters = [
+            'year'      =>  $request->input('year'),
+            'startDate' =>  $request->input('dateStart'),
+            'endDate'   =>  $request->input('dateEnd'),
+            'name'      =>  $request->input('name'),
+            'orderby'   =>  $request->input('orderby'),
+        ];
+
+        $query = Fair::query();
+
+        // $query->where('fairtype_id', 1);
+
+        $query = Fair::query()
+            ->whereIn('fairtype_id', [3]) // ✅ Mujer produce
+            ->withItems($filters);
+
+        // $query->withItems($filters);
+
+        $items = $query->paginate(150)->through(function ($item) {
+            return $this->mapItems($item);
+        });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
     public function sedList(Request $request)
     {
         $filters = [
@@ -179,7 +209,7 @@ class FairController extends Controller
 
             // $fair = Fair::where('slug', $slug)->where('fairtype_id', 1)->first();
             $fair = Fair::where('slug', $slug)
-                ->whereIn('fairtype_id', [1, 5])
+                ->whereIn('fairtype_id', [1, 5, 3])
                 ->firstOrFail();
 
             if ($fair) {
