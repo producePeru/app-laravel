@@ -5,7 +5,7 @@
 /public/mypes
 # /storage/*.key
 # /vendor
-.env
+# .env
 .env.local
 .htaccessx
 .david.pug
