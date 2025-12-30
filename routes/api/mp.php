@@ -47,7 +47,7 @@ Route::controller(FormularioPublicoController::class)->group(function () {
 
   Route::get('question-diagnostic', 'getQuestionDiagnostic');
 
-  Route::post('register-consulting', 'registerConsulting');     // inicia diagnostico ***
+  Route::post('register-consulting', 'registerConsulting');     // inicia diagnostico 
 
   Route::post('register-diagnostic-response', 'registerDiagnosticResponse');
 });
