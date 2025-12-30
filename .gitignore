@@ -1,0 +1,31 @@
+# /.phpunit.cache
+# /node_modules
+# /public/build
+# /public/hot
+/public/mypes
+# /storage/*.key
+# /vendor
+.env
+.env.local
+.htaccessx
+.david.pug
+
+/public/storage/images/cyberwow
+# .phpunit.result.cache
+# Homestead.json
+# Homestead.yaml
+# auth.json
+# npm-debug.log
+# yarn-error.log
+# /.fleet
+# /.idea
+# /.vscode
+
+# bootstrap/app.php
+# config/cors.php
+
+
+echo ".env" >> .gitignore
+git add .gitignore
+git commit -m "Ignore .env file"
+

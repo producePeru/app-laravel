@@ -1,0 +1,154 @@
+<?php
+
+//CREAR
+public function store(Request $request)
+{
+    try {
+        $data = $request->all();
+        $data['created_by'] = Crypt::decryptString($request->created_by);
+
+        if (!$data['created_by']) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+
+        Notary::create($data);
+
+        return response()->json(['message' => 'Creado correctamente'], 200);
+    } catch (QueryException $e) {
+        return response()->json(['error' => 'Error al crear. Por favor, inténtalo de nuevo.'], 500);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error desconocido al crear. ' . $e->getMessage()], 500);
+    }
+}
+
+
+//auth
+php artisan make:controller ReportsController
+
+
+//io
+php artisan make:model Exponent --all
+php artisan make:resource ExponentCollection
+php artisan make:resource ExponentResource
+php artisan make:controller UserController
+php artisan make:model Mype --all
+php artisan make:resource MypeCollection
+php artisan make:resource MypeResource
+
+****************************************************************
+php artisan make:model WorkshopDetails --all
+php artisan make:resource TestoutCollection
+php artisan make:resource TestoutResource
+
+
+//tables
+php artisan make:migration create_document_types_table
+php artisan make:migration create_countries_table
+php artisan make:migration create_sedes_table
+php artisan make:migration create_workshops_table
+
+
+php artisan make:model Country
+php artisan make:model Sede
+
+
+
+
+php artisan migrate
+
+
+php artisan route:list
+php artisan migrate:reset
+
+
+
+
+
+php artisan make:model Testin --all
+
+php artisan migrate
+
+php artisan make:resource TestinCollection
+php artisan make:resource TestinResource
+
+
+
+
+
+
+php artisan make:model District
+
+php artisan make:controller DepartmentController
+
+
+
+php artisan make:model Role
+php artisan make:controller PermissionController
+php artisan make:request StorePermissionRequest
+
+
+
+****************************
+php artisan queue:work
+
+
+
+
+
+
+Ojo
+<FilesMatch "\.(php4|php5|php3|php2|php|phtml)$">
+SetHandler application/x-lsphp81
+</FilesMatch>
+
+
+<ifmodule mod_rewrite.c>
+
+  <ifmodule mod_negotiation.c>
+    Options -MultiViews
+  </ifmodule>
+
+  RewriteEngine On
+
+  RewriteCond %{REQUEST_FILENAME} -d [OR]
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ ^$1 [N]
+
+  RewriteCond %{REQUEST_URI} (\.\w+$) [NC]
+  RewriteRule ^(.*)$ public/$1
+
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^ server.php
+</ifmodule>
+
+y el serve.php
+
+
+
+
+DRIVE
+https://produce365-my.sharepoint.com/personal/gestionpnte_produce_gob_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fgestionpnte%5Fproduce%5Fgob%5Fpe%2FDocuments%2FDocumentaci%C3%B3n%20PNTE%2FUGSE%2FUGSE%202025%2FDAVID%20QUISPE%2FOS%200000209%2D2025&ga=1
+https://produce365-my.sharepoint.com/personal/tuempresa_temp407_produce_gob_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Ftuempresa%5Ftemp407%5Fproduce%5Fgob%5Fpe%2FDocuments%2Fcarpeta%20PRODUCTOS%2FDavidQuispe&ga=1
+
+
+
+
+
+CREAR TAREA EN COLAS
+php artisan make:job SendPdfCertificadosEmailsJob
+
+php artisan make:controller Automatic/CertificadoPDFController
+
+
+
+queries
+// actualizar el cde_id de los registros en la tabla advisories
+UPDATE advisories
+SET cde_id = 41
+WHERE user_id = 15
+  AND created_at BETWEEN '2025-04-01' AND '2025-04-30';
+
+
+
+

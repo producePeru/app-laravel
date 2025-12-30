@@ -1,0 +1,750 @@
+<?php
+
+namespace App\Http\Controllers\MujerProduce;
+
+use App\Http\Controllers\Controller;
+use App\Models\MPAttendance;
+use App\Models\MPCapacitador;
+use App\Models\MPDiagnostico;
+use App\Models\MPDiagnosticoOption;
+use App\Models\MPDiagnosticoResponse;
+use App\Models\MPEvent;
+use App\Models\MPParticipant;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
+
+class MujerProduceController extends Controller
+{
+    public function registerCapacitador(Request $request)
+    {
+        try {
+
+            // Validación
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'dni'  => 'nullable|string|max:20|unique:mp_capacitadores,dni',
+            ]);
+
+            // Registro
+            $capacitador = MPCapacitador::create([
+                'name' => $request->name,
+                'dni'  => $request->dni,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Capacitador registrado correctamente.',
+                'status' => 200
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            // Errores de validación
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación.',
+                'errors'  => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+
+            // Errores inesperados del servidor
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error inesperado.',
+                'error'   => $e->getMessage() // puedes quitar esto en producción
+            ], 500);
+        }
+    }
+
+    public function allCapacitadores(Request $request)
+    {
+        try {
+
+            // Parámetros
+            $page = $request->get('page', 1);
+            $name = $request->get('name', null);
+
+            // Query base
+            $query = MpCapacitador::query();
+
+            // FILTRO POR NOMBRE (LIKE)
+            if ($name) {
+                $query->where('name', 'LIKE', "%{$name}%");
+            }
+
+            // PAGINACIÓN (10 por página)
+            $capacitadores = $query->orderBy('id', 'desc')->paginate(50, ['*'], 'page', $page);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Listado obtenido correctamente.',
+                'data' => $capacitadores,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al obtener el listado.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    // EVENTOS
+
+    private function generateSlug($title, $date)
+    {
+        // Convertir a slug base
+        $base = \Illuminate\Support\Str::slug($title);
+
+        $slug = $base;
+        $counter = 2;
+
+        // Buscar si existe
+        while (MpEvent::where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
+
+    public function mpStoreEvent(Request $request)
+    {
+        try {
+
+            // Validación
+            $request->validate([
+                'title'          => 'required|string|max:255',
+                'component'      => 'required|integer|in:1,2,3,4,5',
+                'capacitador_id' => 'required|exists:mp_capacitadores,id',
+                'city_id'        => 'required|exists:cities,id',
+                'modality_id'    => 'required|exists:modalities,id',
+                'place'          => 'nullable|string|max:255',
+                'date'           => 'nullable|date_format:Y-m-d',
+                'hours'          => 'nullable|string|max:100',
+                'startDate'      => 'nullable|date_format:Y-m-d',
+                'endDate'        => 'nullable|date_format:Y-m-d',
+                'training_time'  => 'required'
+            ]);
+
+            // Generar slug
+            $slug = $this->generateSlug($request->title, $request->date);
+
+            // Crear
+            $evento = MpEvent::create([
+                'title'          => $request->title,
+                'slug'           => $slug,
+                'component'      => $request->component,
+                'capacitador_id' => $request->capacitador_id,
+                'city_id'        => $request->city_id,
+                'modality_id'    => $request->modality_id,
+                'place'          => $request->place,
+                'date'           => $request->date,
+                'hours'          => $request->hours,
+                'startDate'      => $request->startDate,
+                'endDate'        => $request->endDate,
+                'training_time'  => $request->training_time
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Evento registrado correctamente.',
+                'data' => $evento,
+                'status' => 200
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error inesperado.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function mpIndexEvents(Request $request)
+    {
+        $filters = [
+            'year'      =>  $request->input('year'),
+            'startDate' =>  $request->input('startDate'),
+            'endDate'   =>  $request->input('endDate'),
+            'name'      =>  $request->input('name'),
+            'orderby'   =>  $request->input('orderby'),
+        ];
+
+        $query = MpEvent::query();
+
+        $query->withItems($filters)
+            ->withCount('attendances')
+            ->orderBy('created_at', 'DESC');
+
+        $items = $query->paginate(100)->through(function ($item) {
+            return $this->mapItems($item);
+        });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
+    private function mapItems($item)
+    {
+        return [
+            'id'                => $item->id,
+            'title'             => $item->title,
+            'slug'              => $item->slug,
+            'city_id'           => $item->city->id,
+            'city_name'         => $item->city->name,
+            'place'             => $item->place,
+            'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
+            'date'              => $item->date,
+            'hours'             => $item->hours,
+            'startDate'         => $item->startDate,
+            'endDate'           => $item->endDate,
+            'component'         => $item->component,
+            'capacitador_id'    => $item->capacitador_id,
+            'modality_id'       => $item->modality_id,
+            'training_time'     => $item->training_time,
+            'count'             => $item->attendances_count
+        ];
+    }
+
+    public function mpUpdateEvent(Request $request, $id)
+    {
+        try {
+
+            $evento = MpEvent::findOrFail($id);
+
+            // Validación
+            $request->validate([
+                'title'          => 'sometimes|string|max:255',
+                'component'      => 'sometimes|integer|in:1,2,3,4,5',
+                'capacitador_id' => 'sometimes|exists:mp_capacitadores,id',
+                'city_id'        => 'sometimes|exists:cities,id',
+                'modality_id'    => 'sometimes|exists:modalities,id',
+                'place'          => 'nullable|string|max:255',
+                'date'           => 'nullable|date_format:Y-m-d',
+                'hours'          => 'nullable|string|max:100',
+                'startDate'      => 'nullable|date_format:Y-m-d',
+                'endDate'        => 'nullable|date_format:Y-m-d',
+                'training_time'  => 'sometimes|integer'
+            ]);
+
+            // NO actualizar slug
+            $data = $request->except(['slug']);
+
+            // Actualizar
+            $evento->update($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Evento actualizado correctamente.',
+                'data' => $evento,
+                'status' => 200
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+
+            return response()->json([
+                "success" => false,
+                "message" => "Evento no encontrado."
+            ], 404);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al actualizar el evento.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function mpAttendance(Request $request, $slug)
+    {
+        try {
+
+            // FILTRO ÚNICO MULTICAMPO
+            $filters = [
+                'search' => $request->input('name'),
+            ];
+
+            // 1. Buscar evento
+            $event = MPEvent::where('slug', $slug)->first();
+
+            if (!$event) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'Evento no encontrado'
+                ], 404);
+            }
+
+            // 2. Query base
+            $query = MPAttendance::where('event_id', $event->id)
+                ->with([
+                    'event',
+
+                    'participant.city',
+                    'participant.province',
+                    'participant.dictrict',
+                    'participant.typeDocument',
+                    'participant.country',
+                    'participant.civilStatus',
+                    'participant.gender',
+                    'participant.degree',
+                    'participant.roleCompany',
+
+                    'participant.economicSector',
+                    'participant.rubro',
+                    'participant.comercialActivity'
+                ])
+                ->orderBy('created_at', 'DESC');
+
+            // 3. Aplicar filtro multicampo
+            if (!empty($filters['search'])) {
+
+                $search = $filters['search'];
+
+                $query->whereHas('participant', function ($q) use ($search) {
+                    $q->where('ruc', 'LIKE', "%{$search}%")
+                        ->orWhere('social_reason', 'LIKE', "%{$search}%")
+                        ->orWhere('doc_number', 'LIKE', "%{$search}%")
+                        ->orWhere('phone', 'LIKE', "%{$search}%")
+                        ->orWhere('email', 'LIKE', "%{$search}%");
+                });
+            }
+
+            // 4. Paginación + mapeo
+            $items = $query->paginate(100)->through(function ($item) {
+                return $this->mapAttendance($item);
+            });
+
+            return response()->json([
+                'data'       => $items,
+                'status'     => 200,
+                'eventTitle' => $event->title
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Error al procesar la solicitud',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    private function mapAttendance($item)
+    {
+        return [
+            'id'                => $item->id,
+            'ruc'               => $item->participant->ruc,
+            'city'              => $item->participant->city->name,
+            'province'          => $item->participant?->province->name,
+            'district'          => $item->participant?->dictrict->name,
+            'socialReason'      => $item->participant?->social_reason,
+            'roleCompany'       => $item->participant?->roleCompany->name,
+
+            'typeDocument'      => $item->participant?->typeDocument->name,
+            'dni'               => $item->participant->doc_number,
+            'country'           => $item->participant->country->name,
+            'date_of_birth'     => $item->participant->date_of_birth,
+            'name'              => $item->participant->names,
+            'last_name'         => $item->participant->last_name,
+            'middle_name'       => $item->participant->middle_name,
+            'civilStatus'       => $item->participant->civilStatus->name,
+            'numSoons'          => $item->participant->num_soons,
+            'gender'            => $item->participant->gender->name,
+            'sick'              => $item->participant->sick,
+            'degree'            => $item->participant->degree->name,
+            'phone'             => $item->participant->phone,
+            'email'             => $item->participant->email,
+
+            'economicSector'    => $item->participant->economicSector->name,
+            'rubro'             => $item->participant->rubro->name,
+            'comercialActivity' => $item->participant->comercialActivity->name,
+
+            'event'             => $item->event->component == 1 ? 'GESTIÓN EMPRESARIAL' : 'HABILIDADES PERSONALES',
+
+            'attendance'        => $item->attendance ? true : false,
+
+            'created_at'        => $item->created_at->format('d/m/Y H:i:s')
+        ];
+    }
+
+    public function createQuestionDiagnostic(Request $request)
+    {
+        try {
+
+            // VALIDACIÓN DEL REQUEST
+            $request->validate([
+                'label'     => 'required|string|max:250',
+                'type'      => 'required|in:t,o',
+                'required'  => 'required|in:s,n',
+                'options'   => 'nullable|array',
+            ]);
+
+            // =====================================================
+            // 1. GENERAR MODEL ÚNICO (slug)
+            // =====================================================
+            $baseModel = Str::slug($request->label, '_');
+
+            $model = $baseModel;
+            $count = 1;
+
+            // Asegurar que el model sea único en BD
+            while (MPDiagnostico::where('model', $model)->exists()) {
+                $count++;
+                $model = $baseModel . '_' . $count;
+            }
+
+            // =====================================================
+            // 2. CREAR LA PREGUNTA PRINCIPAL
+            // =====================================================
+            $question = MPDiagnostico::create([
+                'label'     => $request->label,
+                'type'      => $request->type,
+                'model'     => $model,
+                'required'  => $request->required === 's' ? 1 : 0,
+                'status'    => 1  // siempre activo
+            ]);
+
+            // =====================================================
+            // 3. SI type = 'o', GUARDAR OPCIONES
+            // =====================================================
+            if ($request->type === 'o' && !empty($request->options)) {
+
+                foreach ($request->options as $opt) {
+                    if (!empty($opt['value'])) {
+                        MPDiagnosticoOption::create([
+                            'name'             => $opt['value'],
+                            'diag_pregunta_id' => $question->id
+                        ]);
+                    }
+                }
+            }
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Pregunta registrada correctamente',
+                'data'    => $question
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            return response()->json([
+                'status'  => 422,
+                'message' => 'Error de validación',
+                'errors'  => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Error interno al crear la pregunta',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getQuestionDiagnostic(Request $request)
+    {
+        try {
+
+            // Tamaño de paginación — configurable desde query param ?per_page=50
+            $perPage = $request->input('per_page', 100);
+
+            // Paginar preguntas con opciones
+            $questions = MPDiagnostico::with(['options'])
+                ->orderBy('id', 'DESC')
+                ->paginate($perPage);
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Listado de preguntas obtenido correctamente',
+                'data'    => $questions
+            ], 200);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Error al obtener las preguntas diagnósticas',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateQuestionDiagnostic(Request $request, $id)
+    {
+        try {
+
+            // =====================================================
+            // 0. VALIDACIÓN DEL REQUEST
+            // =====================================================
+            $request->validate([
+                'label'     => 'required|string|max:250',
+                'type'      => 'required|in:t,o',
+                'required'  => 'required|in:s,n',
+                'options'   => 'nullable|array',
+            ]);
+
+
+            // =====================================================
+            // 1. BUSCAR LA PREGUNTA
+            // =====================================================
+            $question = MPDiagnostico::find($id);
+
+            if (!$question) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'Pregunta no encontrada'
+                ], 404);
+            }
+
+
+            // =====================================================
+            // 2. SI CAMBIÓ EL LABEL, GENERAR NUEVO MODEL (único)
+            // =====================================================
+            $model = $question->model;
+
+            if ($question->label !== $request->label) {
+
+                $baseModel = Str::slug($request->label, '_');
+                $model = $baseModel;
+                $count = 1;
+
+                while (MPDiagnostico::where('model', $model)->where('id', '!=', $id)->exists()) {
+                    $count++;
+                    $model = $baseModel . '_' . $count;
+                }
+            }
+
+
+            // =====================================================
+            // 3. ACTUALIZAR LA PREGUNTA
+            // =====================================================
+            $question->update([
+                'label'     => $request->label,
+                'type'      => $request->type,
+                'model'     => $model,
+                'required'  => $request->required === 's' ? 1 : 0,
+            ]);
+
+
+            // =====================================================
+            // 4. MANEJO DE OPCIONES
+            // =====================================================
+
+            // Siempre eliminar opciones actuales
+            MPDiagnosticoOption::where('diag_pregunta_id', $id)->delete();
+
+            // Si el tipo es "o", volver a insertar
+            if ($request->type === 'o' && !empty($request->options)) {
+
+                foreach ($request->options as $opt) {
+                    if (!empty($opt['value'])) {
+                        MPDiagnosticoOption::create([
+                            'name'             => $opt['value'],
+                            'diag_pregunta_id' => $question->id
+                        ]);
+                    }
+                }
+            }
+
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Pregunta actualizada correctamente',
+                'data'    => $question->load('options')
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            return response()->json([
+                'status'  => 422,
+                'message' => 'Error de validación',
+                'errors'  => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Error interno al actualizar la pregunta',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateStatus($id)
+    {
+        try {
+
+            // Buscar la pregunta
+            $question = MPDiagnostico::find($id);
+
+            if (!$question) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'Pregunta no encontrada'
+                ], 404);
+            }
+
+            // Actualizar el estado
+            $question->update([
+                'status' => $question->status === 1 ? 0 : 1
+            ]);
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Estado actualizado correctamente',
+                'data'    => $question
+            ], 200);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Error al actualizar el estado',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function mpIndexParticipantDiagnostic(Request $request)
+    {
+        $search = trim($request->input('name'));
+        $startDate  = $request->input('startDate');
+        $endDate    = $request->input('endDate');
+
+        // =========================
+        // PREGUNTAS ACTIVAS (1 sola vez)
+        // =========================
+        $questions = MPDiagnostico::with('options')
+            ->where('status', 1)
+            ->orderBy('id', 'ASC')
+            ->get();
+
+        // =========================
+        // PARTICIPANTES PAGINADOS
+        // =========================
+        $participants = MPParticipant::with([
+            'diagnosticoResponses.option',
+            'comercialActivity:id,name',
+            'rubro:id,name',
+            'economicSector:id,name'
+        ])
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('ruc', 'like', "%{$search}%")
+                        ->orWhere('doc_number', 'like', "%{$search}%")
+                        ->orWhere('names', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%");
+                });
+            })
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereHas('diagnosticoResponses', function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('created_at', [
+                        $startDate . ' 00:00:00',
+                        $endDate . ' 23:59:59'
+                    ]);
+                });
+            })
+            ->orderBy('id', 'DESC')
+            ->paginate(100);
+
+        // Transformar SOLO el data
+        $participants->getCollection()->transform(function ($participant) use ($questions) {
+            return $this->mapParticipantResponses($participant, $questions);
+        });
+
+        // =========================
+        // RESPONSE FINAL
+        // =========================
+        return response()->json(
+            array_merge(
+                $participants->toArray(),
+                [
+                    'questions' => $questions->map(function ($q) {
+                        return [
+                            'id'       => $q->id,
+                            'label'    => $q->label,
+                            'model'    => $q->model,
+                            'type'     => $q->type === 't' ? 'text' : 'select',
+                            'required' => (bool) $q->required,
+                            'options'  => $q->options->map(fn($opt) => [
+                                'id'    => $opt->id,
+                                'label' => $opt->name,
+                            ]),
+                        ];
+                    }),
+                ]
+            )
+        );
+    }
+
+    private function mapParticipantResponses(
+        MPParticipant $participant,
+        $questions
+    ) {
+        $responses = $participant->diagnosticoResponses
+            ->keyBy('question_id');
+
+        $mappedResponses = $questions->map(function ($question) use ($responses) {
+
+            $response = $responses->get($question->id);
+
+            return [
+                'question_model' => $question->model,
+
+                // SI es select → name
+                // SI es text → answer_text
+                'answer' => $response
+                    ? ($response->answer_text
+                        ?? $response->option?->name)
+                    : null,
+            ];
+        });
+
+        $lastDiagnostico = $participant->diagnosticoResponses
+            ->sortByDesc('created_at')
+            ->first();
+
+
+        return [
+            'participant_id'    => $participant->id,
+
+            'nombre_completo'   => $participant->names,
+            'apellidos'         => $participant->last_name . ' ' . $participant->middle_name,
+            'fecha_nacimiento'  => Carbon::parse($participant->birth_date)->format('d/m/Y'),
+            'celular'           => $participant->phone,
+            'tipo_documento'    => optional($participant->typeDocument)->avr,
+            'doc_number'        => $participant->doc_number,
+            'email'             => $participant->email,
+
+            'ruc'               => $participant->ruc,
+            'actividad'         => $participant->comercialActivity->name,
+            'rubro'             => $participant->rubro->name,
+            'economicSector'    => $participant->economicSector->name,
+
+            'responses'         => $mappedResponses,
+
+            'registrado'        => Carbon::parse(optional($lastDiagnostico)->created_at)->format('d/m/Y h:s'),
+        ];
+    }
+}
