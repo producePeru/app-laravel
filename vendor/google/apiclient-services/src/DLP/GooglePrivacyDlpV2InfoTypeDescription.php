@@ -23,28 +23,47 @@ class GooglePrivacyDlpV2InfoTypeDescription extends \Google\Collection
   protected $categoriesType = GooglePrivacyDlpV2InfoTypeCategory::class;
   protected $categoriesDataType = 'array';
   /**
+   * Description of the infotype. Translated when language is provided in the
+   * request.
+   *
    * @var string
    */
   public $description;
   /**
+   * Human readable form of the infoType name.
+   *
    * @var string
    */
   public $displayName;
   /**
+   * A sample that is a true positive for this infoType.
+   *
    * @var string
    */
   public $example;
+  protected $locationSupportType = GooglePrivacyDlpV2LocationSupport::class;
+  protected $locationSupportDataType = '';
   /**
+   * Internal name of the infoType.
+   *
    * @var string
    */
   public $name;
   protected $sensitivityScoreType = GooglePrivacyDlpV2SensitivityScore::class;
   protected $sensitivityScoreDataType = '';
   /**
+   * If this field is set, this infoType is a general infoType and these
+   * specific infoTypes are contained within it. General infoTypes are infoTypes
+   * that encompass multiple specific infoTypes. For example, the
+   * "GEOGRAPHIC_DATA" general infoType would have set for this field
+   * "LOCATION", "LOCATION_COORDINATES", and "STREET_ADDRESS".
+   *
    * @var string[]
    */
   public $specificInfoTypes;
   /**
+   * Which parts of the API supports this InfoType.
+   *
    * @var string[]
    */
   public $supportedBy;
@@ -52,7 +71,9 @@ class GooglePrivacyDlpV2InfoTypeDescription extends \Google\Collection
   protected $versionsDataType = 'array';
 
   /**
-   * @param GooglePrivacyDlpV2InfoTypeCategory[]
+   * The category of the infoType.
+   *
+   * @param GooglePrivacyDlpV2InfoTypeCategory[] $categories
    */
   public function setCategories($categories)
   {
@@ -66,7 +87,10 @@ class GooglePrivacyDlpV2InfoTypeDescription extends \Google\Collection
     return $this->categories;
   }
   /**
-   * @param string
+   * Description of the infotype. Translated when language is provided in the
+   * request.
+   *
+   * @param string $description
    */
   public function setDescription($description)
   {
@@ -80,7 +104,9 @@ class GooglePrivacyDlpV2InfoTypeDescription extends \Google\Collection
     return $this->description;
   }
   /**
-   * @param string
+   * Human readable form of the infoType name.
+   *
+   * @param string $displayName
    */
   public function setDisplayName($displayName)
   {
@@ -94,7 +120,9 @@ class GooglePrivacyDlpV2InfoTypeDescription extends \Google\Collection
     return $this->displayName;
   }
   /**
-   * @param string
+   * A sample that is a true positive for this infoType.
+   *
+   * @param string $example
    */
   public function setExample($example)
   {
@@ -108,7 +136,25 @@ class GooglePrivacyDlpV2InfoTypeDescription extends \Google\Collection
     return $this->example;
   }
   /**
-   * @param string
+   * Locations at which this feature can be used. May change over time.
+   *
+   * @param GooglePrivacyDlpV2LocationSupport $locationSupport
+   */
+  public function setLocationSupport(GooglePrivacyDlpV2LocationSupport $locationSupport)
+  {
+    $this->locationSupport = $locationSupport;
+  }
+  /**
+   * @return GooglePrivacyDlpV2LocationSupport
+   */
+  public function getLocationSupport()
+  {
+    return $this->locationSupport;
+  }
+  /**
+   * Internal name of the infoType.
+   *
+   * @param string $name
    */
   public function setName($name)
   {
@@ -122,7 +168,9 @@ class GooglePrivacyDlpV2InfoTypeDescription extends \Google\Collection
     return $this->name;
   }
   /**
-   * @param GooglePrivacyDlpV2SensitivityScore
+   * The default sensitivity of the infoType.
+   *
+   * @param GooglePrivacyDlpV2SensitivityScore $sensitivityScore
    */
   public function setSensitivityScore(GooglePrivacyDlpV2SensitivityScore $sensitivityScore)
   {
@@ -136,7 +184,13 @@ class GooglePrivacyDlpV2InfoTypeDescription extends \Google\Collection
     return $this->sensitivityScore;
   }
   /**
-   * @param string[]
+   * If this field is set, this infoType is a general infoType and these
+   * specific infoTypes are contained within it. General infoTypes are infoTypes
+   * that encompass multiple specific infoTypes. For example, the
+   * "GEOGRAPHIC_DATA" general infoType would have set for this field
+   * "LOCATION", "LOCATION_COORDINATES", and "STREET_ADDRESS".
+   *
+   * @param string[] $specificInfoTypes
    */
   public function setSpecificInfoTypes($specificInfoTypes)
   {
@@ -150,7 +204,9 @@ class GooglePrivacyDlpV2InfoTypeDescription extends \Google\Collection
     return $this->specificInfoTypes;
   }
   /**
-   * @param string[]
+   * Which parts of the API supports this InfoType.
+   *
+   * @param string[] $supportedBy
    */
   public function setSupportedBy($supportedBy)
   {
@@ -164,7 +220,9 @@ class GooglePrivacyDlpV2InfoTypeDescription extends \Google\Collection
     return $this->supportedBy;
   }
   /**
-   * @param GooglePrivacyDlpV2VersionDescription[]
+   * A list of available versions for the infotype.
+   *
+   * @param GooglePrivacyDlpV2VersionDescription[] $versions
    */
   public function setVersions($versions)
   {
