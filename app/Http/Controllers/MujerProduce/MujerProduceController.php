@@ -121,7 +121,7 @@ class MujerProduceController extends Controller
                 'title'          => 'required|string|max:255',
                 'component'      => 'required|integer|in:1,2,3,4,5',
                 'capacitador_id' => 'required|exists:mp_capacitadores,id',
-                'city_id'        => 'nullable|exists:cities,id',
+                'city_id'        => 'nullable',
                 'modality_id'    => 'required|exists:modalities,id',
                 'place'          => 'nullable|string|max:255',
                 'date'           => 'nullable|date_format:Y-m-d',
