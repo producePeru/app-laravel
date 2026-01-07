@@ -206,8 +206,8 @@ class MujerProduceController extends Controller
             'title'             => $item->title,
             'slug'              => $item->slug,
             'city_id'           => $item->city->id ?? null,
-            'city_name'         => $item->city->name ?? null,
-            'place'             => $item->place ?? null,
+            'city_name'         => $item->city->name ?? 'Virtual',
+            'place'             => $item->place ?? 'Plataforma Virtual',
             'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
             'date'              => $item->date,
             'hours'             => $item->hours,
@@ -397,7 +397,7 @@ class MujerProduceController extends Controller
             // VALIDACIÓN DEL REQUEST
             $request->validate([
                 'label'     => 'required|string|max:250',
-                'type'      => 'required|in:t,o',
+                'type'      => 'required|in:t,o,l',
                 'required'  => 'required|in:s,n',
                 'options'   => 'nullable|array',
             ]);
@@ -467,14 +467,9 @@ class MujerProduceController extends Controller
     public function getQuestionDiagnostic(Request $request)
     {
         try {
-
-            // Tamaño de paginación — configurable desde query param ?per_page=50
-            $perPage = $request->input('per_page', 100);
-
-            // Paginar preguntas con opciones
             $questions = MPDiagnostico::with(['options'])
-                ->orderBy('id', 'DESC')
-                ->paginate($perPage);
+                ->orderBy('position', 'ASC') // orden visual desde 1
+                ->get();
 
             return response()->json([
                 'status'  => 200,
@@ -490,6 +485,7 @@ class MujerProduceController extends Controller
             ], 500);
         }
     }
+
 
     public function updateQuestionDiagnostic(Request $request, $id)
     {
@@ -746,5 +742,21 @@ class MujerProduceController extends Controller
 
             'registrado'        => Carbon::parse(optional($lastDiagnostico)->created_at)->format('d/m/Y h:s'),
         ];
+    }
+
+
+    public function updateOrder(Request $request)
+    {
+        $request->validate([
+            '*.id' => 'required|exists:mp_diag_preguntas,id',
+            '*.position' => 'required|integer|min:1|max:999',
+        ]);
+
+        foreach ($request->all() as $item) {
+            MPDiagnostico::where('id', $item['id'])
+                ->update(['position' => $item['position']]);
+        }
+
+        return response()->json(['status' => 200]);
     }
 }
