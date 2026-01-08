@@ -39,9 +39,7 @@ class FeatureState extends \Google\Model
   protected $stateDataType = '';
 
   /**
-   * Appdevexperience specific state.
-   *
-   * @param AppDevExperienceState $appdevexperience
+   * @param AppDevExperienceState
    */
   public function setAppdevexperience(AppDevExperienceState $appdevexperience)
   {
@@ -55,9 +53,7 @@ class FeatureState extends \Google\Model
     return $this->appdevexperience;
   }
   /**
-   * Cluster upgrade state.
-   *
-   * @param ClusterUpgradeState $clusterupgrade
+   * @param ClusterUpgradeState
    */
   public function setClusterupgrade(ClusterUpgradeState $clusterupgrade)
   {
@@ -71,9 +67,7 @@ class FeatureState extends \Google\Model
     return $this->clusterupgrade;
   }
   /**
-   * Config Management state
-   *
-   * @param ConfigManagementState $configmanagement
+   * @param ConfigManagementState
    */
   public function setConfigmanagement(ConfigManagementState $configmanagement)
   {
@@ -87,9 +81,7 @@ class FeatureState extends \Google\Model
     return $this->configmanagement;
   }
   /**
-   * Identity service state
-   *
-   * @param IdentityServiceState $identityservice
+   * @param IdentityServiceState
    */
   public function setIdentityservice(IdentityServiceState $identityservice)
   {
@@ -103,9 +95,7 @@ class FeatureState extends \Google\Model
     return $this->identityservice;
   }
   /**
-   * Metering state
-   *
-   * @param MeteringState $metering
+   * @param MeteringState
    */
   public function setMetering(MeteringState $metering)
   {
@@ -119,9 +109,7 @@ class FeatureState extends \Google\Model
     return $this->metering;
   }
   /**
-   * Policy Controller state
-   *
-   * @param PolicyControllerState $policycontroller
+   * @param PolicyControllerState
    */
   public function setPolicycontroller(PolicyControllerState $policycontroller)
   {
@@ -135,9 +123,7 @@ class FeatureState extends \Google\Model
     return $this->policycontroller;
   }
   /**
-   * RBAC Role Binding Actuation state
-   *
-   * @param RBACRoleBindingActuationState $rbacrolebindingactuation
+   * @param RBACRoleBindingActuationState
    */
   public function setRbacrolebindingactuation(RBACRoleBindingActuationState $rbacrolebindingactuation)
   {
@@ -151,9 +137,7 @@ class FeatureState extends \Google\Model
     return $this->rbacrolebindingactuation;
   }
   /**
-   * Service mesh state
-   *
-   * @param ServiceMeshState $servicemesh
+   * @param ServiceMeshState
    */
   public function setServicemesh(ServiceMeshState $servicemesh)
   {
@@ -167,9 +151,7 @@ class FeatureState extends \Google\Model
     return $this->servicemesh;
   }
   /**
-   * The high-level state of this MembershipFeature.
-   *
-   * @param State $state
+   * @param State
    */
   public function setState(State $state)
   {

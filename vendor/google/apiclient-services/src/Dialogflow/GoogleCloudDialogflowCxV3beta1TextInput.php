@@ -20,16 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3beta1TextInput extends \Google\Model
 {
   /**
-   * Required. The UTF-8 encoded natural language text to be processed.
-   *
    * @var string
    */
   public $text;
 
   /**
-   * Required. The UTF-8 encoded natural language text to be processed.
-   *
-   * @param string $text
+   * @param string
    */
   public function setText($text)
   {

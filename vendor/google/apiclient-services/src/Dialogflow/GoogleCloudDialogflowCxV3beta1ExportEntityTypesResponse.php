@@ -22,19 +22,12 @@ class GoogleCloudDialogflowCxV3beta1ExportEntityTypesResponse extends \Google\Mo
   protected $entityTypesContentType = GoogleCloudDialogflowCxV3beta1InlineDestination::class;
   protected $entityTypesContentDataType = '';
   /**
-   * The URI to a file containing the exported entity types. This field is
-   * populated only if `entity_types_uri` is specified in
-   * ExportEntityTypesRequest.
-   *
    * @var string
    */
   public $entityTypesUri;
 
   /**
-   * Uncompressed byte content for entity types. This field is populated only if
-   * `entity_types_content_inline` is set to true in ExportEntityTypesRequest.
-   *
-   * @param GoogleCloudDialogflowCxV3beta1InlineDestination $entityTypesContent
+   * @param GoogleCloudDialogflowCxV3beta1InlineDestination
    */
   public function setEntityTypesContent(GoogleCloudDialogflowCxV3beta1InlineDestination $entityTypesContent)
   {
@@ -48,11 +41,7 @@ class GoogleCloudDialogflowCxV3beta1ExportEntityTypesResponse extends \Google\Mo
     return $this->entityTypesContent;
   }
   /**
-   * The URI to a file containing the exported entity types. This field is
-   * populated only if `entity_types_uri` is specified in
-   * ExportEntityTypesRequest.
-   *
-   * @param string $entityTypesUri
+   * @param string
    */
   public function setEntityTypesUri($entityTypesUri)
   {

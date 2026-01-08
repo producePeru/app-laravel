@@ -19,43 +19,25 @@ namespace Google\Service\Compute;
 
 class ResourcePolicyGroupPlacementPolicy extends \Google\Model
 {
-  public const COLLOCATION_COLLOCATED = 'COLLOCATED';
-  public const COLLOCATION_UNSPECIFIED_COLLOCATION = 'UNSPECIFIED_COLLOCATION';
   /**
-   * The number of availability domains to spread instances across. If two
-   * instances are in different availability domain, they are not in the same
-   * low latency network.
-   *
    * @var int
    */
   public $availabilityDomainCount;
   /**
-   * Specifies network collocation
-   *
    * @var string
    */
   public $collocation;
   /**
-   * Specifies the shape of the GPU slice, in slice based GPU families eg. A4X.
-   *
    * @var string
    */
   public $gpuTopology;
   /**
-   * Number of VMs in this placement group. Google does not recommend that you
-   * use this field unless you use a compact policy and you want your policy to
-   * work only if it contains this exact number of VMs.
-   *
    * @var int
    */
   public $vmCount;
 
   /**
-   * The number of availability domains to spread instances across. If two
-   * instances are in different availability domain, they are not in the same
-   * low latency network.
-   *
-   * @param int $availabilityDomainCount
+   * @param int
    */
   public function setAvailabilityDomainCount($availabilityDomainCount)
   {
@@ -69,27 +51,21 @@ class ResourcePolicyGroupPlacementPolicy extends \Google\Model
     return $this->availabilityDomainCount;
   }
   /**
-   * Specifies network collocation
-   *
-   * Accepted values: COLLOCATED, UNSPECIFIED_COLLOCATION
-   *
-   * @param self::COLLOCATION_* $collocation
+   * @param string
    */
   public function setCollocation($collocation)
   {
     $this->collocation = $collocation;
   }
   /**
-   * @return self::COLLOCATION_*
+   * @return string
    */
   public function getCollocation()
   {
     return $this->collocation;
   }
   /**
-   * Specifies the shape of the GPU slice, in slice based GPU families eg. A4X.
-   *
-   * @param string $gpuTopology
+   * @param string
    */
   public function setGpuTopology($gpuTopology)
   {
@@ -103,11 +79,7 @@ class ResourcePolicyGroupPlacementPolicy extends \Google\Model
     return $this->gpuTopology;
   }
   /**
-   * Number of VMs in this placement group. Google does not recommend that you
-   * use this field unless you use a compact policy and you want your policy to
-   * work only if it contains this exact number of VMs.
-   *
-   * @param int $vmCount
+   * @param int
    */
   public function setVmCount($vmCount)
   {

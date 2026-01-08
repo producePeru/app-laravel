@@ -22,10 +22,6 @@ class GoogleCloudAiplatformV1RebaseTunedModelRequest extends \Google\Model
   protected $artifactDestinationType = GoogleCloudAiplatformV1GcsDestination::class;
   protected $artifactDestinationDataType = '';
   /**
-   * Optional. By default, bison to gemini migration will always create new
-   * model/endpoint, but for gemini-1.0 to gemini-1.5 migration, we default
-   * deploy to the same endpoint. See details in this Section.
-   *
    * @var bool
    */
   public $deployToSameEndpoint;
@@ -35,9 +31,7 @@ class GoogleCloudAiplatformV1RebaseTunedModelRequest extends \Google\Model
   protected $tuningJobDataType = '';
 
   /**
-   * Optional. The Google Cloud Storage location to write the artifacts.
-   *
-   * @param GoogleCloudAiplatformV1GcsDestination $artifactDestination
+   * @param GoogleCloudAiplatformV1GcsDestination
    */
   public function setArtifactDestination(GoogleCloudAiplatformV1GcsDestination $artifactDestination)
   {
@@ -51,11 +45,7 @@ class GoogleCloudAiplatformV1RebaseTunedModelRequest extends \Google\Model
     return $this->artifactDestination;
   }
   /**
-   * Optional. By default, bison to gemini migration will always create new
-   * model/endpoint, but for gemini-1.0 to gemini-1.5 migration, we default
-   * deploy to the same endpoint. See details in this Section.
-   *
-   * @param bool $deployToSameEndpoint
+   * @param bool
    */
   public function setDeployToSameEndpoint($deployToSameEndpoint)
   {
@@ -69,9 +59,7 @@ class GoogleCloudAiplatformV1RebaseTunedModelRequest extends \Google\Model
     return $this->deployToSameEndpoint;
   }
   /**
-   * Required. TunedModel reference to retrieve the legacy model information.
-   *
-   * @param GoogleCloudAiplatformV1TunedModelRef $tunedModelRef
+   * @param GoogleCloudAiplatformV1TunedModelRef
    */
   public function setTunedModelRef(GoogleCloudAiplatformV1TunedModelRef $tunedModelRef)
   {
@@ -85,10 +73,7 @@ class GoogleCloudAiplatformV1RebaseTunedModelRequest extends \Google\Model
     return $this->tunedModelRef;
   }
   /**
-   * Optional. The TuningJob to be updated. Users can use this TuningJob field
-   * to overwrite tuning configs.
-   *
-   * @param GoogleCloudAiplatformV1TuningJob $tuningJob
+   * @param GoogleCloudAiplatformV1TuningJob
    */
   public function setTuningJob(GoogleCloudAiplatformV1TuningJob $tuningJob)
   {

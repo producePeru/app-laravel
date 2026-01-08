@@ -21,18 +21,12 @@ class Postdeploy extends \Google\Collection
 {
   protected $collection_key = 'actions';
   /**
-   * Optional. A sequence of Skaffold custom actions to invoke during execution
-   * of the postdeploy job.
-   *
    * @var string[]
    */
   public $actions;
 
   /**
-   * Optional. A sequence of Skaffold custom actions to invoke during execution
-   * of the postdeploy job.
-   *
-   * @param string[] $actions
+   * @param string[]
    */
   public function setActions($actions)
   {

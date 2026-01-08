@@ -21,31 +21,18 @@ class GoogleCloudDialogflowV2beta1SuggestDialogflowAssistsResponse extends \Goog
 {
   protected $collection_key = 'dialogflowAssistAnswers';
   /**
-   * Number of messages prior to and including latest_message to compile the
-   * suggestion. It may be smaller than the
-   * SuggestDialogflowAssistsRequest.context_size field in the request if there
-   * aren't that many messages in the conversation.
-   *
    * @var int
    */
   public $contextSize;
   protected $dialogflowAssistAnswersType = GoogleCloudDialogflowV2beta1DialogflowAssistAnswer::class;
   protected $dialogflowAssistAnswersDataType = 'array';
   /**
-   * The name of the latest conversation message used to suggest answer. Format:
-   * `projects//locations//conversations//messages/`.
-   *
    * @var string
    */
   public $latestMessage;
 
   /**
-   * Number of messages prior to and including latest_message to compile the
-   * suggestion. It may be smaller than the
-   * SuggestDialogflowAssistsRequest.context_size field in the request if there
-   * aren't that many messages in the conversation.
-   *
-   * @param int $contextSize
+   * @param int
    */
   public function setContextSize($contextSize)
   {
@@ -59,10 +46,7 @@ class GoogleCloudDialogflowV2beta1SuggestDialogflowAssistsResponse extends \Goog
     return $this->contextSize;
   }
   /**
-   * Output only. Multiple reply options provided by Dialogflow assist service.
-   * The order is based on the rank of the model prediction.
-   *
-   * @param GoogleCloudDialogflowV2beta1DialogflowAssistAnswer[] $dialogflowAssistAnswers
+   * @param GoogleCloudDialogflowV2beta1DialogflowAssistAnswer[]
    */
   public function setDialogflowAssistAnswers($dialogflowAssistAnswers)
   {
@@ -76,10 +60,7 @@ class GoogleCloudDialogflowV2beta1SuggestDialogflowAssistsResponse extends \Goog
     return $this->dialogflowAssistAnswers;
   }
   /**
-   * The name of the latest conversation message used to suggest answer. Format:
-   * `projects//locations//conversations//messages/`.
-   *
-   * @param string $latestMessage
+   * @param string
    */
   public function setLatestMessage($latestMessage)
   {

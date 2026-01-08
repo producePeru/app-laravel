@@ -20,28 +20,10 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3AnswerFeedback extends \Google\Model
 {
   /**
-   * Rating not specified.
-   */
-  public const RATING_RATING_UNSPECIFIED = 'RATING_UNSPECIFIED';
-  /**
-   * Thumbs up feedback from user.
-   */
-  public const RATING_THUMBS_UP = 'THUMBS_UP';
-  /**
-   * Thumbs down feedback from user.
-   */
-  public const RATING_THUMBS_DOWN = 'THUMBS_DOWN';
-  /**
-   * Optional. Custom rating from the user about the provided answer, with
-   * maximum length of 1024 characters. For example, client could use a
-   * customized JSON object to indicate the rating.
-   *
    * @var string
    */
   public $customRating;
   /**
-   * Optional. Rating from user for the specific Dialogflow response.
-   *
    * @var string
    */
   public $rating;
@@ -49,11 +31,7 @@ class GoogleCloudDialogflowCxV3AnswerFeedback extends \Google\Model
   protected $ratingReasonDataType = '';
 
   /**
-   * Optional. Custom rating from the user about the provided answer, with
-   * maximum length of 1024 characters. For example, client could use a
-   * customized JSON object to indicate the rating.
-   *
-   * @param string $customRating
+   * @param string
    */
   public function setCustomRating($customRating)
   {
@@ -67,28 +45,21 @@ class GoogleCloudDialogflowCxV3AnswerFeedback extends \Google\Model
     return $this->customRating;
   }
   /**
-   * Optional. Rating from user for the specific Dialogflow response.
-   *
-   * Accepted values: RATING_UNSPECIFIED, THUMBS_UP, THUMBS_DOWN
-   *
-   * @param self::RATING_* $rating
+   * @param string
    */
   public function setRating($rating)
   {
     $this->rating = $rating;
   }
   /**
-   * @return self::RATING_*
+   * @return string
    */
   public function getRating()
   {
     return $this->rating;
   }
   /**
-   * Optional. In case of thumbs down rating provided, users can optionally
-   * provide context about the rating.
-   *
-   * @param GoogleCloudDialogflowCxV3AnswerFeedbackRatingReason $ratingReason
+   * @param GoogleCloudDialogflowCxV3AnswerFeedbackRatingReason
    */
   public function setRatingReason(GoogleCloudDialogflowCxV3AnswerFeedbackRatingReason $ratingReason)
   {

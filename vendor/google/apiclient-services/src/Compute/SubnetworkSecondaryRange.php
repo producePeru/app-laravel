@@ -20,38 +20,20 @@ namespace Google\Service\Compute;
 class SubnetworkSecondaryRange extends \Google\Model
 {
   /**
-   * The range of IP addresses belonging to this subnetwork secondary range.
-   * Provide this property when you create the subnetwork. Ranges must be unique
-   * and non-overlapping with all primary and secondary IP ranges within a
-   * network. Only IPv4 is supported. The range can be any range listed in
-   * theValid ranges list.
-   *
    * @var string
    */
   public $ipCidrRange;
   /**
-   * The name associated with this subnetwork secondary range, used when adding
-   * an alias IP range to a VM instance. The name must be 1-63 characters long,
-   * and comply withRFC1035. The name must be unique within the subnetwork.
-   *
    * @var string
    */
   public $rangeName;
   /**
-   * The URL of the reserved internal range.
-   *
    * @var string
    */
   public $reservedInternalRange;
 
   /**
-   * The range of IP addresses belonging to this subnetwork secondary range.
-   * Provide this property when you create the subnetwork. Ranges must be unique
-   * and non-overlapping with all primary and secondary IP ranges within a
-   * network. Only IPv4 is supported. The range can be any range listed in
-   * theValid ranges list.
-   *
-   * @param string $ipCidrRange
+   * @param string
    */
   public function setIpCidrRange($ipCidrRange)
   {
@@ -65,11 +47,7 @@ class SubnetworkSecondaryRange extends \Google\Model
     return $this->ipCidrRange;
   }
   /**
-   * The name associated with this subnetwork secondary range, used when adding
-   * an alias IP range to a VM instance. The name must be 1-63 characters long,
-   * and comply withRFC1035. The name must be unique within the subnetwork.
-   *
-   * @param string $rangeName
+   * @param string
    */
   public function setRangeName($rangeName)
   {
@@ -83,9 +61,7 @@ class SubnetworkSecondaryRange extends \Google\Model
     return $this->rangeName;
   }
   /**
-   * The URL of the reserved internal range.
-   *
-   * @param string $reservedInternalRange
+   * @param string
    */
   public function setReservedInternalRange($reservedInternalRange)
   {

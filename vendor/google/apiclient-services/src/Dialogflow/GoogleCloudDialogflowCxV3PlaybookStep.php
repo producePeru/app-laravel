@@ -23,16 +23,12 @@ class GoogleCloudDialogflowCxV3PlaybookStep extends \Google\Collection
   protected $stepsType = GoogleCloudDialogflowCxV3PlaybookStep::class;
   protected $stepsDataType = 'array';
   /**
-   * Step instruction in text format.
-   *
    * @var string
    */
   public $text;
 
   /**
-   * Sub-processing needed to execute the current step.
-   *
-   * @param GoogleCloudDialogflowCxV3PlaybookStep[] $steps
+   * @param GoogleCloudDialogflowCxV3PlaybookStep[]
    */
   public function setSteps($steps)
   {
@@ -46,9 +42,7 @@ class GoogleCloudDialogflowCxV3PlaybookStep extends \Google\Collection
     return $this->steps;
   }
   /**
-   * Step instruction in text format.
-   *
-   * @param string $text
+   * @param string
    */
   public function setText($text)
   {

@@ -25,9 +25,7 @@ class GoogleCloudContactcenterinsightsV1QueryMetricsResponseSliceDataPoint exten
   protected $intervalDataType = '';
 
   /**
-   * The measure related to conversations.
-   *
-   * @param GoogleCloudContactcenterinsightsV1QueryMetricsResponseSliceDataPointConversationMeasure $conversationMeasure
+   * @param GoogleCloudContactcenterinsightsV1QueryMetricsResponseSliceDataPointConversationMeasure
    */
   public function setConversationMeasure(GoogleCloudContactcenterinsightsV1QueryMetricsResponseSliceDataPointConversationMeasure $conversationMeasure)
   {
@@ -41,12 +39,7 @@ class GoogleCloudContactcenterinsightsV1QueryMetricsResponseSliceDataPoint exten
     return $this->conversationMeasure;
   }
   /**
-   * The interval that this data point represents. * If this is the total data
-   * point, the interval is [starting create time, ending create time) from the
-   * request. * If this a data point from the time series, the interval is
-   * [time, time + time granularity from the request).
-   *
-   * @param GoogleTypeInterval $interval
+   * @param GoogleTypeInterval
    */
   public function setInterval(GoogleTypeInterval $interval)
   {

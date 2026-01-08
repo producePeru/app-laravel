@@ -33,9 +33,7 @@ class SourceObjectIdentifier extends \Google\Model
   protected $sqlServerIdentifierDataType = '';
 
   /**
-   * MongoDB data source object identifier.
-   *
-   * @param MongodbObjectIdentifier $mongodbIdentifier
+   * @param MongodbObjectIdentifier
    */
   public function setMongodbIdentifier(MongodbObjectIdentifier $mongodbIdentifier)
   {
@@ -49,9 +47,7 @@ class SourceObjectIdentifier extends \Google\Model
     return $this->mongodbIdentifier;
   }
   /**
-   * Mysql data source object identifier.
-   *
-   * @param MysqlObjectIdentifier $mysqlIdentifier
+   * @param MysqlObjectIdentifier
    */
   public function setMysqlIdentifier(MysqlObjectIdentifier $mysqlIdentifier)
   {
@@ -65,9 +61,7 @@ class SourceObjectIdentifier extends \Google\Model
     return $this->mysqlIdentifier;
   }
   /**
-   * Oracle data source object identifier.
-   *
-   * @param OracleObjectIdentifier $oracleIdentifier
+   * @param OracleObjectIdentifier
    */
   public function setOracleIdentifier(OracleObjectIdentifier $oracleIdentifier)
   {
@@ -81,9 +75,7 @@ class SourceObjectIdentifier extends \Google\Model
     return $this->oracleIdentifier;
   }
   /**
-   * PostgreSQL data source object identifier.
-   *
-   * @param PostgresqlObjectIdentifier $postgresqlIdentifier
+   * @param PostgresqlObjectIdentifier
    */
   public function setPostgresqlIdentifier(PostgresqlObjectIdentifier $postgresqlIdentifier)
   {
@@ -97,9 +89,7 @@ class SourceObjectIdentifier extends \Google\Model
     return $this->postgresqlIdentifier;
   }
   /**
-   * Salesforce data source object identifier.
-   *
-   * @param SalesforceObjectIdentifier $salesforceIdentifier
+   * @param SalesforceObjectIdentifier
    */
   public function setSalesforceIdentifier(SalesforceObjectIdentifier $salesforceIdentifier)
   {
@@ -113,9 +103,7 @@ class SourceObjectIdentifier extends \Google\Model
     return $this->salesforceIdentifier;
   }
   /**
-   * SQLServer data source object identifier.
-   *
-   * @param SqlServerObjectIdentifier $sqlServerIdentifier
+   * @param SqlServerObjectIdentifier
    */
   public function setSqlServerIdentifier(SqlServerObjectIdentifier $sqlServerIdentifier)
   {

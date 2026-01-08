@@ -20,22 +20,16 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3SafetySettingsPhrase extends \Google\Model
 {
   /**
-   * Required. Language code of the phrase.
-   *
    * @var string
    */
   public $languageCode;
   /**
-   * Required. Text input which can be used for prompt or banned phrases.
-   *
    * @var string
    */
   public $text;
 
   /**
-   * Required. Language code of the phrase.
-   *
-   * @param string $languageCode
+   * @param string
    */
   public function setLanguageCode($languageCode)
   {
@@ -49,9 +43,7 @@ class GoogleCloudDialogflowCxV3SafetySettingsPhrase extends \Google\Model
     return $this->languageCode;
   }
   /**
-   * Required. Text input which can be used for prompt or banned phrases.
-   *
-   * @param string $text
+   * @param string
    */
   public function setText($text)
   {

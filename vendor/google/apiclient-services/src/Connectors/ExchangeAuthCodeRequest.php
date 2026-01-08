@@ -23,11 +23,7 @@ class ExchangeAuthCodeRequest extends \Google\Model
   protected $authCodeDataDataType = '';
 
   /**
-   * Optional. AuthCodeData contains the data the runtime requires to exchange
-   * for access and refresh tokens. If the data is not provided, the runtime
-   * will read the data from the secret manager.
-   *
-   * @param AuthCodeData $authCodeData
+   * @param AuthCodeData
    */
   public function setAuthCodeData(AuthCodeData $authCodeData)
   {

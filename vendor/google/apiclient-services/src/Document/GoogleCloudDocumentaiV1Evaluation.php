@@ -22,8 +22,6 @@ class GoogleCloudDocumentaiV1Evaluation extends \Google\Model
   protected $allEntitiesMetricsType = GoogleCloudDocumentaiV1EvaluationMultiConfidenceMetrics::class;
   protected $allEntitiesMetricsDataType = '';
   /**
-   * The time that the evaluation was created.
-   *
    * @var string
    */
   public $createTime;
@@ -32,30 +30,20 @@ class GoogleCloudDocumentaiV1Evaluation extends \Google\Model
   protected $entityMetricsType = GoogleCloudDocumentaiV1EvaluationMultiConfidenceMetrics::class;
   protected $entityMetricsDataType = 'map';
   /**
-   * The KMS key name used for encryption.
-   *
    * @var string
    */
   public $kmsKeyName;
   /**
-   * The KMS key version with which data is encrypted.
-   *
    * @var string
    */
   public $kmsKeyVersionName;
   /**
-   * The resource name of the evaluation. Format: `projects/{project}/locations/
-   * {location}/processors/{processor}/processorVersions/{processor_version}/eva
-   * luations/{evaluation}`
-   *
    * @var string
    */
   public $name;
 
   /**
-   * Metrics for all the entities in aggregate.
-   *
-   * @param GoogleCloudDocumentaiV1EvaluationMultiConfidenceMetrics $allEntitiesMetrics
+   * @param GoogleCloudDocumentaiV1EvaluationMultiConfidenceMetrics
    */
   public function setAllEntitiesMetrics(GoogleCloudDocumentaiV1EvaluationMultiConfidenceMetrics $allEntitiesMetrics)
   {
@@ -69,9 +57,7 @@ class GoogleCloudDocumentaiV1Evaluation extends \Google\Model
     return $this->allEntitiesMetrics;
   }
   /**
-   * The time that the evaluation was created.
-   *
-   * @param string $createTime
+   * @param string
    */
   public function setCreateTime($createTime)
   {
@@ -85,9 +71,7 @@ class GoogleCloudDocumentaiV1Evaluation extends \Google\Model
     return $this->createTime;
   }
   /**
-   * Counters for the documents used in the evaluation.
-   *
-   * @param GoogleCloudDocumentaiV1EvaluationCounters $documentCounters
+   * @param GoogleCloudDocumentaiV1EvaluationCounters
    */
   public function setDocumentCounters(GoogleCloudDocumentaiV1EvaluationCounters $documentCounters)
   {
@@ -101,9 +85,7 @@ class GoogleCloudDocumentaiV1Evaluation extends \Google\Model
     return $this->documentCounters;
   }
   /**
-   * Metrics across confidence levels, for different entities.
-   *
-   * @param GoogleCloudDocumentaiV1EvaluationMultiConfidenceMetrics[] $entityMetrics
+   * @param GoogleCloudDocumentaiV1EvaluationMultiConfidenceMetrics[]
    */
   public function setEntityMetrics($entityMetrics)
   {
@@ -117,9 +99,7 @@ class GoogleCloudDocumentaiV1Evaluation extends \Google\Model
     return $this->entityMetrics;
   }
   /**
-   * The KMS key name used for encryption.
-   *
-   * @param string $kmsKeyName
+   * @param string
    */
   public function setKmsKeyName($kmsKeyName)
   {
@@ -133,9 +113,7 @@ class GoogleCloudDocumentaiV1Evaluation extends \Google\Model
     return $this->kmsKeyName;
   }
   /**
-   * The KMS key version with which data is encrypted.
-   *
-   * @param string $kmsKeyVersionName
+   * @param string
    */
   public function setKmsKeyVersionName($kmsKeyVersionName)
   {
@@ -149,11 +127,7 @@ class GoogleCloudDocumentaiV1Evaluation extends \Google\Model
     return $this->kmsKeyVersionName;
   }
   /**
-   * The resource name of the evaluation. Format: `projects/{project}/locations/
-   * {location}/processors/{processor}/processorVersions/{processor_version}/eva
-   * luations/{evaluation}`
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {

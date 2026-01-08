@@ -20,30 +20,20 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2IntentMessageSimpleResponse extends \Google\Model
 {
   /**
-   * Optional. The text to display.
-   *
    * @var string
    */
   public $displayText;
   /**
-   * One of text_to_speech or ssml must be provided. Structured spoken response
-   * to the user in the SSML format. Mutually exclusive with text_to_speech.
-   *
    * @var string
    */
   public $ssml;
   /**
-   * One of text_to_speech or ssml must be provided. The plain text of the
-   * speech output. Mutually exclusive with ssml.
-   *
    * @var string
    */
   public $textToSpeech;
 
   /**
-   * Optional. The text to display.
-   *
-   * @param string $displayText
+   * @param string
    */
   public function setDisplayText($displayText)
   {
@@ -57,10 +47,7 @@ class GoogleCloudDialogflowV2IntentMessageSimpleResponse extends \Google\Model
     return $this->displayText;
   }
   /**
-   * One of text_to_speech or ssml must be provided. Structured spoken response
-   * to the user in the SSML format. Mutually exclusive with text_to_speech.
-   *
-   * @param string $ssml
+   * @param string
    */
   public function setSsml($ssml)
   {
@@ -74,10 +61,7 @@ class GoogleCloudDialogflowV2IntentMessageSimpleResponse extends \Google\Model
     return $this->ssml;
   }
   /**
-   * One of text_to_speech or ssml must be provided. The plain text of the
-   * speech output. Mutually exclusive with ssml.
-   *
-   * @param string $textToSpeech
+   * @param string
    */
   public function setTextToSpeech($textToSpeech)
   {

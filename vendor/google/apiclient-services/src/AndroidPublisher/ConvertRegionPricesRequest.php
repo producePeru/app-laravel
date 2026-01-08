@@ -23,9 +23,7 @@ class ConvertRegionPricesRequest extends \Google\Model
   protected $priceDataType = '';
 
   /**
-   * The intital price to convert other regions from. Tax exclusive.
-   *
-   * @param Money $price
+   * @param Money
    */
   public function setPrice(Money $price)
   {

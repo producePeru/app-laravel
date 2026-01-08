@@ -23,18 +23,12 @@ class GoogleCloudDialogflowCxV3ImportEntityTypesResponse extends \Google\Collect
   protected $conflictingResourcesType = GoogleCloudDialogflowCxV3ImportEntityTypesResponseConflictingResources::class;
   protected $conflictingResourcesDataType = '';
   /**
-   * The unique identifier of the imported entity types. Format:
-   * `projects//locations//agents//entity_types/`.
-   *
    * @var string[]
    */
   public $entityTypes;
 
   /**
-   * Info which resources have conflicts when REPORT_CONFLICT merge_option is
-   * set in ImportEntityTypesRequest.
-   *
-   * @param GoogleCloudDialogflowCxV3ImportEntityTypesResponseConflictingResources $conflictingResources
+   * @param GoogleCloudDialogflowCxV3ImportEntityTypesResponseConflictingResources
    */
   public function setConflictingResources(GoogleCloudDialogflowCxV3ImportEntityTypesResponseConflictingResources $conflictingResources)
   {
@@ -48,10 +42,7 @@ class GoogleCloudDialogflowCxV3ImportEntityTypesResponse extends \Google\Collect
     return $this->conflictingResources;
   }
   /**
-   * The unique identifier of the imported entity types. Format:
-   * `projects//locations//agents//entity_types/`.
-   *
-   * @param string[] $entityTypes
+   * @param string[]
    */
   public function setEntityTypes($entityTypes)
   {

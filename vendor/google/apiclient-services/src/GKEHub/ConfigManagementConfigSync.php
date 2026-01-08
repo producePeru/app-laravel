@@ -23,62 +23,32 @@ class ConfigManagementConfigSync extends \Google\Collection
   protected $deploymentOverridesType = ConfigManagementDeploymentOverride::class;
   protected $deploymentOverridesDataType = 'array';
   /**
-   * Optional. Enables the installation of ConfigSync. If set to true,
-   * ConfigSync resources will be created and the other ConfigSync fields will
-   * be applied if exist. If set to false, all other ConfigSync fields will be
-   * ignored, ConfigSync resources will be deleted. If omitted, ConfigSync
-   * resources will be managed depends on the presence of the git or oci field.
-   *
    * @var bool
    */
   public $enabled;
   protected $gitType = ConfigManagementGitConfig::class;
   protected $gitDataType = '';
   /**
-   * Optional. The Email of the Google Cloud Service Account (GSA) used for
-   * exporting Config Sync metrics to Cloud Monitoring and Cloud Monarch when
-   * Workload Identity is enabled. The GSA should have the Monitoring Metric
-   * Writer (roles/monitoring.metricWriter) IAM role. The Kubernetes
-   * ServiceAccount `default` in the namespace `config-management-monitoring`
-   * should be bound to the GSA. Deprecated: If Workload Identity Federation for
-   * GKE is enabled, Google Cloud Service Account is no longer needed for
-   * exporting Config Sync metrics: https://cloud.google.com/kubernetes-
-   * engine/enterprise/config-sync/docs/how-to/monitor-config-sync-cloud-
-   * monitoring#custom-monitoring.
-   *
-   * @deprecated
    * @var string
    */
   public $metricsGcpServiceAccountEmail;
   protected $ociType = ConfigManagementOciConfig::class;
   protected $ociDataType = '';
   /**
-   * Optional. Set to true to enable the Config Sync admission webhook to
-   * prevent drifts. If set to `false`, disables the Config Sync admission
-   * webhook and does not prevent drifts.
-   *
    * @var bool
    */
   public $preventDrift;
   /**
-   * Optional. Specifies whether the Config Sync Repo is in "hierarchical" or
-   * "unstructured" mode.
-   *
    * @var string
    */
   public $sourceFormat;
   /**
-   * Optional. Set to true to stop syncing configs for a single cluster. Default
-   * to false.
-   *
    * @var bool
    */
   public $stopSyncing;
 
   /**
-   * Optional. Configuration for deployment overrides.
-   *
-   * @param ConfigManagementDeploymentOverride[] $deploymentOverrides
+   * @param ConfigManagementDeploymentOverride[]
    */
   public function setDeploymentOverrides($deploymentOverrides)
   {
@@ -92,13 +62,7 @@ class ConfigManagementConfigSync extends \Google\Collection
     return $this->deploymentOverrides;
   }
   /**
-   * Optional. Enables the installation of ConfigSync. If set to true,
-   * ConfigSync resources will be created and the other ConfigSync fields will
-   * be applied if exist. If set to false, all other ConfigSync fields will be
-   * ignored, ConfigSync resources will be deleted. If omitted, ConfigSync
-   * resources will be managed depends on the presence of the git or oci field.
-   *
-   * @param bool $enabled
+   * @param bool
    */
   public function setEnabled($enabled)
   {
@@ -112,9 +76,7 @@ class ConfigManagementConfigSync extends \Google\Collection
     return $this->enabled;
   }
   /**
-   * Optional. Git repo configuration for the cluster.
-   *
-   * @param ConfigManagementGitConfig $git
+   * @param ConfigManagementGitConfig
    */
   public function setGit(ConfigManagementGitConfig $git)
   {
@@ -128,26 +90,13 @@ class ConfigManagementConfigSync extends \Google\Collection
     return $this->git;
   }
   /**
-   * Optional. The Email of the Google Cloud Service Account (GSA) used for
-   * exporting Config Sync metrics to Cloud Monitoring and Cloud Monarch when
-   * Workload Identity is enabled. The GSA should have the Monitoring Metric
-   * Writer (roles/monitoring.metricWriter) IAM role. The Kubernetes
-   * ServiceAccount `default` in the namespace `config-management-monitoring`
-   * should be bound to the GSA. Deprecated: If Workload Identity Federation for
-   * GKE is enabled, Google Cloud Service Account is no longer needed for
-   * exporting Config Sync metrics: https://cloud.google.com/kubernetes-
-   * engine/enterprise/config-sync/docs/how-to/monitor-config-sync-cloud-
-   * monitoring#custom-monitoring.
-   *
-   * @deprecated
-   * @param string $metricsGcpServiceAccountEmail
+   * @param string
    */
   public function setMetricsGcpServiceAccountEmail($metricsGcpServiceAccountEmail)
   {
     $this->metricsGcpServiceAccountEmail = $metricsGcpServiceAccountEmail;
   }
   /**
-   * @deprecated
    * @return string
    */
   public function getMetricsGcpServiceAccountEmail()
@@ -155,9 +104,7 @@ class ConfigManagementConfigSync extends \Google\Collection
     return $this->metricsGcpServiceAccountEmail;
   }
   /**
-   * Optional. OCI repo configuration for the cluster.
-   *
-   * @param ConfigManagementOciConfig $oci
+   * @param ConfigManagementOciConfig
    */
   public function setOci(ConfigManagementOciConfig $oci)
   {
@@ -171,11 +118,7 @@ class ConfigManagementConfigSync extends \Google\Collection
     return $this->oci;
   }
   /**
-   * Optional. Set to true to enable the Config Sync admission webhook to
-   * prevent drifts. If set to `false`, disables the Config Sync admission
-   * webhook and does not prevent drifts.
-   *
-   * @param bool $preventDrift
+   * @param bool
    */
   public function setPreventDrift($preventDrift)
   {
@@ -189,10 +132,7 @@ class ConfigManagementConfigSync extends \Google\Collection
     return $this->preventDrift;
   }
   /**
-   * Optional. Specifies whether the Config Sync Repo is in "hierarchical" or
-   * "unstructured" mode.
-   *
-   * @param string $sourceFormat
+   * @param string
    */
   public function setSourceFormat($sourceFormat)
   {
@@ -206,10 +146,7 @@ class ConfigManagementConfigSync extends \Google\Collection
     return $this->sourceFormat;
   }
   /**
-   * Optional. Set to true to stop syncing configs for a single cluster. Default
-   * to false.
-   *
-   * @param bool $stopSyncing
+   * @param bool
    */
   public function setStopSyncing($stopSyncing)
   {

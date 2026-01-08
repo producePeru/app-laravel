@@ -19,38 +19,8 @@ namespace Google\Service\Recommender;
 
 class GoogleCloudRecommenderV1Impact extends \Google\Collection
 {
-  /**
-   * Default unspecified category. Don't use directly.
-   */
-  public const CATEGORY_CATEGORY_UNSPECIFIED = 'CATEGORY_UNSPECIFIED';
-  /**
-   * Indicates a potential increase or decrease in cost.
-   */
-  public const CATEGORY_COST = 'COST';
-  /**
-   * Indicates a potential increase or decrease in security.
-   */
-  public const CATEGORY_SECURITY = 'SECURITY';
-  /**
-   * Indicates a potential increase or decrease in performance.
-   */
-  public const CATEGORY_PERFORMANCE = 'PERFORMANCE';
-  /**
-   * Indicates a potential increase or decrease in manageability.
-   */
-  public const CATEGORY_MANAGEABILITY = 'MANAGEABILITY';
-  /**
-   * Indicates a potential increase or decrease in sustainability.
-   */
-  public const CATEGORY_SUSTAINABILITY = 'SUSTAINABILITY';
-  /**
-   * Indicates a potential increase or decrease in reliability.
-   */
-  public const CATEGORY_RELIABILITY = 'RELIABILITY';
   protected $collection_key = 'impactComponents';
   /**
-   * Category that is being targeted.
-   *
    * @var string
    */
   public $category;
@@ -63,8 +33,6 @@ class GoogleCloudRecommenderV1Impact extends \Google\Collection
   protected $securityProjectionType = GoogleCloudRecommenderV1SecurityProjection::class;
   protected $securityProjectionDataType = '';
   /**
-   * The service that this impact is associated with.
-   *
    * @var string
    */
   public $service;
@@ -72,28 +40,21 @@ class GoogleCloudRecommenderV1Impact extends \Google\Collection
   protected $sustainabilityProjectionDataType = '';
 
   /**
-   * Category that is being targeted.
-   *
-   * Accepted values: CATEGORY_UNSPECIFIED, COST, SECURITY, PERFORMANCE,
-   * MANAGEABILITY, SUSTAINABILITY, RELIABILITY
-   *
-   * @param self::CATEGORY_* $category
+   * @param string
    */
   public function setCategory($category)
   {
     $this->category = $category;
   }
   /**
-   * @return self::CATEGORY_*
+   * @return string
    */
   public function getCategory()
   {
     return $this->category;
   }
   /**
-   * Use with CategoryType.COST
-   *
-   * @param GoogleCloudRecommenderV1CostProjection $costProjection
+   * @param GoogleCloudRecommenderV1CostProjection
    */
   public function setCostProjection(GoogleCloudRecommenderV1CostProjection $costProjection)
   {
@@ -107,11 +68,7 @@ class GoogleCloudRecommenderV1Impact extends \Google\Collection
     return $this->costProjection;
   }
   /**
-   * If populated, the impact contains multiple components. In this case, the
-   * top-level impact contains aggregated values and each component contains
-   * per-service details.
-   *
-   * @param GoogleCloudRecommenderV1Impact[] $impactComponents
+   * @param GoogleCloudRecommenderV1Impact[]
    */
   public function setImpactComponents($impactComponents)
   {
@@ -125,9 +82,7 @@ class GoogleCloudRecommenderV1Impact extends \Google\Collection
     return $this->impactComponents;
   }
   /**
-   * Use with CategoryType.RELIABILITY
-   *
-   * @param GoogleCloudRecommenderV1ReliabilityProjection $reliabilityProjection
+   * @param GoogleCloudRecommenderV1ReliabilityProjection
    */
   public function setReliabilityProjection(GoogleCloudRecommenderV1ReliabilityProjection $reliabilityProjection)
   {
@@ -141,9 +96,7 @@ class GoogleCloudRecommenderV1Impact extends \Google\Collection
     return $this->reliabilityProjection;
   }
   /**
-   * Use with CategoryType.SECURITY
-   *
-   * @param GoogleCloudRecommenderV1SecurityProjection $securityProjection
+   * @param GoogleCloudRecommenderV1SecurityProjection
    */
   public function setSecurityProjection(GoogleCloudRecommenderV1SecurityProjection $securityProjection)
   {
@@ -157,9 +110,7 @@ class GoogleCloudRecommenderV1Impact extends \Google\Collection
     return $this->securityProjection;
   }
   /**
-   * The service that this impact is associated with.
-   *
-   * @param string $service
+   * @param string
    */
   public function setService($service)
   {
@@ -173,9 +124,7 @@ class GoogleCloudRecommenderV1Impact extends \Google\Collection
     return $this->service;
   }
   /**
-   * Use with CategoryType.SUSTAINABILITY
-   *
-   * @param GoogleCloudRecommenderV1SustainabilityProjection $sustainabilityProjection
+   * @param GoogleCloudRecommenderV1SustainabilityProjection
    */
   public function setSustainabilityProjection(GoogleCloudRecommenderV1SustainabilityProjection $sustainabilityProjection)
   {

@@ -20,24 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3AgentPersonalizationSettings extends \Google\Model
 {
   /**
-   * Optional. Default end user metadata, used when processing DetectIntent
-   * requests. Recommended to be filled as a template instead of hard-coded
-   * value, for example { "age": "$session.params.age" }. The data will be
-   * merged with the QueryParameters.end_user_metadata in
-   * DetectIntentRequest.query_params during query processing.
-   *
    * @var array[]
    */
   public $defaultEndUserMetadata;
 
   /**
-   * Optional. Default end user metadata, used when processing DetectIntent
-   * requests. Recommended to be filled as a template instead of hard-coded
-   * value, for example { "age": "$session.params.age" }. The data will be
-   * merged with the QueryParameters.end_user_metadata in
-   * DetectIntentRequest.query_params during query processing.
-   *
-   * @param array[] $defaultEndUserMetadata
+   * @param array[]
    */
   public function setDefaultEndUserMetadata($defaultEndUserMetadata)
   {

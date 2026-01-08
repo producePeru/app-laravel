@@ -20,115 +20,41 @@ namespace Google\Service\Connectors;
 class ConnectorsResource extends \Google\Model
 {
   /**
-   * A description of what this resource represents.
-   *
    * @var string
    */
-  public $description;
+  public $pathTemplate;
   /**
-   * The MIME type of this resource, if known.
-   *
    * @var string
    */
-  public $mimeType;
-  /**
-   * A human-readable name for this resource.
-   *
-   * @var string
-   */
-  public $name;
-  /**
-   * The size of the raw resource content, in bytes, if known.
-   *
-   * @var string
-   */
-  public $size;
-  /**
-   * The URI of this resource.
-   *
-   * @var string
-   */
-  public $uri;
+  public $type;
 
   /**
-   * A description of what this resource represents.
-   *
-   * @param string $description
+   * @param string
    */
-  public function setDescription($description)
+  public function setPathTemplate($pathTemplate)
   {
-    $this->description = $description;
+    $this->pathTemplate = $pathTemplate;
   }
   /**
    * @return string
    */
-  public function getDescription()
+  public function getPathTemplate()
   {
-    return $this->description;
+    return $this->pathTemplate;
   }
   /**
-   * The MIME type of this resource, if known.
-   *
-   * @param string $mimeType
+   * @param string
    */
-  public function setMimeType($mimeType)
+  public function setType($type)
   {
-    $this->mimeType = $mimeType;
-  }
-  /**
-   * @return string
-   */
-  public function getMimeType()
-  {
-    return $this->mimeType;
-  }
-  /**
-   * A human-readable name for this resource.
-   *
-   * @param string $name
-   */
-  public function setName($name)
-  {
-    $this->name = $name;
+    $this->type = $type;
   }
   /**
    * @return string
    */
-  public function getName()
+  public function getType()
   {
-    return $this->name;
-  }
-  /**
-   * The size of the raw resource content, in bytes, if known.
-   *
-   * @param string $size
-   */
-  public function setSize($size)
-  {
-    $this->size = $size;
-  }
-  /**
-   * @return string
-   */
-  public function getSize()
-  {
-    return $this->size;
-  }
-  /**
-   * The URI of this resource.
-   *
-   * @param string $uri
-   */
-  public function setUri($uri)
-  {
-    $this->uri = $uri;
-  }
-  /**
-   * @return string
-   */
-  public function getUri()
-  {
-    return $this->uri;
+    return $this->type;
   }
 }
 

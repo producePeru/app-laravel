@@ -24,16 +24,12 @@ class SparkWrapperObject extends \Google\Model
   protected $applicationEnvironmentInfoType = ApplicationEnvironmentInfo::class;
   protected $applicationEnvironmentInfoDataType = '';
   /**
-   * Application Id created by Spark.
-   *
    * @var string
    */
   public $applicationId;
   protected $applicationInfoType = ApplicationInfo::class;
   protected $applicationInfoDataType = '';
   /**
-   * VM Timestamp associated with the data object.
-   *
    * @var string
    */
   public $eventTimestamp;
@@ -75,7 +71,7 @@ class SparkWrapperObject extends \Google\Model
   protected $taskDataDataType = '';
 
   /**
-   * @param AppSummary $appSummary
+   * @param AppSummary
    */
   public function setAppSummary(AppSummary $appSummary)
   {
@@ -89,7 +85,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->appSummary;
   }
   /**
-   * @param ApplicationEnvironmentInfo $applicationEnvironmentInfo
+   * @param ApplicationEnvironmentInfo
    */
   public function setApplicationEnvironmentInfo(ApplicationEnvironmentInfo $applicationEnvironmentInfo)
   {
@@ -103,9 +99,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->applicationEnvironmentInfo;
   }
   /**
-   * Application Id created by Spark.
-   *
-   * @param string $applicationId
+   * @param string
    */
   public function setApplicationId($applicationId)
   {
@@ -119,7 +113,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->applicationId;
   }
   /**
-   * @param ApplicationInfo $applicationInfo
+   * @param ApplicationInfo
    */
   public function setApplicationInfo(ApplicationInfo $applicationInfo)
   {
@@ -133,9 +127,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->applicationInfo;
   }
   /**
-   * VM Timestamp associated with the data object.
-   *
-   * @param string $eventTimestamp
+   * @param string
    */
   public function setEventTimestamp($eventTimestamp)
   {
@@ -149,7 +141,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->eventTimestamp;
   }
   /**
-   * @param ExecutorStageSummary $executorStageSummary
+   * @param ExecutorStageSummary
    */
   public function setExecutorStageSummary(ExecutorStageSummary $executorStageSummary)
   {
@@ -163,7 +155,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->executorStageSummary;
   }
   /**
-   * @param ExecutorSummary $executorSummary
+   * @param ExecutorSummary
    */
   public function setExecutorSummary(ExecutorSummary $executorSummary)
   {
@@ -177,7 +169,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->executorSummary;
   }
   /**
-   * @param JobData $jobData
+   * @param JobData
    */
   public function setJobData(JobData $jobData)
   {
@@ -191,9 +183,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->jobData;
   }
   /**
-   * Native Build Info
-   *
-   * @param NativeBuildInfoUiData $nativeBuildInfoUiData
+   * @param NativeBuildInfoUiData
    */
   public function setNativeBuildInfoUiData(NativeBuildInfoUiData $nativeBuildInfoUiData)
   {
@@ -207,9 +197,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->nativeBuildInfoUiData;
   }
   /**
-   * Native SQL Execution Info
-   *
-   * @param NativeSqlExecutionUiData $nativeSqlExecutionUiData
+   * @param NativeSqlExecutionUiData
    */
   public function setNativeSqlExecutionUiData(NativeSqlExecutionUiData $nativeSqlExecutionUiData)
   {
@@ -223,7 +211,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->nativeSqlExecutionUiData;
   }
   /**
-   * @param PoolData $poolData
+   * @param PoolData
    */
   public function setPoolData(PoolData $poolData)
   {
@@ -237,7 +225,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->poolData;
   }
   /**
-   * @param ProcessSummary $processSummary
+   * @param ProcessSummary
    */
   public function setProcessSummary(ProcessSummary $processSummary)
   {
@@ -251,7 +239,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->processSummary;
   }
   /**
-   * @param RddOperationGraph $rddOperationGraph
+   * @param RddOperationGraph
    */
   public function setRddOperationGraph(RddOperationGraph $rddOperationGraph)
   {
@@ -265,7 +253,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->rddOperationGraph;
   }
   /**
-   * @param RddStorageInfo $rddStorageInfo
+   * @param RddStorageInfo
    */
   public function setRddStorageInfo(RddStorageInfo $rddStorageInfo)
   {
@@ -279,7 +267,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->rddStorageInfo;
   }
   /**
-   * @param ResourceProfileInfo $resourceProfileInfo
+   * @param ResourceProfileInfo
    */
   public function setResourceProfileInfo(ResourceProfileInfo $resourceProfileInfo)
   {
@@ -293,7 +281,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->resourceProfileInfo;
   }
   /**
-   * @param SparkPlanGraph $sparkPlanGraph
+   * @param SparkPlanGraph
    */
   public function setSparkPlanGraph(SparkPlanGraph $sparkPlanGraph)
   {
@@ -307,7 +295,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->sparkPlanGraph;
   }
   /**
-   * @param SpeculationStageSummary $speculationStageSummary
+   * @param SpeculationStageSummary
    */
   public function setSpeculationStageSummary(SpeculationStageSummary $speculationStageSummary)
   {
@@ -321,7 +309,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->speculationStageSummary;
   }
   /**
-   * @param SqlExecutionUiData $sqlExecutionUiData
+   * @param SqlExecutionUiData
    */
   public function setSqlExecutionUiData(SqlExecutionUiData $sqlExecutionUiData)
   {
@@ -335,7 +323,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->sqlExecutionUiData;
   }
   /**
-   * @param StageData $stageData
+   * @param StageData
    */
   public function setStageData(StageData $stageData)
   {
@@ -349,7 +337,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->stageData;
   }
   /**
-   * @param StreamBlockData $streamBlockData
+   * @param StreamBlockData
    */
   public function setStreamBlockData(StreamBlockData $streamBlockData)
   {
@@ -363,7 +351,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->streamBlockData;
   }
   /**
-   * @param StreamingQueryData $streamingQueryData
+   * @param StreamingQueryData
    */
   public function setStreamingQueryData(StreamingQueryData $streamingQueryData)
   {
@@ -377,7 +365,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->streamingQueryData;
   }
   /**
-   * @param StreamingQueryProgress $streamingQueryProgress
+   * @param StreamingQueryProgress
    */
   public function setStreamingQueryProgress(StreamingQueryProgress $streamingQueryProgress)
   {
@@ -391,7 +379,7 @@ class SparkWrapperObject extends \Google\Model
     return $this->streamingQueryProgress;
   }
   /**
-   * @param TaskData $taskData
+   * @param TaskData
    */
   public function setTaskData(TaskData $taskData)
   {

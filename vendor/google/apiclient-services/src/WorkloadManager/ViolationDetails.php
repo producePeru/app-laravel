@@ -20,28 +20,20 @@ namespace Google\Service\WorkloadManager;
 class ViolationDetails extends \Google\Model
 {
   /**
-   * The name of the asset.
-   *
    * @var string
    */
   public $asset;
   /**
-   * Details of the violation. TODO(b/452163887)
-   *
    * @var string[]
    */
   public $observed;
   /**
-   * The service account associated with the resource.
-   *
    * @var string
    */
   public $serviceAccount;
 
   /**
-   * The name of the asset.
-   *
-   * @param string $asset
+   * @param string
    */
   public function setAsset($asset)
   {
@@ -55,9 +47,7 @@ class ViolationDetails extends \Google\Model
     return $this->asset;
   }
   /**
-   * Details of the violation. TODO(b/452163887)
-   *
-   * @param string[] $observed
+   * @param string[]
    */
   public function setObserved($observed)
   {
@@ -71,9 +61,7 @@ class ViolationDetails extends \Google\Model
     return $this->observed;
   }
   /**
-   * The service account associated with the resource.
-   *
-   * @param string $serviceAccount
+   * @param string
    */
   public function setServiceAccount($serviceAccount)
   {

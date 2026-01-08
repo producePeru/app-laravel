@@ -20,24 +20,16 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3BargeInConfig extends \Google\Model
 {
   /**
-   * Duration that is not eligible for barge-in at the beginning of the input
-   * audio.
-   *
    * @var string
    */
   public $noBargeInDuration;
   /**
-   * Total duration for the playback at the beginning of the input audio.
-   *
    * @var string
    */
   public $totalDuration;
 
   /**
-   * Duration that is not eligible for barge-in at the beginning of the input
-   * audio.
-   *
-   * @param string $noBargeInDuration
+   * @param string
    */
   public function setNoBargeInDuration($noBargeInDuration)
   {
@@ -51,9 +43,7 @@ class GoogleCloudDialogflowCxV3BargeInConfig extends \Google\Model
     return $this->noBargeInDuration;
   }
   /**
-   * Total duration for the playback at the beginning of the input audio.
-   *
-   * @param string $totalDuration
+   * @param string
    */
   public function setTotalDuration($totalDuration)
   {

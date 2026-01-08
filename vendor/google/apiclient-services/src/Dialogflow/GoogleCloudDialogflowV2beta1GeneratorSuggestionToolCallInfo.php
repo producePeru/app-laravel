@@ -25,9 +25,7 @@ class GoogleCloudDialogflowV2beta1GeneratorSuggestionToolCallInfo extends \Googl
   protected $toolCallResultDataType = '';
 
   /**
-   * Required. Request for a tool call.
-   *
-   * @param GoogleCloudDialogflowV2beta1ToolCall $toolCall
+   * @param GoogleCloudDialogflowV2beta1ToolCall
    */
   public function setToolCall(GoogleCloudDialogflowV2beta1ToolCall $toolCall)
   {
@@ -41,9 +39,7 @@ class GoogleCloudDialogflowV2beta1GeneratorSuggestionToolCallInfo extends \Googl
     return $this->toolCall;
   }
   /**
-   * Required. Response for a tool call.
-   *
-   * @param GoogleCloudDialogflowV2beta1ToolCallResult $toolCallResult
+   * @param GoogleCloudDialogflowV2beta1ToolCallResult
    */
   public function setToolCallResult(GoogleCloudDialogflowV2beta1ToolCallResult $toolCallResult)
   {

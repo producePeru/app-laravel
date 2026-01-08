@@ -20,20 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3GcsDestination extends \Google\Model
 {
   /**
-   * Required. The Google Cloud Storage URI for the exported objects. A URI is
-   * of the form: `gs://bucket/object-name-or-prefix` Whether a full object
-   * name, or just a prefix, its usage depends on the Dialogflow operation.
-   *
    * @var string
    */
   public $uri;
 
   /**
-   * Required. The Google Cloud Storage URI for the exported objects. A URI is
-   * of the form: `gs://bucket/object-name-or-prefix` Whether a full object
-   * name, or just a prefix, its usage depends on the Dialogflow operation.
-   *
-   * @param string $uri
+   * @param string
    */
   public function setUri($uri)
   {

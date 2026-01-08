@@ -20,35 +20,20 @@ namespace Google\Service\StorageBatchOperations;
 class Counters extends \Google\Model
 {
   /**
-   * Output only. Number of objects failed.
-   *
    * @var string
    */
   public $failedObjectCount;
   /**
-   * Output only. Number of objects completed.
-   *
    * @var string
    */
   public $succeededObjectCount;
   /**
-   * Output only. Number of bytes found from source. This field is only
-   * populated for jobs with a prefix list object configuration.
-   *
-   * @var string
-   */
-  public $totalBytesFound;
-  /**
-   * Output only. Number of objects listed.
-   *
    * @var string
    */
   public $totalObjectCount;
 
   /**
-   * Output only. Number of objects failed.
-   *
-   * @param string $failedObjectCount
+   * @param string
    */
   public function setFailedObjectCount($failedObjectCount)
   {
@@ -62,9 +47,7 @@ class Counters extends \Google\Model
     return $this->failedObjectCount;
   }
   /**
-   * Output only. Number of objects completed.
-   *
-   * @param string $succeededObjectCount
+   * @param string
    */
   public function setSucceededObjectCount($succeededObjectCount)
   {
@@ -78,26 +61,7 @@ class Counters extends \Google\Model
     return $this->succeededObjectCount;
   }
   /**
-   * Output only. Number of bytes found from source. This field is only
-   * populated for jobs with a prefix list object configuration.
-   *
-   * @param string $totalBytesFound
-   */
-  public function setTotalBytesFound($totalBytesFound)
-  {
-    $this->totalBytesFound = $totalBytesFound;
-  }
-  /**
-   * @return string
-   */
-  public function getTotalBytesFound()
-  {
-    return $this->totalBytesFound;
-  }
-  /**
-   * Output only. Number of objects listed.
-   *
-   * @param string $totalObjectCount
+   * @param string
    */
   public function setTotalObjectCount($totalObjectCount)
   {

@@ -20,14 +20,6 @@ namespace Google\Service\Aiplatform;
 class GoogleCloudAiplatformV1GroundingMetadata extends \Google\Collection
 {
   protected $collection_key = 'webSearchQueries';
-  /**
-   * Optional. Output only. A token that can be used to render a Google Maps
-   * widget with the contextual data. This field is populated only when the
-   * grounding source is Google Maps.
-   *
-   * @var string
-   */
-  public $googleMapsWidgetContextToken;
   protected $groundingChunksType = GoogleCloudAiplatformV1GroundingChunk::class;
   protected $groundingChunksDataType = 'array';
   protected $groundingSupportsType = GoogleCloudAiplatformV1GroundingSupport::class;
@@ -36,40 +28,13 @@ class GoogleCloudAiplatformV1GroundingMetadata extends \Google\Collection
   protected $retrievalMetadataDataType = '';
   protected $searchEntryPointType = GoogleCloudAiplatformV1SearchEntryPoint::class;
   protected $searchEntryPointDataType = '';
-  protected $sourceFlaggingUrisType = GoogleCloudAiplatformV1GroundingMetadataSourceFlaggingUri::class;
-  protected $sourceFlaggingUrisDataType = 'array';
   /**
-   * Optional. The web search queries that were used to generate the content.
-   * This field is populated only when the grounding source is Google Search.
-   *
    * @var string[]
    */
   public $webSearchQueries;
 
   /**
-   * Optional. Output only. A token that can be used to render a Google Maps
-   * widget with the contextual data. This field is populated only when the
-   * grounding source is Google Maps.
-   *
-   * @param string $googleMapsWidgetContextToken
-   */
-  public function setGoogleMapsWidgetContextToken($googleMapsWidgetContextToken)
-  {
-    $this->googleMapsWidgetContextToken = $googleMapsWidgetContextToken;
-  }
-  /**
-   * @return string
-   */
-  public function getGoogleMapsWidgetContextToken()
-  {
-    return $this->googleMapsWidgetContextToken;
-  }
-  /**
-   * A list of supporting references retrieved from the grounding source. This
-   * field is populated when the grounding source is Google Search, Vertex AI
-   * Search, or Google Maps.
-   *
-   * @param GoogleCloudAiplatformV1GroundingChunk[] $groundingChunks
+   * @param GoogleCloudAiplatformV1GroundingChunk[]
    */
   public function setGroundingChunks($groundingChunks)
   {
@@ -83,11 +48,7 @@ class GoogleCloudAiplatformV1GroundingMetadata extends \Google\Collection
     return $this->groundingChunks;
   }
   /**
-   * Optional. A list of grounding supports that connect the generated content
-   * to the grounding chunks. This field is populated when the grounding source
-   * is Google Search or Vertex AI Search.
-   *
-   * @param GoogleCloudAiplatformV1GroundingSupport[] $groundingSupports
+   * @param GoogleCloudAiplatformV1GroundingSupport[]
    */
   public function setGroundingSupports($groundingSupports)
   {
@@ -101,9 +62,7 @@ class GoogleCloudAiplatformV1GroundingMetadata extends \Google\Collection
     return $this->groundingSupports;
   }
   /**
-   * Optional. Output only. Metadata related to the retrieval grounding source.
-   *
-   * @param GoogleCloudAiplatformV1RetrievalMetadata $retrievalMetadata
+   * @param GoogleCloudAiplatformV1RetrievalMetadata
    */
   public function setRetrievalMetadata(GoogleCloudAiplatformV1RetrievalMetadata $retrievalMetadata)
   {
@@ -117,11 +76,7 @@ class GoogleCloudAiplatformV1GroundingMetadata extends \Google\Collection
     return $this->retrievalMetadata;
   }
   /**
-   * Optional. A web search entry point that can be used to display search
-   * results. This field is populated only when the grounding source is Google
-   * Search.
-   *
-   * @param GoogleCloudAiplatformV1SearchEntryPoint $searchEntryPoint
+   * @param GoogleCloudAiplatformV1SearchEntryPoint
    */
   public function setSearchEntryPoint(GoogleCloudAiplatformV1SearchEntryPoint $searchEntryPoint)
   {
@@ -135,28 +90,7 @@ class GoogleCloudAiplatformV1GroundingMetadata extends \Google\Collection
     return $this->searchEntryPoint;
   }
   /**
-   * Optional. Output only. A list of URIs that can be used to flag a place or
-   * review for inappropriate content. This field is populated only when the
-   * grounding source is Google Maps.
-   *
-   * @param GoogleCloudAiplatformV1GroundingMetadataSourceFlaggingUri[] $sourceFlaggingUris
-   */
-  public function setSourceFlaggingUris($sourceFlaggingUris)
-  {
-    $this->sourceFlaggingUris = $sourceFlaggingUris;
-  }
-  /**
-   * @return GoogleCloudAiplatformV1GroundingMetadataSourceFlaggingUri[]
-   */
-  public function getSourceFlaggingUris()
-  {
-    return $this->sourceFlaggingUris;
-  }
-  /**
-   * Optional. The web search queries that were used to generate the content.
-   * This field is populated only when the grounding source is Google Search.
-   *
-   * @param string[] $webSearchQueries
+   * @param string[]
    */
   public function setWebSearchQueries($webSearchQueries)
   {

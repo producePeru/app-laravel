@@ -20,51 +20,6 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2beta1ConversationEvent extends \Google\Model
 {
   /**
-   * Type not set.
-   */
-  public const TYPE_TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED';
-  /**
-   * A new conversation has been opened. This is fired when a telephone call is
-   * answered, or a conversation is created via the API.
-   */
-  public const TYPE_CONVERSATION_STARTED = 'CONVERSATION_STARTED';
-  /**
-   * An existing conversation has closed. This is fired when a telephone call is
-   * terminated, or a conversation is closed via the API. The event is fired for
-   * every CompleteConversation call, even if the conversation is already
-   * closed.
-   */
-  public const TYPE_CONVERSATION_FINISHED = 'CONVERSATION_FINISHED';
-  /**
-   * An existing conversation has received notification from Dialogflow that
-   * human intervention is required.
-   */
-  public const TYPE_HUMAN_INTERVENTION_NEEDED = 'HUMAN_INTERVENTION_NEEDED';
-  /**
-   * An existing conversation has received a new message, either from API or
-   * telephony. It is configured in
-   * ConversationProfile.new_message_event_notification_config
-   */
-  public const TYPE_NEW_MESSAGE = 'NEW_MESSAGE';
-  /**
-   * An existing conversation has received a new speech recognition result. This
-   * is mainly for delivering intermediate transcripts. The notification is
-   * configured in
-   * ConversationProfile.new_recognition_event_notification_config.
-   */
-  public const TYPE_NEW_RECOGNITION_RESULT = 'NEW_RECOGNITION_RESULT';
-  /**
-   * Unrecoverable error during a telephone call. In general non-recoverable
-   * errors only occur if something was misconfigured in the ConversationProfile
-   * corresponding to the call. After a non-recoverable error, Dialogflow may
-   * stop responding. We don't fire this event: * in an API call because we can
-   * directly return the error, or, * when we can recover from an error.
-   */
-  public const TYPE_UNRECOVERABLE_ERROR = 'UNRECOVERABLE_ERROR';
-  /**
-   * Required. The unique identifier of the conversation this notification
-   * refers to. Format: `projects//conversations/`.
-   *
    * @var string
    */
   public $conversation;
@@ -75,17 +30,12 @@ class GoogleCloudDialogflowV2beta1ConversationEvent extends \Google\Model
   protected $newRecognitionResultPayloadType = GoogleCloudDialogflowV2beta1StreamingRecognitionResult::class;
   protected $newRecognitionResultPayloadDataType = '';
   /**
-   * Required. The type of the event that this notification refers to.
-   *
    * @var string
    */
   public $type;
 
   /**
-   * Required. The unique identifier of the conversation this notification
-   * refers to. Format: `projects//conversations/`.
-   *
-   * @param string $conversation
+   * @param string
    */
   public function setConversation($conversation)
   {
@@ -99,10 +49,7 @@ class GoogleCloudDialogflowV2beta1ConversationEvent extends \Google\Model
     return $this->conversation;
   }
   /**
-   * Optional. More detailed information about an error. Only set for type
-   * UNRECOVERABLE_ERROR_IN_PHONE_CALL.
-   *
-   * @param GoogleRpcStatus $errorStatus
+   * @param GoogleRpcStatus
    */
   public function setErrorStatus(GoogleRpcStatus $errorStatus)
   {
@@ -116,9 +63,7 @@ class GoogleCloudDialogflowV2beta1ConversationEvent extends \Google\Model
     return $this->errorStatus;
   }
   /**
-   * Payload of NEW_MESSAGE event.
-   *
-   * @param GoogleCloudDialogflowV2beta1Message $newMessagePayload
+   * @param GoogleCloudDialogflowV2beta1Message
    */
   public function setNewMessagePayload(GoogleCloudDialogflowV2beta1Message $newMessagePayload)
   {
@@ -132,9 +77,7 @@ class GoogleCloudDialogflowV2beta1ConversationEvent extends \Google\Model
     return $this->newMessagePayload;
   }
   /**
-   * Payload of NEW_RECOGNITION_RESULT event.
-   *
-   * @param GoogleCloudDialogflowV2beta1StreamingRecognitionResult $newRecognitionResultPayload
+   * @param GoogleCloudDialogflowV2beta1StreamingRecognitionResult
    */
   public function setNewRecognitionResultPayload(GoogleCloudDialogflowV2beta1StreamingRecognitionResult $newRecognitionResultPayload)
   {
@@ -148,20 +91,14 @@ class GoogleCloudDialogflowV2beta1ConversationEvent extends \Google\Model
     return $this->newRecognitionResultPayload;
   }
   /**
-   * Required. The type of the event that this notification refers to.
-   *
-   * Accepted values: TYPE_UNSPECIFIED, CONVERSATION_STARTED,
-   * CONVERSATION_FINISHED, HUMAN_INTERVENTION_NEEDED, NEW_MESSAGE,
-   * NEW_RECOGNITION_RESULT, UNRECOVERABLE_ERROR
-   *
-   * @param self::TYPE_* $type
+   * @param string
    */
   public function setType($type)
   {
     $this->type = $type;
   }
   /**
-   * @return self::TYPE_*
+   * @return string
    */
   public function getType()
   {

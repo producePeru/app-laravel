@@ -23,9 +23,7 @@ class Datasource extends \Google\Model
   protected $postgresqlDataType = '';
 
   /**
-   * PostgreSQL configurations.
-   *
-   * @param PostgreSql $postgresql
+   * @param PostgreSql
    */
   public function setPostgresql(PostgreSql $postgresql)
   {

@@ -22,20 +22,10 @@ class InstanceGroupManagerStatus extends \Google\Model
   protected $allInstancesConfigType = InstanceGroupManagerStatusAllInstancesConfig::class;
   protected $allInstancesConfigDataType = '';
   /**
-   * Output only. [Output Only] The URL of theAutoscaler that targets this
-   * instance group manager.
-   *
    * @var string
    */
   public $autoscaler;
   /**
-   * Output only. [Output Only] A bit indicating whether the managed instance
-   * group is in a stable state. A stable state means that: none of the
-   * instances in the managed instance group is currently undergoing any type of
-   * change (for example, creation, restart, or deletion); no future changes are
-   * scheduled for instances in the managed instance group; and the managed
-   * instance group itself is not being modified.
-   *
    * @var bool
    */
   public $isStable;
@@ -45,10 +35,7 @@ class InstanceGroupManagerStatus extends \Google\Model
   protected $versionTargetDataType = '';
 
   /**
-   * Output only. [Output only] Status of all-instances configuration on the
-   * group.
-   *
-   * @param InstanceGroupManagerStatusAllInstancesConfig $allInstancesConfig
+   * @param InstanceGroupManagerStatusAllInstancesConfig
    */
   public function setAllInstancesConfig(InstanceGroupManagerStatusAllInstancesConfig $allInstancesConfig)
   {
@@ -62,10 +49,7 @@ class InstanceGroupManagerStatus extends \Google\Model
     return $this->allInstancesConfig;
   }
   /**
-   * Output only. [Output Only] The URL of theAutoscaler that targets this
-   * instance group manager.
-   *
-   * @param string $autoscaler
+   * @param string
    */
   public function setAutoscaler($autoscaler)
   {
@@ -79,14 +63,7 @@ class InstanceGroupManagerStatus extends \Google\Model
     return $this->autoscaler;
   }
   /**
-   * Output only. [Output Only] A bit indicating whether the managed instance
-   * group is in a stable state. A stable state means that: none of the
-   * instances in the managed instance group is currently undergoing any type of
-   * change (for example, creation, restart, or deletion); no future changes are
-   * scheduled for instances in the managed instance group; and the managed
-   * instance group itself is not being modified.
-   *
-   * @param bool $isStable
+   * @param bool
    */
   public function setIsStable($isStable)
   {
@@ -100,10 +77,7 @@ class InstanceGroupManagerStatus extends \Google\Model
     return $this->isStable;
   }
   /**
-   * Output only. [Output Only] Stateful status of the given Instance Group
-   * Manager.
-   *
-   * @param InstanceGroupManagerStatusStateful $stateful
+   * @param InstanceGroupManagerStatusStateful
    */
   public function setStateful(InstanceGroupManagerStatusStateful $stateful)
   {
@@ -117,11 +91,7 @@ class InstanceGroupManagerStatus extends \Google\Model
     return $this->stateful;
   }
   /**
-   * Output only. [Output Only] A status of consistency of Instances' versions
-   * with their target version specified by version field on Instance Group
-   * Manager.
-   *
-   * @param InstanceGroupManagerStatusVersionTarget $versionTarget
+   * @param InstanceGroupManagerStatusVersionTarget
    */
   public function setVersionTarget(InstanceGroupManagerStatusVersionTarget $versionTarget)
   {

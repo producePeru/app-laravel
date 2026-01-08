@@ -20,34 +20,16 @@ namespace Google\Service\DisplayVideo;
 class YoutubeVideoDetails extends \Google\Model
 {
   /**
-   * Unknown or unspecified.
-   */
-  public const UNAVAILABLE_REASON_VIDEO_UNAVAILABLE_REASON_UNSPECIFIED = 'VIDEO_UNAVAILABLE_REASON_UNSPECIFIED';
-  /**
-   * The video is private.
-   */
-  public const UNAVAILABLE_REASON_VIDEO_UNAVAILABLE_REASON_PRIVATE = 'VIDEO_UNAVAILABLE_REASON_PRIVATE';
-  /**
-   * The video is deleted.
-   */
-  public const UNAVAILABLE_REASON_VIDEO_UNAVAILABLE_REASON_DELETED = 'VIDEO_UNAVAILABLE_REASON_DELETED';
-  /**
-   * The YouTube video ID which can be searched on YouTube webpage.
-   *
    * @var string
    */
   public $id;
   /**
-   * The reason why the video data is not available.
-   *
    * @var string
    */
   public $unavailableReason;
 
   /**
-   * The YouTube video ID which can be searched on YouTube webpage.
-   *
-   * @param string $id
+   * @param string
    */
   public function setId($id)
   {
@@ -61,19 +43,14 @@ class YoutubeVideoDetails extends \Google\Model
     return $this->id;
   }
   /**
-   * The reason why the video data is not available.
-   *
-   * Accepted values: VIDEO_UNAVAILABLE_REASON_UNSPECIFIED,
-   * VIDEO_UNAVAILABLE_REASON_PRIVATE, VIDEO_UNAVAILABLE_REASON_DELETED
-   *
-   * @param self::UNAVAILABLE_REASON_* $unavailableReason
+   * @param string
    */
   public function setUnavailableReason($unavailableReason)
   {
     $this->unavailableReason = $unavailableReason;
   }
   /**
-   * @return self::UNAVAILABLE_REASON_*
+   * @return string
    */
   public function getUnavailableReason()
   {

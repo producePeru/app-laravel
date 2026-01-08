@@ -23,19 +23,12 @@ class GoogleCloudDialogflowCxV3ListChangelogsResponse extends \Google\Collection
   protected $changelogsType = GoogleCloudDialogflowCxV3Changelog::class;
   protected $changelogsDataType = 'array';
   /**
-   * Token to retrieve the next page of results, or empty if there are no more
-   * results in the list.
-   *
    * @var string
    */
   public $nextPageToken;
 
   /**
-   * The list of changelogs. There will be a maximum number of items returned
-   * based on the page_size field in the request. The changelogs will be ordered
-   * by timestamp.
-   *
-   * @param GoogleCloudDialogflowCxV3Changelog[] $changelogs
+   * @param GoogleCloudDialogflowCxV3Changelog[]
    */
   public function setChangelogs($changelogs)
   {
@@ -49,10 +42,7 @@ class GoogleCloudDialogflowCxV3ListChangelogsResponse extends \Google\Collection
     return $this->changelogs;
   }
   /**
-   * Token to retrieve the next page of results, or empty if there are no more
-   * results in the list.
-   *
-   * @param string $nextPageToken
+   * @param string
    */
   public function setNextPageToken($nextPageToken)
   {

@@ -21,43 +21,28 @@ class GoogleCloudDialogflowV2beta1ArticleAnswer extends \Google\Collection
 {
   protected $collection_key = 'snippets';
   /**
-   * The name of answer record, in the format of
-   * "projects//locations//answerRecords/"
-   *
    * @var string
    */
   public $answerRecord;
   /**
-   * A map that contains metadata about the answer and the document from which
-   * it originates.
-   *
    * @var string[]
    */
   public $metadata;
   /**
-   * Output only. Article snippets.
-   *
    * @var string[]
    */
   public $snippets;
   /**
-   * The article title.
-   *
    * @var string
    */
   public $title;
   /**
-   * The article URI.
-   *
    * @var string
    */
   public $uri;
 
   /**
-   * The name of answer record, in the format of
-   * "projects//locations//answerRecords/"
-   *
-   * @param string $answerRecord
+   * @param string
    */
   public function setAnswerRecord($answerRecord)
   {
@@ -71,10 +56,7 @@ class GoogleCloudDialogflowV2beta1ArticleAnswer extends \Google\Collection
     return $this->answerRecord;
   }
   /**
-   * A map that contains metadata about the answer and the document from which
-   * it originates.
-   *
-   * @param string[] $metadata
+   * @param string[]
    */
   public function setMetadata($metadata)
   {
@@ -88,9 +70,7 @@ class GoogleCloudDialogflowV2beta1ArticleAnswer extends \Google\Collection
     return $this->metadata;
   }
   /**
-   * Output only. Article snippets.
-   *
-   * @param string[] $snippets
+   * @param string[]
    */
   public function setSnippets($snippets)
   {
@@ -104,9 +84,7 @@ class GoogleCloudDialogflowV2beta1ArticleAnswer extends \Google\Collection
     return $this->snippets;
   }
   /**
-   * The article title.
-   *
-   * @param string $title
+   * @param string
    */
   public function setTitle($title)
   {
@@ -120,9 +98,7 @@ class GoogleCloudDialogflowV2beta1ArticleAnswer extends \Google\Collection
     return $this->title;
   }
   /**
-   * The article URI.
-   *
-   * @param string $uri
+   * @param string
    */
   public function setUri($uri)
   {

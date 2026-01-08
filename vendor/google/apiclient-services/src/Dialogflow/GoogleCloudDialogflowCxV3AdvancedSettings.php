@@ -29,11 +29,7 @@ class GoogleCloudDialogflowCxV3AdvancedSettings extends \Google\Model
   protected $speechSettingsDataType = '';
 
   /**
-   * If present, incoming audio is exported by Dialogflow to the configured
-   * Google Cloud Storage destination. Exposed at the following levels: - Agent
-   * level - Flow level
-   *
-   * @param GoogleCloudDialogflowCxV3GcsDestination $audioExportGcsDestination
+   * @param GoogleCloudDialogflowCxV3GcsDestination
    */
   public function setAudioExportGcsDestination(GoogleCloudDialogflowCxV3GcsDestination $audioExportGcsDestination)
   {
@@ -47,10 +43,7 @@ class GoogleCloudDialogflowCxV3AdvancedSettings extends \Google\Model
     return $this->audioExportGcsDestination;
   }
   /**
-   * Settings for DTMF. Exposed at the following levels: - Agent level - Flow
-   * level - Page level - Parameter level.
-   *
-   * @param GoogleCloudDialogflowCxV3AdvancedSettingsDtmfSettings $dtmfSettings
+   * @param GoogleCloudDialogflowCxV3AdvancedSettingsDtmfSettings
    */
   public function setDtmfSettings(GoogleCloudDialogflowCxV3AdvancedSettingsDtmfSettings $dtmfSettings)
   {
@@ -64,11 +57,7 @@ class GoogleCloudDialogflowCxV3AdvancedSettings extends \Google\Model
     return $this->dtmfSettings;
   }
   /**
-   * Settings for logging. Settings for Dialogflow History, Contact Center
-   * messages, StackDriver logs, and speech logging. Exposed at the following
-   * levels: - Agent level.
-   *
-   * @param GoogleCloudDialogflowCxV3AdvancedSettingsLoggingSettings $loggingSettings
+   * @param GoogleCloudDialogflowCxV3AdvancedSettingsLoggingSettings
    */
   public function setLoggingSettings(GoogleCloudDialogflowCxV3AdvancedSettingsLoggingSettings $loggingSettings)
   {
@@ -82,10 +71,7 @@ class GoogleCloudDialogflowCxV3AdvancedSettings extends \Google\Model
     return $this->loggingSettings;
   }
   /**
-   * Settings for speech to text detection. Exposed at the following levels: -
-   * Agent level - Flow level - Page level - Parameter level
-   *
-   * @param GoogleCloudDialogflowCxV3AdvancedSettingsSpeechSettings $speechSettings
+   * @param GoogleCloudDialogflowCxV3AdvancedSettingsSpeechSettings
    */
   public function setSpeechSettings(GoogleCloudDialogflowCxV3AdvancedSettingsSpeechSettings $speechSettings)
   {

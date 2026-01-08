@@ -22,16 +22,12 @@ class GoogleCloudDialogflowCxV3DataStoreConnectionSignalsCitedSnippet extends \G
   protected $searchSnippetType = GoogleCloudDialogflowCxV3DataStoreConnectionSignalsSearchSnippet::class;
   protected $searchSnippetDataType = '';
   /**
-   * Index of the snippet in `search_snippets` field.
-   *
    * @var int
    */
   public $snippetIndex;
 
   /**
-   * Details of the snippet.
-   *
-   * @param GoogleCloudDialogflowCxV3DataStoreConnectionSignalsSearchSnippet $searchSnippet
+   * @param GoogleCloudDialogflowCxV3DataStoreConnectionSignalsSearchSnippet
    */
   public function setSearchSnippet(GoogleCloudDialogflowCxV3DataStoreConnectionSignalsSearchSnippet $searchSnippet)
   {
@@ -45,9 +41,7 @@ class GoogleCloudDialogflowCxV3DataStoreConnectionSignalsCitedSnippet extends \G
     return $this->searchSnippet;
   }
   /**
-   * Index of the snippet in `search_snippets` field.
-   *
-   * @param int $snippetIndex
+   * @param int
    */
   public function setSnippetIndex($snippetIndex)
   {

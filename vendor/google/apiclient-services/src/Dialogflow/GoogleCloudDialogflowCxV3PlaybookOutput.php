@@ -20,16 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3PlaybookOutput extends \Google\Model
 {
   /**
-   * Optional. Summary string of the execution result of the child playbook.
-   *
    * @var string
    */
   public $executionSummary;
 
   /**
-   * Optional. Summary string of the execution result of the child playbook.
-   *
-   * @param string $executionSummary
+   * @param string
    */
   public function setExecutionSummary($executionSummary)
   {

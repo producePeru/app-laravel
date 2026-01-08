@@ -20,8 +20,6 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3MatchIntentRequest extends \Google\Model
 {
   /**
-   * Persist session parameter changes from `query_params`.
-   *
    * @var bool
    */
   public $persistParameterChanges;
@@ -31,9 +29,7 @@ class GoogleCloudDialogflowCxV3MatchIntentRequest extends \Google\Model
   protected $queryParamsDataType = '';
 
   /**
-   * Persist session parameter changes from `query_params`.
-   *
-   * @param bool $persistParameterChanges
+   * @param bool
    */
   public function setPersistParameterChanges($persistParameterChanges)
   {
@@ -47,9 +43,7 @@ class GoogleCloudDialogflowCxV3MatchIntentRequest extends \Google\Model
     return $this->persistParameterChanges;
   }
   /**
-   * Required. The input specification.
-   *
-   * @param GoogleCloudDialogflowCxV3QueryInput $queryInput
+   * @param GoogleCloudDialogflowCxV3QueryInput
    */
   public function setQueryInput(GoogleCloudDialogflowCxV3QueryInput $queryInput)
   {
@@ -63,9 +57,7 @@ class GoogleCloudDialogflowCxV3MatchIntentRequest extends \Google\Model
     return $this->queryInput;
   }
   /**
-   * The parameters of this query.
-   *
-   * @param GoogleCloudDialogflowCxV3QueryParameters $queryParams
+   * @param GoogleCloudDialogflowCxV3QueryParameters
    */
   public function setQueryParams(GoogleCloudDialogflowCxV3QueryParameters $queryParams)
   {

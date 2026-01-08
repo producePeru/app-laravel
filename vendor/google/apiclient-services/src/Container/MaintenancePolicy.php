@@ -20,12 +20,6 @@ namespace Google\Service\Container;
 class MaintenancePolicy extends \Google\Model
 {
   /**
-   * A hash identifying the version of this policy, so that updates to fields of
-   * the policy won't accidentally undo intermediate changes (and so that users
-   * of the API unaware of some fields won't accidentally remove other fields).
-   * Make a `get()` request to the cluster to get the current resource version
-   * and include it with requests to set the policy.
-   *
    * @var string
    */
   public $resourceVersion;
@@ -33,13 +27,7 @@ class MaintenancePolicy extends \Google\Model
   protected $windowDataType = '';
 
   /**
-   * A hash identifying the version of this policy, so that updates to fields of
-   * the policy won't accidentally undo intermediate changes (and so that users
-   * of the API unaware of some fields won't accidentally remove other fields).
-   * Make a `get()` request to the cluster to get the current resource version
-   * and include it with requests to set the policy.
-   *
-   * @param string $resourceVersion
+   * @param string
    */
   public function setResourceVersion($resourceVersion)
   {
@@ -53,9 +41,7 @@ class MaintenancePolicy extends \Google\Model
     return $this->resourceVersion;
   }
   /**
-   * Specifies the maintenance window in which maintenance may be performed.
-   *
-   * @param MaintenanceWindow $window
+   * @param MaintenanceWindow
    */
   public function setWindow(MaintenanceWindow $window)
   {

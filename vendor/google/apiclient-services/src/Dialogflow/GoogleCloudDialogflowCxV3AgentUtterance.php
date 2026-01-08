@@ -20,16 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3AgentUtterance extends \Google\Model
 {
   /**
-   * Required. Message content in text.
-   *
    * @var string
    */
   public $text;
 
   /**
-   * Required. Message content in text.
-   *
-   * @param string $text
+   * @param string
    */
   public function setText($text)
   {

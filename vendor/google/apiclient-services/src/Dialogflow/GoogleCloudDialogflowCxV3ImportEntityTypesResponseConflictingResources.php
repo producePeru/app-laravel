@@ -21,22 +21,16 @@ class GoogleCloudDialogflowCxV3ImportEntityTypesResponseConflictingResources ext
 {
   protected $collection_key = 'entityTypeDisplayNames';
   /**
-   * Display names of conflicting entities.
-   *
    * @var string[]
    */
   public $entityDisplayNames;
   /**
-   * Display names of conflicting entity types.
-   *
    * @var string[]
    */
   public $entityTypeDisplayNames;
 
   /**
-   * Display names of conflicting entities.
-   *
-   * @param string[] $entityDisplayNames
+   * @param string[]
    */
   public function setEntityDisplayNames($entityDisplayNames)
   {
@@ -50,9 +44,7 @@ class GoogleCloudDialogflowCxV3ImportEntityTypesResponseConflictingResources ext
     return $this->entityDisplayNames;
   }
   /**
-   * Display names of conflicting entity types.
-   *
-   * @param string[] $entityTypeDisplayNames
+   * @param string[]
    */
   public function setEntityTypeDisplayNames($entityTypeDisplayNames)
   {

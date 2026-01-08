@@ -20,24 +20,16 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2IntentMessageImage extends \Google\Model
 {
   /**
-   * Optional. A text description of the image to be used for accessibility,
-   * e.g., screen readers.
-   *
    * @var string
    */
   public $accessibilityText;
   /**
-   * Optional. The public URI to an image file.
-   *
    * @var string
    */
   public $imageUri;
 
   /**
-   * Optional. A text description of the image to be used for accessibility,
-   * e.g., screen readers.
-   *
-   * @param string $accessibilityText
+   * @param string
    */
   public function setAccessibilityText($accessibilityText)
   {
@@ -51,9 +43,7 @@ class GoogleCloudDialogflowV2IntentMessageImage extends \Google\Model
     return $this->accessibilityText;
   }
   /**
-   * Optional. The public URI to an image file.
-   *
-   * @param string $imageUri
+   * @param string
    */
   public function setImageUri($imageUri)
   {

@@ -19,52 +19,26 @@ namespace Google\Service\Apigee;
 
 class GoogleCloudApigeeV1RuntimeTraceConfig extends \Google\Collection
 {
-  /**
-   * Exporter unspecified
-   */
-  public const EXPORTER_EXPORTER_UNSPECIFIED = 'EXPORTER_UNSPECIFIED';
-  /**
-   * Jaeger exporter
-   */
-  public const EXPORTER_JAEGER = 'JAEGER';
-  /**
-   * Cloudtrace exporter
-   */
-  public const EXPORTER_CLOUD_TRACE = 'CLOUD_TRACE';
   protected $collection_key = 'overrides';
   /**
-   * Endpoint of the exporter.
-   *
    * @var string
    */
   public $endpoint;
   /**
-   * Exporter that is used to view the distributed trace captured using
-   * OpenCensus. An exporter sends traces to any backend that is capable of
-   * consuming them. Recorded spans can be exported by registered exporters.
-   *
    * @var string
    */
   public $exporter;
   /**
-   * Name of the trace config in the following format:
-   * `organizations/{org}/environment/{env}/traceConfig`
-   *
    * @var string
    */
   public $name;
   protected $overridesType = GoogleCloudApigeeV1RuntimeTraceConfigOverride::class;
   protected $overridesDataType = 'array';
   /**
-   * The timestamp that the revision was created or updated.
-   *
    * @var string
    */
   public $revisionCreateTime;
   /**
-   * Revision number which can be used by the runtime to detect if the trace
-   * config has changed between two versions.
-   *
    * @var string
    */
   public $revisionId;
@@ -72,9 +46,7 @@ class GoogleCloudApigeeV1RuntimeTraceConfig extends \Google\Collection
   protected $samplingConfigDataType = '';
 
   /**
-   * Endpoint of the exporter.
-   *
-   * @param string $endpoint
+   * @param string
    */
   public function setEndpoint($endpoint)
   {
@@ -88,30 +60,21 @@ class GoogleCloudApigeeV1RuntimeTraceConfig extends \Google\Collection
     return $this->endpoint;
   }
   /**
-   * Exporter that is used to view the distributed trace captured using
-   * OpenCensus. An exporter sends traces to any backend that is capable of
-   * consuming them. Recorded spans can be exported by registered exporters.
-   *
-   * Accepted values: EXPORTER_UNSPECIFIED, JAEGER, CLOUD_TRACE
-   *
-   * @param self::EXPORTER_* $exporter
+   * @param string
    */
   public function setExporter($exporter)
   {
     $this->exporter = $exporter;
   }
   /**
-   * @return self::EXPORTER_*
+   * @return string
    */
   public function getExporter()
   {
     return $this->exporter;
   }
   /**
-   * Name of the trace config in the following format:
-   * `organizations/{org}/environment/{env}/traceConfig`
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -125,9 +88,7 @@ class GoogleCloudApigeeV1RuntimeTraceConfig extends \Google\Collection
     return $this->name;
   }
   /**
-   * List of trace configuration overrides for spicific API proxies.
-   *
-   * @param GoogleCloudApigeeV1RuntimeTraceConfigOverride[] $overrides
+   * @param GoogleCloudApigeeV1RuntimeTraceConfigOverride[]
    */
   public function setOverrides($overrides)
   {
@@ -141,9 +102,7 @@ class GoogleCloudApigeeV1RuntimeTraceConfig extends \Google\Collection
     return $this->overrides;
   }
   /**
-   * The timestamp that the revision was created or updated.
-   *
-   * @param string $revisionCreateTime
+   * @param string
    */
   public function setRevisionCreateTime($revisionCreateTime)
   {
@@ -157,10 +116,7 @@ class GoogleCloudApigeeV1RuntimeTraceConfig extends \Google\Collection
     return $this->revisionCreateTime;
   }
   /**
-   * Revision number which can be used by the runtime to detect if the trace
-   * config has changed between two versions.
-   *
-   * @param string $revisionId
+   * @param string
    */
   public function setRevisionId($revisionId)
   {
@@ -174,9 +130,7 @@ class GoogleCloudApigeeV1RuntimeTraceConfig extends \Google\Collection
     return $this->revisionId;
   }
   /**
-   * Trace configuration for all API proxies in an environment.
-   *
-   * @param GoogleCloudApigeeV1RuntimeTraceSamplingConfig $samplingConfig
+   * @param GoogleCloudApigeeV1RuntimeTraceSamplingConfig
    */
   public function setSamplingConfig(GoogleCloudApigeeV1RuntimeTraceSamplingConfig $samplingConfig)
   {

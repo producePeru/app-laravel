@@ -20,13 +20,6 @@ namespace Google\Service\Compute;
 class InstancesReportHostAsFaultyRequestFaultReason extends \Google\Model
 {
   /**
-   * Public reportable behaviors
-   */
-  public const BEHAVIOR_BEHAVIOR_UNSPECIFIED = 'BEHAVIOR_UNSPECIFIED';
-  public const BEHAVIOR_PERFORMANCE = 'PERFORMANCE';
-  public const BEHAVIOR_SILENT_DATA_CORRUPTION = 'SILENT_DATA_CORRUPTION';
-  public const BEHAVIOR_UNRECOVERABLE_GPU_ERROR = 'UNRECOVERABLE_GPU_ERROR';
-  /**
    * @var string
    */
   public $behavior;
@@ -36,21 +29,21 @@ class InstancesReportHostAsFaultyRequestFaultReason extends \Google\Model
   public $description;
 
   /**
-   * @param self::BEHAVIOR_* $behavior
+   * @param string
    */
   public function setBehavior($behavior)
   {
     $this->behavior = $behavior;
   }
   /**
-   * @return self::BEHAVIOR_*
+   * @return string
    */
   public function getBehavior()
   {
     return $this->behavior;
   }
   /**
-   * @param string $description
+   * @param string
    */
   public function setDescription($description)
   {

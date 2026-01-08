@@ -21,9 +21,6 @@ class GoogleCloudDialogflowCxV3ExperimentResult extends \Google\Collection
 {
   protected $collection_key = 'versionMetrics';
   /**
-   * The last time the experiment's stats data was updated. Will have default
-   * value if stats have never been computed for this experiment.
-   *
    * @var string
    */
   public $lastUpdateTime;
@@ -31,10 +28,7 @@ class GoogleCloudDialogflowCxV3ExperimentResult extends \Google\Collection
   protected $versionMetricsDataType = 'array';
 
   /**
-   * The last time the experiment's stats data was updated. Will have default
-   * value if stats have never been computed for this experiment.
-   *
-   * @param string $lastUpdateTime
+   * @param string
    */
   public function setLastUpdateTime($lastUpdateTime)
   {
@@ -48,9 +42,7 @@ class GoogleCloudDialogflowCxV3ExperimentResult extends \Google\Collection
     return $this->lastUpdateTime;
   }
   /**
-   * Version variants and metrics.
-   *
-   * @param GoogleCloudDialogflowCxV3ExperimentResultVersionMetrics[] $versionMetrics
+   * @param GoogleCloudDialogflowCxV3ExperimentResultVersionMetrics[]
    */
   public function setVersionMetrics($versionMetrics)
   {

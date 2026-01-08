@@ -20,16 +20,12 @@ namespace Google\Service\OracleDatabase;
 class SwitchoverAutonomousDatabaseRequest extends \Google\Model
 {
   /**
-   * Required. The peer database name to switch over to.
-   *
    * @var string
    */
   public $peerAutonomousDatabase;
 
   /**
-   * Required. The peer database name to switch over to.
-   *
-   * @param string $peerAutonomousDatabase
+   * @param string
    */
   public function setPeerAutonomousDatabase($peerAutonomousDatabase)
   {

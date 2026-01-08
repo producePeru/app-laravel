@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace Nette\Utils;
 
 use Nette;
-use const DIRECTORY_SEPARATOR;
 
 
 /**
@@ -19,7 +18,7 @@ use const DIRECTORY_SEPARATOR;
  */
 final class FileInfo extends \SplFileInfo
 {
-	private readonly string $relativePath;
+	private string $relativePath;
 
 
 	public function __construct(string $file, string $relativePath = '')

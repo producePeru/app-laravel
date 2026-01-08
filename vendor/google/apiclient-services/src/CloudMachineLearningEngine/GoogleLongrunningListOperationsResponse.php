@@ -21,8 +21,6 @@ class GoogleLongrunningListOperationsResponse extends \Google\Collection
 {
   protected $collection_key = 'operations';
   /**
-   * The standard List next-page token.
-   *
    * @var string
    */
   public $nextPageToken;
@@ -30,9 +28,7 @@ class GoogleLongrunningListOperationsResponse extends \Google\Collection
   protected $operationsDataType = 'array';
 
   /**
-   * The standard List next-page token.
-   *
-   * @param string $nextPageToken
+   * @param string
    */
   public function setNextPageToken($nextPageToken)
   {
@@ -46,9 +42,7 @@ class GoogleLongrunningListOperationsResponse extends \Google\Collection
     return $this->nextPageToken;
   }
   /**
-   * A list of operations that matches the specified filter in the request.
-   *
-   * @param GoogleLongrunningOperation[] $operations
+   * @param GoogleLongrunningOperation[]
    */
   public function setOperations($operations)
   {

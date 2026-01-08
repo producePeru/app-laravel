@@ -19,54 +19,18 @@ namespace Google\Service\DisplayVideo;
 
 class AdGroupAd extends \Google\Collection
 {
-  /**
-   * Default value when status is not specified or is unknown in this version.
-   */
-  public const ENTITY_STATUS_ENTITY_STATUS_UNSPECIFIED = 'ENTITY_STATUS_UNSPECIFIED';
-  /**
-   * The entity is enabled to bid and spend budget.
-   */
-  public const ENTITY_STATUS_ENTITY_STATUS_ACTIVE = 'ENTITY_STATUS_ACTIVE';
-  /**
-   * The entity is archived. Bidding and budget spending are disabled. An entity
-   * can be deleted after archived. Deleted entities cannot be retrieved.
-   */
-  public const ENTITY_STATUS_ENTITY_STATUS_ARCHIVED = 'ENTITY_STATUS_ARCHIVED';
-  /**
-   * The entity is under draft. Bidding and budget spending are disabled.
-   */
-  public const ENTITY_STATUS_ENTITY_STATUS_DRAFT = 'ENTITY_STATUS_DRAFT';
-  /**
-   * Bidding and budget spending are paused for the entity.
-   */
-  public const ENTITY_STATUS_ENTITY_STATUS_PAUSED = 'ENTITY_STATUS_PAUSED';
-  /**
-   * The entity is scheduled for deletion.
-   */
-  public const ENTITY_STATUS_ENTITY_STATUS_SCHEDULED_FOR_DELETION = 'ENTITY_STATUS_SCHEDULED_FOR_DELETION';
   protected $collection_key = 'adUrls';
   /**
-   * The unique ID of the ad. Assigned by the system.
-   *
    * @var string
    */
   public $adGroupAdId;
   /**
-   * The unique ID of the ad group that the ad belongs to. *Caution*: Parent ad
-   * groups for Demand Gen ads are not currently retrieveable using
-   * `advertisers.adGroups.list` or `advertisers.adGroups.get`. Demand Gen ads
-   * can be identified by the absence of the `ad_details` union field.
-   *
    * @var string
    */
   public $adGroupId;
-  protected $adPolicyType = AdPolicy::class;
-  protected $adPolicyDataType = '';
   protected $adUrlsType = AdUrl::class;
   protected $adUrlsDataType = 'array';
   /**
-   * The unique ID of the advertiser the ad belongs to.
-   *
    * @var string
    */
   public $advertiserId;
@@ -75,17 +39,12 @@ class AdGroupAd extends \Google\Collection
   protected $bumperAdType = BumperAd::class;
   protected $bumperAdDataType = '';
   /**
-   * The display name of the ad. Must be UTF-8 encoded with a maximum size of
-   * 255 bytes.
-   *
    * @var string
    */
   public $displayName;
   protected $displayVideoSourceAdType = DisplayVideoSourceAd::class;
   protected $displayVideoSourceAdDataType = '';
   /**
-   * The entity status of the ad.
-   *
    * @var string
    */
   public $entityStatus;
@@ -94,8 +53,6 @@ class AdGroupAd extends \Google\Collection
   protected $mastheadAdType = MastheadAd::class;
   protected $mastheadAdDataType = '';
   /**
-   * The resource name of the ad.
-   *
    * @var string
    */
   public $name;
@@ -107,9 +64,7 @@ class AdGroupAd extends \Google\Collection
   protected $videoPerformanceAdDataType = '';
 
   /**
-   * The unique ID of the ad. Assigned by the system.
-   *
-   * @param string $adGroupAdId
+   * @param string
    */
   public function setAdGroupAdId($adGroupAdId)
   {
@@ -123,12 +78,7 @@ class AdGroupAd extends \Google\Collection
     return $this->adGroupAdId;
   }
   /**
-   * The unique ID of the ad group that the ad belongs to. *Caution*: Parent ad
-   * groups for Demand Gen ads are not currently retrieveable using
-   * `advertisers.adGroups.list` or `advertisers.adGroups.get`. Demand Gen ads
-   * can be identified by the absence of the `ad_details` union field.
-   *
-   * @param string $adGroupId
+   * @param string
    */
   public function setAdGroupId($adGroupId)
   {
@@ -142,25 +92,7 @@ class AdGroupAd extends \Google\Collection
     return $this->adGroupId;
   }
   /**
-   * The policy approval status of the ad.
-   *
-   * @param AdPolicy $adPolicy
-   */
-  public function setAdPolicy(AdPolicy $adPolicy)
-  {
-    $this->adPolicy = $adPolicy;
-  }
-  /**
-   * @return AdPolicy
-   */
-  public function getAdPolicy()
-  {
-    return $this->adPolicy;
-  }
-  /**
-   * List of URLs used by the ad.
-   *
-   * @param AdUrl[] $adUrls
+   * @param AdUrl[]
    */
   public function setAdUrls($adUrls)
   {
@@ -174,9 +106,7 @@ class AdGroupAd extends \Google\Collection
     return $this->adUrls;
   }
   /**
-   * The unique ID of the advertiser the ad belongs to.
-   *
-   * @param string $advertiserId
+   * @param string
    */
   public function setAdvertiserId($advertiserId)
   {
@@ -190,10 +120,7 @@ class AdGroupAd extends \Google\Collection
     return $this->advertiserId;
   }
   /**
-   * Details of an [audio ad](//support.google.com/displayvideo/answer/6274216)
-   * used for reach marketing objectives.
-   *
-   * @param AudioAd $audioAd
+   * @param AudioAd
    */
   public function setAudioAd(AudioAd $audioAd)
   {
@@ -207,11 +134,7 @@ class AdGroupAd extends \Google\Collection
     return $this->audioAd;
   }
   /**
-   * Details of a [non-skippable short video
-   * ad](//support.google.com/displayvideo/answer/6274216), equal to or less
-   * than 6 seconds, used for reach.
-   *
-   * @param BumperAd $bumperAd
+   * @param BumperAd
    */
   public function setBumperAd(BumperAd $bumperAd)
   {
@@ -225,10 +148,7 @@ class AdGroupAd extends \Google\Collection
     return $this->bumperAd;
   }
   /**
-   * The display name of the ad. Must be UTF-8 encoded with a maximum size of
-   * 255 bytes.
-   *
-   * @param string $displayName
+   * @param string
    */
   public function setDisplayName($displayName)
   {
@@ -242,9 +162,7 @@ class AdGroupAd extends \Google\Collection
     return $this->displayName;
   }
   /**
-   * Details of an ad sourced from a Display & Video 360 creative.
-   *
-   * @param DisplayVideoSourceAd $displayVideoSourceAd
+   * @param DisplayVideoSourceAd
    */
   public function setDisplayVideoSourceAd(DisplayVideoSourceAd $displayVideoSourceAd)
   {
@@ -258,31 +176,21 @@ class AdGroupAd extends \Google\Collection
     return $this->displayVideoSourceAd;
   }
   /**
-   * The entity status of the ad.
-   *
-   * Accepted values: ENTITY_STATUS_UNSPECIFIED, ENTITY_STATUS_ACTIVE,
-   * ENTITY_STATUS_ARCHIVED, ENTITY_STATUS_DRAFT, ENTITY_STATUS_PAUSED,
-   * ENTITY_STATUS_SCHEDULED_FOR_DELETION
-   *
-   * @param self::ENTITY_STATUS_* $entityStatus
+   * @param string
    */
   public function setEntityStatus($entityStatus)
   {
     $this->entityStatus = $entityStatus;
   }
   /**
-   * @return self::ENTITY_STATUS_*
+   * @return string
    */
   public function getEntityStatus()
   {
     return $this->entityStatus;
   }
   /**
-   * Details of an [in-stream ad skippable after 5
-   * seconds](//support.google.com/displayvideo/answer/6274216), used for brand
-   * awareness or reach marketing objectives.
-   *
-   * @param InStreamAd $inStreamAd
+   * @param InStreamAd
    */
   public function setInStreamAd(InStreamAd $inStreamAd)
   {
@@ -296,10 +204,7 @@ class AdGroupAd extends \Google\Collection
     return $this->inStreamAd;
   }
   /**
-   * Details of an [ad served on the YouTube Home
-   * feed](//support.google.com/google-ads/answer/9709826).
-   *
-   * @param MastheadAd $mastheadAd
+   * @param MastheadAd
    */
   public function setMastheadAd(MastheadAd $mastheadAd)
   {
@@ -313,9 +218,7 @@ class AdGroupAd extends \Google\Collection
     return $this->mastheadAd;
   }
   /**
-   * The resource name of the ad.
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -329,11 +232,7 @@ class AdGroupAd extends \Google\Collection
     return $this->name;
   }
   /**
-   * Details of a [non-skippable short in-stream video
-   * ad](//support.google.com/displayvideo/answer/6274216), between 6 and 15
-   * seconds, used for reach marketing objectives.
-   *
-   * @param NonSkippableAd $nonSkippableAd
+   * @param NonSkippableAd
    */
   public function setNonSkippableAd(NonSkippableAd $nonSkippableAd)
   {
@@ -347,11 +246,7 @@ class AdGroupAd extends \Google\Collection
     return $this->nonSkippableAd;
   }
   /**
-   * Details of an [ad promoting a
-   * video](//support.google.com/displayvideo/answer/6274216) that shows in
-   * places of discovery.
-   *
-   * @param VideoDiscoveryAd $videoDiscoverAd
+   * @param VideoDiscoveryAd
    */
   public function setVideoDiscoverAd(VideoDiscoveryAd $videoDiscoverAd)
   {
@@ -365,11 +260,7 @@ class AdGroupAd extends \Google\Collection
     return $this->videoDiscoverAd;
   }
   /**
-   * Details of an [ad used in a video action
-   * campaign](//support.google.com/google-ads/answer/10147229) to drive actions
-   * to the business, service or product.
-   *
-   * @param VideoPerformanceAd $videoPerformanceAd
+   * @param VideoPerformanceAd
    */
   public function setVideoPerformanceAd(VideoPerformanceAd $videoPerformanceAd)
   {

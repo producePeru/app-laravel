@@ -20,18 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3SecuritySettingsInsightsExportSettings extends \Google\Model
 {
   /**
-   * If enabled, we will automatically exports conversations to Insights and
-   * Insights runs its analyzers.
-   *
    * @var bool
    */
   public $enableInsightsExport;
 
   /**
-   * If enabled, we will automatically exports conversations to Insights and
-   * Insights runs its analyzers.
-   *
-   * @param bool $enableInsightsExport
+   * @param bool
    */
   public function setEnableInsightsExport($enableInsightsExport)
   {

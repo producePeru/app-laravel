@@ -20,22 +20,16 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3LlmModelSettings extends \Google\Model
 {
   /**
-   * The selected LLM model.
-   *
    * @var string
    */
   public $model;
   /**
-   * The custom prompt to use.
-   *
    * @var string
    */
   public $promptText;
 
   /**
-   * The selected LLM model.
-   *
-   * @param string $model
+   * @param string
    */
   public function setModel($model)
   {
@@ -49,9 +43,7 @@ class GoogleCloudDialogflowCxV3LlmModelSettings extends \Google\Model
     return $this->model;
   }
   /**
-   * The custom prompt to use.
-   *
-   * @param string $promptText
+   * @param string
    */
   public function setPromptText($promptText)
   {
