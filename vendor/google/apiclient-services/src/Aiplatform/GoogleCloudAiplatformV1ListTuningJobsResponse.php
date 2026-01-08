@@ -21,9 +21,6 @@ class GoogleCloudAiplatformV1ListTuningJobsResponse extends \Google\Collection
 {
   protected $collection_key = 'tuningJobs';
   /**
-   * A token to retrieve the next page of results. Pass to
-   * ListTuningJobsRequest.page_token to obtain that page.
-   *
    * @var string
    */
   public $nextPageToken;
@@ -31,10 +28,7 @@ class GoogleCloudAiplatformV1ListTuningJobsResponse extends \Google\Collection
   protected $tuningJobsDataType = 'array';
 
   /**
-   * A token to retrieve the next page of results. Pass to
-   * ListTuningJobsRequest.page_token to obtain that page.
-   *
-   * @param string $nextPageToken
+   * @param string
    */
   public function setNextPageToken($nextPageToken)
   {
@@ -48,9 +42,7 @@ class GoogleCloudAiplatformV1ListTuningJobsResponse extends \Google\Collection
     return $this->nextPageToken;
   }
   /**
-   * List of TuningJobs in the requested page.
-   *
-   * @param GoogleCloudAiplatformV1TuningJob[] $tuningJobs
+   * @param GoogleCloudAiplatformV1TuningJob[]
    */
   public function setTuningJobs($tuningJobs)
   {

@@ -20,16 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerFaqSource extends \Google\Model
 {
   /**
-   * The corresponding FAQ question.
-   *
    * @var string
    */
   public $question;
 
   /**
-   * The corresponding FAQ question.
-   *
-   * @param string $question
+   * @param string
    */
   public function setQuestion($question)
   {

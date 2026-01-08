@@ -35,9 +35,7 @@ class Response extends \Google\Model
   protected $replaceAllTextDataType = '';
 
   /**
-   * The result of creating a footer.
-   *
-   * @param CreateFooterResponse $createFooter
+   * @param CreateFooterResponse
    */
   public function setCreateFooter(CreateFooterResponse $createFooter)
   {
@@ -51,9 +49,7 @@ class Response extends \Google\Model
     return $this->createFooter;
   }
   /**
-   * The result of creating a footnote.
-   *
-   * @param CreateFootnoteResponse $createFootnote
+   * @param CreateFootnoteResponse
    */
   public function setCreateFootnote(CreateFootnoteResponse $createFootnote)
   {
@@ -67,9 +63,7 @@ class Response extends \Google\Model
     return $this->createFootnote;
   }
   /**
-   * The result of creating a header.
-   *
-   * @param CreateHeaderResponse $createHeader
+   * @param CreateHeaderResponse
    */
   public function setCreateHeader(CreateHeaderResponse $createHeader)
   {
@@ -83,9 +77,7 @@ class Response extends \Google\Model
     return $this->createHeader;
   }
   /**
-   * The result of creating a named range.
-   *
-   * @param CreateNamedRangeResponse $createNamedRange
+   * @param CreateNamedRangeResponse
    */
   public function setCreateNamedRange(CreateNamedRangeResponse $createNamedRange)
   {
@@ -99,9 +91,7 @@ class Response extends \Google\Model
     return $this->createNamedRange;
   }
   /**
-   * The result of inserting an inline image.
-   *
-   * @param InsertInlineImageResponse $insertInlineImage
+   * @param InsertInlineImageResponse
    */
   public function setInsertInlineImage(InsertInlineImageResponse $insertInlineImage)
   {
@@ -115,9 +105,7 @@ class Response extends \Google\Model
     return $this->insertInlineImage;
   }
   /**
-   * The result of inserting an inline Google Sheets chart.
-   *
-   * @param InsertInlineSheetsChartResponse $insertInlineSheetsChart
+   * @param InsertInlineSheetsChartResponse
    */
   public function setInsertInlineSheetsChart(InsertInlineSheetsChartResponse $insertInlineSheetsChart)
   {
@@ -131,9 +119,7 @@ class Response extends \Google\Model
     return $this->insertInlineSheetsChart;
   }
   /**
-   * The result of replacing text.
-   *
-   * @param ReplaceAllTextResponse $replaceAllText
+   * @param ReplaceAllTextResponse
    */
   public function setReplaceAllText(ReplaceAllTextResponse $replaceAllText)
   {

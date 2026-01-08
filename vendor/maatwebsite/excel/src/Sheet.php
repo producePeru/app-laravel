@@ -15,7 +15,6 @@ use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
-use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\ToArray;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -59,7 +58,6 @@ use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\BaseDrawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Throwable;
 
 /** @mixin Worksheet */
 class Sheet
@@ -300,23 +298,9 @@ class Sheet
                             app(RowValidator::class)->validate($toValidate, $import);
                             $import->onRow($sheetRow);
                         } catch (RowSkippedException $e) {
-                        } catch (Throwable $e) {
-                            if ($import instanceof SkipsOnError) {
-                                $import->onError($e);
-                            } else {
-                                throw $e;
-                            }
                         }
                     } else {
-                        try {
-                            $import->onRow($sheetRow);
-                        } catch (Throwable $e) {
-                            if ($import instanceof SkipsOnError) {
-                                $import->onError($e);
-                            } else {
-                                throw $e;
-                            }
-                        }
+                        $import->onRow($sheetRow);
                     }
                 }
 

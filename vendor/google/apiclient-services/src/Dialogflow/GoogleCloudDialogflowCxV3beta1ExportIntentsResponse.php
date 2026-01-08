@@ -22,18 +22,12 @@ class GoogleCloudDialogflowCxV3beta1ExportIntentsResponse extends \Google\Model
   protected $intentsContentType = GoogleCloudDialogflowCxV3beta1InlineDestination::class;
   protected $intentsContentDataType = '';
   /**
-   * The URI to a file containing the exported intents. This field is populated
-   * only if `intents_uri` is specified in ExportIntentsRequest.
-   *
    * @var string
    */
   public $intentsUri;
 
   /**
-   * Uncompressed byte content for intents. This field is populated only if
-   * `intents_content_inline` is set to true in ExportIntentsRequest.
-   *
-   * @param GoogleCloudDialogflowCxV3beta1InlineDestination $intentsContent
+   * @param GoogleCloudDialogflowCxV3beta1InlineDestination
    */
   public function setIntentsContent(GoogleCloudDialogflowCxV3beta1InlineDestination $intentsContent)
   {
@@ -47,10 +41,7 @@ class GoogleCloudDialogflowCxV3beta1ExportIntentsResponse extends \Google\Model
     return $this->intentsContent;
   }
   /**
-   * The URI to a file containing the exported intents. This field is populated
-   * only if `intents_uri` is specified in ExportIntentsRequest.
-   *
-   * @param string $intentsUri
+   * @param string
    */
   public function setIntentsUri($intentsUri)
   {

@@ -38,7 +38,7 @@ class SparkPlanGraphCluster extends \Google\Collection
   public $sparkPlanGraphClusterId;
 
   /**
-   * @param string $desc
+   * @param string
    */
   public function setDesc($desc)
   {
@@ -52,7 +52,7 @@ class SparkPlanGraphCluster extends \Google\Collection
     return $this->desc;
   }
   /**
-   * @param SqlPlanMetric[] $metrics
+   * @param SqlPlanMetric[]
    */
   public function setMetrics($metrics)
   {
@@ -66,7 +66,7 @@ class SparkPlanGraphCluster extends \Google\Collection
     return $this->metrics;
   }
   /**
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -80,7 +80,7 @@ class SparkPlanGraphCluster extends \Google\Collection
     return $this->name;
   }
   /**
-   * @param SparkPlanGraphNodeWrapper[] $nodes
+   * @param SparkPlanGraphNodeWrapper[]
    */
   public function setNodes($nodes)
   {
@@ -94,7 +94,7 @@ class SparkPlanGraphCluster extends \Google\Collection
     return $this->nodes;
   }
   /**
-   * @param string $sparkPlanGraphClusterId
+   * @param string
    */
   public function setSparkPlanGraphClusterId($sparkPlanGraphClusterId)
   {

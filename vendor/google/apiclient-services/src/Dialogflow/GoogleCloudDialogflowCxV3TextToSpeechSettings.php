@@ -23,16 +23,7 @@ class GoogleCloudDialogflowCxV3TextToSpeechSettings extends \Google\Model
   protected $synthesizeSpeechConfigsDataType = 'map';
 
   /**
-   * Configuration of how speech should be synthesized, mapping from language
-   * (https://cloud.google.com/dialogflow/cx/docs/reference/language) to
-   * SynthesizeSpeechConfig. These settings affect: - The [phone gateway](https:
-   * //cloud.google.com/dialogflow/cx/docs/concept/integration/phone-gateway)
-   * synthesize configuration set via Agent.text_to_speech_settings. - How
-   * speech is synthesized when invoking session APIs.
-   * Agent.text_to_speech_settings only applies if
-   * OutputAudioConfig.synthesize_speech_config is not specified.
-   *
-   * @param GoogleCloudDialogflowCxV3SynthesizeSpeechConfig[] $synthesizeSpeechConfigs
+   * @param GoogleCloudDialogflowCxV3SynthesizeSpeechConfig[]
    */
   public function setSynthesizeSpeechConfigs($synthesizeSpeechConfigs)
   {

@@ -21,9 +21,6 @@ class GoogleCloudDialogflowCxV3ListToolsResponse extends \Google\Collection
 {
   protected $collection_key = 'tools';
   /**
-   * Token to retrieve the next page of results, or empty if there are no more
-   * results in the list.
-   *
    * @var string
    */
   public $nextPageToken;
@@ -31,10 +28,7 @@ class GoogleCloudDialogflowCxV3ListToolsResponse extends \Google\Collection
   protected $toolsDataType = 'array';
 
   /**
-   * Token to retrieve the next page of results, or empty if there are no more
-   * results in the list.
-   *
-   * @param string $nextPageToken
+   * @param string
    */
   public function setNextPageToken($nextPageToken)
   {
@@ -48,10 +42,7 @@ class GoogleCloudDialogflowCxV3ListToolsResponse extends \Google\Collection
     return $this->nextPageToken;
   }
   /**
-   * The list of Tools. There will be a maximum number of items returned based
-   * on the page_size field in the request.
-   *
-   * @param GoogleCloudDialogflowCxV3Tool[] $tools
+   * @param GoogleCloudDialogflowCxV3Tool[]
    */
   public function setTools($tools)
   {

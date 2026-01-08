@@ -20,23 +20,16 @@ namespace Google\Service\ServiceUsage;
 class Aspect extends \Google\Model
 {
   /**
-   * The type of this aspect configuration.
-   *
    * @var string
    */
   public $kind;
   /**
-   * Content of the configuration. The underlying schema should be defined by
-   * Aspect owners as protobuf message under `google/api/configaspects/proto`.
-   *
    * @var array[]
    */
   public $spec;
 
   /**
-   * The type of this aspect configuration.
-   *
-   * @param string $kind
+   * @param string
    */
   public function setKind($kind)
   {
@@ -50,10 +43,7 @@ class Aspect extends \Google\Model
     return $this->kind;
   }
   /**
-   * Content of the configuration. The underlying schema should be defined by
-   * Aspect owners as protobuf message under `google/api/configaspects/proto`.
-   *
-   * @param array[] $spec
+   * @param array[]
    */
   public function setSpec($spec)
   {

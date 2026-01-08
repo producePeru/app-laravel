@@ -20,24 +20,16 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3beta1IntentTrainingPhrasePart extends \Google\Model
 {
   /**
-   * The parameter used to annotate this part of the training phrase. This field
-   * is required for annotated parts of the training phrase.
-   *
    * @var string
    */
   public $parameterId;
   /**
-   * Required. The text for this part.
-   *
    * @var string
    */
   public $text;
 
   /**
-   * The parameter used to annotate this part of the training phrase. This field
-   * is required for annotated parts of the training phrase.
-   *
-   * @param string $parameterId
+   * @param string
    */
   public function setParameterId($parameterId)
   {
@@ -51,9 +43,7 @@ class GoogleCloudDialogflowCxV3beta1IntentTrainingPhrasePart extends \Google\Mod
     return $this->parameterId;
   }
   /**
-   * Required. The text for this part.
-   *
-   * @param string $text
+   * @param string
    */
   public function setText($text)
   {

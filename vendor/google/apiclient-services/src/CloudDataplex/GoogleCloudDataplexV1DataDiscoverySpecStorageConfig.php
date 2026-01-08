@@ -23,23 +23,10 @@ class GoogleCloudDataplexV1DataDiscoverySpecStorageConfig extends \Google\Collec
   protected $csvOptionsType = GoogleCloudDataplexV1DataDiscoverySpecStorageConfigCsvOptions::class;
   protected $csvOptionsDataType = '';
   /**
-   * Optional. Defines the data to exclude during discovery. Provide a list of
-   * patterns that identify the data to exclude. For Cloud Storage bucket
-   * assets, these patterns are interpreted as glob patterns used to match
-   * object names. For BigQuery dataset assets, these patterns are interpreted
-   * as patterns to match table names.
-   *
    * @var string[]
    */
   public $excludePatterns;
   /**
-   * Optional. Defines the data to include during discovery when only a subset
-   * of the data should be considered. Provide a list of patterns that identify
-   * the data to include. For Cloud Storage bucket assets, these patterns are
-   * interpreted as glob patterns used to match object names. For BigQuery
-   * dataset assets, these patterns are interpreted as patterns to match table
-   * names.
-   *
    * @var string[]
    */
   public $includePatterns;
@@ -47,9 +34,7 @@ class GoogleCloudDataplexV1DataDiscoverySpecStorageConfig extends \Google\Collec
   protected $jsonOptionsDataType = '';
 
   /**
-   * Optional. Configuration for CSV data.
-   *
-   * @param GoogleCloudDataplexV1DataDiscoverySpecStorageConfigCsvOptions $csvOptions
+   * @param GoogleCloudDataplexV1DataDiscoverySpecStorageConfigCsvOptions
    */
   public function setCsvOptions(GoogleCloudDataplexV1DataDiscoverySpecStorageConfigCsvOptions $csvOptions)
   {
@@ -63,13 +48,7 @@ class GoogleCloudDataplexV1DataDiscoverySpecStorageConfig extends \Google\Collec
     return $this->csvOptions;
   }
   /**
-   * Optional. Defines the data to exclude during discovery. Provide a list of
-   * patterns that identify the data to exclude. For Cloud Storage bucket
-   * assets, these patterns are interpreted as glob patterns used to match
-   * object names. For BigQuery dataset assets, these patterns are interpreted
-   * as patterns to match table names.
-   *
-   * @param string[] $excludePatterns
+   * @param string[]
    */
   public function setExcludePatterns($excludePatterns)
   {
@@ -83,14 +62,7 @@ class GoogleCloudDataplexV1DataDiscoverySpecStorageConfig extends \Google\Collec
     return $this->excludePatterns;
   }
   /**
-   * Optional. Defines the data to include during discovery when only a subset
-   * of the data should be considered. Provide a list of patterns that identify
-   * the data to include. For Cloud Storage bucket assets, these patterns are
-   * interpreted as glob patterns used to match object names. For BigQuery
-   * dataset assets, these patterns are interpreted as patterns to match table
-   * names.
-   *
-   * @param string[] $includePatterns
+   * @param string[]
    */
   public function setIncludePatterns($includePatterns)
   {
@@ -104,9 +76,7 @@ class GoogleCloudDataplexV1DataDiscoverySpecStorageConfig extends \Google\Collec
     return $this->includePatterns;
   }
   /**
-   * Optional. Configuration for JSON data.
-   *
-   * @param GoogleCloudDataplexV1DataDiscoverySpecStorageConfigJsonOptions $jsonOptions
+   * @param GoogleCloudDataplexV1DataDiscoverySpecStorageConfigJsonOptions
    */
   public function setJsonOptions(GoogleCloudDataplexV1DataDiscoverySpecStorageConfigJsonOptions $jsonOptions)
   {

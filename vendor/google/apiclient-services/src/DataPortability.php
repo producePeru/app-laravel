@@ -40,6 +40,9 @@ class DataPortability extends \Google\Service
   /** Move a copy of the Google Alerts subscriptions you created. */
   const DATAPORTABILITY_ALERTS_SUBSCRIPTIONS =
       "https://www.googleapis.com/auth/dataportability.alerts.subscriptions";
+  /** Move a copy of messages between you and the businesses you have conversations with across Google services. */
+  const DATAPORTABILITY_BUSINESSMESSAGING_CONVERSATIONS =
+      "https://www.googleapis.com/auth/dataportability.businessmessaging.conversations";
   /** Move a copy of the information you entered into online forms in Chrome. */
   const DATAPORTABILITY_CHROME_AUTOFILL =
       "https://www.googleapis.com/auth/dataportability.chrome.autofill";
@@ -100,9 +103,6 @@ class DataPortability extends \Google\Service
   /** Move a copy of your Starred places list on Maps. */
   const DATAPORTABILITY_MAPS_STARRED_PLACES =
       "https://www.googleapis.com/auth/dataportability.maps.starred_places";
-  /** Move a copy of your vehicle profile on Maps. */
-  const DATAPORTABILITY_MAPS_VEHICLE_PROFILE =
-      "https://www.googleapis.com/auth/dataportability.maps.vehicle_profile";
   /** Move a copy of your Maps activity. */
   const DATAPORTABILITY_MYACTIVITY_MAPS =
       "https://www.googleapis.com/auth/dataportability.myactivity.maps";
@@ -199,9 +199,6 @@ class DataPortability extends \Google\Service
   /** Move a copy of your YouTube comments. */
   const DATAPORTABILITY_YOUTUBE_COMMENTS =
       "https://www.googleapis.com/auth/dataportability.youtube.comments";
-  /** Move a copy of all your YouTube messages. */
-  const DATAPORTABILITY_YOUTUBE_CONVERSATIONS =
-      "https://www.googleapis.com/auth/dataportability.youtube.conversations";
   /** Move a copy of your YouTube messages in live chat. */
   const DATAPORTABILITY_YOUTUBE_LIVE_CHAT =
       "https://www.googleapis.com/auth/dataportability.youtube.live_chat";

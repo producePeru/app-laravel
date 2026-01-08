@@ -26,13 +26,7 @@ class Config extends \Google\Collection
   protected $runConfigDataType = '';
 
   /**
-   * Optional. Supplied environment variables for a specific build. Provided at
-   * Build creation time and immutable afterwards. This field is only applicable
-   * for Builds using a build image - (e.g., ContainerSource or ArchiveSource
-   * with locally_build_source) Attempts to set this for other build types will
-   * result in an error
-   *
-   * @param EnvironmentVariable[] $env
+   * @param EnvironmentVariable[]
    */
   public function setEnv($env)
   {
@@ -46,11 +40,7 @@ class Config extends \Google\Collection
     return $this->env;
   }
   /**
-   * Optional. Additional configuration of the Cloud Run [`service`](https://clo
-   * ud.google.com/run/docs/reference/rest/v2/projects.locations.services#resour
-   * ce:-service).
-   *
-   * @param RunConfig $runConfig
+   * @param RunConfig
    */
   public function setRunConfig(RunConfig $runConfig)
   {

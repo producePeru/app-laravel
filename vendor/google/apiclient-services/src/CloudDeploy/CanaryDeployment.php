@@ -21,11 +21,6 @@ class CanaryDeployment extends \Google\Collection
 {
   protected $collection_key = 'percentages';
   /**
-   * Required. The percentage based deployments that will occur as a part of a
-   * `Rollout`. List is expected in ascending order and each integer n is 0 <= n
-   * < 100. If the GatewayServiceMesh is configured for Kubernetes, then the
-   * range for n is 0 <= n <= 100.
-   *
    * @var int[]
    */
   public $percentages;
@@ -34,20 +29,12 @@ class CanaryDeployment extends \Google\Collection
   protected $predeployType = Predeploy::class;
   protected $predeployDataType = '';
   /**
-   * Optional. Whether to run verify tests after each percentage deployment via
-   * `skaffold verify`.
-   *
    * @var bool
    */
   public $verify;
 
   /**
-   * Required. The percentage based deployments that will occur as a part of a
-   * `Rollout`. List is expected in ascending order and each integer n is 0 <= n
-   * < 100. If the GatewayServiceMesh is configured for Kubernetes, then the
-   * range for n is 0 <= n <= 100.
-   *
-   * @param int[] $percentages
+   * @param int[]
    */
   public function setPercentages($percentages)
   {
@@ -61,10 +48,7 @@ class CanaryDeployment extends \Google\Collection
     return $this->percentages;
   }
   /**
-   * Optional. Configuration for the postdeploy job of the last phase. If this
-   * is not configured, there will be no postdeploy job for this phase.
-   *
-   * @param Postdeploy $postdeploy
+   * @param Postdeploy
    */
   public function setPostdeploy(Postdeploy $postdeploy)
   {
@@ -78,10 +62,7 @@ class CanaryDeployment extends \Google\Collection
     return $this->postdeploy;
   }
   /**
-   * Optional. Configuration for the predeploy job of the first phase. If this
-   * is not configured, there will be no predeploy job for this phase.
-   *
-   * @param Predeploy $predeploy
+   * @param Predeploy
    */
   public function setPredeploy(Predeploy $predeploy)
   {
@@ -95,10 +76,7 @@ class CanaryDeployment extends \Google\Collection
     return $this->predeploy;
   }
   /**
-   * Optional. Whether to run verify tests after each percentage deployment via
-   * `skaffold verify`.
-   *
-   * @param bool $verify
+   * @param bool
    */
   public function setVerify($verify)
   {

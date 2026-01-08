@@ -21,22 +21,16 @@ class GoogleCloudDialogflowV2beta1IntentMessageQuickReplies extends \Google\Coll
 {
   protected $collection_key = 'quickReplies';
   /**
-   * Optional. The collection of quick replies.
-   *
    * @var string[]
    */
   public $quickReplies;
   /**
-   * Optional. The title of the collection of quick replies.
-   *
    * @var string
    */
   public $title;
 
   /**
-   * Optional. The collection of quick replies.
-   *
-   * @param string[] $quickReplies
+   * @param string[]
    */
   public function setQuickReplies($quickReplies)
   {
@@ -50,9 +44,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageQuickReplies extends \Google\Coll
     return $this->quickReplies;
   }
   /**
-   * Optional. The title of the collection of quick replies.
-   *
-   * @param string $title
+   * @param string
    */
   public function setTitle($title)
   {

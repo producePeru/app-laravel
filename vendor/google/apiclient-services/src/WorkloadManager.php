@@ -42,6 +42,7 @@ class WorkloadManager extends \Google\Service
 
   public $projects_locations;
   public $projects_locations_discoveredprofiles;
+  public $projects_locations_discoveredprofiles_healthes;
   public $projects_locations_evaluations;
   public $projects_locations_evaluations_executions;
   public $projects_locations_evaluations_executions_results;
@@ -121,7 +122,17 @@ class WorkloadManager extends \Google\Service
         'discoveredprofiles',
         [
           'methods' => [
-            'list' => [
+            'get' => [
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'GET',
+              'parameters' => [
+                'name' => [
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ],
+              ],
+            ],'list' => [
               'path' => 'v1/{+parent}/discoveredprofiles',
               'httpMethod' => 'GET',
               'parameters' => [
@@ -141,6 +152,26 @@ class WorkloadManager extends \Google\Service
                 'pageToken' => [
                   'location' => 'query',
                   'type' => 'string',
+                ],
+              ],
+            ],
+          ]
+        ]
+    );
+    $this->projects_locations_discoveredprofiles_healthes = new WorkloadManager\Resource\ProjectsLocationsDiscoveredprofilesHealthes(
+        $this,
+        $this->serviceName,
+        'healthes',
+        [
+          'methods' => [
+            'get' => [
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'GET',
+              'parameters' => [
+                'name' => [
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
                 ],
               ],
             ],
@@ -221,24 +252,6 @@ class WorkloadManager extends \Google\Service
                   'type' => 'integer',
                 ],
                 'pageToken' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-              ],
-            ],'patch' => [
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'PATCH',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-                'requestId' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-                'updateMask' => [
                   'location' => 'query',
                   'type' => 'string',
                 ],
@@ -479,10 +492,6 @@ class WorkloadManager extends \Google\Service
                 'pageToken' => [
                   'location' => 'query',
                   'type' => 'string',
-                ],
-                'returnPartialSuccess' => [
-                  'location' => 'query',
-                  'type' => 'boolean',
                 ],
               ],
             ],

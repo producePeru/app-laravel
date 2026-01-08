@@ -20,32 +20,20 @@ namespace Google\Service\FirebaseAppHosting;
 class RolloutPolicy extends \Google\Model
 {
   /**
-   * If set, specifies a branch that triggers a new build to be started with
-   * this policy. Otherwise, no automatic rollouts will happen.
-   *
    * @var string
    */
   public $codebaseBranch;
   /**
-   * Optional. A flag that, if true, prevents automatic rollouts from being
-   * created via this RolloutPolicy.
-   *
    * @var bool
    */
   public $disabled;
   /**
-   * Output only. If `disabled` is set, the time at which the automatic rollouts
-   * were disabled.
-   *
    * @var string
    */
   public $disabledTime;
 
   /**
-   * If set, specifies a branch that triggers a new build to be started with
-   * this policy. Otherwise, no automatic rollouts will happen.
-   *
-   * @param string $codebaseBranch
+   * @param string
    */
   public function setCodebaseBranch($codebaseBranch)
   {
@@ -59,10 +47,7 @@ class RolloutPolicy extends \Google\Model
     return $this->codebaseBranch;
   }
   /**
-   * Optional. A flag that, if true, prevents automatic rollouts from being
-   * created via this RolloutPolicy.
-   *
-   * @param bool $disabled
+   * @param bool
    */
   public function setDisabled($disabled)
   {
@@ -76,10 +61,7 @@ class RolloutPolicy extends \Google\Model
     return $this->disabled;
   }
   /**
-   * Output only. If `disabled` is set, the time at which the automatic rollouts
-   * were disabled.
-   *
-   * @param string $disabledTime
+   * @param string
    */
   public function setDisabledTime($disabledTime)
   {

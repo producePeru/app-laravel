@@ -24,9 +24,7 @@ class GoogleCloudDialogflowCxV3DeployFlowMetadata extends \Google\Collection
   protected $testErrorsDataType = 'array';
 
   /**
-   * Errors of running deployment tests.
-   *
-   * @param GoogleCloudDialogflowCxV3TestError[] $testErrors
+   * @param GoogleCloudDialogflowCxV3TestError[]
    */
   public function setTestErrors($testErrors)
   {

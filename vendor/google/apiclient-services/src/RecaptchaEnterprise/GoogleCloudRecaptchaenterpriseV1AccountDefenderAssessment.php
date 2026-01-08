@@ -21,16 +21,12 @@ class GoogleCloudRecaptchaenterpriseV1AccountDefenderAssessment extends \Google\
 {
   protected $collection_key = 'labels';
   /**
-   * Output only. Labels for this request.
-   *
    * @var string[]
    */
   public $labels;
 
   /**
-   * Output only. Labels for this request.
-   *
-   * @param string[] $labels
+   * @param string[]
    */
   public function setLabels($labels)
   {

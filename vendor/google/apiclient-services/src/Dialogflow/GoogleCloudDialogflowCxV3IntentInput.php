@@ -20,18 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3IntentInput extends \Google\Model
 {
   /**
-   * Required. The unique identifier of the intent. Format:
-   * `projects//locations//agents//intents/`.
-   *
    * @var string
    */
   public $intent;
 
   /**
-   * Required. The unique identifier of the intent. Format:
-   * `projects//locations//agents//intents/`.
-   *
-   * @param string $intent
+   * @param string
    */
   public function setIntent($intent)
   {

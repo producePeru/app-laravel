@@ -20,58 +20,38 @@ namespace Google\Service\DeveloperConnect;
 class AccountConnector extends \Google\Model
 {
   /**
-   * Optional. Allows users to store small amounts of arbitrary data.
-   *
    * @var string[]
    */
   public $annotations;
   /**
-   * Output only. The timestamp when the accountConnector was created.
-   *
    * @var string
    */
   public $createTime;
   /**
-   * Optional. This checksum is computed by the server based on the value of
-   * other fields, and may be sent on update and delete requests to ensure the
-   * client has an up-to-date value before proceeding.
-   *
    * @var string
    */
   public $etag;
   /**
-   * Optional. Labels as key value pairs
-   *
    * @var string[]
    */
   public $labels;
   /**
-   * Identifier. The resource name of the accountConnector, in the format `proje
-   * cts/{project}/locations/{location}/accountConnectors/{account_connector_id}
-   * `.
-   *
    * @var string
    */
   public $name;
   /**
-   * Output only. Start OAuth flow by clicking on this URL.
-   *
    * @var string
    */
   public $oauthStartUri;
   protected $providerOauthConfigType = ProviderOAuthConfig::class;
   protected $providerOauthConfigDataType = '';
   /**
-   * Output only. The timestamp when the accountConnector was updated.
-   *
    * @var string
    */
   public $updateTime;
 
   /**
-   * Optional. Allows users to store small amounts of arbitrary data.
-   *
-   * @param string[] $annotations
+   * @param string[]
    */
   public function setAnnotations($annotations)
   {
@@ -85,9 +65,7 @@ class AccountConnector extends \Google\Model
     return $this->annotations;
   }
   /**
-   * Output only. The timestamp when the accountConnector was created.
-   *
-   * @param string $createTime
+   * @param string
    */
   public function setCreateTime($createTime)
   {
@@ -101,11 +79,7 @@ class AccountConnector extends \Google\Model
     return $this->createTime;
   }
   /**
-   * Optional. This checksum is computed by the server based on the value of
-   * other fields, and may be sent on update and delete requests to ensure the
-   * client has an up-to-date value before proceeding.
-   *
-   * @param string $etag
+   * @param string
    */
   public function setEtag($etag)
   {
@@ -119,9 +93,7 @@ class AccountConnector extends \Google\Model
     return $this->etag;
   }
   /**
-   * Optional. Labels as key value pairs
-   *
-   * @param string[] $labels
+   * @param string[]
    */
   public function setLabels($labels)
   {
@@ -135,11 +107,7 @@ class AccountConnector extends \Google\Model
     return $this->labels;
   }
   /**
-   * Identifier. The resource name of the accountConnector, in the format `proje
-   * cts/{project}/locations/{location}/accountConnectors/{account_connector_id}
-   * `.
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -153,9 +121,7 @@ class AccountConnector extends \Google\Model
     return $this->name;
   }
   /**
-   * Output only. Start OAuth flow by clicking on this URL.
-   *
-   * @param string $oauthStartUri
+   * @param string
    */
   public function setOauthStartUri($oauthStartUri)
   {
@@ -169,9 +135,7 @@ class AccountConnector extends \Google\Model
     return $this->oauthStartUri;
   }
   /**
-   * Provider OAuth config.
-   *
-   * @param ProviderOAuthConfig $providerOauthConfig
+   * @param ProviderOAuthConfig
    */
   public function setProviderOauthConfig(ProviderOAuthConfig $providerOauthConfig)
   {
@@ -185,9 +149,7 @@ class AccountConnector extends \Google\Model
     return $this->providerOauthConfig;
   }
   /**
-   * Output only. The timestamp when the accountConnector was updated.
-   *
-   * @param string $updateTime
+   * @param string
    */
   public function setUpdateTime($updateTime)
   {

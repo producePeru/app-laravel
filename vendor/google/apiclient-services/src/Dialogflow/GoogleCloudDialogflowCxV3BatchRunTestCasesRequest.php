@@ -21,24 +21,16 @@ class GoogleCloudDialogflowCxV3BatchRunTestCasesRequest extends \Google\Collecti
 {
   protected $collection_key = 'testCases';
   /**
-   * Optional. If not set, draft environment is assumed. Format:
-   * `projects//locations//agents//environments/`.
-   *
    * @var string
    */
   public $environment;
   /**
-   * Required. Format: `projects//locations//agents//testCases/`.
-   *
    * @var string[]
    */
   public $testCases;
 
   /**
-   * Optional. If not set, draft environment is assumed. Format:
-   * `projects//locations//agents//environments/`.
-   *
-   * @param string $environment
+   * @param string
    */
   public function setEnvironment($environment)
   {
@@ -52,9 +44,7 @@ class GoogleCloudDialogflowCxV3BatchRunTestCasesRequest extends \Google\Collecti
     return $this->environment;
   }
   /**
-   * Required. Format: `projects//locations//agents//testCases/`.
-   *
-   * @param string[] $testCases
+   * @param string[]
    */
   public function setTestCases($testCases)
   {

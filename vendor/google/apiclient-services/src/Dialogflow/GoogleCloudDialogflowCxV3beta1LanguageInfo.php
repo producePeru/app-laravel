@@ -20,28 +20,20 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3beta1LanguageInfo extends \Google\Model
 {
   /**
-   * The confidence score of the detected language between 0 and 1.
-   *
    * @var float
    */
   public $confidenceScore;
   /**
-   * The language code specified in the original request.
-   *
    * @var string
    */
   public $inputLanguageCode;
   /**
-   * The language code detected for this request based on the user conversation.
-   *
    * @var string
    */
   public $resolvedLanguageCode;
 
   /**
-   * The confidence score of the detected language between 0 and 1.
-   *
-   * @param float $confidenceScore
+   * @param float
    */
   public function setConfidenceScore($confidenceScore)
   {
@@ -55,9 +47,7 @@ class GoogleCloudDialogflowCxV3beta1LanguageInfo extends \Google\Model
     return $this->confidenceScore;
   }
   /**
-   * The language code specified in the original request.
-   *
-   * @param string $inputLanguageCode
+   * @param string
    */
   public function setInputLanguageCode($inputLanguageCode)
   {
@@ -71,9 +61,7 @@ class GoogleCloudDialogflowCxV3beta1LanguageInfo extends \Google\Model
     return $this->inputLanguageCode;
   }
   /**
-   * The language code detected for this request based on the user conversation.
-   *
-   * @param string $resolvedLanguageCode
+   * @param string
    */
   public function setResolvedLanguageCode($resolvedLanguageCode)
   {

@@ -20,35 +20,16 @@ namespace Google\Service\Aiplatform;
 class GoogleCloudAiplatformV1AutoscalingMetricSpec extends \Google\Model
 {
   /**
-   * Required. The resource metric name. Supported metrics: * For Online
-   * Prediction: *
-   * `aiplatform.googleapis.com/prediction/online/accelerator/duty_cycle` *
-   * `aiplatform.googleapis.com/prediction/online/cpu/utilization` *
-   * `aiplatform.googleapis.com/prediction/online/request_count` *
-   * `pubsub.googleapis.com/subscription/num_undelivered_messages`
-   *
    * @var string
    */
   public $metricName;
   /**
-   * The target resource utilization in percentage (1% - 100%) for the given
-   * metric; once the real usage deviates from the target by a certain
-   * percentage, the machine replicas change. The default value is 60
-   * (representing 60%) if not provided.
-   *
    * @var int
    */
   public $target;
 
   /**
-   * Required. The resource metric name. Supported metrics: * For Online
-   * Prediction: *
-   * `aiplatform.googleapis.com/prediction/online/accelerator/duty_cycle` *
-   * `aiplatform.googleapis.com/prediction/online/cpu/utilization` *
-   * `aiplatform.googleapis.com/prediction/online/request_count` *
-   * `pubsub.googleapis.com/subscription/num_undelivered_messages`
-   *
-   * @param string $metricName
+   * @param string
    */
   public function setMetricName($metricName)
   {
@@ -62,12 +43,7 @@ class GoogleCloudAiplatformV1AutoscalingMetricSpec extends \Google\Model
     return $this->metricName;
   }
   /**
-   * The target resource utilization in percentage (1% - 100%) for the given
-   * metric; once the real usage deviates from the target by a certain
-   * percentage, the machine replicas change. The default value is 60
-   * (representing 60%) if not provided.
-   *
-   * @param int $target
+   * @param int
    */
   public function setTarget($target)
   {

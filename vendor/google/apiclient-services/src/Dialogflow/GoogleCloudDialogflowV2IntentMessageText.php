@@ -21,16 +21,12 @@ class GoogleCloudDialogflowV2IntentMessageText extends \Google\Collection
 {
   protected $collection_key = 'text';
   /**
-   * Optional. The collection of the agent's responses.
-   *
    * @var string[]
    */
   public $text;
 
   /**
-   * Optional. The collection of the agent's responses.
-   *
-   * @param string[] $text
+   * @param string[]
    */
   public function setText($text)
   {

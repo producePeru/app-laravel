@@ -21,31 +21,20 @@ class GoogleCloudDialogflowCxV3Environment extends \Google\Collection
 {
   protected $collection_key = 'versionConfigs';
   /**
-   * The human-readable description of the environment. The maximum length is
-   * 500 characters. If exceeded, the request is rejected.
-   *
    * @var string
    */
   public $description;
   /**
-   * Required. The human-readable name of the environment (unique in an agent).
-   * Limit of 64 characters.
-   *
    * @var string
    */
   public $displayName;
   /**
-   * The name of the environment. Format:
-   * `projects//locations//agents//environments/`.
-   *
    * @var string
    */
   public $name;
   protected $testCasesConfigType = GoogleCloudDialogflowCxV3EnvironmentTestCasesConfig::class;
   protected $testCasesConfigDataType = '';
   /**
-   * Output only. Update time of this environment.
-   *
    * @var string
    */
   public $updateTime;
@@ -55,10 +44,7 @@ class GoogleCloudDialogflowCxV3Environment extends \Google\Collection
   protected $webhookConfigDataType = '';
 
   /**
-   * The human-readable description of the environment. The maximum length is
-   * 500 characters. If exceeded, the request is rejected.
-   *
-   * @param string $description
+   * @param string
    */
   public function setDescription($description)
   {
@@ -72,10 +58,7 @@ class GoogleCloudDialogflowCxV3Environment extends \Google\Collection
     return $this->description;
   }
   /**
-   * Required. The human-readable name of the environment (unique in an agent).
-   * Limit of 64 characters.
-   *
-   * @param string $displayName
+   * @param string
    */
   public function setDisplayName($displayName)
   {
@@ -89,10 +72,7 @@ class GoogleCloudDialogflowCxV3Environment extends \Google\Collection
     return $this->displayName;
   }
   /**
-   * The name of the environment. Format:
-   * `projects//locations//agents//environments/`.
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -106,9 +86,7 @@ class GoogleCloudDialogflowCxV3Environment extends \Google\Collection
     return $this->name;
   }
   /**
-   * The test cases config for continuous tests of this environment.
-   *
-   * @param GoogleCloudDialogflowCxV3EnvironmentTestCasesConfig $testCasesConfig
+   * @param GoogleCloudDialogflowCxV3EnvironmentTestCasesConfig
    */
   public function setTestCasesConfig(GoogleCloudDialogflowCxV3EnvironmentTestCasesConfig $testCasesConfig)
   {
@@ -122,9 +100,7 @@ class GoogleCloudDialogflowCxV3Environment extends \Google\Collection
     return $this->testCasesConfig;
   }
   /**
-   * Output only. Update time of this environment.
-   *
-   * @param string $updateTime
+   * @param string
    */
   public function setUpdateTime($updateTime)
   {
@@ -138,11 +114,7 @@ class GoogleCloudDialogflowCxV3Environment extends \Google\Collection
     return $this->updateTime;
   }
   /**
-   * A list of configurations for flow versions. You should include version
-   * configs for all flows that are reachable from `Start Flow` in the agent.
-   * Otherwise, an error will be returned.
-   *
-   * @param GoogleCloudDialogflowCxV3EnvironmentVersionConfig[] $versionConfigs
+   * @param GoogleCloudDialogflowCxV3EnvironmentVersionConfig[]
    */
   public function setVersionConfigs($versionConfigs)
   {
@@ -156,9 +128,7 @@ class GoogleCloudDialogflowCxV3Environment extends \Google\Collection
     return $this->versionConfigs;
   }
   /**
-   * The webhook configuration for this environment.
-   *
-   * @param GoogleCloudDialogflowCxV3EnvironmentWebhookConfig $webhookConfig
+   * @param GoogleCloudDialogflowCxV3EnvironmentWebhookConfig
    */
   public function setWebhookConfig(GoogleCloudDialogflowCxV3EnvironmentWebhookConfig $webhookConfig)
   {

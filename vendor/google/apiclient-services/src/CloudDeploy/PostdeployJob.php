@@ -21,16 +21,12 @@ class PostdeployJob extends \Google\Collection
 {
   protected $collection_key = 'actions';
   /**
-   * Output only. The custom actions that the postdeploy Job executes.
-   *
    * @var string[]
    */
   public $actions;
 
   /**
-   * Output only. The custom actions that the postdeploy Job executes.
-   *
-   * @param string[] $actions
+   * @param string[]
    */
   public function setActions($actions)
   {

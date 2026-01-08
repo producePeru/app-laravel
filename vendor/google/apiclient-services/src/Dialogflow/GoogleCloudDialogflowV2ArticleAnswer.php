@@ -21,51 +21,32 @@ class GoogleCloudDialogflowV2ArticleAnswer extends \Google\Collection
 {
   protected $collection_key = 'snippets';
   /**
-   * The name of answer record, in the format of
-   * "projects//locations//answerRecords/"
-   *
    * @var string
    */
   public $answerRecord;
   /**
-   * Article match confidence. The system's confidence score that this article
-   * is a good match for this conversation, as a value from 0.0 (completely
-   * uncertain) to 1.0 (completely certain).
-   *
    * @var float
    */
   public $confidence;
   /**
-   * A map that contains metadata about the answer and the document from which
-   * it originates.
-   *
    * @var string[]
    */
   public $metadata;
   /**
-   * Article snippets.
-   *
    * @var string[]
    */
   public $snippets;
   /**
-   * The article title.
-   *
    * @var string
    */
   public $title;
   /**
-   * The article URI.
-   *
    * @var string
    */
   public $uri;
 
   /**
-   * The name of answer record, in the format of
-   * "projects//locations//answerRecords/"
-   *
-   * @param string $answerRecord
+   * @param string
    */
   public function setAnswerRecord($answerRecord)
   {
@@ -79,11 +60,7 @@ class GoogleCloudDialogflowV2ArticleAnswer extends \Google\Collection
     return $this->answerRecord;
   }
   /**
-   * Article match confidence. The system's confidence score that this article
-   * is a good match for this conversation, as a value from 0.0 (completely
-   * uncertain) to 1.0 (completely certain).
-   *
-   * @param float $confidence
+   * @param float
    */
   public function setConfidence($confidence)
   {
@@ -97,10 +74,7 @@ class GoogleCloudDialogflowV2ArticleAnswer extends \Google\Collection
     return $this->confidence;
   }
   /**
-   * A map that contains metadata about the answer and the document from which
-   * it originates.
-   *
-   * @param string[] $metadata
+   * @param string[]
    */
   public function setMetadata($metadata)
   {
@@ -114,9 +88,7 @@ class GoogleCloudDialogflowV2ArticleAnswer extends \Google\Collection
     return $this->metadata;
   }
   /**
-   * Article snippets.
-   *
-   * @param string[] $snippets
+   * @param string[]
    */
   public function setSnippets($snippets)
   {
@@ -130,9 +102,7 @@ class GoogleCloudDialogflowV2ArticleAnswer extends \Google\Collection
     return $this->snippets;
   }
   /**
-   * The article title.
-   *
-   * @param string $title
+   * @param string
    */
   public function setTitle($title)
   {
@@ -146,9 +116,7 @@ class GoogleCloudDialogflowV2ArticleAnswer extends \Google\Collection
     return $this->title;
   }
   /**
-   * The article URI.
-   *
-   * @param string $uri
+   * @param string
    */
   public function setUri($uri)
   {

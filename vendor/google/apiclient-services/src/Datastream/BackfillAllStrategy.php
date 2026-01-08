@@ -33,9 +33,7 @@ class BackfillAllStrategy extends \Google\Model
   protected $sqlServerExcludedObjectsDataType = '';
 
   /**
-   * MongoDB data source objects to avoid backfilling
-   *
-   * @param MongodbCluster $mongodbExcludedObjects
+   * @param MongodbCluster
    */
   public function setMongodbExcludedObjects(MongodbCluster $mongodbExcludedObjects)
   {
@@ -49,9 +47,7 @@ class BackfillAllStrategy extends \Google\Model
     return $this->mongodbExcludedObjects;
   }
   /**
-   * MySQL data source objects to avoid backfilling.
-   *
-   * @param MysqlRdbms $mysqlExcludedObjects
+   * @param MysqlRdbms
    */
   public function setMysqlExcludedObjects(MysqlRdbms $mysqlExcludedObjects)
   {
@@ -65,9 +61,7 @@ class BackfillAllStrategy extends \Google\Model
     return $this->mysqlExcludedObjects;
   }
   /**
-   * Oracle data source objects to avoid backfilling.
-   *
-   * @param OracleRdbms $oracleExcludedObjects
+   * @param OracleRdbms
    */
   public function setOracleExcludedObjects(OracleRdbms $oracleExcludedObjects)
   {
@@ -81,9 +75,7 @@ class BackfillAllStrategy extends \Google\Model
     return $this->oracleExcludedObjects;
   }
   /**
-   * PostgreSQL data source objects to avoid backfilling.
-   *
-   * @param PostgresqlRdbms $postgresqlExcludedObjects
+   * @param PostgresqlRdbms
    */
   public function setPostgresqlExcludedObjects(PostgresqlRdbms $postgresqlExcludedObjects)
   {
@@ -97,9 +89,7 @@ class BackfillAllStrategy extends \Google\Model
     return $this->postgresqlExcludedObjects;
   }
   /**
-   * Salesforce data source objects to avoid backfilling
-   *
-   * @param SalesforceOrg $salesforceExcludedObjects
+   * @param SalesforceOrg
    */
   public function setSalesforceExcludedObjects(SalesforceOrg $salesforceExcludedObjects)
   {
@@ -113,9 +103,7 @@ class BackfillAllStrategy extends \Google\Model
     return $this->salesforceExcludedObjects;
   }
   /**
-   * SQLServer data source objects to avoid backfilling
-   *
-   * @param SqlServerRdbms $sqlServerExcludedObjects
+   * @param SqlServerRdbms
    */
   public function setSqlServerExcludedObjects(SqlServerRdbms $sqlServerExcludedObjects)
   {

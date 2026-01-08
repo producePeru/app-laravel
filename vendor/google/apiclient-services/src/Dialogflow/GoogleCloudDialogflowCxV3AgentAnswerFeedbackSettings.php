@@ -20,20 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3AgentAnswerFeedbackSettings extends \Google\Model
 {
   /**
-   * Optional. If enabled, end users will be able to provide answer feedback to
-   * Dialogflow responses. Feature works only if interaction logging is enabled
-   * in the Dialogflow agent.
-   *
    * @var bool
    */
   public $enableAnswerFeedback;
 
   /**
-   * Optional. If enabled, end users will be able to provide answer feedback to
-   * Dialogflow responses. Feature works only if interaction logging is enabled
-   * in the Dialogflow agent.
-   *
-   * @param bool $enableAnswerFeedback
+   * @param bool
    */
   public function setEnableAnswerFeedback($enableAnswerFeedback)
   {

@@ -19,39 +19,12 @@ namespace Google\Service\AccessContextManager;
 
 class IngressFrom extends \Google\Collection
 {
-  /**
-   * No blanket identity group specified.
-   */
-  public const IDENTITY_TYPE_IDENTITY_TYPE_UNSPECIFIED = 'IDENTITY_TYPE_UNSPECIFIED';
-  /**
-   * Authorize access from all identities outside the perimeter.
-   */
-  public const IDENTITY_TYPE_ANY_IDENTITY = 'ANY_IDENTITY';
-  /**
-   * Authorize access from all human users outside the perimeter.
-   */
-  public const IDENTITY_TYPE_ANY_USER_ACCOUNT = 'ANY_USER_ACCOUNT';
-  /**
-   * Authorize access from all service accounts outside the perimeter.
-   */
-  public const IDENTITY_TYPE_ANY_SERVICE_ACCOUNT = 'ANY_SERVICE_ACCOUNT';
   protected $collection_key = 'sources';
   /**
-   * A list of identities that are allowed access through [IngressPolicy].
-   * Identities can be an individual user, service account, Google group, or
-   * third-party identity. For third-party identity, only single identities are
-   * supported and other identity types are not supported. The `v1` identities
-   * that have the prefix `user`, `group`, `serviceAccount`, and `principal` in
-   * https://cloud.google.com/iam/docs/principal-identifiers#v1 are supported.
-   *
    * @var string[]
    */
   public $identities;
   /**
-   * Specifies the type of identities that are allowed access from outside the
-   * perimeter. If left unspecified, then members of `identities` field will be
-   * allowed access.
-   *
    * @var string
    */
   public $identityType;
@@ -59,14 +32,7 @@ class IngressFrom extends \Google\Collection
   protected $sourcesDataType = 'array';
 
   /**
-   * A list of identities that are allowed access through [IngressPolicy].
-   * Identities can be an individual user, service account, Google group, or
-   * third-party identity. For third-party identity, only single identities are
-   * supported and other identity types are not supported. The `v1` identities
-   * that have the prefix `user`, `group`, `serviceAccount`, and `principal` in
-   * https://cloud.google.com/iam/docs/principal-identifiers#v1 are supported.
-   *
-   * @param string[] $identities
+   * @param string[]
    */
   public function setIdentities($identities)
   {
@@ -80,30 +46,21 @@ class IngressFrom extends \Google\Collection
     return $this->identities;
   }
   /**
-   * Specifies the type of identities that are allowed access from outside the
-   * perimeter. If left unspecified, then members of `identities` field will be
-   * allowed access.
-   *
-   * Accepted values: IDENTITY_TYPE_UNSPECIFIED, ANY_IDENTITY, ANY_USER_ACCOUNT,
-   * ANY_SERVICE_ACCOUNT
-   *
-   * @param self::IDENTITY_TYPE_* $identityType
+   * @param string
    */
   public function setIdentityType($identityType)
   {
     $this->identityType = $identityType;
   }
   /**
-   * @return self::IDENTITY_TYPE_*
+   * @return string
    */
   public function getIdentityType()
   {
     return $this->identityType;
   }
   /**
-   * Sources that this IngressPolicy authorizes access from.
-   *
-   * @param IngressSource[] $sources
+   * @param IngressSource[]
    */
   public function setSources($sources)
   {

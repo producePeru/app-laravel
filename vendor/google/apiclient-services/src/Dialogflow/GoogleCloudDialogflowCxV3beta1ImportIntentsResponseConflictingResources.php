@@ -21,22 +21,16 @@ class GoogleCloudDialogflowCxV3beta1ImportIntentsResponseConflictingResources ex
 {
   protected $collection_key = 'intentDisplayNames';
   /**
-   * Display names of conflicting entities.
-   *
    * @var string[]
    */
   public $entityDisplayNames;
   /**
-   * Display names of conflicting intents.
-   *
    * @var string[]
    */
   public $intentDisplayNames;
 
   /**
-   * Display names of conflicting entities.
-   *
-   * @param string[] $entityDisplayNames
+   * @param string[]
    */
   public function setEntityDisplayNames($entityDisplayNames)
   {
@@ -50,9 +44,7 @@ class GoogleCloudDialogflowCxV3beta1ImportIntentsResponseConflictingResources ex
     return $this->entityDisplayNames;
   }
   /**
-   * Display names of conflicting intents.
-   *
-   * @param string[] $intentDisplayNames
+   * @param string[]
    */
   public function setIntentDisplayNames($intentDisplayNames)
   {

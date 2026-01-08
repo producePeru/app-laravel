@@ -20,39 +20,10 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3PlaybookInvocation extends \Google\Model
 {
   /**
-   * Unspecified output.
-   */
-  public const PLAYBOOK_STATE_OUTPUT_STATE_UNSPECIFIED = 'OUTPUT_STATE_UNSPECIFIED';
-  /**
-   * Succeeded.
-   */
-  public const PLAYBOOK_STATE_OUTPUT_STATE_OK = 'OUTPUT_STATE_OK';
-  /**
-   * Cancelled.
-   */
-  public const PLAYBOOK_STATE_OUTPUT_STATE_CANCELLED = 'OUTPUT_STATE_CANCELLED';
-  /**
-   * Failed.
-   */
-  public const PLAYBOOK_STATE_OUTPUT_STATE_FAILED = 'OUTPUT_STATE_FAILED';
-  /**
-   * Escalated.
-   */
-  public const PLAYBOOK_STATE_OUTPUT_STATE_ESCALATED = 'OUTPUT_STATE_ESCALATED';
-  /**
-   * Pending.
-   */
-  public const PLAYBOOK_STATE_OUTPUT_STATE_PENDING = 'OUTPUT_STATE_PENDING';
-  /**
-   * Output only. The display name of the playbook.
-   *
    * @var string
    */
   public $displayName;
   /**
-   * Required. The unique identifier of the playbook. Format:
-   * `projects//locations//agents//playbooks/`.
-   *
    * @var string
    */
   public $playbook;
@@ -61,16 +32,12 @@ class GoogleCloudDialogflowCxV3PlaybookInvocation extends \Google\Model
   protected $playbookOutputType = GoogleCloudDialogflowCxV3PlaybookOutput::class;
   protected $playbookOutputDataType = '';
   /**
-   * Required. Playbook invocation's output state.
-   *
    * @var string
    */
   public $playbookState;
 
   /**
-   * Output only. The display name of the playbook.
-   *
-   * @param string $displayName
+   * @param string
    */
   public function setDisplayName($displayName)
   {
@@ -84,10 +51,7 @@ class GoogleCloudDialogflowCxV3PlaybookInvocation extends \Google\Model
     return $this->displayName;
   }
   /**
-   * Required. The unique identifier of the playbook. Format:
-   * `projects//locations//agents//playbooks/`.
-   *
-   * @param string $playbook
+   * @param string
    */
   public function setPlaybook($playbook)
   {
@@ -101,9 +65,7 @@ class GoogleCloudDialogflowCxV3PlaybookInvocation extends \Google\Model
     return $this->playbook;
   }
   /**
-   * Optional. Input of the child playbook invocation.
-   *
-   * @param GoogleCloudDialogflowCxV3PlaybookInput $playbookInput
+   * @param GoogleCloudDialogflowCxV3PlaybookInput
    */
   public function setPlaybookInput(GoogleCloudDialogflowCxV3PlaybookInput $playbookInput)
   {
@@ -117,9 +79,7 @@ class GoogleCloudDialogflowCxV3PlaybookInvocation extends \Google\Model
     return $this->playbookInput;
   }
   /**
-   * Optional. Output of the child playbook invocation.
-   *
-   * @param GoogleCloudDialogflowCxV3PlaybookOutput $playbookOutput
+   * @param GoogleCloudDialogflowCxV3PlaybookOutput
    */
   public function setPlaybookOutput(GoogleCloudDialogflowCxV3PlaybookOutput $playbookOutput)
   {
@@ -133,20 +93,14 @@ class GoogleCloudDialogflowCxV3PlaybookInvocation extends \Google\Model
     return $this->playbookOutput;
   }
   /**
-   * Required. Playbook invocation's output state.
-   *
-   * Accepted values: OUTPUT_STATE_UNSPECIFIED, OUTPUT_STATE_OK,
-   * OUTPUT_STATE_CANCELLED, OUTPUT_STATE_FAILED, OUTPUT_STATE_ESCALATED,
-   * OUTPUT_STATE_PENDING
-   *
-   * @param self::PLAYBOOK_STATE_* $playbookState
+   * @param string
    */
   public function setPlaybookState($playbookState)
   {
     $this->playbookState = $playbookState;
   }
   /**
-   * @return self::PLAYBOOK_STATE_*
+   * @return string
    */
   public function getPlaybookState()
   {

@@ -20,8 +20,6 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswer extends \Google\Model
 {
   /**
-   * The piece of text from the `source` that answers this suggested query.
-   *
    * @var string
    */
   public $answerText;
@@ -31,9 +29,7 @@ class GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswer extends \Googl
   protected $generativeSourceDataType = '';
 
   /**
-   * The piece of text from the `source` that answers this suggested query.
-   *
-   * @param string $answerText
+   * @param string
    */
   public function setAnswerText($answerText)
   {
@@ -47,9 +43,7 @@ class GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswer extends \Googl
     return $this->answerText;
   }
   /**
-   * Populated if the prediction came from FAQ.
-   *
-   * @param GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerFaqSource $faqSource
+   * @param GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerFaqSource
    */
   public function setFaqSource(GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerFaqSource $faqSource)
   {
@@ -63,9 +57,7 @@ class GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswer extends \Googl
     return $this->faqSource;
   }
   /**
-   * Populated if the prediction was Generative.
-   *
-   * @param GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource $generativeSource
+   * @param GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource
    */
   public function setGenerativeSource(GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource $generativeSource)
   {

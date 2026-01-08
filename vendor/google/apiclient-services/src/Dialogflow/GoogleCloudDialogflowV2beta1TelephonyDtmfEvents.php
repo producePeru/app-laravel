@@ -21,16 +21,12 @@ class GoogleCloudDialogflowV2beta1TelephonyDtmfEvents extends \Google\Collection
 {
   protected $collection_key = 'dtmfEvents';
   /**
-   * A sequence of TelephonyDtmf digits.
-   *
    * @var string[]
    */
   public $dtmfEvents;
 
   /**
-   * A sequence of TelephonyDtmf digits.
-   *
-   * @param string[] $dtmfEvents
+   * @param string[]
    */
   public function setDtmfEvents($dtmfEvents)
   {

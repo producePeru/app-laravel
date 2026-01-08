@@ -20,33 +20,19 @@ namespace Google\Service\BigtableAdmin;
 class StandardIsolation extends \Google\Model
 {
   /**
-   * Default value. Mapped to PRIORITY_HIGH (the legacy behavior) on creation.
-   */
-  public const PRIORITY_PRIORITY_UNSPECIFIED = 'PRIORITY_UNSPECIFIED';
-  public const PRIORITY_PRIORITY_LOW = 'PRIORITY_LOW';
-  public const PRIORITY_PRIORITY_MEDIUM = 'PRIORITY_MEDIUM';
-  public const PRIORITY_PRIORITY_HIGH = 'PRIORITY_HIGH';
-  /**
-   * The priority of requests sent using this app profile.
-   *
    * @var string
    */
   public $priority;
 
   /**
-   * The priority of requests sent using this app profile.
-   *
-   * Accepted values: PRIORITY_UNSPECIFIED, PRIORITY_LOW, PRIORITY_MEDIUM,
-   * PRIORITY_HIGH
-   *
-   * @param self::PRIORITY_* $priority
+   * @param string
    */
   public function setPriority($priority)
   {
     $this->priority = $priority;
   }
   /**
-   * @return self::PRIORITY_*
+   * @return string
    */
   public function getPriority()
   {

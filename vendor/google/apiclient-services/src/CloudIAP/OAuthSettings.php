@@ -21,30 +21,16 @@ class OAuthSettings extends \Google\Collection
 {
   protected $collection_key = 'programmaticClients';
   /**
-   * Domain hint to send as hd=? parameter in OAuth request flow. Enables
-   * redirect to primary IDP by skipping Google's login screen.
-   * https://developers.google.com/identity/protocols/OpenIDConnect#hd-param
-   * Note: IAP does not verify that the id token's hd claim matches this value
-   * since access behavior is managed by IAM policies.
-   *
    * @var string
    */
   public $loginHint;
   /**
-   * Optional. List of client ids allowed to use IAP programmatically.
-   *
    * @var string[]
    */
   public $programmaticClients;
 
   /**
-   * Domain hint to send as hd=? parameter in OAuth request flow. Enables
-   * redirect to primary IDP by skipping Google's login screen.
-   * https://developers.google.com/identity/protocols/OpenIDConnect#hd-param
-   * Note: IAP does not verify that the id token's hd claim matches this value
-   * since access behavior is managed by IAM policies.
-   *
-   * @param string $loginHint
+   * @param string
    */
   public function setLoginHint($loginHint)
   {
@@ -58,9 +44,7 @@ class OAuthSettings extends \Google\Collection
     return $this->loginHint;
   }
   /**
-   * Optional. List of client ids allowed to use IAP programmatically.
-   *
-   * @param string[] $programmaticClients
+   * @param string[]
    */
   public function setProgrammaticClients($programmaticClients)
   {
