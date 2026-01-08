@@ -16,7 +16,8 @@ class MPDiagnostico extends Model
         'type',
         'model',
         'required',
-        'status'
+        'status',
+        'position'
     ];
 
     public function options()

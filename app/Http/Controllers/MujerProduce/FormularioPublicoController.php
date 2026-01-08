@@ -58,7 +58,7 @@ class FormularioPublicoController extends Controller
 
             $apiUrl = "https://api.decolecta.com/v1/sunat/ruc?numero={$ruc}";
 
-            $tokens = Token::where('name', 'decolecta')->pluck('token')->toArray();
+            $tokens = Token::where('name', 'mp')->pluck('token')->toArray();
 
             $client = new Client();
             $responseData = null;
@@ -193,7 +193,7 @@ class FormularioPublicoController extends Controller
 
             $apiUrl = "https://api.decolecta.com/v1/reniec/dni?numero={$dni}";
 
-            $tokens = Token::where('name', 'decolecta')->pluck('token')->toArray();
+            $tokens = Token::where('name', 'mp')->pluck('token')->toArray();
 
             $client = new Client();
             $responseData = null;
@@ -266,7 +266,10 @@ class FormularioPublicoController extends Controller
     public function registerParticipant(Request $request)
     {
         try {
-            // VALIDACIÓN DEL REQUEST
+
+            // =======================================================
+            // 1. VALIDACIÓN DEL REQUEST
+            // =======================================================
             $request->validate([
                 'ruc'                   => 'required|string|max:11',
                 'social_reason'         => 'nullable|string|max:255',
@@ -280,7 +283,7 @@ class FormularioPublicoController extends Controller
                 't_doc_id'              => 'nullable|exists:typedocuments,id',
                 'doc_number'            => 'required|string|max:12',
                 'country_id'            => 'nullable|exists:countries,id',
-                'date_of_birth'         => 'nullable|date',
+                'date_of_birth'         => 'nullable|date_format:d/m/Y',
                 'names'                 => 'nullable|string|max:100',
                 'last_name'             => 'nullable|string|max:100',
                 'middle_name'           => 'nullable|string|max:100',
@@ -296,29 +299,34 @@ class FormularioPublicoController extends Controller
                 'obs_ruc'               => 'nullable|in:1',
                 'obs_dni'               => 'nullable|in:1',
 
-                'slug'                  => 'required|string' // slug del evento
+                'slug'                  => 'required|string'
             ]);
 
-            $ruc = $request->ruc;
-            $doc = $request->doc_number;
-
             // =======================================================
-            // 1. BUSCAR PARTICIPANTE EXACTO (ruc + doc_number)
+            // 2. NORMALIZAR FECHA (d/m/Y → Y-m-d)
             // =======================================================
-            $participant = MPParticipant::where('ruc', $ruc)
-                ->where('doc_number', $doc)
-                ->first();
-
-            if ($participant) {
-                // SI EXISTE → ACTUALIZAR
-                $participant->update($request->all());
-            } else {
-                // SI NO EXISTE → CREAR
-                $participant = MPParticipant::create($request->all());
+            if ($request->filled('date_of_birth')) {
+                $request->merge([
+                    'date_of_birth' => Carbon::createFromFormat(
+                        'd/m/Y',
+                        $request->date_of_birth
+                    )->format('Y-m-d')
+                ]);
             }
 
             // =======================================================
-            // 2. BUSCAR EVENTO POR SLUG
+            // 3. CREAR O ACTUALIZAR PARTICIPANTE
+            // =======================================================
+            $participant = MPParticipant::updateOrCreate(
+                [
+                    'ruc'        => $request->ruc,
+                    'doc_number' => $request->doc_number,
+                ],
+                $request->except('slug')
+            );
+
+            // =======================================================
+            // 4. BUSCAR EVENTO
             // =======================================================
             $event = MPEvent::where('slug', $request->slug)->first();
 
@@ -330,28 +338,22 @@ class FormularioPublicoController extends Controller
             }
 
             // =======================================================
-            // 3. VALIDAR QUE NO EXISTA YA UNA ASISTENCIA DUPLICADA
+            // 5. REGISTRAR ASISTENCIA (SIN DUPLICAR)
             // =======================================================
-            $existingAttendance = MPAttendance::where('event_id', $event->id)
-                ->where('participant_id', $participant->id)
-                ->first();
-
-            // SI YA EXISTE, OMITIR (NO DUPLICAR)
-            if (!$existingAttendance) {
-                MPAttendance::create([
-                    'event_id'       => $event->id,
-                    'participant_id' => $participant->id,
-                    'attendance'     => null
-                ]);
-            }
+            MPAttendance::firstOrCreate([
+                'event_id'       => $event->id,
+                'participant_id' => $participant->id,
+            ], [
+                'attendance' => null
+            ]);
 
             // =======================================================
-            // 4. RESPUESTA FINAL
+            // 6. RESPUESTA FINAL
             // =======================================================
             return response()->json([
                 'status'  => 200,
                 'message' => $participant->wasRecentlyCreated
-                    ? 'Participante registrado y asistencia agregada'
+                    ? 'Participante registrado y asistencia creada'
                     : 'Participante actualizado y asistencia verificada',
                 'data'    => $participant
             ]);
@@ -366,7 +368,7 @@ class FormularioPublicoController extends Controller
 
             return response()->json([
                 'status'  => 500,
-                'message' => 'Error interno al procesar la solicitud',
+                'message' => 'Error interno del servidor',
                 'error'   => $e->getMessage()
             ], 500);
         }
@@ -528,42 +530,41 @@ class FormularioPublicoController extends Controller
     {
         try {
 
-            // Traer solo preguntas con status = 1
             $questions = MPDiagnostico::with(['options'])
                 ->where('status', 1)
-                ->orderBy('id', 'ASC')
+                ->orderBy('position', 'ASC')
                 ->get()
                 ->map(function ($q) {
 
-                    // Regla md
-                    $md = mb_strlen($q->label) > 45 ? 12 : 6;
-
                     return [
-                        'id'       => $q->id,
-                        'label'    => $q->label,
+                        'id'    => $q->id,
+                        'label' => $q->label,
 
-                        // transformar type
-                        'type'     => $q->type === 't' ? 'text' : 'select',
+                        // tipo
+                        'type'  => match ($q->type) {
+                            't' => 'text',
+                            'o' => 'select',
+                            'l' => 'title',
+                            default => 'text'
+                        },
 
-                        // transformar required
-                        'required' => $q->required == 1,
+                        // requerido
+                        'required' => (bool) $q->required,
 
-                        'model'    => $q->id,
+                        'model' => $q->id,
+                        'status' => true,
 
-                        // status = true siempre (solo traemos status=1)
-                        'status'   => true,
+                        // 👇 regla fija
+                        'md' => $q->type === 'l'
+                            ? 12
+                            : (mb_strlen($q->label) > 45 ? 12 : 6),
 
-                        // nuevo campo md
-                        'md'       => 6,
-
-                        // opciones
-                        'options'  => $q->type === 'o'
-                            ? $q->options->map(function ($opt) {
-                                return [
-                                    'value' => $opt->id,
-                                    'label' => $opt->name
-                                ];
-                            })
+                        // opciones solo select
+                        'options' => $q->type === 'o'
+                            ? $q->options->map(fn($opt) => [
+                                'value' => $opt->id,
+                                'label' => $opt->name
+                            ])
                             : []
                     ];
                 });
@@ -582,6 +583,8 @@ class FormularioPublicoController extends Controller
             ], 500);
         }
     }
+
+
 
     public function registerConsulting(Request $request)
     {
