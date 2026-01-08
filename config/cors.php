@@ -24,7 +24,7 @@ return [
     'allowed_origins' => [
         'https://programa.soporte-pnte.com',
         'https://inscripcion.soporte-pnte.com',
-        'https://fiesta-del-cafe.soporte-pnte.com',
+        // 'https://fiesta-del-cafe.soporte-pnte.com',
         'https://seguimiento-capacitaciones.soporte-pnte.com'
     ],
 
