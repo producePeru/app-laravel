@@ -631,9 +631,11 @@ class MujerProduceController extends Controller
         // =========================
         // PREGUNTAS ACTIVAS (1 sola vez)
         // =========================
+
         $questions = MPDiagnostico::with('options')
             ->where('status', 1)
-            ->orderBy('id', 'ASC')
+            ->where('type', '!=', 'l')   // NO mostrar tipo 'l'
+            ->orderBy('position', 'ASC') // Ordenar por position
             ->get();
 
         // =========================
@@ -717,9 +719,9 @@ class MujerProduceController extends Controller
             ];
         });
 
-        $lastDiagnostico = $participant->diagnosticoResponses
-            ->sortByDesc('created_at')
-            ->first();
+        // ✅ Última fecha real por participant_id
+        $lastDiagnosticoAt = $participant->diagnosticoResponses
+            ->max('created_at');
 
 
         return [
@@ -740,7 +742,9 @@ class MujerProduceController extends Controller
 
             'responses'         => $mappedResponses,
 
-            'registrado'        => Carbon::parse(optional($lastDiagnostico)->created_at)->format('d/m/Y h:s'),
+            'registrado'        => $lastDiagnosticoAt
+            ? Carbon::parse($lastDiagnosticoAt)->format('d/m/Y H:i')
+            : null,
         ];
     }
 
@@ -758,5 +762,71 @@ class MujerProduceController extends Controller
         }
 
         return response()->json(['status' => 200]);
+    }
+
+    
+    public function toggleAttendance(Request $request)
+    {
+        try {
+
+            // 1. Buscar evento por slug
+            $event = MPEvent::where('slug', $request->slug)->first();
+
+            if (!$event) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'Evento no encontrado'
+                ], 404);
+            }
+
+            // 2. Buscar participante por RUC + Documento
+            $participant = MPParticipant::where('ruc', $request->ruc)
+                ->where('doc_number', $request->doc_number)
+                ->first();
+
+            if (!$participant) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'Participante no encontrado'
+                ], 404);
+            }
+
+            // 3. Buscar asistencia
+            $attendance = MPAttendance::where('event_id', $event->id)
+                ->where('participant_id', $participant->id)
+                ->first();
+
+            // 4. Toggle o crear
+            if ($attendance) {
+                $attendance->attendance = $attendance->attendance ? null : 1;
+                $attendance->save();
+            } else {
+                $attendance = MPAttendance::create([
+                    'event_id'       => $event->id,
+                    'participant_id' => $participant->id,
+                    'attendance'     => 1,
+                ]);
+            }
+
+            return response()->json([
+                'status'     => 200,
+                'message'    => 'Asistencia actualizada correctamente',
+                'attendance' => (bool) $attendance->attendance,
+            ]);
+
+        } catch (\Throwable $e) {
+
+            // Log técnico (backend)
+            Log::error('Error toggleAttendance', [
+                'error' => $e->getMessage(),
+                'line'  => $e->getLine(),
+                'file'  => $e->getFile(),
+            ]);
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Ocurrió un error al procesar la asistencia'
+            ], 500);
+        }
     }
 }
