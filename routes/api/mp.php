@@ -30,6 +30,9 @@ Route::controller(MujerProduceController::class)->group(function () {
     Route::get('participant-diagnostic', 'mpIndexParticipantDiagnostic');
 
     Route::put('update-order', 'updateOrder');
+
+    Route::put('toggle-attendance', 'toggleAttendance');
+
 });
 
 

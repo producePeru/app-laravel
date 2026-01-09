@@ -20,8 +20,10 @@ class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithM
         $this->participants = $participants;
 
         $this->questions = MPDiagnostico::where('status', 1)
-            ->orderBy('id')
+            ->where('type', '!=', 'l')    // excluir tipo 'l'
+            ->orderBy('position', 'ASC')  // ordenar por position
             ->get();
+
     }
 
     public function collection()
