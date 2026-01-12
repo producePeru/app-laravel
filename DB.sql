@@ -1178,3 +1178,8 @@ ADD CONSTRAINT tokens_user_id_foreign
 --         ON DELETE SET NULL
 -- );
 
+
+
+-- ALTER TABLE mp_eventos
+-- ADD COLUMN link TEXT AFTER endDate,
+-- ADD COLUMN aliado VARCHAR(255) AFTER link;
