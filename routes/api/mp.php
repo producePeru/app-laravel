@@ -55,6 +55,9 @@ Route::controller(FormularioPublicoController::class)->group(function () {
     Route::post('register-consulting', 'registerConsulting');     // inicia diagnostico
 
     Route::post('register-diagnostic-response', 'registerDiagnosticResponse');
+
+    Route::post('sala-link-meet', 'salaLinkMeet');
+
 });
 
 // mp

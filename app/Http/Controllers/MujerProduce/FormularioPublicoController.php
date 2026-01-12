@@ -271,7 +271,7 @@ class FormularioPublicoController extends Controller
             // 1. VALIDACIÓN DEL REQUEST
             // =======================================================
             $request->validate([
-                'ruc'                   => 'required|string|max:11',
+                'ruc'                   => 'nullable|string|max:11',
                 'social_reason'         => 'nullable|string|max:255',
                 'economic_sector_id'    => 'nullable|exists:economicsectors,id',
                 'rubro_id'              => 'nullable|exists:categories,id',
@@ -779,4 +779,66 @@ class FormularioPublicoController extends Controller
             ], 500);
         }
     }
+
+    public function salaLinkMeet(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'doc_number' => 'required|string',
+                'slug'       => 'required|string',
+            ]);
+
+            // 1. Validar que el participante exista
+            $participant = MPParticipant::where('doc_number', $validated['doc_number'])->first();
+
+            if (!$participant) {
+                return response()->json([
+                    'status'    => 403,
+                    'success'   => false,
+                    'message'   => 'No te encuentras registrado.'
+                ]);
+            }
+
+            // 2. Buscar evento por slug
+            $event = MPEvent::where('slug', $validated['slug'])
+                ->select('id', 'link')
+                ->first();
+
+            if (!$event) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El evento no existe.'
+                ], 404);
+            }
+
+            // 3. Validar que el evento tenga link
+            if (!$event->link) {
+                return response()->json([
+                    'status'    => 401,
+                    'success'   => false,
+                    'message'   => 'El enlace de la sala aún no está disponible.'
+                ]);
+            }
+
+            // 4. Retornar link
+            return response()->json([
+                'status'    => 200,
+                'success'   => true,
+                'data'      => [
+                    'link' => $event->link
+                ]
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al validar el acceso.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+
 }

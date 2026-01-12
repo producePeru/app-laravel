@@ -122,13 +122,18 @@ class MujerProduceController extends Controller
                 'component'      => 'required|integer|in:1,2,3,4,5',
                 'capacitador_id' => 'required|exists:mp_capacitadores,id',
                 'city_id'        => 'nullable',
+                'province_id'    => 'nullable',
+                'district_id'    => 'nullable',
                 'modality_id'    => 'required|exists:modalities,id',
                 'place'          => 'nullable|string|max:255',
                 'date'           => 'nullable|date_format:Y-m-d',
                 'hours'          => 'nullable|string|max:100',
                 'startDate'      => 'nullable|date_format:Y-m-d',
                 'endDate'        => 'nullable|date_format:Y-m-d',
-                'training_time'  => 'required'
+                'training_time'  => 'required',
+
+                'link'           => 'nullable',
+                'aliado'         => 'nullable',
             ]);
 
             // Generar slug
@@ -141,13 +146,18 @@ class MujerProduceController extends Controller
                 'component'      => $request->component,
                 'capacitador_id' => $request->capacitador_id,
                 'city_id'        => $request->city_id,
+                'province_id'    => $request->province_id,
+                'district_id'    => $request->district_id,
                 'modality_id'    => $request->modality_id,
                 'place'          => $request->place,
                 'date'           => $request->date,
                 'hours'          => $request->hours,
                 'startDate'      => $request->startDate,
                 'endDate'        => $request->endDate,
-                'training_time'  => $request->training_time
+                'training_time'  => $request->training_time,
+
+                'link'           => $request->link,
+                'aliado'         => $request->aliado,
             ]);
 
             return response()->json([
@@ -217,7 +227,15 @@ class MujerProduceController extends Controller
             'capacitador_id'    => $item->capacitador_id,
             'modality_id'       => $item->modality_id,
             'training_time'     => $item->training_time,
-            'count'             => $item->attendances_count
+            'count'             => $item->attendances_count,
+
+            'link'              => $item->link,
+            'aliado'            => $item->aliado,
+            'province_id'       => $item->province->id ?? null,
+            'province_name'     => $item->province->name ?? null,
+            'district_id'       => $item->district->id ?? null,
+            'district_name'     => $item->district->name ?? null,
+
         ];
     }
 

@@ -110,7 +110,7 @@ class DownloadMPParticipantesController extends Controller
 
                     $item->event->city->name ?? null,
                     $item->event->province->name ?? null,
-                    $item->event->moddistrictality->name ?? null,
+                    $item->event?->district?->name ?? null,
                     $item->event->place ?? null,
                     $item->event->hours ?? null,
                     $item->event->component == 1 ? 'GESTIÓN EMPRESARIAL' : 'HABILIDADES PERSONALES',

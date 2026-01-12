@@ -25,7 +25,10 @@ class MPEvent extends Model
         'hours',
         'training_time',
         'startDate',
-        'endDate'
+        'endDate',
+
+        'link',
+        'aliado'
     ];
 
 
