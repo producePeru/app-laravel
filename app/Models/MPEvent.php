@@ -22,13 +22,15 @@ class MPEvent extends Model
         'modality_id',
         'place',
         'date',
-        'hours',
+        // 'hours',
         'training_time',
         'startDate',
         'endDate',
 
         'link',
-        'aliado'
+        'aliado',
+        'hourStart',
+        'hourEnd'
     ];
 
 
