@@ -127,13 +127,15 @@ class MujerProduceController extends Controller
                 'modality_id'    => 'required|exists:modalities,id',
                 'place'          => 'nullable|string|max:255',
                 'date'           => 'nullable|date_format:Y-m-d',
-                'hours'          => 'nullable|string|max:100',
+                // 'hours'          => 'nullable|string|max:100',
                 'startDate'      => 'nullable|date_format:Y-m-d',
                 'endDate'        => 'nullable|date_format:Y-m-d',
-                'training_time'  => 'required',
+                // 'training_time'  => 'required',
 
                 'link'           => 'nullable',
                 'aliado'         => 'nullable',
+                'hourStart'      => 'nullable',
+                'hourEnd'        => 'nullable'
             ]);
 
             // Generar slug
@@ -154,10 +156,12 @@ class MujerProduceController extends Controller
                 'hours'          => $request->hours,
                 'startDate'      => $request->startDate,
                 'endDate'        => $request->endDate,
-                'training_time'  => $request->training_time,
+                // 'training_time'  => $request->training_time,
 
                 'link'           => $request->link,
                 'aliado'         => $request->aliado,
+                'hourStart'      => $request->hourStart,
+                'hourEnd'        => $request->hourEnd
             ]);
 
             return response()->json([
@@ -216,11 +220,14 @@ class MujerProduceController extends Controller
             'title'             => $item->title,
             'slug'              => $item->slug,
             'city_id'           => $item->city->id ?? null,
-            'city_name'         => $item->city->name ?? 'Virtual',
+            'city_name'         => $item->city->name ?? '🏷 VIRTUAL',
             'place'             => $item->place ?? 'Plataforma Virtual',
             'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
             'date'              => $item->date,
-            'hours'             => $item->hours,
+            // 'hours'             => $item->hours,
+            'hourStart'         => $item->hourStart,
+            'hourEnd'           => $item->hourEnd,
+
             'startDate'         => $item->startDate,
             'endDate'           => $item->endDate,
             'component'         => $item->component,

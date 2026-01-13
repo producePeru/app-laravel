@@ -490,8 +490,12 @@ class FormularioPublicoController extends Controller
                     'province'  => $event->province->name ?? null,
                     'district'  => $event->district->name ?? null,
                     'modality'  => $event->modality->name ?? null,
-                    'hours'     => $event->hours,
+                    // 'hours'     => $event->hours,
+                    'hourStart' => $event->hourStart,
+                    'hourEnd'   => $event->hourEnd,
+
                     'place'     => $event->place,
+                    'link'      => $event->link,
                     'date'      => Carbon::parse($event->date)->format('d/m/Y')
                 ]
             ], 200);
