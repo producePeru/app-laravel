@@ -58,6 +58,8 @@ Route::controller(FormularioPublicoController::class)->group(function () {
 
     Route::post('sala-link-meet', 'salaLinkMeet');
 
+    Route::post('attendance-participant', 'attendanceParticipant');
+
 });
 
 // mp

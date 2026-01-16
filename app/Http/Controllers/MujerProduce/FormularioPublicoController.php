@@ -589,7 +589,6 @@ class FormularioPublicoController extends Controller
     }
 
 
-
     public function registerConsulting(Request $request)
     {
         try {
@@ -842,7 +841,61 @@ class FormularioPublicoController extends Controller
         }
     }
 
+    public function attendanceParticipant(Request $request)
+    {
+        try {
+            // Validación básica
+            $request->validate([
+                'doc_number' => 'required|string',
+                'slug'       => 'required|string',
+            ]);
 
+            DB::beginTransaction();
 
+            // Buscar participante por documento
+            $participant = MPParticipant::where('doc_number', $request->doc_number)->first();
+
+            if (!$participant) {
+                return response()->json([
+                    'message' => 'Participante no encontrado'
+                ], 404);
+            }
+
+            // Buscar evento por slug
+            $event = MPEvent::where('slug', $request->slug)->first();
+
+            if (!$event) {
+                return response()->json([
+                    'message' => 'Evento no encontrado'
+                ], 404);
+            }
+
+            // Registrar asistencia (evita duplicados)
+            $attendance = MPAttendance::updateOrCreate(
+                [
+                    'participant_id' => $participant->id,
+                    'event_id'       => $event->id,
+                ],
+                [
+                    'attendance' => 1
+                ]
+            );
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Asistencia registrada correctamente',
+                'data'    => $attendance
+            ], 200);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Error al registrar la asistencia',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
 
 }
