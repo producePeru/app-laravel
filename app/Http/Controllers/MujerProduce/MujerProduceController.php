@@ -406,11 +406,10 @@ class MujerProduceController extends Controller
             'economicSector'    => $item->participant->economicSector->name,
             'rubro'             => $item->participant->rubro->name,
             'comercialActivity' => $item->participant->comercialActivity->name,
-
             'event'             => $item->event->component == 1 ? 'GESTIÓN EMPRESARIAL' : 'HABILIDADES PERSONALES',
-
             'attendance'        => $item->attendance ? true : false,
-
+            'obs_dni'           => $item->participant->obs_dni == 1 ? '🚩' : '✔',
+            'obs_ruc'           => is_null($item->participant->ruc) ? ' ' : ($item->participant->obs_ruc == 1 ? '🚩' : '✔'),
             'created_at'        => $item->created_at->format('d/m/Y H:i:s')
         ];
     }
@@ -688,8 +687,14 @@ class MujerProduceController extends Controller
                     ]);
                 });
             })
-            ->orderBy('id', 'DESC')
-            ->paginate(100);
+            ->orderByRaw('EXISTS (
+        SELECT 1
+        FROM mp_diag_respuestas r
+        WHERE r.participant_id = mp_participantes.id
+    ) DESC')
+    ->orderBy('id', 'DESC')
+    ->paginate(100); 
+
 
         // Transformar SOLO el data
         $participants->getCollection()->transform(function ($participant) use ($questions) {
@@ -760,10 +765,10 @@ class MujerProduceController extends Controller
             'doc_number'        => $participant->doc_number,
             'email'             => $participant->email,
 
-            'ruc'               => $participant->ruc,
-            'actividad'         => $participant->comercialActivity->name,
-            'rubro'             => $participant->rubro->name,
-            'economicSector'    => $participant->economicSector->name,
+            'ruc'               => $participant->ruc ?? null,
+            'actividad'         => $participant->comercialActivity->name ?? null,
+            'rubro'             => $participant->rubro->name ?? null,
+            'economicSector'    => $participant->economicSector->name ?? null,
 
             'responses'         => $mappedResponses,
 

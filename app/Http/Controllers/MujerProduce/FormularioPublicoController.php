@@ -598,22 +598,24 @@ class FormularioPublicoController extends Controller
             // =========================
             $request->validate([
                 'typedocument_id' => 'required|integer',
-                'ruc'             => 'required|string|max:20',
+                'ruc'             => 'nullable|string|max:20',
                 'documentnumber'  => 'required|string|max:20',
             ]);
 
             // =========================
             // 2. BÚSQUEDA DEL PARTICIPANTE
             // =========================
-            $participant = MPParticipant::where('ruc', $request->ruc)
-                ->where('doc_number', $request->documentnumber)
-                ->first();
+            $participant = MPParticipant::where('doc_number', $request->documentnumber)
+            ->when($request->filled('ruc'), function ($query) use ($request) {
+                $query->where('ruc', $request->ruc);
+            })
+            ->first();
 
             if (!$participant) {
                 return response()->json([
                     'status'  => 404,
                     'message' => 'El participante no existe'
-                ], 404);
+                ]);
             }
 
             // =========================
@@ -688,7 +690,7 @@ class FormularioPublicoController extends Controller
             // 1. VALIDACIÓN BASE
             // ===============================
             $request->validate([
-                'ruc'            => 'required|string',
+                'ruc'            => 'nullable|string',
                 'documentnumber' => 'required|string',
             ]);
 
