@@ -268,7 +268,7 @@ class FormularioPublicoController extends Controller
         try {
 
             // =======================================================
-            // 1. VALIDACIÓN DEL REQUEST
+            // 1. VALIDACIÓN
             // =======================================================
             $request->validate([
                 'ruc'                   => 'nullable|string|max:11',
@@ -303,7 +303,7 @@ class FormularioPublicoController extends Controller
             ]);
 
             // =======================================================
-            // 2. NORMALIZAR FECHA (d/m/Y → Y-m-d)
+            // 2. NORMALIZAR FECHA
             // =======================================================
             if ($request->filled('date_of_birth')) {
                 $request->merge([
@@ -315,15 +315,86 @@ class FormularioPublicoController extends Controller
             }
 
             // =======================================================
-            // 3. CREAR O ACTUALIZAR PARTICIPANTE
+            // 3. LÓGICA DE PARTICIPANTE (REGLAS DE NEGOCIO)
             // =======================================================
-            $participant = MPParticipant::updateOrCreate(
-                [
-                    'ruc'        => $request->ruc,
-                    'doc_number' => $request->doc_number,
-                ],
-                $request->except('slug')
-            );
+            $action = 'updated';
+
+            // Buscar por doc_number
+            $participant = MPParticipant::where('doc_number', $request->doc_number)->first();
+
+            if ($participant) {
+
+                /*
+                |------------------------------------------------------
+                | CASO 1:
+                | doc_number EXISTE
+                |------------------------------------------------------
+                */
+
+                // Si el RUC en BD es NULL → se puede completar / modificar
+                if (is_null($participant->ruc)) {
+
+                    // Validar que el nuevo RUC no esté en otra fila
+                    if ($request->filled('ruc')) {
+                        $existsRuc = MPParticipant::where('ruc', $request->ruc)
+                            ->where('id', '!=', $participant->id)
+                            ->exists();
+
+                        if ($existsRuc) {
+                            return response()->json([
+                                'status'  => 409,
+                                'message' => 'El RUC ya se encuentra registrado en otro participante'
+                            ], 409);
+                        }
+                    }
+
+                    $participant->update($request->except('slug'));
+
+                } else {
+
+                    /*
+                    |--------------------------------------------------
+                    | CASO 2:
+                    | doc_number y ruc YA EXISTEN
+                    |--------------------------------------------------
+                    | → NO sobreescribir datos existentes con NULL
+                    */
+
+                    $data = collect($request->except('slug'))
+                        ->filter(fn ($value) => !is_null($value))
+                        ->toArray();
+
+                    $participant->update($data);
+                }
+
+            } else {
+
+                /*
+                |------------------------------------------------------
+                | CASO 3:
+                | doc_number NO EXISTE
+                |------------------------------------------------------
+                */
+
+                // Validar que el RUC no exista si viene informado
+                if ($request->filled('ruc')) {
+                    $existsRuc = MPParticipant::where('ruc', $request->ruc)->exists();
+
+                    if ($existsRuc) {
+                        return response()->json([
+                            'status'  => 409,
+                            'message' => 'El RUC ya se encuentra registrado'
+                        ], 409);
+                    }
+                }
+
+                // Crear nuevo participante
+                $participant = MPParticipant::create(
+                    $request->except('slug')
+                );
+
+                $action = 'created';
+            }
 
             // =======================================================
             // 4. BUSCAR EVENTO
@@ -352,11 +423,12 @@ class FormularioPublicoController extends Controller
             // =======================================================
             return response()->json([
                 'status'  => 200,
-                'message' => $participant->wasRecentlyCreated
-                    ? 'Participante registrado y asistencia creada'
+                'message' => $action === 'created'
+                    ? 'Participante creado y asistencia registrada'
                     : 'Participante actualizado y asistencia verificada',
                 'data'    => $participant
             ]);
+
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
@@ -364,6 +436,7 @@ class FormularioPublicoController extends Controller
                 'message' => 'Error de validación',
                 'errors'  => $e->errors()
             ], 422);
+
         } catch (\Exception $e) {
 
             return response()->json([
