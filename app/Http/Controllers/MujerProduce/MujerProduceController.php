@@ -382,11 +382,11 @@ class MujerProduceController extends Controller
         return [
             'id'                => $item->id,
             'ruc'               => $item->participant->ruc,
-            'city'              => $item->participant->city->name,
-            'province'          => $item->participant?->province->name,
-            'district'          => $item->participant?->dictrict->name,
-            'socialReason'      => $item->participant?->social_reason,
-            'roleCompany'       => $item->participant?->roleCompany->name,
+            'city'              => $item->participant->city->name ?? null,
+            'province'          => $item->participant?->province->name ?? null,
+            'district'          => $item->participant?->dictrict->name ?? null,
+            'socialReason'      => $item->participant?->social_reason ?? null,
+            'roleCompany'       => $item->participant?->roleCompany->name ?? null,
 
             'typeDocument'      => $item->participant?->typeDocument->name,
             'dni'               => $item->participant->doc_number,
