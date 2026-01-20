@@ -388,6 +388,8 @@ class MujerProduceController extends Controller
             'socialReason'      => $item->participant?->social_reason ?? null,
             'roleCompany'       => $item->participant?->roleCompany->name ?? null,
 
+            'participant_id'    => $item->participant->id,
+
             'typeDocument'      => $item->participant?->typeDocument->name ?? null,
             'dni'               => $item->participant->doc_number,
             'country'           => $item->participant->country->name ?? null,
@@ -858,5 +860,38 @@ class MujerProduceController extends Controller
                 'message' => 'Ocurrió un error al procesar la asistencia'
             ], 500);
         }
+    }
+
+    public function deleteAssistant(Request $request)
+    {
+        $request->validate([
+            'event_slug'     => 'required|string',
+            'participant_id' => 'required|integer'
+        ]);
+
+        // Buscar el evento por slug
+        $event = MPEvent::where('slug', $request->event_slug)->first();
+
+        if (!$event) {
+            return response()->json([
+                'message' => 'Evento no encontrado'
+            ], 404);
+        }
+
+        // Eliminar la asistencia
+        $deleted = MPAttendance::where('event_id', $event->id)
+            ->where('participant_id', $request->participant_id)
+            ->delete();
+
+        if ($deleted === 0) {
+            return response()->json([
+                'message' => 'Asistencia no encontrada'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Asistencia eliminada correctamente'
+        ]);
     }
 }

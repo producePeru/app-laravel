@@ -33,6 +33,9 @@ Route::controller(MujerProduceController::class)->group(function () {
 
     Route::put('toggle-attendance', 'toggleAttendance');
 
+    Route::post('delete-assistant', 'deleteAssistant');
+
+
 });
 
 
