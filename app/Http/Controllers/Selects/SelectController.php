@@ -113,14 +113,32 @@ class SelectController extends Controller
 
     public function getProvinces($id)
     {
+        // Excepción: si el ID es 7, devolver SOLO la provincia 194
+        if ($id == 7) {
+            $province = Province::where('id', 194)->get();
+
+            $data = $province->map(function ($item) {
+                return [
+                    'label' => $item->name,
+                    'value' => $item->id
+                ];
+            });
+
+            return response()->json(['data' => $data]);
+        }
+
+        // Comportamiento normal
         $provinces = Province::where('city_id', $id)->get();
 
-        $data = $provinces->sortBy('name')->map(function ($item) {
-            return [
-                'label' => $item->name,
-                'value' => $item->id
-            ];
-        })->values();
+        $data = $provinces
+            ->sortBy('name')
+            ->map(function ($item) {
+                return [
+                    'label' => $item->name,
+                    'value' => $item->id
+                ];
+            })
+            ->values();
 
         return response()->json(['data' => $data]);
     }

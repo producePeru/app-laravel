@@ -86,6 +86,20 @@ return [
             ]
         ],
 
+        'digitalizacion' => [    // digitalizacion
+            'transport'  => env('MAIL_MAILER', 'smtp'),
+            'host'       => env('MAIL_HOST', 'smtp.hostinger.com'),
+            'port'       => env('MAIL_PORT', 465),
+            'username'   => env('MAIL_USERNAME'),
+            'password'   => env('MAIL_PASSWORD'),
+            'encryption' => env('MAIL_ENCRYPTION', 'ssl'),
+            'timeout'    => null,
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS', 'capacitaciones@soporte-pnte.com'),
+                'name'    => env('MAIL_FROM_NAME', 'PROGRAMA NACIONAL TU EMPRESA'),
+            ]
+        ],
+
         'office365' => [   // capacitaciones_tuempresa@produce.gob.pe                      
             'transport' => env('MAIL_MAILER_OFFICE365', 'smtp'),
             'host'      => env('MAIL_HOST_OFFICE365'),

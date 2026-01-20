@@ -1183,3 +1183,9 @@ ADD CONSTRAINT tokens_user_id_foreign
 -- ALTER TABLE mp_eventos
 -- ADD COLUMN link TEXT AFTER endDate,
 -- ADD COLUMN aliado VARCHAR(255) AFTER link;
+
+
+
+-- ALTER TABLE mp_eventos
+-- ADD COLUMN hourStart TIME NULL AFTER hours,
+-- ADD COLUMN hourEnd   TIME NULL AFTER hourStart;
