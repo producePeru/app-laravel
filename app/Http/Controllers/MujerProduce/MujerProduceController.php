@@ -377,19 +377,16 @@ class MujerProduceController extends Controller
     }
 
 
-    private function mapAttendance($item)
+    private function mapAttendance($item)   
     {
         return [
             'id'                => $item->id,
-            'ruc'               => $item->participant->ruc,
+            'ruc'               => $item->participant->ruc ?? null,      
             'city'              => $item->participant->city->name ?? null,
             'province'          => $item->participant?->province->name ?? null,
             'district'          => $item->participant?->dictrict->name ?? null,
             'socialReason'      => $item->participant?->social_reason ?? null,
             'roleCompany'       => $item->participant?->roleCompany->name ?? null,
-
-            'participant_id'    => $item->participant->id,
-
             'typeDocument'      => $item->participant?->typeDocument->name ?? null,
             'dni'               => $item->participant->doc_number,
             'country'           => $item->participant->country->name ?? null,
@@ -404,7 +401,6 @@ class MujerProduceController extends Controller
             'degree'            => $item->participant->degree->name ?? null,
             'phone'             => $item->participant->phone,
             'email'             => $item->participant->email,
-
             'economicSector'    => $item->participant->economicSector->name ?? null,
             'rubro'             => $item->participant->rubro->name ?? null,
             'comercialActivity' => $item->participant->comercialActivity->name ?? null,
@@ -412,7 +408,22 @@ class MujerProduceController extends Controller
             'attendance'        => $item->attendance ? true : false,
             'obs_dni'           => $item->participant->obs_dni == 1 ? '🚩' : '✔',
             'obs_ruc'           => is_null($item->participant->ruc) ? ' ' : ($item->participant->obs_ruc == 1 ? '🚩' : '✔'),
-            'created_at'        => $item->created_at->format('d/m/Y H:i:s')
+            'created_at'        => $item->created_at->format('d/m/Y H:i:s'),
+
+            'participant_id'        => $item->participant->id,
+            'economic_sector_id'    => $item->participant->economic_sector_id ?? null,
+            'rubro_id'              => $item->participant->rubro_id ?? null,
+            'comercial_activity_id' => $item->participant->comercial_activity_id ?? null,
+            'country_id'            => $item->participant->country_id ?? null,
+            'city_id'               => $item->participant->city_id ?? null,
+            'province_id'           => $item->participant->province_id ?? null,
+            'district_id'           => $item->participant->district_id ?? null,
+            't_doc_id'              => $item->participant->t_doc_id ?? null,
+            'gender_id'             => $item->participant->gender_id ?? null,
+            'sick'                  => $item->participant->sick ?? null,
+            'academicdegree_id'     => $item->participant->academicdegree_id ?? null,
+            'civil_status_id'       => $item->participant->civil_status_id ?? null,
+            'role_company_id'       => $item->participant->role_company_id ?? null,
         ];
     }
 

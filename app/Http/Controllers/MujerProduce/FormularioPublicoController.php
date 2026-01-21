@@ -973,4 +973,117 @@ class FormularioPublicoController extends Controller
         }
     }
 
+
+    public function updateParticipant(Request $request, $id)
+    {
+        try {
+
+            // =======================================================
+            // 1. VALIDACIÓN
+            // =======================================================
+            $request->validate([
+                'doc_number'            => 'required|string|max:12',
+                'ruc'                   => 'nullable|string|max:11',
+
+                'social_reason'         => 'nullable|string|max:255',
+                'economic_sector_id'    => 'nullable|exists:economicsectors,id',
+                'rubro_id'              => 'nullable|exists:categories,id',
+                'comercial_activity_id' => 'nullable|exists:activities,id',
+                'city_id'               => 'nullable|exists:cities,id',
+                'province_id'           => 'nullable|exists:provinces,id',
+                'district_id'           => 'nullable|exists:districts,id',
+
+                't_doc_id'              => 'nullable|exists:typedocuments,id',
+                'country_id'            => 'nullable|exists:countries,id',
+                'date_of_birth'         => 'nullable|date_format:d/m/Y',
+                'names'                 => 'nullable|string|max:100',
+                'last_name'             => 'nullable|string|max:100',
+                'middle_name'           => 'nullable|string|max:100',
+                'civil_status_id'       => 'nullable|exists:civilstatus,id',
+                'num_soons'             => 'nullable|max:3',
+                'gender_id'             => 'nullable|exists:genders,id',
+                'sick'                  => 'nullable|string|max:10',
+                'academicdegree_id'     => 'nullable|exists:academicdegree,id',
+                'phone'                 => 'nullable|max:9',
+                'email'                 => 'nullable|string|max:200',
+                'role_company_id'       => 'nullable|exists:role_company,id',
+            ]);
+
+            // =======================================================
+            // 2. BUSCAR PARTICIPANTE
+            // =======================================================
+            $participant = MPParticipant::find($id);
+
+            if (!$participant) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'Participante no encontrado'
+                ], 404);
+            }
+
+            // =======================================================
+            // 3. PREPARAR DATA A ACTUALIZAR
+            // =======================================================
+            $data = $request->all();
+
+            // =======================================================
+            // 4. VALIDAR RUC (SI EXISTE, NO SE ACTUALIZA)
+            // =======================================================
+            if ($request->filled('ruc')) {
+
+                $existsRuc = MPParticipant::where('ruc', $request->ruc)
+                    ->where('id', '!=', $participant->id)
+                    ->exists();
+
+                if ($existsRuc) {
+                    // ❌ NO se actualiza el RUC
+                    unset($data['ruc']);
+                }
+            }
+
+            // =======================================================
+            // 5. NORMALIZAR FECHA
+            // =======================================================
+            if ($request->filled('date_of_birth')) {
+                $data['date_of_birth'] = Carbon::createFromFormat(
+                    'd/m/Y',
+                    $request->date_of_birth
+                )->format('Y-m-d');
+            }
+
+            // =======================================================
+            // 6. ACTUALIZAR PARTICIPANTE
+            // =======================================================
+            $participant->update($data);
+
+            // =======================================================
+            // 7. RESPUESTA
+            // =======================================================
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Participante actualizado correctamente',
+                'data'    => $participant
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            return response()->json([
+                'status'  => 422,
+                'message' => 'Error de validación',
+                'errors'  => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Error interno del servidor',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+
 }
