@@ -63,6 +63,8 @@ Route::controller(FormularioPublicoController::class)->group(function () {
 
     Route::post('attendance-participant', 'attendanceParticipant');
 
+    Route::put('update-participant/{idRow}', 'updateParticipant');
+
 });
 
 // mp
