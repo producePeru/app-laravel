@@ -14,6 +14,8 @@ use GuzzleHttp\Client;
 use App\Models\Token;
 use Carbon\Carbon;
 
+Carbon::setLocale('es');
+
 class FormularioPublicoController extends Controller
 {
     public function checkRucNumber($ruc)
@@ -349,7 +351,6 @@ class FormularioPublicoController extends Controller
                     }
 
                     $participant->update($request->except('slug'));
-
                 } else {
 
                     /*
@@ -361,12 +362,11 @@ class FormularioPublicoController extends Controller
                     */
 
                     $data = collect($request->except('slug'))
-                        ->filter(fn ($value) => !is_null($value))
+                        ->filter(fn($value) => !is_null($value))
                         ->toArray();
 
                     $participant->update($data);
                 }
-
             } else {
 
                 /*
@@ -428,7 +428,6 @@ class FormularioPublicoController extends Controller
                     : 'Participante actualizado y asistencia verificada',
                 'data'    => $participant
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
@@ -436,7 +435,6 @@ class FormularioPublicoController extends Controller
                 'message' => 'Error de validación',
                 'errors'  => $e->errors()
             ], 422);
-
         } catch (\Exception $e) {
 
             return response()->json([
@@ -634,7 +632,7 @@ class FormularioPublicoController extends Controller
                         // 👇 regla fija
                         'md' => $q->type === 'l'
                             ? 12
-                            : (mb_strlen($q->label) > 45 ? 12 : 6),
+                            : (mb_strlen($q->label) > 60 ? 12 : 6),
 
                         // opciones solo select
                         'options' => $q->type === 'o'
@@ -679,10 +677,10 @@ class FormularioPublicoController extends Controller
             // 2. BÚSQUEDA DEL PARTICIPANTE
             // =========================
             $participant = MPParticipant::where('doc_number', $request->documentnumber)
-            ->when($request->filled('ruc'), function ($query) use ($request) {
-                $query->where('ruc', $request->ruc);
-            })
-            ->first();
+                ->when($request->filled('ruc'), function ($query) use ($request) {
+                    $query->where('ruc', $request->ruc);
+                })
+                ->first();
 
             if (!$participant) {
                 return response()->json([
@@ -906,7 +904,6 @@ class FormularioPublicoController extends Controller
                     'link' => $event->link
                 ]
             ]);
-
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
@@ -962,7 +959,6 @@ class FormularioPublicoController extends Controller
                 'message' => 'Asistencia registrada correctamente',
                 'data'    => $attendance
             ], 200);
-
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -1064,7 +1060,6 @@ class FormularioPublicoController extends Controller
                 'message' => 'Participante actualizado correctamente',
                 'data'    => $participant
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
@@ -1072,7 +1067,6 @@ class FormularioPublicoController extends Controller
                 'message' => 'Error de validación',
                 'errors'  => $e->errors()
             ], 422);
-
         } catch (\Exception $e) {
 
             return response()->json([
@@ -1084,6 +1078,56 @@ class FormularioPublicoController extends Controller
     }
 
 
+    public function mpIndexEventsSoon(Request $request)
+    {
+        $today = Carbon::today()->toDateString();
+
+        $items = MpEvent::query()
+            ->whereDate('date', '>=', $today) // solo futuros
+            ->with([
+                'capacitador:id,name',
+                'modality:id,name'
+            ])
+            ->orderBy('date', 'ASC') // más próximos primero
+            ->get()
+            ->map(function ($item) {
+                return $this->mapItems($item);
+            });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
+    private function mapItems($item)
+    {
+        $date = $item->date ? Carbon::parse($item->date) : null;
+
+        return [
+            'title'        => $item->title,
+            'slug'         => $item->slug,
+            'component'    => $item->component,
+
+            'capacitador'  => $item->capacitador,
 
 
+            'modality'     => $item->modality->name ?? null,
+
+            'hourStart' => $item->hourStart
+                ? Carbon::createFromFormat('H:i:s', $item->hourStart)->format('g:i A')
+                : null,
+
+            'hourEnd' => $item->hourEnd
+                ? Carbon::createFromFormat('H:i:s', $item->hourEnd)->format('g:i A')
+                : null,
+
+            // formato solicitado: día, mes (ene, feb), año
+            'date' => $date ? [
+                'day'   => $date->format('d'),
+                'month' => strtolower($date->translatedFormat('M')), // ene, feb
+                'year'  => $date->format('Y'),
+            ] : null,
+        ];
+    }
 }
