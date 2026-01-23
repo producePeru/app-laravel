@@ -34,8 +34,6 @@ Route::controller(MujerProduceController::class)->group(function () {
     Route::put('toggle-attendance', 'toggleAttendance');
 
     Route::post('delete-assistant', 'deleteAssistant');
-
-
 });
 
 
@@ -65,6 +63,7 @@ Route::controller(FormularioPublicoController::class)->group(function () {
 
     Route::put('update-participant/{idRow}', 'updateParticipant');
 
+    Route::get('index-events-soon', 'mpIndexEventsSoon');
 });
 
 // mp
