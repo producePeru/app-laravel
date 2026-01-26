@@ -215,7 +215,7 @@ Route::prefix('mp')->group(function () {
 });
 
 // PUBLICAS
-Route::prefix('api')->middleware('auth:sanctum')->group(function () {
+Route::prefix('api')->group(function () {
     require __DIR__ . '/api/apis.php';
 });
 
