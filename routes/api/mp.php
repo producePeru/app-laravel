@@ -64,6 +64,8 @@ Route::controller(FormularioPublicoController::class)->group(function () {
     Route::put('update-participant/{idRow}', 'updateParticipant');
 
     Route::get('index-events-soon', 'mpIndexEventsSoon');
+
+    Route::post('send-event-email', 'sendEventEmail');
 });
 
 // mp
