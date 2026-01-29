@@ -32,6 +32,9 @@ class PageController extends Controller
 
                 'can_finish'    =>  $pivot->can_finish == 1 ? true : false,
                 'can_import'    =>  $pivot->can_import == 1 ? true : false,
+                'can_download_everything' => $pivot->can_download_everything == 1 ? true : false,
+                'can_date_range' => $pivot->can_date_range == 1 ? true : false,
+                'can_download_reporte' => $pivot->can_download_reporte == 1 ? true : false,
 
 
             ]);
@@ -132,6 +135,10 @@ class PageController extends Controller
                         'can_download' => (bool) $page->pivot->can_download,
                         'can_finish' => (bool) $page->pivot->can_finish,
                         'can_import' => (bool) $page->pivot->can_import,
+
+                        'can_download_everything' => (bool) $page->pivot->can_download_everything,
+                        'can_date_range' => (bool) $page->pivot->can_date_range,
+                        'can_download_reporte' => (bool) $page->pivot->can_download_reporte,
                     ]
                 ];
             });
@@ -158,7 +165,7 @@ class PageController extends Controller
             $validated = $request->validate([
                 'user_id' => 'required|exists:users,id',
                 'page_id' => 'required|exists:pages,id',
-                'type' => 'required|in:can_create,can_update,can_delete,can_download,can_finish,can_import,can_view_all',
+                'type' => 'required|in:can_create,can_update,can_delete,can_download,can_finish,can_import,can_view_all,can_download_everything,can_date_range,can_download_reporte',
                 'value' => 'required|boolean',
             ]);
 

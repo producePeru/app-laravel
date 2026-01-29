@@ -28,69 +28,114 @@ class DownloadAttendanceController extends Controller
 
         try {
 
+            ini_set('memory_limit', '2G');
+            set_time_limit(300);
+
             $filters = [
                 'name'      => $request->input('name'),
                 'dateStart' => $request->input('dateStart'),
                 'dateEnd'   => $request->input('dateEnd'),
                 'year'      => $request->input('year'),
                 'orderby'   => $request->input('orderby'),
-                'asesor'    => $request->input('asesor')
+                'asesor'    => $request->input('asesor'),
             ];
 
-
-            // $userRole = getUserRole();
-            // $roleIds  = $userRole['role_id'];
-            // $userId   = $userRole['user_id'];
-
             $query = Attendance::query();
-
             $query->withItems($filters);
 
-            ini_set('memory_limit', '2G');
-            set_time_limit(300);
+            // 📄 Cargar plantilla Excel
+            $templatePath = storage_path('app/plantillas/attendance_template.xlsx');
+            $spreadsheet  = IOFactory::load($templatePath);
+            $sheet        = $spreadsheet->getActiveSheet();
 
-            $items = [];
+            $startRow   = 2;
+            $rowIndex   = 0;
             $globalIndex = 1;
 
-            $query->chunk(1000, function ($rows) use (&$items, &$globalIndex) {
+            // 🚀 Procesar por bloques
+            $query->chunk(500, function ($rows) use (
+                &$sheet,
+                &$rowIndex,
+                &$globalIndex,
+                $startRow
+            ) {
                 foreach ($rows as $item) {
-                    $items[] = [
-                        'index'             => $globalIndex++,
-                        'title' => $item->title,
-                        'attendance_list_count' => $item->attendanceList?->count() ?? 0,
-                        'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
-                        'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
-                        // 'modality' => $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
-                        'city' => $item->region->name ?? null,
-                        'province' => $item->provincia->name ??  null,
-                        'district' => $item->distrito->name ?? null,
-                        'address' => $item->address ??  null,
-                        'asesor' => $item['asesor'],
-                        'asesor' => $item->asesor
-                            ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
-                            : null,
-                        'profile_creater' => $item->profile
-                            ? strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename)
-                            : null,
-                        'description' => $item->description ?? null,
-                        'created_at' => Carbon::parse($item->created_at)->format('d/m/Y'),
 
-                        'link_participantes' => ' https://programa.soporte-pnte.com/admin/ugo/eventos-inscritos/' . $item->slug,
-
-                        'link_registro_participantes' => $item->eventsoffice_id == 3 ?
-                            'https://inscripcion.soporte-pnte.com/fortalece-tu-mercado/' . $item->slug :
-                            'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
-
-
+                    $row = [
+                        $globalIndex++,
+                        'UGO',
+                        strtoupper(Carbon::now()->translatedFormat('F')),
+                        Carbon::parse($item->startDate)->format('d/m/Y'),
+                        Carbon::parse($item->endDate)->format('d/m/Y'),
+                        Carbon::parse($item->startDate)->diffInDays(Carbon::parse($item->endDate)) + 1,
+                        $item->pnte->name ?? '-',
+                        strtoupper($item->title) ?? '-',
+                        strtoupper($item->theme ?? null) ?? '-',
+                        $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
+                        $item->region->name ?? null,
+                        $item->provincia->name ?? null,
+                        $item->distrito->name ?? null,
+                        $item->address ?? null,
+                        strtoupper($item->entidad ?? null) ?? '-',
+                        strtoupper($item->entidad_aliada ?? null) ?? '-',
+                        $item->asesor ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename) : null,
+                        $item->pasaje == 'n' ? 'NO' : ($item->pasaje == 's' ? 'SI' : null),
+                        $item->monto ?? null,
+                        $item->beneficiarios ?? null,
+                        Carbon::parse($item->created_at)->format('d/m/Y'),
+                        // $item->attendanceList?->count() ?? 0,
+                        // Carbon::parse($item->startDate)->format('d/m/Y'),
+                        // Carbon::parse($item->endDate)->format('d/m/Y'),
+                        // Carbon::parse($item->startDate)
+                        //     ->diffInDays(Carbon::parse($item->endDate)) + 1,
+                        // $item->region->name ?? '-',
+                        // $item->provincia->name ?? '-',
+                        // $item->distrito->name ?? '-',
+                        // $item->address ?? '-',
+                        // $item->asesor
+                        //     ? strtoupper(
+                        //         $item->asesor->name . ' ' .
+                        //             $item->asesor->lastname . ' ' .
+                        //             $item->asesor->middlename
+                        //     )
+                        //     : '-',
+                        // $item->profile
+                        //     ? strtoupper(
+                        //         $item->profile->name . ' ' .
+                        //             $item->profile->lastname . ' ' .
+                        //             $item->profile->middlename
+                        //     )
+                        //     : '-',
+                        // $item->description ?? '-',
+                        // Carbon::parse($item->created_at)->format('d/m/Y'),
+                        // 'https://programa.soporte-pnte.com/admin/ugo/eventos-inscritos/' . $item->slug,
+                        // $item->eventsoffice_id == 3
+                        //     ? 'https://inscripcion.soporte-pnte.com/fortalece-tu-mercado/' . $item->slug
+                        //     : 'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
                     ];
+
+                    $col = 'A';
+                    foreach ($row as $value) {
+                        $sheet->setCellValue($col . ($startRow + $rowIndex), $value);
+                        $col++;
+                    }
+
+                    $rowIndex++;
                 }
             });
 
-            return Excel::download(new AttendanceExport($items), 'eventos-pnte.xlsx');
+            // 📥 Descargar archivo
+            return new StreamedResponse(function () use ($spreadsheet) {
+                $writer = new Xlsx($spreadsheet);
+                $writer->save('php://output');
+            }, 200, [
+                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="attendance_template.xlsx"',
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Ocurrio un error al generar el reporte.',
-                'error'   => $e->getMessage()
+                'message' => 'Ocurrió un error al generar el reporte',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }

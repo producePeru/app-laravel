@@ -60,35 +60,51 @@ class AttendanceController extends Controller
     {
         return [
             'id' => $item->id,
-            'attendance_list_count' => $item->attendanceList?->count() ?? 0,
-            'eventsoffice_id' => $item->eventsoffice_id,
-            'slug' => $item->slug,
-            'title' => strtoupper($item->title),
-            'finally' => $item->finally,
-            'pnte' => $item->pnte->name,
-            'id_pnte' => $item->pnte->id,
-            'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
-            'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
-            'startDate2' => $item->startDate,
-            'endDate2' => $item->endDate,
-            'modality' => $item->modality,
-            'city' => $item->region->name ?? null,
-            'province' => $item->provincia->name ?? null,
-            'district' => $item->distrito->name ?? null,
-            'city_id' => $item->region->id ?? null,
-            'address' => $item->address ?? null,
-            'fecha' => $item->fecha ?? null,
-            'hora' => $item->hora ?? null,
-            'mercado' => $item->mercado ?? null,
-            'province_id' => $item->provincia->id ?? null,
-            'district_id' => $item->distrito->id ?? null,
-            // 'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
-            'people_id' => $item->asesor->id ?? null,
+            // v2
+            'tipo_actividad' => $item->pnte->name ?? null,
+            'nombre_actividad' => strtoupper($item->title),
+            'tema' => strtoupper($item->theme ?? null),
+            'entidad' => strtoupper($item->entidad ?? null),
+            'entidad_aliada' => strtoupper($item->entidad_aliada ?? null),
             'asesor' => $item->asesor
                 ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
                 : null,
-            'description' => $item->description ?? null,
-            'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
+            'beneficiarios' => $item->beneficiarios ?? null,
+            'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
+            'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
+            'modality' => $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
+
+            'city' => $item->region->name ?? null,
+            'province' => $item->provincia->name ?? null,
+            'district' => $item->distrito->name ?? null,
+            'address' => $item->address ?? null,
+            'pasaje' => $item->pasaje == 'n' ? 'NO' : ($item->pasaje == 's' ? 'SI' : null),
+            'monto' => $item->monto ?? null,
+
+
+
+            'tipo_actividad_id' => $item->pnte->id,
+            'people_id' => $item->asesor->id ?? null,
+            'city_id' => $item->region->id ?? null,
+            'province_id' => $item->provincia->id ?? null,
+            'district_id' => $item->distrito->id ?? null,
+
+            // 'attendance_list_count' => $item->attendanceList?->count() ?? 0,
+            // 'eventsoffice_id' => $item->eventsoffice_id,
+            'slug' => $item->slug,
+            // 'title' => strtoupper($item->title),
+            // 'finally' => $item->finally,
+            // 'pnte' => $item->pnte->name,
+            // 'id_pnte' => $item->pnte->id,
+            // 'startDate2' => $item->startDate,
+            // 'endDate2' => $item->endDate,
+            // 'fecha' => $item->fecha ?? null,
+            // // 'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
+            // 'hora' => $item->hora ?? null,
+            // 'mercado' => $item->mercado ?? null,
+
+            // 'description' => $item->description ?? null,
+            // 'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
         ];
     }
 
@@ -152,21 +168,115 @@ class AttendanceController extends Controller
 
     public function create(Request $request)
     {
+        DB::beginTransaction();
+
         try {
+            // Usuario autenticado
+            $user = Auth::user();
+            $user_id = $user->id;
 
-            $user_role = getUserRole();
-            $role_array = $user_role['role_id'];
+            $data = $request->all();
 
-            if (
-                in_array(5, $role_array) ||
-                in_array(1, $role_array)
-            ) {
+            /**
+             * ASIGNACIÓN DE user_id y asesorId
+             */
+            $data['user_id'] = $user_id;
 
-                $user_role = getUserRole();
-                $user_id = $user_role['user_id'];
+            if ($user->rol == 2) {
+                // Si es asesor, se asigna a sí mismo
+                $data['asesorId'] = $user_id;
+            }
 
-                $data = $request->all();
+            if ($user->rol == 1) {
+                // Si es admin, el asesorId viene en el payload
+                // (se asume que ya viene validado)
+                $data['asesorId'] = $data['asesorId'] ?? null;
+            }
 
+            /* SLUG */
+            $slug = Str::slug($data['title']);
+
+            if (Attendance::where('slug', $slug)->exists()) {
+                $slug .= '-' . now()->format('His');
+            }
+
+            $data['slug'] = $slug;
+
+            /**
+             * NORMALIZACIÓN POR MODALIDAD
+             */
+            if ($data['modality'] === 'v') {
+                $data['city_id']     = null;
+                $data['province_id'] = null;
+                $data['district_id'] = null;
+                $data['address']     = null;
+                $data['pasaje']      = null;
+                $data['monto']       = null;
+            }
+
+            if ($data['modality'] === 'p') {
+                if (($data['pasaje'] ?? 'n') === 'n') {
+                    $data['monto'] = null;
+                }
+            }
+
+            /**
+             * CREATE
+             */
+            $attendance = Attendance::create($data);
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Actividad creada correctamente',
+                'data'    => $attendance
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Error al crear la actividad',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function update(Request $request, string $id)
+    {
+        try {
+            $user = Auth::user();
+
+            $registro = Attendance::findOrFail($id);
+            $data = $request->all();
+
+            /**
+             * VALIDACIONES POR ROL
+             */
+            if ($user->rol == 2) {
+
+                // Debe ser dueño del registro
+                if (
+                    $registro->user_id != $user->id ||
+                    $registro->asesorId != $user->id
+                ) {
+                    return response()->json([
+                        'message' => 'No tiene permisos para editar este registro',
+                        'status'  => 403
+                    ]);
+                }
+
+                // No puede cambiar user_id ni asesorId
+                unset($data['user_id'], $data['asesorId']);
+            }
+
+        // rol == 1 → puede editar todo (no se restringe nada)
+
+            /**
+             * SLUG
+             */
+            if (isset($data['title'])) {
                 $slug = Str::slug($data['title']);
 
                 if (Attendance::where('slug', $slug)->exists()) {
@@ -174,47 +284,20 @@ class AttendanceController extends Controller
                 }
 
                 $data['slug'] = $slug;
-                $data['user_id'] = $user_id;
-
-                $attendance = Attendance::create($data);
-
-                return response()->json(['message' => 'Evento creado con éxito', 'status' => 200, 'id' => $attendance->id]);
             }
+
+            $registro->update($data);
+
+            return response()->json([
+                'message' => 'Registro actualizado con éxito',
+                'status'  => 200
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Error de registro', 'status' => 500, 'error' => $e], 500);
-        }
-    }
-
-    public function update(Request $request, string $id)
-    {
-        try {
-            $user_role = getUserRole();
-            $role_array = $user_role['role_id'];
-
-            if (
-                in_array(5, $role_array) ||
-                in_array(1, $role_array)
-            ) {
-
-                $registro = Attendance::findOrFail($id);
-                $data = $request->all();
-
-                if (isset($data['title'])) {
-                    $slug = Str::slug($data['title']);
-
-                    if (Attendance::where('slug', $slug)->exists()) {
-                        $slug .= '-' . now()->format('His');
-                    }
-
-                    $data['slug'] = $slug;
-                }
-
-                $registro->update($data);
-
-                return response()->json(['message' => 'Registro actualizado con éxito', 'status' => 200]);
-            }
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Error de registro', 'status' => 500, 'error' => $e], 500);
+            return response()->json([
+                'message' => 'Error de registro',
+                'status'  => 500,
+                'error'   => $e->getMessage()
+            ], 500);
         }
     }
 
