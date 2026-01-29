@@ -31,7 +31,15 @@ class Attendance extends Model
         // 'people_id',
         'asesorId',
         'description',
-        'finally'
+        'finally',
+
+        // nuevos campos
+        'theme',
+        'entidad',
+        'entidad_aliada',
+        'pasaje',
+        'monto',
+        'beneficiarios'
     ];
 
     public function region()
