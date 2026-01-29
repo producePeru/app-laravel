@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MujerProduce;
 
 use App\Http\Controllers\Controller;
+use App\Mail\EventMujerProduceMail;
 use Illuminate\Support\Facades\DB;
 use App\Models\MPDiagnostico;
 use App\Models\MPParticipant;
@@ -13,6 +14,7 @@ use App\Models\MPEvent;
 use GuzzleHttp\Client;
 use App\Models\Token;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 Carbon::setLocale('es');
 
@@ -1129,5 +1131,51 @@ class FormularioPublicoController extends Controller
                 'year'  => $date->format('Y'),
             ] : null,
         ];
+    }
+
+
+
+    // enviamos correo por participar en mujer produce de acuerdo al payload que se manda
+    public function sendEventEmail(Request $request)
+    {
+        $mailer = 'mujerproduce'; // capacitaciones || office365
+
+        $payload = $request->validate([
+            'title'      => 'required|string',
+            'link'       => 'required|url',
+            'date'       => 'required|string', // 24/01/2026
+            'hourStart'  => 'required|string', // 14:00:00
+            'hourEnd'    => 'required|string', // 19:00:00
+            'email'      => 'required|email',
+        ]);
+
+        // 📅 Fecha: 24 de enero de 2026
+        $dateFormatted = Carbon::createFromFormat('d/m/Y', $payload['date'])
+            ->locale('es')
+            ->translatedFormat('d \d\e F \d\e Y');
+
+        // ⏰ Horas: 2:00 PM / 7:00 PM
+        $hourStartFormatted = Carbon::createFromFormat('H:i:s', $payload['hourStart'])
+            ->format('g:i A');
+
+        $hourEndFormatted = Carbon::createFromFormat('H:i:s', $payload['hourEnd'])
+            ->format('g:i A');
+
+        // ✉️ Envío con mailer seteado
+        Mail::mailer($mailer)
+            ->to($payload['email'])
+            ->send(new EventMujerProduceMail([
+                'title'     => $payload['title'],
+                'link'      => $payload['link'],
+                'date'      => $dateFormatted,
+                'hourStart' => $hourStartFormatted,
+                'hourEnd'   => $hourEndFormatted,
+                'email'     => $payload['email'],
+            ]));
+
+        return response()->json([
+            'message' => 'Correo enviado correctamente',
+            'mailer'  => $mailer
+        ]);
     }
 }
