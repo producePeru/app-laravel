@@ -126,6 +126,19 @@ return [
             ],
         ],
 
+        'mujerproduce' => [    // mujerproduce@produce.gob.pe
+            'transport' => env('MAIL_MAILER_MP', 'smtp'),
+            'host' => env('MAIL_HOST_MP'),
+            'port' => env('MAIL_PORT_MP'),
+            'username' => env('MAIL_USERNAME_MP'),
+            'password' => env('MAIL_PASSWORD_MP'),
+            'encryption' => env('MAIL_ENCRYPTION_MP'),
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS_MP'),
+                'name' => env('MAIL_FROM_NAME_MP'),
+            ],
+        ],
+
 
         // 'smtp' => [
         //     'transport' => 'smtp',
