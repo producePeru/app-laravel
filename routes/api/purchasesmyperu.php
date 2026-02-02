@@ -9,6 +9,8 @@ Route::controller(ComprasPeruController::class)->group(function () {
     Route::post('store', 'store');
 
     Route::put('update-data-mype', 'updateDataMype');
+
+    Route::get('list', 'index');
 });
 
 

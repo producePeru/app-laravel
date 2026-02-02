@@ -4,6 +4,7 @@ use App\Http\Controllers\Download\ActividadesUgoController;
 use App\Http\Controllers\Download\CyberWowCarpetaLiderController;
 use App\Http\Controllers\Download\CyberWowParticipantesController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
+use App\Http\Controllers\Download\DownloadComprasPeruController;
 use App\Http\Controllers\Download\DownloadCyberWowMarcaController;
 use App\Http\Controllers\Download\DownloadExportDiagnosticMP;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
@@ -89,6 +90,11 @@ Route::controller(DownloadMPParticipantesController::class)->group(function () {
 Route::controller(DownloadExportDiagnosticMP::class)->group(function () {
 
     Route::post('mp-export-participants-excel', 'exportParticipantsExcel');
+});
+
+Route::controller(DownloadComprasPeruController::class)->group(function () {
+
+    Route::post('cp-registros/export', 'exportExcel');
 });
 
 // download

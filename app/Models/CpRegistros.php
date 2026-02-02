@@ -36,8 +36,58 @@ class CpRegistros extends Model
         'cde_id'
     ];
 
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'province_id');
+    }
+
+    public function district()
+    {
+        return $this->belongsTo(District::class, 'district_id');
+    }
+
     public function economicsectors()
     {
         return $this->belongsTo(CpSectorPriorizado::class, 'economicsector_id', 'id');
+    }
+
+    public function comercialactivity()
+    {
+        return $this->belongsTo(ComercialActivities::class, 'comercialactivity_id');
+    }
+
+    public function component()
+    {
+        return $this->belongsTo(CpComponente::class, 'component_id', 'id');
+    }
+
+    public function theme()
+    {
+        return $this->belongsTo(CpTema::class, 'theme_id', 'id');
+    }
+
+    public function modality()
+    {
+        return $this->belongsTo(Modality::class, 'modality_id');
+    }
+
+    public function people()
+    {
+        return $this->belongsTo(People::class, 'people_id');
+    }
+
+    public function asesor()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function cde()
+    {
+        return $this->belongsTo(Cde::class, 'cde_id');
     }
 }
