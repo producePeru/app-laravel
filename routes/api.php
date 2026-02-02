@@ -241,6 +241,12 @@ Route::prefix('google')->group(function () {
     require __DIR__ . '/api/google.php';
 });
 
+
+Route::prefix('purchases-my-peru')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/purchasesmyperu.php';
+});
+
+
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
     // Route::get('list',                                  [UserController::class, 'index']);                  // v2.0
@@ -541,6 +547,9 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('civil-status', [SelectController::class, 'getCivilStatus']);
     Route::get('academic-degree', [SelectController::class, 'getAcademicDegree']);
     Route::get('role-company', [SelectController::class, 'getRoleCompany']);
+    Route::get('sector-priorizado', [SelectController::class, 'getSectorPriorizado']);
+    Route::get('cp-components', [SelectController::class, 'getCpComponents']);
+    Route::get('cp-themes/{idComponent}', [SelectController::class, 'getThemes']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {

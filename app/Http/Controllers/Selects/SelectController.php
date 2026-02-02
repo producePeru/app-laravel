@@ -37,6 +37,9 @@ use App\Models\TypeCompany;
 use App\Models\Category;
 use App\Models\AnnualSale;
 use App\Models\CivilStatus;
+use App\Models\CpComponente;
+use App\Models\CpSectorPriorizado;
+use App\Models\CpTema;
 use App\Models\CyberwowLeader;
 use App\Models\Fair;
 use App\Models\FairType;
@@ -726,6 +729,48 @@ class SelectController extends Controller
     public function getRoleCompany()
     {
         $types = RoleCompany::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getSectorPriorizado()
+    {
+        $types = CpSectorPriorizado::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getCpComponents()
+    {
+        $types = CpComponente::orderBy('name', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getThemes($idComponent)
+    {
+        $types = CpTema::where('component_id', $idComponent)->orderBy('name', 'asc')->get();
 
         $data = $types->map(function ($item) {
             return [
