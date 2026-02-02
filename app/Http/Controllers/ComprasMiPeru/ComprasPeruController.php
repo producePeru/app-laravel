@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\CpRegistros;
 use App\Models\Mype;
+use Carbon\Carbon;
 
 class ComprasPeruController extends Controller
 {
@@ -91,5 +92,88 @@ class ComprasPeruController extends Controller
       'message' => 'MYPE registrada o actualizada correctamente',
       'data' => $mype
     ], 200);
+  }
+
+
+  public function index(Request $request)
+  {
+    $perPage = $request->get('per_page', 100); // default 10
+
+    $items = CpRegistros::query()
+      ->with([
+        'city:id,name',
+        'province:id,name',
+        'district:id,name',
+        'economicsectors:id,name',
+        'comercialactivity:id,name',
+        'component:id,name',
+        'theme:id,name',
+        'modality:id,name',
+
+        'people:id,name,lastname,middlename,email,phone,typedocument_id,documentnumber,country_id,birthday,gender_id,sick,phone,email',
+        'people.typedocument:id,avr',
+        'people.pais:id,name',
+        'people.gender:id,name',
+
+        'asesor:id,name,lastname,middlename,email,phone',
+        'cde:id,city,province,district',
+      ])
+      ->orderBy('created_at', 'ASC')
+      ->paginate($perPage)
+      ->through(function ($item) {
+        return $this->mapItems($item);
+      });
+
+    return response()->json([
+      'data' => $items
+    ], 200);
+  }
+
+
+  private function mapItems($item)
+  {
+    $people = $item->people;
+    $cde    = $item->cde;
+    $asesor = $item->asesor;
+    $sector = $item->economicsectors;
+
+    // Helper local para mayúsculas seguras
+    $upper = fn($value) => $value ? mb_strtoupper($value, 'UTF-8') : null;
+
+    return [
+      'id'          => $item->id,
+      'ruc'         => $item->ruc,
+      'razonSocial' => $upper($item->razonSocial),
+      'sector_priorizado' => $upper($sector?->name),
+      'region_asesor'   => $upper($cde?->city),
+      'province_asesor' => $upper($cde?->province),
+      'district_asesor' => $upper($cde?->district),
+      'asesor' => $asesor ? $upper(trim("{$asesor->name} {$asesor->lastname} {$asesor->middlename}")) : null,
+      'tipo_documento' => $people?->typedocument?->avr,
+      'documentnumber' => $people?->documentnumber,
+      'country'        => $people?->pais?->name,
+      'birthday' => $people?->birthday ? Carbon::parse($people->birthday)->format('d/m/Y') : null,
+      'lastname'   => $upper($people?->lastname),
+      'middlename' => $upper($people?->middlename),
+      'name'       => $upper($people?->name),
+      'gender'      => $people->gender->name,
+      'sick'      => $people->sick,
+      'phone' => $people->phone,
+      'email' => $people->email,
+      'periodo' => $item->periodo,
+      'cantidad' => $item->cantidad,
+      'mype_region' => $item->city->name,
+      'mype_province' => $item->province->name,
+      'mype_district' => $item->district->name,
+      'mype_ubicacion' => $item->ubicacion,
+      'created_at' => Carbon::parse($item->created_at)->format('d/m/Y'),
+      'componente' => $item->component->name,
+      'tema' => $item->theme->name,
+      'modalidad' => $item->modality->name,
+      'mes' =>  mb_strtoupper(Carbon::parse($people->created_at)->locale('es')->translatedFormat('M'), 'UTF-8'),
+      'mes_numero' => Carbon::parse($people->created_at)->format('n'),
+      'comercialactivity' => $item->comercialactivity->name,
+      'year' => Carbon::parse($item->created_at)->format('Y')
+    ];
   }
 }
