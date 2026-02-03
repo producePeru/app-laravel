@@ -332,10 +332,19 @@ class AttendanceController extends Controller
                 'slug' => $attendance->slug,
                 'title' => $attendance->title,
                 'address' => $attendance->address ?? null,
-                'startDate' => $attendance->startDate,
-                'endDate' =>  $attendance->endDate,
+                'startDate' => $attendance->startDate
+                    ? Carbon::parse($attendance->startDate)->format('d/m/Y')
+                    : null,
+
+                'endDate' => $attendance->endDate
+                    ? Carbon::parse($attendance->endDate)->format('d/m/Y')
+                    : null,
+
                 'fecha' => $attendance->fecha ?? null,
                 'hora' => $attendance->hora ?? null,
+
+                'theme' => $attendance->theme
+                // 'startDate' => $attendance->startDate
 
                 // 'subTitle' => $attendance->subTitle,
                 // 'description' => $attendance->description,
