@@ -45,7 +45,7 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
 
     Route::get('attendance-mercado/{slug}', 'exportFortaleceTuMercado');
 
-    Route::get('attendance/{slug}', 'exportRegistrantsUgoEvents');
+    Route::post('attendance/{slug}', 'exportRegistrantsUgoEvents');
 });
 
 

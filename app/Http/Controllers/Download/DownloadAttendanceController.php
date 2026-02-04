@@ -143,81 +143,156 @@ class DownloadAttendanceController extends Controller
 
     public function exportRegistrantsUgoEvents($slug)
     {
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
 
-        $attendance = Attendance::where('slug', $slug)->first();
+        // ===== Buscar evento =====
+        $attendance = Attendance::with([
+            'asesor:id,name,lastname,middlename',
+            'region:id,name',
+            'provincia:id,name',
+            'distrito:id,name',
+            'pnte:id,name'
+        ])->where('slug', $slug)->first();
 
         if (!$attendance) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
-        $asesor = User::find($attendance->asesorId);
-        $region = City::find($attendance->city_id);
-        $province = Province::find($attendance->province_id);
-        $district = District::find($attendance->district_id);
-
-
-
+        // ===== Query participantes =====
         $query = AttendanceList::with([
-            'typedocument:id,name',
-            'gender:id,name,avr',
+            'typedocument:id,avr',
+            'gender:id,avr',
             'economicsector:id,name',
-            // 'comercialactivity:id,name',
-            'list'
-        ])->where('attendancelist_id', $attendance->id)
+            'country:id,name',
+            'city:id,name',
+            'province:id,name',
+            'dictrict:id,name',
+            'rubro:id,name'
+        ])
+            ->where('attendancelist_id', $attendance->id)
             ->orderBy('created_at', 'desc');
 
-        $data = $query->get();
-
-        $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
-            return [
-                'index' => $index + 1,
-                'nameActividad'         => $attendance->title,
-
-                'asesor'                => strtoupper($asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename),
-                'dateActividad'         => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
-
-                'region'                => $region->name,
-                'provincia'             => $province->name,
-                'distrito'              => $district->name,
-
-                'place'                 => $attendance->address ?? '-',
-                'lastname'              => strtoupper($item->lastname . ' ' . $item->middlename),
-                'name'                  => strtoupper($item->name),
-                'typedocument'          => $item->typedocument->name,
-                'documentnumber'        => $item->documentnumber,
-                'email'                 => $item->email ?? '-',
-                'phone'                 => $item->phone ?? '-',
-                'gender'                => $item->gender->avr,
-                'sick'                  => strtoupper($item->sick) ?? '-',
-                'ruc'                   => $item->ruc ?? '-',
-                'economicsector'        => $item->economicsector ? $item->economicsector->name : '-',
-                'comercialActivity'     => strtoupper($item->comercialActivity ?? '-'),
-            ];
-        });
-
-        // return Excel::download(new AttendanceListSlugExport($result), 'attendance.xlsx');
-
+        // ===== Cargar plantilla =====
         $templatePath = storage_path('app/plantillas/ugo_eventos_lista_registrados_template.xlsx');
+
+        if (!file_exists($templatePath)) {
+            return response()->json(['message' => 'Template not found'], 404);
+        }
+
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        $startRow = 2;
-        foreach ($result as $i => $resultRow) {
-            $col = 'A';
-            foreach ($resultRow as $value) {
-                $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
-                $col++;
-            }
-        }
+        // ===== Fila inicial D3 =====
+        $row = 3;
+        $index = 1;
 
+        $query->chunk(1000, function ($items) use (&$row, &$index, $sheet, $attendance) {
+
+            foreach ($items as $item) {
+
+                $col = 'D';
+
+                $sheet->setCellValue("{$col}{$row}", $index++);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->startDate ? Carbon::parse($attendance->startDate)->format('d/m/Y') : null);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->endDate ? Carbon::parse($attendance->endDate)->format('d/m/Y') : null);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->pnte->name);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->title);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($attendance->theme));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->region?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->provincia?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->distrito?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($attendance->address ?? '', 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($attendance->asesor->lastname . ' ' . $attendance->asesor->middlename . ' ' . $attendance->asesor->name) ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->typedocument?->avr ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->documentnumber ?? null);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($item->country->name ?? null));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim("{$item->lastname} {$item->middlename}"), 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim("{$item->name}"), 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->gender?->avr);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim("{$item->sick}"), 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->ruc ?? '-');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->city?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->province?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->dictrict?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->economicsector?->name);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->rubro->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->email);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->phone);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->is_asesoria);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->was_formalizado);
+
+                $row++;
+            }
+        });
+
+        // ===== Descargar =====
         return new StreamedResponse(function () use ($spreadsheet) {
+
             $writer = new Xlsx($spreadsheet);
+            $writer->setPreCalculateFormulas(false); // mejora rendimiento
             $writer->save('php://output');
         }, 200, [
             'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => 'attachment; filename="lista-registrados.xlsx"',
+            'Cache-Control'       => 'max-age=0',
         ]);
     }
+
 
 
 
