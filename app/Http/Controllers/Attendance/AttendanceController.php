@@ -131,6 +131,7 @@ class AttendanceController extends Controller
 
             'attendance_list_count' => $item->attendanceList?->count() ?? 0,
             'slug' => $item->slug,
+            'created_at' => Carbon::parse($item->created_at)->format('d/m/Y H:i')
 
         ];
     }
@@ -147,7 +148,6 @@ class AttendanceController extends Controller
     // 'mercado' => $item->mercado ?? null,
 
     // 'description' => $item->description ?? null,
-    // 'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
 
 
     public function allWithoutPagination(Request $request)
