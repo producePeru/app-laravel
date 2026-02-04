@@ -265,10 +265,10 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", $item->rubro->name ?? '');
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->email);
+                $sheet->setCellValue("{$col}{$row}", $item->phone);
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->phone);
+                $sheet->setCellValue("{$col}{$row}", $item->email);
                 $col++;
 
                 $sheet->setCellValue("{$col}{$row}", $item->is_asesoria);
