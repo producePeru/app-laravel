@@ -46,13 +46,55 @@ class AttendanceController extends Controller
 
         // $query->withItems($filters);
 
-        $items = $query->paginate(150)->through(function ($item) {
+        $items = $query->paginate(100)->through(function ($item) {
             return $this->mapAdvisory($item);
         });
 
+
+
+
+        $year  = 2026;
+        $today = Carbon::today();
+
+        $baseQuery = Attendance::query()
+            ->withCount('attendanceList')
+            ->whereYear('startDate', $year);
+
+        if (!empty($filters['asesor'])) {
+            $baseQuery->where('asesorId', $filters['asesor']);
+        }
+
+
+        $statistic = [
+
+            'diaria' => (clone $baseQuery)
+                ->whereDate('startDate', '<=', $today)
+                ->whereDate('endDate', '>=', $today)
+                ->count(),
+
+
+            'consolidada' => (clone $baseQuery)
+                ->whereDate('startDate', '>=', $today)
+                ->count(),
+
+
+            'pendiente' => (clone $baseQuery)
+                ->whereDate('endDate', '<', $today)
+                ->having('attendance_list_count', 0)
+                ->count(),
+
+
+            'finalizadas' => (clone $baseQuery)
+                ->whereDate('endDate', '<', $today)
+                ->having('attendance_list_count', '>=', 1)
+                ->count(),
+        ];
+
+
         return response()->json([
             'data'   => $items,
-            'status' => 200
+            'statisti' => $statistic,
+            'status' => 200,
         ]);
     }
 
@@ -81,33 +123,31 @@ class AttendanceController extends Controller
             'pasaje' => $item->pasaje == 'n' ? 'NO' : ($item->pasaje == 's' ? 'SI' : null),
             'monto' => $item->monto ?? null,
 
-
-
             'tipo_actividad_id' => $item->pnte->id,
             'people_id' => $item->asesor->id ?? null,
             'city_id' => $item->region->id ?? null,
             'province_id' => $item->provincia->id ?? null,
             'district_id' => $item->distrito->id ?? null,
 
-            // 'attendance_list_count' => $item->attendanceList?->count() ?? 0,
-            // 'eventsoffice_id' => $item->eventsoffice_id,
+            'attendance_list_count' => $item->attendanceList?->count() ?? 0,
             'slug' => $item->slug,
-            // 'title' => strtoupper($item->title),
-            // 'finally' => $item->finally,
-            // 'pnte' => $item->pnte->name,
-            // 'id_pnte' => $item->pnte->id,
-            // 'startDate2' => $item->startDate,
-            // 'endDate2' => $item->endDate,
-            // 'fecha' => $item->fecha ?? null,
-            // // 'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
-            // 'hora' => $item->hora ?? null,
-            // 'mercado' => $item->mercado ?? null,
 
-            // 'description' => $item->description ?? null,
-            // 'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
         ];
     }
+    // 'eventsoffice_id' => $item->eventsoffice_id,
+    // 'title' => strtoupper($item->title),
+    // 'finally' => $item->finally,
+    // 'pnte' => $item->pnte->name,
+    // 'id_pnte' => $item->pnte->id,
+    // 'startDate2' => $item->startDate,
+    // 'endDate2' => $item->endDate,
+    // 'fecha' => $item->fecha ?? null,
+    // // 'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
+    // 'hora' => $item->hora ?? null,
+    // 'mercado' => $item->mercado ?? null,
 
+    // 'description' => $item->description ?? null,
+    // 'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
 
 
     public function allWithoutPagination(Request $request)
