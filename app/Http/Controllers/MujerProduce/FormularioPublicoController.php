@@ -1088,7 +1088,10 @@ class FormularioPublicoController extends Controller
             ->whereDate('date', '>=', $today) // solo futuros
             ->with([
                 'capacitador:id,name',
-                'modality:id,name'
+                'modality:id,name',
+                'city:id,name',
+                'province:id,name',
+                'district:id,name'
             ])
             ->orderBy('date', 'ASC') // más próximos primero
             ->get()
@@ -1108,11 +1111,12 @@ class FormularioPublicoController extends Controller
 
         return [
             'title'        => $item->title,
+
             'slug'         => $item->slug,
+
             'component'    => $item->component,
 
             'capacitador'  => $item->capacitador,
-
 
             'modality'     => $item->modality->name ?? null,
 
@@ -1130,6 +1134,8 @@ class FormularioPublicoController extends Controller
                 'month' => strtolower($date->translatedFormat('M')), // ene, feb
                 'year'  => $date->format('Y'),
             ] : null,
+
+            'place' => $item->modality->name == "PRESENCIAL" ? $item->city->name . ' / ' . $item->province->name . ' / ' . $item->district->name . ' / ' . $item->place : null
         ];
     }
 

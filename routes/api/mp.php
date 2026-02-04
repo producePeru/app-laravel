@@ -9,6 +9,8 @@ Route::controller(MujerProduceController::class)->group(function () {
 
     Route::post('register-capacitador', 'registerCapacitador');
 
+    Route::put('update-capacitador/{idCapacitador}', 'updateCapacitador');
+
     Route::get('all-capacitadores', 'allCapacitadores');
 
     Route::post('store-event', 'mpStoreEvent');

@@ -56,6 +56,34 @@ class MujerProduceController extends Controller
         }
     }
 
+    public function updateCapacitador(Request $request, $idCapacitador)
+    {
+        // Buscar capacitador
+        $capacitador = MPCapacitador::find($idCapacitador);
+
+        if (!$capacitador) {
+            return response()->json([
+                'message' => 'Capacitador no encontrado',
+                'status'  => 404
+            ], 404);
+        }
+
+        // Validación básica (ajusta si necesitas más reglas)
+        $data = $request->validate([
+            'dni'  => 'nullable',
+            'name' => 'nullable|string|max:255',
+        ]);
+
+        // Actualizar solo los campos enviados en el payload
+        $capacitador->update($data);
+
+        return response()->json([
+            'message' => 'Capacitador actualizado correctamente',
+            'data'    => $capacitador,
+            'status'  => 200
+        ]);
+    }
+
     public function allCapacitadores(Request $request)
     {
         try {
@@ -377,11 +405,11 @@ class MujerProduceController extends Controller
     }
 
 
-    private function mapAttendance($item)   
+    private function mapAttendance($item)
     {
         return [
             'id'                => $item->id,
-            'ruc'               => $item->participant->ruc ?? null,      
+            'ruc'               => $item->participant->ruc ?? null,
             'city'              => $item->participant->city->name ?? null,
             'province'          => $item->participant?->province->name ?? null,
             'district'          => $item->participant?->dictrict->name ?? null,
@@ -705,8 +733,8 @@ class MujerProduceController extends Controller
         FROM mp_diag_respuestas r
         WHERE r.participant_id = mp_participantes.id
     ) DESC')
-    ->orderBy('id', 'DESC')
-    ->paginate(100); 
+            ->orderBy('id', 'DESC')
+            ->paginate(100);
 
 
         // Transformar SOLO el data
@@ -786,8 +814,8 @@ class MujerProduceController extends Controller
             'responses'         => $mappedResponses,
 
             'registrado'        => $lastDiagnosticoAt
-            ? Carbon::parse($lastDiagnosticoAt)->format('d/m/Y H:i')
-            : null,
+                ? Carbon::parse($lastDiagnosticoAt)->format('d/m/Y H:i')
+                : null,
         ];
     }
 
@@ -807,7 +835,7 @@ class MujerProduceController extends Controller
         return response()->json(['status' => 200]);
     }
 
-    
+
     public function toggleAttendance(Request $request)
     {
         try {
@@ -856,7 +884,6 @@ class MujerProduceController extends Controller
                 'message'    => 'Asistencia actualizada correctamente',
                 'attendance' => (bool) $attendance->attendance,
             ]);
-
         } catch (\Throwable $e) {
 
             // Log técnico (backend)
