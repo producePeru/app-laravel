@@ -18,7 +18,6 @@ class AttendanceList extends Model
         'economicsector_id',
         'comercialactivity_id',
         'category_id',
-        'city_id',
 
         'howKnowEvent_id',
         'slug',
@@ -44,8 +43,36 @@ class AttendanceList extends Model
         'country_id',
         'city_id',
         'province_id',
-        'district_id'
+        'district_id',
+
+        'is_asesoria',
+        'was_formalizado'
     ];
+
+    public function rubro()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id');
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'province_id');
+    }
+
+    public function dictrict()
+    {
+        return $this->belongsTo(District::class, 'district_id');
+    }
 
     public function typedocument()
     {

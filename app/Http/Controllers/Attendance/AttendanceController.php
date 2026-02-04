@@ -405,33 +405,38 @@ class AttendanceController extends Controller
         }
 
         $query = AttendanceList::with([
-            'typedocument:id,name',
-            'gender:id,name',
+            'typedocument:id,avr',
+            'gender:id,avr',
             'economicsector:id,name',
-            // 'comercialactivity:id,name',
+            'country:id,name',
             'list'
         ])
             ->where('attendancelist_id', $attendance->id)
             ->searchApplicants($search)
             ->orderBy('created_at', 'desc');
 
-        $data = $query->paginate(150);
+        $data = $query->paginate(100);
 
         $data->getCollection()->transform(function ($item) {
             return [
                 'id' => $item->id,
-                'created_at'            => Carbon::parse($item->created_at)->format('d-m-Y H:i'),
-                'lastname'              => $item->lastname,
-                'middlename'            => $item->middlename,
-                'name'                  => $item->name,
-                'typedocument_name'     => $item->typedocument->name,
-                'typedocument_id'       => $item->typedocument->id,
+                'typedocument_name'     => $item->typedocument->avr,
                 'documentnumber'        => $item->documentnumber,
+                'lastname'              => mb_strtoupper($item->lastname),
+                'middlename'            => mb_strtoupper($item->middlename),
+                'name'                  => mb_strtoupper($item->name),
+                'gender_name'           => $item->gender->avr,
+                'sick'                  => mb_strtoupper($item->sick ?? null),
                 'email'                 => $item->email ?? null,
                 'phone'                 => $item->phone ?? null,
-                'gender_name'           => $item->gender->name,
+                'country_name'          => mb_strtoupper($item->country->name ?? null),
+                'is_asesoria'           => $item->is_asesoria,
+                'was_formalizado'       => $item->was_formalizado,
+
+                'typedocument_id'       => $item->typedocument->id,
                 'gender_id'             => $item->gender->id,
-                'sick'                  => $item->sick ?? null,
+
+                'created_at'            => Carbon::parse($item->created_at)->format('d-m-Y H:i'),
 
                 'ruc'                   => $item->ruc ?? null,
                 'comercialName'        => $item->comercialName ?? null,
@@ -689,5 +694,48 @@ class AttendanceController extends Controller
                 'total_regiones'  => $totalRegiones,
             ]
         ]);
+    }
+
+    public function updateValuesSelect(Request $request)
+    {
+        $request->validate([
+            'slug'   => 'required|string',
+            'rowId'  => 'required|integer',
+            'column' => 'required|string|in:is_asesoria,was_formalizado',
+            'value'  => 'nullable|in:s,n',
+        ]);
+
+        // 1️⃣ Buscar evento por slug
+        $attendance = Attendance::where('slug', $request->slug)->first();
+
+        if (!$attendance) {
+            return response()->json([
+                'message' => 'Evento no encontrado'
+            ], 404);
+        }
+
+        // 2️⃣ Buscar postulante dentro de ese evento
+        $row = AttendanceList::where('id', $request->rowId)
+            ->where('attendancelist_id', $attendance->id)
+            ->first();
+
+        if (!$row) {
+            return response()->json([
+                'message' => 'Registro no encontrado para este evento'
+            ], 404);
+        }
+
+        // 3️⃣ Actualizar columna dinámica
+        $row->{$request->column} = $request->value;
+        $row->save();
+
+        return response()->json([
+            'message' => 'Actualizado correctamente',
+            'data' => [
+                'id'     => $row->id,
+                'column' => $request->column,
+                'value'  => $request->value
+            ]
+        ], 200);
     }
 }
