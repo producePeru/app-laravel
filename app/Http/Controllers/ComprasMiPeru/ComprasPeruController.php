@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\CpRegistros;
 use App\Models\Mype;
 use Carbon\Carbon;
+use Exception;
 
 class ComprasPeruController extends Controller
 {
@@ -175,5 +176,38 @@ class ComprasPeruController extends Controller
       'comercialactivity' => $item->comercialactivity->name,
       'year' => Carbon::parse($item->created_at)->format('Y')
     ];
+  }
+
+  public function destroy($id)
+  {
+
+    $permission = getPermission('compras-peru-reportes');
+
+    $canDelete =  $permission['hasPermissionDelete'] ?? false;
+
+    try {
+
+      if (!$canDelete) {
+        return [
+          'status' => 500,
+          'message' => 'No tienes permiso para esta acción'
+        ];
+      }
+      $registro = CpRegistros::findOrFail($id);
+
+      $registro->delete();
+
+      return [
+        'status' => 200,
+        'message' => 'Registro eliminado correctamente'
+      ];
+    } catch (Exception $e) {
+
+      return [
+        'success' => false,
+        'message' => 'Error al eliminar el registro',
+        'error'   => $e->getMessage()
+      ];
+    }
   }
 }

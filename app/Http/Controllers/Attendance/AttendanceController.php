@@ -50,10 +50,8 @@ class AttendanceController extends Controller
             return $this->mapAdvisory($item);
         });
 
-
-
-
         $year  = 2026;
+
         $today = Carbon::today();
 
         $baseQuery = Attendance::query()

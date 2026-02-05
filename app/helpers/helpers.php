@@ -46,7 +46,9 @@ if (!function_exists('getPermission')) {
         }
 
         return [
-            'hasPermission' => $pivot->can_view_all == 1 ? true : false,
+            'hasPermission'         => $pivot->can_view_all == 1 ? true : false,
+            'hasPermissionDelete'   => $pivot->can_delete == 1 ? true : false,
+
         ];
     }
 }
