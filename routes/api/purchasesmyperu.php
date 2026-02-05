@@ -11,9 +11,9 @@ Route::controller(ComprasPeruController::class)->group(function () {
     Route::put('update-data-mype', 'updateDataMype');
 
     Route::get('list', 'index');
+
+    Route::delete('delete/{idRow}', 'destroy');
 });
-
-
 
 
 // purchases-my-peru
