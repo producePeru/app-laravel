@@ -712,6 +712,11 @@ class MujerProduceController extends Controller
             'rubro:id,name',
             'economicSector:id,name'
         ])
+            ->withCount([
+                'attendances as shares' => function ($q) {
+                    $q->where('attendance', 1);
+                }
+            ])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('ruc', 'like', "%{$search}%")
@@ -810,6 +815,8 @@ class MujerProduceController extends Controller
             'actividad'         => $participant->comercialActivity->name ?? null,
             'rubro'             => $participant->rubro->name ?? null,
             'economicSector'    => $participant->economicSector->name ?? null,
+
+            'shares'            => $participant->shares,
 
             'responses'         => $mappedResponses,
 
@@ -931,5 +938,72 @@ class MujerProduceController extends Controller
             'status' => 200,
             'message' => 'Asistencia eliminada correctamente'
         ]);
+    }
+
+    public function detailShare($id)
+    {
+        try {
+
+            $attendances = MPAttendance::with([
+                'event.capacitador:id,name',
+                'event.modality:id,name'
+            ])
+                ->where('participant_id', $id)
+                ->where('attendance', 1)
+                ->orderBy('id', 'DESC')
+                ->get();
+
+            // =========================
+            // CONTEOS POR COMPONENTE
+            // =========================
+            $gestion = $attendances->filter(fn($a) => $a->event?->component === 1)->count();
+            $habilidades = $attendances->filter(fn($a) => $a->event?->component === 2)->count();
+
+            $result = $attendances->map(function ($item) {
+
+                $event = $item->event;
+
+                return [
+                    'title'        => $event?->title,
+                    'capacitador'  => $event?->capacitador?->name,
+                    'date'         => $event?->date
+                        ? \Carbon\Carbon::parse($event->date)->format('d/m/Y')
+                        : null,
+                    'hourStart' => $event?->hourStart
+                        ? \Carbon\Carbon::createFromFormat('H:i:s', $event->hourStart)->format('g:i A')
+                        : null,
+
+                    'hourEnd' => $event?->hourEnd
+                        ? \Carbon\Carbon::createFromFormat('H:i:s', $event->hourEnd)->format('g:i A')
+                        : null,
+
+                    'modalidad'    => $event->modality->name ?? null,
+                    'component'    => match ($event?->component) {
+                        1       => 'GESTIÓN EMPRESARIAL',
+                        2       => 'HABILIDADES PERSONALES',
+                        default => null,
+                    },
+
+                ];
+            });
+
+            return response()->json([
+                'data'   => $result,
+                'total'  => $result->count(),
+                // 👇 CONTADORES CLAROS PARA EL FRONT
+                'totals' => [
+                    'gestion_empresarial'   => $gestion,
+                    'habilidades_personales' => $habilidades,
+                ],
+                'status' => 200
+            ]);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'message' => 'Error al obtener el detalle de asistencias',
+                'error'   => $e->getMessage(),
+                'status'  => 500
+            ], 500);
+        }
     }
 }
