@@ -561,7 +561,7 @@ class MujerProduceController extends Controller
             // =====================================================
             $request->validate([
                 'label'     => 'required|string|max:250',
-                'type'      => 'required|in:t,o',
+                'type'      => 'required|in:t,o,l',
                 'required'  => 'required|in:s,n',
                 'options'   => 'nullable|array',
             ]);
