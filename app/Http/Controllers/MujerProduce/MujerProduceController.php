@@ -692,6 +692,7 @@ class MujerProduceController extends Controller
         $search = trim($request->input('name'));
         $startDate  = $request->input('startDate');
         $endDate    = $request->input('endDate');
+        $capas      = $request->input('capas'); // up | down
 
         // =========================
         // PREGUNTAS ACTIVAS (1 sola vez)
@@ -733,11 +734,13 @@ class MujerProduceController extends Controller
                     ]);
                 });
             })
-            ->orderByRaw('EXISTS (
-        SELECT 1
-        FROM mp_diag_respuestas r
-        WHERE r.participant_id = mp_participantes.id
-    ) DESC')
+            ->when($capas === 'up', function ($query) {
+                $query->orderBy('shares', 'DESC'); // mayor a menor
+            })
+            ->when($capas === 'down', function ($query) {
+                $query->orderBy('shares', 'ASC'); // menor a mayor
+            })
+            ->orderByRaw('EXISTS ( SELECT 1 FROM mp_diag_respuestas r WHERE r.participant_id = mp_participantes.id) DESC')
             ->orderBy('id', 'DESC')
             ->paginate(100);
 
