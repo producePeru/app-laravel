@@ -4,17 +4,20 @@ namespace App\Http\Controllers\Attendance;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateUgoParticipantRequest;
+use App\Mail\UgoActividadCreadaMail;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
 use App\Models\City;
 use App\Models\District;
 use App\Models\Event;
 use App\Models\Province;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 use mysqli;
 
 class AttendanceController extends Controller
@@ -118,7 +121,7 @@ class AttendanceController extends Controller
             'province' => $item->provincia->name ?? null,
             'district' => $item->distrito->name ?? null,
             'address' => $item->address ?? null,
-            'pasaje' => $item->pasaje == 'n' ? 'NO' : ($item->pasaje == 's' ? 'SI' : null),
+            'pasaje' => $item->pasaje,
             'monto' => $item->monto ?? null,
 
             'tipo_actividad_id' => $item->pnte->id,
@@ -285,7 +288,6 @@ class AttendanceController extends Controller
     {
         try {
             $user = Auth::user();
-
             $registro = Attendance::findOrFail($id);
             $data = $request->all();
 
@@ -294,7 +296,6 @@ class AttendanceController extends Controller
              */
             if ($user->rol == 2) {
 
-                // Debe ser dueño del registro
                 if (
                     $registro->user_id != $user->id ||
                     $registro->asesorId != $user->id
@@ -305,39 +306,31 @@ class AttendanceController extends Controller
                     ]);
                 }
 
-                // No puede cambiar user_id ni asesorId
+                // No puede cambiar estos campos
                 unset($data['user_id'], $data['asesorId']);
             }
 
-        // rol == 1 → puede editar todo (no se restringe nada)
-
             /**
-             * SLUG
+             * 🚫 NUNCA actualizar slug
              */
-            if (isset($data['title'])) {
-                $slug = Str::slug($data['title']);
-
-                if (Attendance::where('slug', $slug)->exists()) {
-                    $slug .= '-' . now()->format('His');
-                }
-
-                $data['slug'] = $slug;
-            }
+            unset($data['slug']);
 
             $registro->update($data);
 
             return response()->json([
                 'message' => 'Registro actualizado con éxito',
-                'status'  => 200
+                'status'  => 200,
+                'data'    => $registro
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error de registro',
+                'message' => 'Error de actualización',
                 'status'  => 500,
                 'error'   => $e->getMessage()
             ], 500);
         }
     }
+
 
     public function delete($id)
     {
@@ -775,5 +768,48 @@ class AttendanceController extends Controller
                 'value'  => $request->value
             ]
         ], 200);
+    }
+
+    public function sendAttendanceMail(Request $request)
+    {
+        $mailer = 'notificaciones';
+        $emailDestinoS = ['jloo6778@gmail.com', 'tuempresa_temp406@produce.gob.pe'];
+
+        $data = $request->all();
+
+        // Determinar si es nuevo o actualización
+        $isEdit = isset($data['original']);
+
+        $changes = [];
+
+        if ($isEdit) {
+            foreach ($data['original'] as $field => $oldValue) {
+                if (isset($data[$field]) && $data[$field] != $oldValue) {
+                    $changes[$field] = [
+                        'antes' => $oldValue,
+                        'ahora' => $data[$field]
+                    ];
+                }
+            }
+        }
+
+        // Instancia SOLO para pasar datos al correo (no se guarda)
+        $attendance = new Attendance($data);
+
+        $asesor = User::find($data['asesorId']);
+
+        $link = 'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $data['slug'];
+
+        Mail::mailer($mailer)
+            ->to($emailDestinoS)
+            ->send(new UgoActividadCreadaMail(
+                $attendance,
+                $asesor,
+                $link,
+                $isEdit,
+                $changes
+            ));
+
+        return response()->json(['ok' => true]);
     }
 }
