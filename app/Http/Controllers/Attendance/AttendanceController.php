@@ -246,20 +246,20 @@ class AttendanceController extends Controller
             /**
              * NORMALIZACIÓN POR MODALIDAD
              */
-            if ($data['modality'] === 'v') {
-                $data['city_id']     = null;
-                $data['province_id'] = null;
-                $data['district_id'] = null;
-                $data['address']     = null;
-                $data['pasaje']      = null;
-                $data['monto']       = null;
-            }
+            // if ($data['modality'] === 'v') {
+            //     $data['city_id']     = null;
+            //     $data['province_id'] = null;
+            //     $data['district_id'] = null;
+            //     $data['address']     = null;
+            //     $data['pasaje']      = null;
+            //     $data['monto']       = null;
+            // }
 
-            if ($data['modality'] === 'p') {
-                if (($data['pasaje'] ?? 'n') === 'n') {
-                    $data['monto'] = null;
-                }
-            }
+            // if ($data['modality'] === 'p') {
+            //     if (($data['pasaje'] ?? 'n') === 'n') {
+            //         $data['monto'] = null;
+            //     }
+            // }
 
             /**
              * CREATE
