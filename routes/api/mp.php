@@ -70,6 +70,14 @@ Route::controller(FormularioPublicoController::class)->group(function () {
     Route::get('index-events-soon', 'mpIndexEventsSoon');
 
     Route::post('send-event-email', 'sendEventEmail');
+
+    Route::get('advices', 'mpIndexAdvice');
+
+    Route::get('advice-participant/{dni}', 'mpAdviceParticipant');
+
+    Route::post('reserve-advice', 'reserveAdvice');
+
+    Route::get('my-advices/{dni}', 'mpMyAdvice');
 });
 
 // mp

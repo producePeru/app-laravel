@@ -89,19 +89,25 @@ class PageController extends Controller
     {
         try {
 
-            $pages = Page::where('office', 'UGO')->orderBy('id', 'asc')->paginate(150);
+            $type = "ases";
+
+            $pages = Page::where('office', 'UGO')
+                ->where('group', $type) // ← filtro dinámico
+                ->orderBy('id', 'asc')
+                ->paginate(150);
 
             return response()->json([
                 'success' => true,
-                'data' => $pages,
-                'status' => 200
+                'data'    => $pages,
+                'status'  => 200
             ]);
         } catch (\Exception $e) {
+
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error al obtener las páginas.',
-                'error' => $e->getMessage(),
-                'status' => 500
+                'error'   => $e->getMessage(),
+                'status'  => 500
             ], 500);
         }
     }

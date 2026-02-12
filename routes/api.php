@@ -214,6 +214,10 @@ Route::prefix('mp')->group(function () {
     require __DIR__ . '/api/mp.php';
 });
 
+Route::prefix('mp')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/mpAuth.php';
+});
+
 // PUBLICAS
 Route::prefix('api')->group(function () {
     require __DIR__ . '/api/apis.php';
@@ -677,6 +681,8 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
 
     Route::put('update-values-select',          [AttendanceController::class, 'updateValuesSelect']);
     Route::post('email-create-activity',        [AttendanceController::class, 'sendAttendanceMail']);        // migra los eventos de UGO al calendario sr Carlos
+    Route::get('events-by-region',              [AttendanceController::class, 'eventsByRegion']);        // migra los eventos de UGO al calendario sr Carlos
+
 });
 
 
