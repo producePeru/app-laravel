@@ -812,4 +812,15 @@ class AttendanceController extends Controller
 
         return response()->json(['ok' => true]);
     }
+
+
+    public function eventsByRegion(Request $request)
+    {
+        $year = $request->get('year'); // ej: 2026
+
+        return response()->json([
+            'status' => true,
+            'data'   => City::numberEventsByRegion($year)
+        ]);
+    }
 }

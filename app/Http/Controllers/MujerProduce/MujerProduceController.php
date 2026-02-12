@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MujerProduce;
 
 use App\Http\Controllers\Controller;
+use App\Models\MPAdvice;
 use App\Models\MPAttendance;
 use App\Models\MPCapacitador;
 use App\Models\MPDiagnostico;
@@ -13,6 +14,8 @@ use App\Models\MPParticipant;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 
 class MujerProduceController extends Controller
 {
@@ -1008,5 +1011,109 @@ class MujerProduceController extends Controller
                 'status'  => 500
             ], 500);
         }
+    }
+
+
+
+    // ASESORIAS PERSONALIZADAS
+
+    public function createPersonalizedAdvice(Request $request)
+    {
+        try {
+
+            $validated = $request->validate([
+                'title'           => 'required|string|max:255',
+                'description'     => 'nullable|string',
+                'requirements'    => 'nullable|string',
+                'capacitador_id'  => 'required|exists:mp_capacitadores,id',
+                'date'            => 'required|date',
+                'link'            => 'nullable|string',
+                'hourStart'       => 'required|date_format:H:i',
+                'hourEnd'         => 'required|date_format:H:i|after:hourStart',
+                'image_id'        => 'nullable|exists:images,id',
+            ]);
+
+            $activity = MPAdvice::create([
+                'title'          => $validated['title'],
+                'description'    => $validated['description'] ?? null,
+                'requirements'   => $validated['requirements'] ?? null,
+                'capacitador_id' => $validated['capacitador_id'],
+                'date'           => $validated['date'],
+                'link'           => $validated['link'] ?? null,
+                'hourStart'      => $validated['hourStart'],
+                'hourEnd'        => $validated['hourEnd'],
+                'image_id'       => $validated['image_id'] ?? null,
+                'user_id'        => Auth::id(),
+            ]);
+
+            return response()->json([
+                'message'   => 'Actividad creada correctamente',
+                'data'      => $activity,
+                'status'    => 200
+            ], 201);
+        } catch (QueryException $e) {
+
+            return response()->json([
+                'message' => 'Error en la base de datos',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function mpIndexAdvice(Request $request)
+    {
+        $filters = [
+            'date'      => $request->input('date'),
+            'title'     => $request->input('title'),
+            'orderby'   => $request->input('orderby'),
+        ];
+
+        $query = MPAdvice::query();
+
+        // relaciones necesarias
+        $query->with([
+            'capacitador:id,name',
+            'image:id,url,name'
+        ])
+            ->orderBy('id', 'DESC');
+
+        $items = $query->paginate(100)->through(function ($item) {
+            return $this->mapAdviceItems($item);
+        });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
+    private function mapAdviceItems($item)
+    {
+        return [
+            'id'                => $item->id,
+            'title'             => $item->title,
+            'description'       => $item->description,
+            'requirements'      => $item->requirements,
+
+            'date'              => $item->date,
+            'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
+
+            'hourStart'         => $item->hourStart,
+            'hourEnd'           => $item->hourEnd,
+            'link'              => $item->link,
+
+            'capacitador_id'    => $item->capacitador_id,
+            'capacitador_name'  => $item->capacitador->name ?? null,
+
+            'image_id'          => $item->image_id,
+            'image_url'         => $item->image->url ? url($item->image->url) : null,
+            'image_name'        => $item->image->name ?? null,
+
+            'user_id'           => $item->user_id,
+
+            'created_at'        => $item->created_at,
+            'updated_at'        => $item->updated_at,
+        ];
     }
 }

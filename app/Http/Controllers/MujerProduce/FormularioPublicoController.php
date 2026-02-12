@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MujerProduce;
 
 use App\Http\Controllers\Controller;
 use App\Mail\EventMujerProduceMail;
+use App\Models\MPAdvice;
 use Illuminate\Support\Facades\DB;
 use App\Models\MPDiagnostico;
 use App\Models\MPParticipant;
@@ -15,6 +16,7 @@ use GuzzleHttp\Client;
 use App\Models\Token;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 Carbon::setLocale('es');
 
@@ -1183,5 +1185,174 @@ class FormularioPublicoController extends Controller
             'message' => 'Correo enviado correctamente',
             'mailer'  => $mailer
         ]);
+    }
+
+    public function mpIndexAdvice(Request $request)
+    {
+        $filters = [
+            'date'      => $request->input('date'),
+            'title'     => $request->input('title'),
+            'orderby'   => $request->input('orderby'),
+        ];
+
+        $query = MPAdvice::query();
+
+        // relaciones necesarias
+        $query->with([
+            'capacitador:id,name',
+            'image:id,url,name'
+        ])
+            ->orderBy('id', 'DESC');
+
+        $items = $query->paginate(100)->through(function ($item) {
+            return $this->mapAdviceItems($item);
+        });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
+    private function mapAdviceItems($item)
+    {
+        return [
+            'id'                => $item->id,
+            'title'             => $item->title,
+            'description'       => Str::limit(strip_tags($item->description), 150, '...'),
+            'requirements'      => $item->requirements,
+
+            'date'              => $item->date,
+            'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
+
+            'hourStart'         => $item->hourStart ? Carbon::parse($item->hourStart)->format('H:s') : null,
+            'hourEnd'           => $item->hourEnd ? Carbon::parse($item->hourEnd)->format('H:s') : null,
+            'link'              => $item->link,
+
+            'reservated'        => !is_null($item->mype_id),
+
+            'capacitador_name'  => $item->capacitador->name ?? null,
+            'image_url'         => $item->image->url ? url($item->image->url) : null,
+        ];
+    }
+
+
+
+    public function mpAdviceParticipant($dni)
+    {
+        $participant = MPParticipant::where('doc_number', $dni)->first();
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'Participante no encontrado.',
+                'status'  => 404
+            ]);
+        }
+
+        return response()->json([
+            'names'       => $participant->names,
+            'ruc'         => $participant->ruc,
+            'doc_number'  => $participant->doc_number,
+            'status'      => 200
+        ], 200);
+    }
+
+
+    public function reserveAdvice(Request $request)
+    {
+        $data = $request->validate([
+            'ruc'        => 'nullable|string',
+            'dni'        => 'required|string',
+            'names'      => 'required|string',
+            'advice_id'  => 'required|integer'
+        ]);
+
+        // 1️⃣ Buscar participante
+        $participant = MPParticipant::where('doc_number', $data['dni'])
+            ->where('ruc', $data['ruc'])
+            ->where('names', $data['names'])
+            ->first();
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'Participante no encontrado.'
+            ], 404);
+        }
+
+        // 2️⃣ Buscar asesoría
+        $advice = MPAdvice::find($data['advice_id']);
+
+        if (!$advice) {
+            return response()->json([
+                'message' => 'Asesoría no encontrada.'
+            ], 404);
+        }
+
+        // 3️⃣ Validar si ya fue reservada
+        if (!is_null($advice->mype_id)) {
+            return response()->json([
+                'message' => 'Esta asesoría ya fue tomada.',
+                'status' => 409
+            ]); // Conflict
+        }
+
+        // 4️⃣ Reservar
+        $advice->mype_id = $participant->id;
+        $advice->save();
+
+        return response()->json([
+            'message'   => 'Asesoría reservada correctamente.',
+            'advice_id' => $advice->id,
+            'mype_id'   => $participant->id,
+            'status'    => 200
+        ], 200);
+    }
+
+    public function mpMyAdvice($dni)
+    {
+        $participant = MPParticipant::where('doc_number', $dni)->first();
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'Participante no encontrado.'
+            ], 404);
+        }
+
+        $query = MPAdvice::query()
+            ->where('mype_id', $participant->id)
+            ->with([
+                'capacitador:id,name',
+                'image:id,url,name'
+            ])
+            ->orderBy('id', 'DESC');
+
+        $items = $query->paginate(100)->through(function ($item) {
+            return $this->mapMyAdviceItems($item);
+        });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
+    private function mapMyAdviceItems($item)
+    {
+        return [
+            'id'                => $item->id,
+            'title'             => $item->title,
+            'description'       => Str::limit(strip_tags($item->description), 150, '...'),
+            'requirements'      => $item->requirements,
+
+            'date'              => $item->date,
+            'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
+
+            'hourStart'         => $item->hourStart ? Carbon::parse($item->hourStart)->format('H:s') : null,
+            'hourEnd'           => $item->hourEnd ? Carbon::parse($item->hourEnd)->format('H:s') : null,
+            'link'              => $item->link,
+
+            'capacitador_name'  => $item->capacitador->name ?? null,
+            'image_url'         => $item->image->url ? url($item->image->url) : null,
+        ];
     }
 }
