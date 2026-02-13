@@ -25,6 +25,10 @@ Route::controller(AttendanceController::class)->group(function () {
     Route::get('events-assigned-advisor', 'eventsAssignedAdvisor');
 
     Route::get('events-assigned-dashboard', 'eventsAssignedDashboard');
+
+    // REPORTES **
+
+    Route::get('list-events-ugo-by-city/{id}', 'listEventsUgoByCity');
 });
 
 

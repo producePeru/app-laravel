@@ -20,6 +20,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+Carbon::setLocale('es');
+
 class DownloadAttendanceController extends Controller
 {
 

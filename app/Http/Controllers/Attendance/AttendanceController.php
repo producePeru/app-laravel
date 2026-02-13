@@ -772,8 +772,11 @@ class AttendanceController extends Controller
 
     public function sendAttendanceMail(Request $request)
     {
+
+        return "hi";
+
         $mailer = 'notificaciones';
-        $emailDestinoS = ['tuempresa_temp406@produce.gob.pe', 'jloo6778@gmail.com'];
+        $emailDestinoS = ['tuempresa_temp406@produce.gob.pe'];
 
         $data = $request->all();
 
@@ -821,6 +824,84 @@ class AttendanceController extends Controller
         return response()->json([
             'status' => true,
             'data'   => City::numberEventsByRegion($year)
+        ]);
+    }
+
+
+
+    // REPORTES ****
+    public function listEventsUgoByCity($city_id)
+    {
+        $permission = getPermission('eventos-ugo');
+
+        if (!$permission['hasPermission']) {
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a esta sección',
+                'status' => 403
+            ]);
+        }
+
+        $year  = 2026;
+        $today = Carbon::today();
+
+        // 🔹 Query base por ciudad
+        $baseQuery = Attendance::query()
+            ->withCount('attendanceList')
+            ->where('city_id', $city_id)
+            ->whereYear('startDate', $year);
+
+        // 🔹 Listado
+        $items = (clone $baseQuery)
+            ->with([
+                'pnte',
+                'asesor',
+                'region',
+                'provincia',
+                'distrito',
+                'attendanceList'
+            ])
+            ->get()
+            ->map(function ($item) {
+                return $this->mapAdvisory($item);
+            });
+
+        // 🔹 ESTADÍSTICA ORIGINAL (SE MANTIENE)
+        $statistic = [
+
+            'diaria' => (clone $baseQuery)
+                ->whereDate('startDate', '<=', $today)
+                ->whereDate('endDate', '>=', $today)
+                ->count(),
+
+            'consolidada' => (clone $baseQuery)
+                ->whereDate('startDate', '>=', $today)
+                ->count(),
+
+            'pendiente' => (clone $baseQuery)
+                ->whereDate('endDate', '<', $today)
+                ->having('attendance_list_count', 0)
+                ->count(),
+
+            'finalizadas' => (clone $baseQuery)
+                ->whereDate('endDate', '<', $today)
+                ->having('attendance_list_count', '>=', 1)
+                ->count(),
+        ];
+
+        // 🔹 NUEVO: Estadística por modalidad
+        $modalidad = Attendance::where('city_id', $city_id)
+            ->whereYear('startDate', $year)
+            ->selectRaw("
+            SUM(CASE WHEN modality = 'p' THEN 1 ELSE 0 END) as presencial,
+            SUM(CASE WHEN modality = 'v' THEN 1 ELSE 0 END) as virtual
+        ")
+            ->first();
+
+        return response()->json([
+            'data'      => $items,
+            'statistic' => $statistic,
+            'modalidad' => $modalidad,
+            'status'    => 200,
         ]);
     }
 }
