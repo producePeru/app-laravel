@@ -10,6 +10,11 @@
 .htaccessx
 .david.pug
 
+config/cors.php
+bootstrap/app.php
+
+/public/storage/images
+/public/exports
 /public/storage/images/cyberwow
 # .phpunit.result.cache
 # Homestead.json

@@ -1189,3 +1189,307 @@ ADD CONSTRAINT tokens_user_id_foreign
 -- ALTER TABLE mp_eventos
 -- ADD COLUMN hourStart TIME NULL AFTER hours,
 -- ADD COLUMN hourEnd   TIME NULL AFTER hourStart;
+
+
+SELECT names, doc_number, COUNT(*) AS total
+FROM mp_participantes
+GROUP BY doc_number
+HAVING COUNT(*) > 1;
+
+
+
+-- ALTER TABLE page_user
+-- ADD COLUMN can_download_everything TINYINT(1) NOT NULL DEFAULT 0 AFTER can_import,
+-- ADD COLUMN can_date_range          TINYINT(1) NOT NULL DEFAULT 0 AFTER can_download_everything,
+-- ADD COLUMN can_download_reporte    TINYINT(1) NOT NULL DEFAULT 0 AFTER can_date_range;
+
+
+
+
+-- ALTER TABLE attendancelist
+-- ADD COLUMN theme            VARCHAR(255) AFTER finally,
+-- ADD COLUMN entidad          VARCHAR(255) AFTER theme,
+-- ADD COLUMN entidad_aliada   VARCHAR(255) AFTER entidad,
+-- ADD COLUMN pasaje           ENUM('s','n') DEFAULT 'n' AFTER entidad_aliada,
+-- ADD COLUMN monto            VARCHAR(10) AFTER pasaje,
+-- ADD COLUMN beneficiarios    VARCHAR(255) AFTER monto;
+
+
+
+-- CREATE TABLE cp_sector_priorizado (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL,
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+--         ON UPDATE CURRENT_TIMESTAMP
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- INSERT INTO cp_sector_priorizado (name, created_at, updated_at) VALUES
+-- ('TEXTIL Y CONFECCIONES', NOW(), NOW()),
+-- ('CUERO Y CALZADO', NOW(), NOW()),
+-- ('METALMECANICA', NOW(), NOW()),
+-- ('MADERA', NOW(), NOW());
+
+
+
+
+-- CREATE TABLE cp_componentes (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL,
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+--         ON UPDATE CURRENT_TIMESTAMP
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+-- INSERT INTO cp_componentes (name, created_at, updated_at) VALUES
+-- ('DESARROLLO PRODUCTIVO', NOW(), NOW()),
+-- ('DIGITALIZACIÓN', NOW(), NOW()),
+-- ('FINANCIAMIENTO', NOW(), NOW()),
+-- ('GESTIÓN EMPRESARIAL', NOW(), NOW());
+
+
+-- CREATE TABLE cp_temas (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL,
+--     component_id BIGINT UNSIGNED NOT NULL,
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+--         ON UPDATE CURRENT_TIMESTAMP,
+--     CONSTRAINT fk_cp_temas_componentes
+--         FOREIGN KEY (component_id)
+--         REFERENCES cp_componentes(id)
+--         ON DELETE RESTRICT
+--         ON UPDATE CASCADE
+-- ) ENGINE=InnoDB
+--   DEFAULT CHARSET=utf8mb4
+--   COLLATE=utf8mb4_unicode_ci;
+
+
+-- INSERT INTO cp_temas (name, component_id, created_at, updated_at) VALUES
+-- -- DESARROLLO PRODUCTIVO (1)
+-- ('CUIDA LA SEGURIDAD Y SALUD EN TU MYPE', 1, NOW(), NOW()),
+-- ('GESTIONA TU MYPE CON INDICADORES KPI', 1, NOW(), NOW()),
+-- ('OPTIMIZA TUS PROCESOS Y MEJORA TU MYPE', 1, NOW(), NOW()),
+
+-- -- DIGITALIZACIÓN (2)
+-- ('CREA CONTENIDO Y POSICIONA TU MYPE', 2, NOW(), NOW()),
+-- ('DIGITALIZA TUS CANALES DE COMUNICACIÓN', 2, NOW(), NOW()),
+
+-- -- FINANCIAMIENTO (3)
+-- ('ACCESO AL FINANCIAMIENTO', 3, NOW(), NOW()),
+-- ('ALTERNATIVAS DE FINANCIAMIENTO', 3, NOW(), NOW()),
+-- ('MEJORA TU GESTIÓN FINANCIERA', 3, NOW(), NOW()),
+-- ('APRENDE A LEER TUS ESTADOS FINANCIEROS', 3, NOW(), NOW()),
+-- ('FLUJO DE CAJA', 3, NOW(), NOW()),
+
+-- -- GESTIÓN EMPRESARIAL (4)
+-- ('RÉGIMEN TRIBUTARIO', 4, NOW(), NOW()),
+-- ('REMYPE', 4, NOW(), NOW()),
+-- ('ABC DE LA TRIBUTACIÓN', 4, NOW(), NOW()),
+-- ('EMITE TUS COMPROBANTES DE PAGO', 4, NOW(), NOW()),
+-- ('ESTRATEGIAS Y TÁCTICAS PARA VENDER MAS', 4, NOW(), NOW()),
+-- ('ESTRUCTURA DE COSTOS Y FIJA TUS PRECIOS', 4, NOW(), NOW()),
+-- ('ESTUDIA Y SEGMENTA TU MERCADO', 4, NOW(), NOW()),
+-- ('GESTIÓN FAMILIAR DE LA MYPE', 4, NOW(), NOW());
+
+
+-- CREATE TABLE cp_registros (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+--     city_id BIGINT UNSIGNED,
+--     province_id BIGINT UNSIGNED,
+--     district_id BIGINT UNSIGNED,
+
+--     economicsector_id BIGINT UNSIGNED,
+--     comercialactivity_id BIGINT UNSIGNED,
+
+--     component_id BIGINT UNSIGNED,
+--     theme_id BIGINT UNSIGNED,
+--     modality_id BIGINT UNSIGNED,
+
+--     ruc CHAR(11),
+--     razonSocial VARCHAR(255),
+
+--     periodo VARCHAR(255) DEFAULT NULL,
+--     cantidad CHAR(11) DEFAULT NULL,
+--     ubicacion VARCHAR(255) DEFAULT NULL,
+
+--     people_id BIGINT UNSIGNED NOT NULL,
+--     user_id BIGINT UNSIGNED,
+--     cde_id BIGINT UNSIGNED,
+--     ruc_obs CHAR(1) DEFAULT NULL,
+
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+--     CONSTRAINT fk_cp_registros_city
+--         FOREIGN KEY (city_id) REFERENCES cities(id),
+
+--     CONSTRAINT fk_cp_registros_province
+--         FOREIGN KEY (province_id) REFERENCES provinces(id),
+
+--     CONSTRAINT fk_cp_registros_district
+--         FOREIGN KEY (district_id) REFERENCES districts(id),
+
+--     CONSTRAINT fk_cp_registros_economicsector
+--         FOREIGN KEY (economicsector_id) REFERENCES cp_sector_priorizado(id),
+
+--     CONSTRAINT fk_cp_registros_comercialactivity
+--         FOREIGN KEY (comercialactivity_id) REFERENCES comercialactivities(id),
+
+--     CONSTRAINT fk_cp_registros_component
+--         FOREIGN KEY (component_id) REFERENCES cp_componentes(id),
+
+--     CONSTRAINT fk_cp_registros_theme
+--         FOREIGN KEY (theme_id) REFERENCES cp_temas(id),
+
+--     CONSTRAINT fk_cp_registros_modality
+--         FOREIGN KEY (modality_id) REFERENCES modalities(id),
+
+--     CONSTRAINT fk_cp_registros_people
+--         FOREIGN KEY (people_id) REFERENCES people(id),
+
+--     CONSTRAINT fk_cp_registros_user
+--         FOREIGN KEY (user_id) REFERENCES users(id),
+
+--     CONSTRAINT fk_cp_registros_cde
+--         FOREIGN KEY (cde_id) REFERENCES cdes(id)
+
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- ALTER TABLE ugo_postulantes
+--   ADD COLUMN city_id BIGINT UNSIGNED AFTER attendancelist_id,
+--   ADD COLUMN province_id BIGINT UNSIGNED AFTER city_id,
+--   ADD COLUMN district_id BIGINT UNSIGNED AFTER province_id;
+
+
+-- ALTER TABLE ugo_postulantes
+--   ADD CONSTRAINT fk_ugo_postulantes_city
+--     FOREIGN KEY (city_id) REFERENCES cities(id),
+--   ADD CONSTRAINT fk_ugo_postulantes_province
+--     FOREIGN KEY (province_id) REFERENCES provinces(id),
+--   ADD CONSTRAINT fk_ugo_postulantes_district
+--     FOREIGN KEY (district_id) REFERENCES districts(id);
+
+
+
+
+-- ALTER TABLE ugo_postulantes
+--   ADD CONSTRAINT fk_ugo_postulantes_country
+--   FOREIGN KEY (country_id) REFERENCES countries(id);
+
+
+-- ALTER TABLE ugo_postulantes
+--   ADD COLUMN country_id BIGINT UNSIGNED BEFORE city_id,
+--   ADD CONSTRAINT fk_ugo_postulantes_country
+--   FOREIGN KEY (country_id) REFERENCES countries(id);
+
+
+
+-- ALTER TABLE ugo_postulantes
+-- ADD COLUMN is_asesoria ENUM('s','n') DEFAULT NULL AFTER district_id,
+-- ADD COLUMN was_formalizado ENUM('s','n') DEFAULT NULL AFTER is_asesoria;
+
+
+
+
+
+
+-- CREATE TABLE audit_logs (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+--     table_name VARCHAR(100) NOT NULL,
+--     record_id BIGINT UNSIGNED NULL,
+
+--     action ENUM('created', 'updated', 'deleted', 'restored') NOT NULL,
+
+--     old_values JSON NULL,
+--     new_values JSON NULL,
+
+--     user_id BIGINT UNSIGNED NULL,
+--     ip_address VARCHAR(45) NULL,
+--     user_agent TEXT NULL,
+
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- ) ENGINE=InnoDB
+--   DEFAULT CHARSET=utf8mb4
+--   COLLATE=utf8mb4_unicode_ci;
+
+
+
+
+-- CREATE TABLE mp_personalized_advice (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+--     title VARCHAR(255) NOT NULL,
+--     description TEXT NULL,
+--     requirements LONGTEXT NULL,
+
+--     capacitador_id BIGINT UNSIGNED NOT NULL,
+--     user_id BIGINT UNSIGNED NOT NULL,
+--     image_id BIGINT UNSIGNED NULL,
+
+--     date DATE NOT NULL,
+--     hourStart TIME NOT NULL,
+--     hourEnd TIME NOT NULL,
+
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL,
+
+--     -- Foreign Keys
+--     CONSTRAINT fk_activities_capacitador
+--         FOREIGN KEY (capacitador_id) REFERENCES mp_capacitadores(id),
+
+--     CONSTRAINT fk_activities_user
+--         FOREIGN KEY (user_id) REFERENCES users(id),
+
+--     CONSTRAINT fk_activities_image
+--         FOREIGN KEY (image_id) REFERENCES images(id)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+ALTER TABLE mp_personalized_advice
+ADD COLUMN link VARCHAR(500) NULL AFTER hourEnd;
+
+
+ALTER TABLE mp_personalized_advice
+ADD COLUMN mype_id BIGINT UNSIGNED NULL AFTER link,
+ADD CONSTRAINT fk_mp_personalized_advice_mype
+FOREIGN KEY (mype_id)
+REFERENCES mp_participantes(id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+
+-- ALTER TABLE pages
+-- ADD COLUMN `group` VARCHAR(6) NULL AFTER office;
+
+
+-- INSERT INTO pages (`name`, `slug`, `office`, `group`)
+-- VALUES
+-- (
+--   'Reporte de las actividades',
+--   'actividades-ugo-reportes',
+--   'UGO',
+--   'ases'
+-- ),
+-- (
+--   'Actividades asignados por Asesor',
+--   'eventos-asignados-por-asesor',
+--   'UGO',
+--   'ases'
+-- ),
+-- (
+--   'Auditoría de las actividades',
+--   'actividades-ugo-auditoria',
+--   'UGO',
+--   'ases'
+-- );
