@@ -10,8 +10,8 @@
 .htaccessx
 .david.pug
 
-config/cors.php
 bootstrap/app.php
+config/cors.php
 
 /public/storage/images
 /public/exports
