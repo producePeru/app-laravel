@@ -565,4 +565,62 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+
+    public function updatedPersonalInfo(Request $request, $id, $dni)
+    {
+        // 1️⃣ Verificar que el usuario autenticado coincida con el ID recibido
+        $userSession = Auth::user();
+
+        if ($userSession->id != $id) {
+            return response()->json([
+                'message' => 'No autorizado.'
+            ], 403);
+        }
+
+        // 2️⃣ Validación del payload
+        $validated = $request->validate([
+            'email' => [
+                'required',
+                'email',
+                'regex:/^[a-zA-Z0-9._%+-]+@produce\.gob\.pe$/'
+            ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20'
+            ]
+        ]);
+
+        // 3️⃣ Buscar usuario
+        $user = User::findOrFail($id);
+
+        // 4️⃣ Actualizar campos
+        $user->personalemail = $validated['email'];
+        $user->phone = $validated['phone'] ?? null;
+
+        $user->save();
+
+        return response()->json([
+            'message'   => 'Información actualizada correctamente.',
+            'data'      => $user,
+            'status'    => 200
+        ], 200);
+    }
+
+    public function getPersonalInfo()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'No autenticado.'
+            ], 401);
+        }
+
+        return response()->json([
+            'email' => $user->personalemail,
+            'phone' => $user->phone
+        ], 200);
+    }
 }
