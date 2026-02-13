@@ -10,9 +10,6 @@
 .htaccessx
 .david.pug
 
-/bootstrap/app.php
-/config/cors.php
-
 /public/storage/images
 /public/exports
 /public/storage/images/cyberwow

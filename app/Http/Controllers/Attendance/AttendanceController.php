@@ -349,20 +349,30 @@ class AttendanceController extends Controller
 
     public function show($slug)
     {
-        $today = Carbon::now();
+        $attendance = Attendance::with('asesor')
+            ->where('slug', $slug)
+            ->first();
 
-        $attendance = Attendance::where('slug', $slug)->first();
+        if (!$attendance) {
+            return response()->json([
+                'message' => 'Actividad no registrada.',
+                'status' => 404
+            ], 404);
+        }
 
-        if ($attendance) {
+        if ($attendance->finally == 1) {
+            return response()->json([
+                'message' => 'Esta lista ya no está vigente.',
+                'status' => 422
+            ], 422);
+        }
 
-            if ($attendance->finally == 1) {
-                return response()->json(['message' => 'Esta lista ya no esta vigente.', 'status' => 500]);
-            }
-
-            return response()->json(['data' => [
+        return response()->json([
+            'data' => [
                 'slug' => $attendance->slug,
                 'title' => $attendance->title,
                 'address' => $attendance->address ?? null,
+
                 'startDate' => $attendance->startDate
                     ? Carbon::parse($attendance->startDate)->format('d/m/Y')
                     : null,
@@ -373,17 +383,17 @@ class AttendanceController extends Controller
 
                 'fecha' => $attendance->fecha ?? null,
                 'hora' => $attendance->hora ?? null,
+                'theme' => $attendance->theme,
 
-                'theme' => $attendance->theme
-                // 'startDate' => $attendance->startDate
+                'asesor' => $attendance->asesor ? [
+                    'name' => $attendance->asesor->name,
+                    'lastname' => $attendance->asesor->lastname,
+                    'middlename' => $attendance->asesor->middlename,
+                ] : null
 
-                // 'subTitle' => $attendance->subTitle,
-                // 'description' => $attendance->description,
-                // 'modality' => $attendance->modality
-            ], 'status' => 200]);
-        }
-
-        return response()->json(['message' => 'Lista no encontrada.', 'status' => 400]);
+            ],
+            'status' => 200
+        ], 200);
     }
 
     public function userPresent(Request $request)
