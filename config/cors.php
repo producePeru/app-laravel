@@ -9,7 +9,7 @@ return [
     |
     | Here you may configure your settings for cross-origin resource sharing
     | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed. 
+    | in web browsers. You are free to adjust these settings as needed.
     |
     | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
     |
@@ -19,14 +19,14 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // 'allowed_origins' => ['*'],
 
-    // 'allowed_origins' => [
-    //     'https://programa.soporte-pnte.com',
-    //     'https://inscripcion.soporte-pnte.com',
-    //     'https://fiesta-del-cafe.soporte-pnte.com',
-    //     'https://seguimiento-capacitaciones.soporte-pnte.com'
-    // ],
+    'allowed_origins' => [
+        'https://programa.soporte-pnte.com',
+        'https://inscripcion.soporte-pnte.com',
+        'https://fiesta-del-cafe.soporte-pnte.com',
+        'https://seguimiento-capacitaciones.soporte-pnte.com'
+    ],
 
     'allowed_origins_patterns' => [],
 
