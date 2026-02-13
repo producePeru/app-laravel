@@ -772,11 +772,15 @@ class AttendanceController extends Controller
 
     public function sendAttendanceMail(Request $request)
     {
-
-        return "hi";
-
         $mailer = 'notificaciones';
-        $emailDestinoS = ['tuempresa_temp406@produce.gob.pe'];
+
+        $emailDestinoS = ['tuempresa_temp406@produce.gob.pe', 'tuempresa_temp220@produce.gob.pe', 'tuempresa_temp423@produce.gob.pe'];
+
+        $my_email = Auth::user()->personalemail;
+
+        if (!empty($my_email)) {
+            $emailDestinoS[] = $my_email;
+        }
 
         $data = $request->all();
 
