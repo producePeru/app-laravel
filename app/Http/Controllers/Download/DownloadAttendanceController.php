@@ -85,7 +85,12 @@ class DownloadAttendanceController extends Controller
                         $item->monto ?? null,
                         $item->beneficiarios ?? null,
                         Carbon::parse($item->created_at)->format('d/m/Y'),
-                        // $item->attendanceList?->count() ?? 0,
+
+
+                        $item->attendanceList?->count() ?? 'SIN LISTA',
+                        $item->totalAsesorias,
+                        $item->totalFormalizaciones
+
                         // Carbon::parse($item->startDate)->format('d/m/Y'),
                         // Carbon::parse($item->endDate)->format('d/m/Y'),
                         // Carbon::parse($item->startDate)

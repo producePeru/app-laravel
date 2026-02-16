@@ -1493,3 +1493,10 @@ ON UPDATE CASCADE;
 --   'UGO',
 --   'ases'
 -- );
+
+
+
+ALTER TABLE attendancelist
+ADD COLUMN totalAsesorias TINYINT UNSIGNED NULL DEFAULT NULL AFTER beneficiarios,
+ADD COLUMN totalFormalizaciones TINYINT UNSIGNED NULL DEFAULT NULL AFTER totalAsesorias;
+
