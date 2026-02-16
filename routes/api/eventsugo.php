@@ -29,6 +29,8 @@ Route::controller(AttendanceController::class)->group(function () {
     // REPORTES **
 
     Route::get('list-events-ugo-by-city/{id}', 'listEventsUgoByCity');
+
+    Route::put('set-number-values', 'setNumberValues');
 });
 
 

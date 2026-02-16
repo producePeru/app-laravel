@@ -130,6 +130,9 @@ class AttendanceController extends Controller
             'province_id' => $item->provincia->id ?? null,
             'district_id' => $item->distrito->id ?? null,
 
+            'totalAsesorias' => $item->totalAsesorias,
+            'totalFormalizaciones' => $item->totalFormalizaciones,
+
             'attendance_list_count' => $item->attendanceList?->count() ?? 0,
             'slug' => $item->slug,
             'created_at' => Carbon::parse($item->created_at)->format('d/m/Y H:i')
@@ -916,6 +919,27 @@ class AttendanceController extends Controller
             'statistic' => $statistic,
             'modalidad' => $modalidad,
             'status'    => 200,
+        ]);
+    }
+
+    public function setNumberValues(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required|integer|exists:attendancelist,id',
+            'field' => 'required|string|in:totalAsesorias,totalFormalizaciones',
+            'value' => 'nullable|integer|min:0|max:100',
+        ]);
+
+        $attendance = Attendance::findOrFail($validated['id']);
+
+        $field = $validated['field'];
+        $attendance->$field = $validated['value'];
+
+        $attendance->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Registro actualizado correctamente.'
         ]);
     }
 }

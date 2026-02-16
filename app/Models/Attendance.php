@@ -39,7 +39,10 @@ class Attendance extends Model
         'entidad_aliada',
         'pasaje',
         'monto',
-        'beneficiarios'
+        'beneficiarios',
+
+        'totalAsesorias',
+        'totalFormalizaciones'
     ];
 
     public function region()
