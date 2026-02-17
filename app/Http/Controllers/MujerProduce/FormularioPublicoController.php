@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MujerProduce;
 use App\Http\Controllers\Controller;
 use App\Mail\EventMujerProduceMail;
 use App\Models\MPAdvice;
+use App\Models\MPAdviceDate;
 use Illuminate\Support\Facades\DB;
 use App\Models\MPDiagnostico;
 use App\Models\MPParticipant;
@@ -265,8 +266,6 @@ class FormularioPublicoController extends Controller
             ], 500);
         }
     }
-
-
 
     // Registramos a un participante de mujer produce
     public function registerParticipant(Request $request)
@@ -1187,22 +1186,30 @@ class FormularioPublicoController extends Controller
         ]);
     }
 
+
     public function mpIndexAdvice(Request $request)
     {
-        $filters = [
-            'date'      => $request->input('date'),
-            'title'     => $request->input('title'),
-            'orderby'   => $request->input('orderby'),
-        ];
-
         $query = MPAdvice::query();
 
-        // relaciones necesarias
+        $today = Carbon::today()->toDateString();
+
         $query->with([
             'capacitador:id,name',
-            'image:id,url,name'
+            'image:id,url,name',
+            'dates' => function ($q) use ($today) {
+
+                $q->whereNull('mype_id') // 🔹 Solo horarios disponibles
+                    ->orderByRaw("
+            CASE 
+                WHEN date >= ? THEN 0
+                ELSE 1
+            END
+        ", [$today])
+                    ->orderBy('date', 'ASC')
+                    ->orderBy('startTime', 'ASC');
+            }
         ])
-            ->orderBy('id', 'DESC');
+            ->orderByDesc('id');
 
         $items = $query->paginate(100)->through(function ($item) {
             return $this->mapAdviceItems($item);
@@ -1217,24 +1224,38 @@ class FormularioPublicoController extends Controller
     private function mapAdviceItems($item)
     {
         return [
-            'id'                => $item->id,
-            'title'             => $item->title,
-            'description'       => Str::limit(strip_tags($item->description), 150, '...'),
-            'requirements'      => $item->requirements,
+            'id'           => $item->id,
+            'title'        => $item->title,
+            'description'  => Str::limit(strip_tags($item->description), 150, '...'),
+            'requirements' => $item->requirements,
+            'link'         => $item->link,
 
-            'date'              => $item->date,
-            'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
+            // 🔹 Horarios ordenados (ya vienen ordenados desde SQL)
+            'schedules' => $item->dates->map(function ($date) {
 
-            'hourStart'         => $item->hourStart ? Carbon::parse($item->hourStart)->format('H:s') : null,
-            'hourEnd'           => $item->hourEnd ? Carbon::parse($item->hourEnd)->format('H:s') : null,
-            'link'              => $item->link,
+                return [
+                    'id'          => $date->id,
+                    'date'        => $date->date,
+                    'date_format' => Carbon::parse($date->date)->format('d/m/Y'),
+                    'startTime'   => Carbon::parse($date->startTime)->format('g:i A'),
+                    'endTime'     => Carbon::parse($date->endTime)->format('g:i A'),
+                    'is_past'     => Carbon::parse($date->date)->isPast(),
+                ];
+            }),
 
-            'reservated'        => !is_null($item->mype_id),
+            // 🔹 Indica si algún horario está reservado
+            'has_reservation' => $item->dates->contains(function ($d) {
+                return !is_null($d->mype_id);
+            }),
 
-            'capacitador_name'  => $item->capacitador->name ?? null,
-            'image_url'         => $item->image->url ? url($item->image->url) : null,
+            'capacitador_name' => $item->capacitador->name ?? null,
+            'image_url'        => $item->image?->url ? url($item->image->url) : null,
+
+            'created_at' => $item->created_at,
+            'updated_at' => $item->updated_at,
         ];
     }
+
 
 
 
@@ -1261,10 +1282,10 @@ class FormularioPublicoController extends Controller
     public function reserveAdvice(Request $request)
     {
         $data = $request->validate([
-            'ruc'        => 'nullable|string',
-            'dni'        => 'required|string',
-            'names'      => 'required|string',
-            'advice_id'  => 'required|integer'
+            'ruc'       => 'nullable|string',
+            'dni'       => 'required|string',
+            'names'     => 'required|string',
+            'advice_id' => 'required|integer' // ← ahora es MPAdviceDate ID
         ]);
 
         // 1️⃣ Buscar participante
@@ -1279,32 +1300,41 @@ class FormularioPublicoController extends Controller
             ], 404);
         }
 
-        // 2️⃣ Buscar asesoría
-        $advice = MPAdvice::find($data['advice_id']);
+        // 2️⃣ Buscar horario (MPAdviceDate)
+        $schedule = MPAdviceDate::find($data['advice_id']);
 
-        if (!$advice) {
+        if (!$schedule) {
             return response()->json([
-                'message' => 'Asesoría no encontrada.'
+                'message' => 'Horario no encontrado.'
             ], 404);
         }
 
-        // 3️⃣ Validar si ya fue reservada
-        if (!is_null($advice->mype_id)) {
+        // 3️⃣ Validar si ya fue reservado
+        if (!is_null($schedule->mype_id)) {
             return response()->json([
-                'message' => 'Esta asesoría ya fue tomada.',
-                'status' => 409
-            ]); // Conflict
+                'message' => 'Este horario ya fue reservado.',
+                'status'  => 409
+            ], 409);
         }
 
-        // 4️⃣ Reservar
-        $advice->mype_id = $participant->id;
-        $advice->save();
+        // 4️⃣ Validar que la fecha no sea pasada
+        if ($schedule->date->isPast()) {
+            return response()->json([
+                'message' => 'No se puede reservar un horario pasado.',
+                'status'  => 422
+            ], 422);
+        }
+
+        // 5️⃣ Reservar
+        $schedule->mype_id = $participant->id;
+        $schedule->save();
 
         return response()->json([
-            'message'   => 'Asesoría reservada correctamente.',
-            'advice_id' => $advice->id,
-            'mype_id'   => $participant->id,
-            'status'    => 200
+            'message'       => 'Horario reservado correctamente.',
+            'schedule_id'   => $schedule->id,
+            'advice_id'     => $schedule->mp_personalized_advice_id,
+            'mype_id'       => $participant->id,
+            'status'        => 200
         ], 200);
     }
 
@@ -1319,12 +1349,19 @@ class FormularioPublicoController extends Controller
         }
 
         $query = MPAdvice::query()
-            ->where('mype_id', $participant->id)
+            ->whereHas('dates', function ($q) use ($participant) {
+                $q->where('mype_id', $participant->id);
+            })
             ->with([
                 'capacitador:id,name',
-                'image:id,url,name'
+                'image:id,url,name',
+                'dates' => function ($q) use ($participant) {
+                    $q->where('mype_id', $participant->id)
+                        ->orderBy('date', 'ASC')
+                        ->orderBy('startTime', 'ASC');
+                }
             ])
-            ->orderBy('id', 'DESC');
+            ->orderByDesc('id');
 
         $items = $query->paginate(100)->through(function ($item) {
             return $this->mapMyAdviceItems($item);
@@ -1339,20 +1376,28 @@ class FormularioPublicoController extends Controller
     private function mapMyAdviceItems($item)
     {
         return [
-            'id'                => $item->id,
-            'title'             => $item->title,
-            'description'       => Str::limit(strip_tags($item->description), 150, '...'),
-            'requirements'      => $item->requirements,
+            'id'           => $item->id,
+            'title'        => $item->title,
+            'description'  => Str::limit(strip_tags($item->description), 150, '...'),
+            'requirements' => $item->requirements,
+            'link'         => $item->link,
 
-            'date'              => $item->date,
-            'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
+            'schedules' => $item->dates->map(function ($date) {
+                return [
+                    'id'          => $date->id,
+                    'date'        => $date->date,
+                    'date_format' => $date->date?->format('d/m/Y'),
+                    'startTime'   => $date->startTime?->format('g:i A'),
+                    'endTime'     => $date->endTime?->format('g:i A'),
+                    'mype_id'     => $date->mype_id,
+                ];
+            }),
 
-            'hourStart'         => $item->hourStart ? Carbon::parse($item->hourStart)->format('H:s') : null,
-            'hourEnd'           => $item->hourEnd ? Carbon::parse($item->hourEnd)->format('H:s') : null,
-            'link'              => $item->link,
+            'capacitador_name' => $item->capacitador->name ?? null,
+            'image_url'        => $item->image?->url ? url($item->image->url) : null,
 
-            'capacitador_name'  => $item->capacitador->name ?? null,
-            'image_url'         => $item->image->url ? url($item->image->url) : null,
+            'created_at' => $item->created_at,
+            'updated_at' => $item->updated_at,
         ];
     }
 }

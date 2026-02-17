@@ -1424,49 +1424,50 @@ HAVING COUNT(*) > 1;
 
 
 
--- CREATE TABLE mp_personalized_advice (
---     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE mp_personalized_advice (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
---     title VARCHAR(255) NOT NULL,
---     description TEXT NULL,
---     requirements LONGTEXT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NULL,
+    requirements LONGTEXT NULL,
 
---     capacitador_id BIGINT UNSIGNED NOT NULL,
---     user_id BIGINT UNSIGNED NOT NULL,
---     image_id BIGINT UNSIGNED NULL,
+    capacitador_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    image_id BIGINT UNSIGNED NULL,
+    link VARCHAR(500) NULL,
 
---     date DATE NOT NULL,
---     hourStart TIME NOT NULL,
---     hourEnd TIME NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
 
---     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
---     deleted_at TIMESTAMP NULL,
+    -- Foreign Keys
+    CONSTRAINT fk_activities_capacitador
+        FOREIGN KEY (capacitador_id) REFERENCES mp_capacitadores(id),
 
---     -- Foreign Keys
---     CONSTRAINT fk_activities_capacitador
---         FOREIGN KEY (capacitador_id) REFERENCES mp_capacitadores(id),
+    CONSTRAINT fk_activities_user
+        FOREIGN KEY (user_id) REFERENCES users(id),
 
---     CONSTRAINT fk_activities_user
---         FOREIGN KEY (user_id) REFERENCES users(id),
-
---     CONSTRAINT fk_activities_image
---         FOREIGN KEY (image_id) REFERENCES images(id)
--- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_activities_image
+        FOREIGN KEY (image_id) REFERENCES images(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 
-ALTER TABLE mp_personalized_advice
-ADD COLUMN link VARCHAR(500) NULL AFTER hourEnd;
+-- date DATE NOT NULL,
+    -- hourStart TIME NOT NULL,
+    -- hourEnd TIME NOT NULL,
+
+-- ALTER TABLE mp_personalized_advice
+-- ADD COLUMN link VARCHAR(500) NULL AFTER image_id;
 
 
-ALTER TABLE mp_personalized_advice
-ADD COLUMN mype_id BIGINT UNSIGNED NULL AFTER link,
-ADD CONSTRAINT fk_mp_personalized_advice_mype
-FOREIGN KEY (mype_id)
-REFERENCES mp_participantes(id)
-ON DELETE CASCADE
-ON UPDATE CASCADE;
+-- ALTER TABLE mp_personalized_advice
+-- ADD COLUMN mype_id BIGINT UNSIGNED NULL AFTER link,
+-- ADD CONSTRAINT fk_mp_personalized_advice_mype
+-- FOREIGN KEY (mype_id)
+-- REFERENCES mp_participantes(id)
+-- ON DELETE CASCADE
+-- ON UPDATE CASCADE;
 
 
 -- ALTER TABLE pages
@@ -1496,7 +1497,39 @@ ON UPDATE CASCADE;
 
 
 
-ALTER TABLE attendancelist
-ADD COLUMN totalAsesorias TINYINT UNSIGNED NULL DEFAULT NULL AFTER beneficiarios,
-ADD COLUMN totalFormalizaciones TINYINT UNSIGNED NULL DEFAULT NULL AFTER totalAsesorias;
+-- ALTER TABLE attendancelist
+-- ADD COLUMN totalAsesorias TINYINT UNSIGNED NULL DEFAULT NULL AFTER beneficiarios,
+-- ADD COLUMN totalFormalizaciones TINYINT UNSIGNED NULL DEFAULT NULL AFTER totalAsesorias;
 
+
+
+CREATE TABLE mp_advice_dates (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    mp_personalized_advice_id BIGINT UNSIGNED NOT NULL,
+
+    date DATE NOT NULL,
+    startTime TIME NOT NULL,
+    endTime TIME NOT NULL,
+
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    INDEX idx_mp_personalized_advice_id (mp_personalized_advice_id),
+    INDEX idx_deleted_at (deleted_at),
+
+    CONSTRAINT fk_mp_advice_dates_mp_personalized_advice
+        FOREIGN KEY (mp_personalized_advice_id)
+        REFERENCES mp_personalized_advice(id)
+        ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE mp_advice_dates
+ADD COLUMN mype_id BIGINT UNSIGNED NULL AFTER mp_personalized_advice_id,
+ADD CONSTRAINT fk_mp_advice_dates_mype
+    FOREIGN KEY (mype_id)
+    REFERENCES mp_participantes(id)
+    ON DELETE SET NULL;
