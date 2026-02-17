@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MPAdvice extends Model
 {
-    use HasFactory;
-
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'mp_personalized_advice';
 
@@ -21,9 +19,9 @@ class MPAdvice extends Model
         'capacitador_id',
         'user_id',
         'image_id',
-        'date',
-        'hourStart',
-        'hourEnd',
+        // 'date',
+        // 'hourStart',
+        // 'hourEnd',
         'link',
         'mype_id'
     ];
@@ -36,5 +34,10 @@ class MPAdvice extends Model
     public function image()
     {
         return $this->belongsTo(Image::class, 'image_id');
+    }
+
+    public function dates()
+    {
+        return $this->hasMany(MPAdviceDate::class, 'mp_personalized_advice_id');
     }
 }

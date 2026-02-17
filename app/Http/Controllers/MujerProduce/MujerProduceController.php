@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MujerProduce;
 
 use App\Http\Controllers\Controller;
 use App\Models\MPAdvice;
+use App\Models\MPAdviceDate;
 use App\Models\MPAttendance;
 use App\Models\MPCapacitador;
 use App\Models\MPDiagnostico;
@@ -16,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 
 class MujerProduceController extends Controller
 {
@@ -1022,39 +1024,63 @@ class MujerProduceController extends Controller
         try {
 
             $validated = $request->validate([
-                'title'           => 'required|string|max:255',
-                'description'     => 'nullable|string',
-                'requirements'    => 'nullable|string',
-                'capacitador_id'  => 'required|exists:mp_capacitadores,id',
-                'date'            => 'required|date',
-                'link'            => 'nullable|string',
-                'hourStart'       => 'required|date_format:H:i',
-                'hourEnd'         => 'required|date_format:H:i|after:hourStart',
-                'image_id'        => 'nullable|exists:images,id',
+                'title'          => 'required|string|max:255',
+                'description'    => 'nullable|string',
+                'requirements'   => 'nullable|string',
+                'capacitador_id' => 'required|exists:mp_capacitadores,id',
+                'image_id'       => 'nullable|exists:images,id',
+                'link'           => 'nullable|string',
+                'schedules'      => 'required|array|min:1',
+                'schedules.*.date'      => 'required|date',
+                'schedules.*.startTime' => 'required|date_format:H:i',
+                'schedules.*.endTime'   => 'required|date_format:H:i',
             ]);
 
-            $activity = MPAdvice::create([
-                'title'          => $validated['title'],
-                'description'    => $validated['description'] ?? null,
-                'requirements'   => $validated['requirements'] ?? null,
-                'capacitador_id' => $validated['capacitador_id'],
-                'date'           => $validated['date'],
-                'link'           => $validated['link'] ?? null,
-                'hourStart'      => $validated['hourStart'],
-                'hourEnd'        => $validated['hourEnd'],
-                'image_id'       => $validated['image_id'] ?? null,
-                'user_id'        => Auth::id(),
+            foreach ($validated['schedules'] as $index => $schedule) {
+                if ($schedule['endTime'] <= $schedule['startTime']) {
+                    return response()->json([
+                        'message' => "La hora final debe ser mayor a la inicial en el registro #" . ($index + 1)
+                    ], 422);
+                }
+            }
+
+            $advice = DB::transaction(function () use ($validated) {
+
+                $advice = MPAdvice::create([
+                    'title'          => $validated['title'],
+                    'description'    => $validated['description'] ?? null,
+                    'requirements'   => $validated['requirements'] ?? null,
+                    'capacitador_id' => $validated['capacitador_id'],
+                    'image_id'       => $validated['image_id'] ?? null,
+                    'link'           => $validated['link'] ?? null,
+                    'user_id'        => Auth::id(),
+                ]);
+
+                $dates = collect($validated['schedules'])->map(function ($schedule) use ($advice) {
+                    return [
+                        'mp_personalized_advice_id' => $advice->id,
+                        'date'        => $schedule['date'],
+                        'startTime'   => $schedule['startTime'],
+                        'endTime'     => $schedule['endTime'],
+                        'created_at'  => now(),
+                        'updated_at'  => now(),
+                    ];
+                })->toArray();
+
+                MPAdviceDate::insert($dates);
+
+                return $advice;
+            });
+
+            return response()->json([
+                'message' => 'Actividad creada correctamente',
+                'data'    => $advice->load('dates'),
+                'status'  => 200
             ]);
+        } catch (\Exception $e) {
 
             return response()->json([
-                'message'   => 'Actividad creada correctamente',
-                'data'      => $activity,
-                'status'    => 200
-            ], 201);
-        } catch (QueryException $e) {
-
-            return response()->json([
-                'message' => 'Error en la base de datos',
+                'message' => 'Error al crear la actividad',
                 'error'   => $e->getMessage()
             ], 500);
         }
@@ -1074,9 +1100,11 @@ class MujerProduceController extends Controller
         // relaciones necesarias
         $query->with([
             'capacitador:id,name',
-            'image:id,url,name'
+            'image:id,url,name',
+            'dates.participant:id,doc_number,email,last_name,middle_name,names,phone'
         ])
             ->orderBy('id', 'DESC');
+
 
         $items = $query->paginate(100)->through(function ($item) {
             return $this->mapAdviceItems($item);
@@ -1091,29 +1119,45 @@ class MujerProduceController extends Controller
     private function mapAdviceItems($item)
     {
         return [
-            'id'                => $item->id,
-            'title'             => $item->title,
-            'description'       => $item->description,
-            'requirements'      => $item->requirements,
+            'id'           => $item->id,
+            'title'        => $item->title,
+            'description'  => $item->description,
+            'requirements' => $item->requirements,
 
-            'date'              => $item->date,
-            'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
+            'schedules' => $item->dates->map(function ($date) {
 
-            'hourStart'         => $item->hourStart,
-            'hourEnd'           => $item->hourEnd,
-            'link'              => $item->link,
+                return [
+                    'id'         => $date->id,
+                    'date'       => $date->date,
+                    'date_format' => Carbon::parse($date->date)->format('d/m/Y'),
+                    'startTime'  => $date->startTime,
+                    'endTime'    => $date->endTime,
 
-            'capacitador_id'    => $item->capacitador_id,
-            'capacitador_name'  => $item->capacitador->name ?? null,
+                    'mype_id'    => $date->mype_id,
 
-            'image_id'          => $item->image_id,
-            'image_url'         => $item->image->url ? url($item->image->url) : null,
-            'image_name'        => $item->image->name ?? null,
+                    // 🔹 Datos del participante si está reservado
+                    'participant' => $date->participant ? [
+                        'dni'         => $date->participant->doc_number,
+                        'email'       => $date->participant->email,
+                        'last_name'   => $date->participant->last_name,
+                        'middle_name' => $date->participant->middle_name,
+                        'names'       => $date->participant->names,
+                        'phone'       => $date->participant->phone,
+                    ] : null
+                ];
+            }),
 
-            'user_id'           => $item->user_id,
+            'link'             => $item->link,
+            'capacitador_id'   => $item->capacitador_id,
+            'capacitador_name' => $item->capacitador->name ?? null,
 
-            'created_at'        => $item->created_at,
-            'updated_at'        => $item->updated_at,
+            'image_id'   => $item->image_id,
+            'image_url'  => $item->image?->url ? url($item->image->url) : null,
+            'image_name' => $item->image->name ?? null,
+
+            'user_id'    => $item->user_id,
+            'created_at' => $item->created_at,
+            'updated_at' => $item->updated_at,
         ];
     }
 }
