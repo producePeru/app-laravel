@@ -22,8 +22,8 @@ class MPAdviceDate extends Model
 
     protected $casts = [
         'date' => 'date',
-        'startTime' => 'datetime:H:i',
-        'endTime' => 'datetime:H:i',
+        // 'startTime' => 'datetime:H:i',
+        // 'endTime' => 'datetime:H:i',
     ];
 
     // 🔹 RELACIÓN CON PARTICIPANTE

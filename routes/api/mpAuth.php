@@ -10,6 +10,8 @@ Route::controller(MujerProduceController::class)->group(function () {
     Route::post('create-personalized-advice', 'createPersonalizedAdvice');
 
     Route::get('mp-index-advice', 'mpIndexAdvice');
+
+    Route::put('update-personalized-advice/{id}', 'updatePersonalizedAdvice');
 });
 
 

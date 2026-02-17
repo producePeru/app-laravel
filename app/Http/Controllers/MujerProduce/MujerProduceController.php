@@ -1160,4 +1160,97 @@ class MujerProduceController extends Controller
             'updated_at' => $item->updated_at,
         ];
     }
+
+    public function updatePersonalizedAdvice(Request $request, $id)
+    {
+        try {
+
+            $validated = $request->validate([
+                'title'          => 'required|string|max:255',
+                'description'    => 'nullable|string',
+                'requirements'   => 'nullable|string',
+                'capacitador_id' => 'required|exists:mp_capacitadores,id',
+                'image_id'       => 'nullable|exists:images,id',
+                'link'           => 'nullable|string',
+
+                'schedules'                => 'required|array|min:1',
+                'schedules.*.id'           => 'nullable|integer|exists:mp_advice_dates,id',
+                'schedules.*.date'         => 'required|date',
+                'schedules.*.startTime'    => 'required|date_format:H:i',
+                'schedules.*.endTime'      => 'required|date_format:H:i',
+            ]);
+
+            foreach ($validated['schedules'] as $index => $schedule) {
+                if ($schedule['endTime'] <= $schedule['startTime']) {
+                    return response()->json([
+                        'message' => "La hora final debe ser mayor a la inicial en el registro #" . ($index + 1)
+                    ], 422);
+                }
+            }
+
+            $advice = DB::transaction(function () use ($validated, $id) {
+
+                $advice = MPAdvice::with('dates')->findOrFail($id);
+
+                // 🔹 Actualizar datos principales
+                $advice->update([
+                    'title'          => $validated['title'],
+                    'description'    => $validated['description'] ?? null,
+                    'requirements'   => $validated['requirements'] ?? null,
+                    'capacitador_id' => $validated['capacitador_id'],
+                    'image_id'       => $validated['image_id'] ?? null,
+                    'link'           => $validated['link'] ?? null,
+                ]);
+
+                $existingIds = $advice->dates->pluck('id')->toArray();
+                $incomingIds = collect($validated['schedules'])
+                    ->pluck('id')
+                    ->filter()
+                    ->toArray();
+
+                // 🔹 Eliminar los que ya no vienen
+                $idsToDelete = array_diff($existingIds, $incomingIds);
+
+                if (!empty($idsToDelete)) {
+                    MPAdviceDate::whereIn('id', $idsToDelete)->delete();
+                }
+
+                // 🔹 Crear o actualizar
+                foreach ($validated['schedules'] as $schedule) {
+
+                    if (isset($schedule['id'])) {
+
+                        MPAdviceDate::where('id', $schedule['id'])
+                            ->update([
+                                'date'      => $schedule['date'],
+                                'startTime' => $schedule['startTime'],
+                                'endTime'   => $schedule['endTime'],
+                            ]);
+                    } else {
+
+                        MPAdviceDate::create([
+                            'mp_personalized_advice_id' => $advice->id,
+                            'date'      => $schedule['date'],
+                            'startTime' => $schedule['startTime'],
+                            'endTime'   => $schedule['endTime'],
+                        ]);
+                    }
+                }
+
+                return $advice;
+            });
+
+            return response()->json([
+                'message' => 'Actividad actualizada correctamente',
+                'data'    => $advice->load('dates'),
+                'status'  => 200
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => 'Error al actualizar la actividad',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
 }
