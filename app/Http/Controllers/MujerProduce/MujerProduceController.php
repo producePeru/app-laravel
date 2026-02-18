@@ -1180,6 +1180,7 @@ class MujerProduceController extends Controller
                 'schedules.*.endTime'      => 'required|date_format:H:i',
             ]);
 
+            // 🔹 Validar hora fin > hora inicio
             foreach ($validated['schedules'] as $index => $schedule) {
                 if ($schedule['endTime'] <= $schedule['startTime']) {
                     return response()->json([
@@ -1188,44 +1189,61 @@ class MujerProduceController extends Controller
                 }
             }
 
-            $advice = DB::transaction(function () use ($validated, $id) {
+            $advice = DB::transaction(function () use ($validated, $request, $id) {
 
                 $advice = MPAdvice::with('dates')->findOrFail($id);
 
-                // 🔹 Actualizar datos principales
-                $advice->update([
+                // 🔹 Construir update dinámico
+                $updateData = [
                     'title'          => $validated['title'],
                     'description'    => $validated['description'] ?? null,
                     'requirements'   => $validated['requirements'] ?? null,
                     'capacitador_id' => $validated['capacitador_id'],
-                    'image_id'       => $validated['image_id'] ?? null,
                     'link'           => $validated['link'] ?? null,
-                ]);
+                ];
 
+                // ✅ Solo actualiza imagen si viene en el request
+                if ($request->has('image_id')) {
+                    $updateData['image_id'] = $validated['image_id'];
+                }
+
+                $advice->update($updateData);
+
+                // 🔹 IDs existentes
                 $existingIds = $advice->dates->pluck('id')->toArray();
+
+                // 🔹 IDs que vienen del frontend
                 $incomingIds = collect($validated['schedules'])
                     ->pluck('id')
                     ->filter()
                     ->toArray();
 
-                // 🔹 Eliminar los que ya no vienen
+                // 🔹 Eliminar los que ya no vienen (solo si NO están reservados)
                 $idsToDelete = array_diff($existingIds, $incomingIds);
 
                 if (!empty($idsToDelete)) {
-                    MPAdviceDate::whereIn('id', $idsToDelete)->delete();
+                    MPAdviceDate::whereIn('id', $idsToDelete)
+                        ->whereNull('mype_id') // 🔒 no borrar reservados
+                        ->delete();
                 }
 
-                // 🔹 Crear o actualizar
+                // 🔹 Crear o actualizar schedules
                 foreach ($validated['schedules'] as $schedule) {
 
                     if (isset($schedule['id'])) {
 
-                        MPAdviceDate::where('id', $schedule['id'])
-                            ->update([
-                                'date'      => $schedule['date'],
-                                'startTime' => $schedule['startTime'],
-                                'endTime'   => $schedule['endTime'],
-                            ]);
+                        $dateRecord = MPAdviceDate::find($schedule['id']);
+
+                        // 🔒 No permitir modificar si ya está reservado
+                        if (!is_null($dateRecord->mype_id)) {
+                            continue;
+                        }
+
+                        $dateRecord->update([
+                            'date'      => $schedule['date'],
+                            'startTime' => $schedule['startTime'],
+                            'endTime'   => $schedule['endTime'],
+                        ]);
                     } else {
 
                         MPAdviceDate::create([

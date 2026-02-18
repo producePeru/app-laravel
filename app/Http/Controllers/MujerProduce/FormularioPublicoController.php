@@ -1387,8 +1387,12 @@ class FormularioPublicoController extends Controller
                     'id'          => $date->id,
                     'date'        => $date->date,
                     'date_format' => $date->date?->format('d/m/Y'),
-                    'startTime'   => $date->startTime?->format('g:i A'),
-                    'endTime'     => $date->endTime?->format('g:i A'),
+                    'startTime' => \Carbon\Carbon::createFromFormat('H:i:s', $date->startTime)
+                        ->format('g:i A'),
+
+                    'endTime'   => \Carbon\Carbon::createFromFormat('H:i:s', $date->endTime)
+                        ->format('g:i A'),
+
                     'mype_id'     => $date->mype_id,
                 ];
             }),
