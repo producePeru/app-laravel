@@ -130,8 +130,9 @@ class AttendanceController extends Controller
             'province_id' => $item->provincia->id ?? null,
             'district_id' => $item->distrito->id ?? null,
 
-            'totalAsesorias' => $item->totalAsesorias,
-            'totalFormalizaciones' => $item->totalFormalizaciones,
+            'totalAsesorias' => $item->total_asesorias ?? 0,
+            'totalFormalizaciones' => $item->total_formalizaciones ?? 0,
+
 
             'attendance_list_count' => $item->attendanceList?->count() ?? 0,
             'slug' => $item->slug,

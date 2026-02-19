@@ -63,6 +63,8 @@ class DownloadAttendanceController extends Controller
             ) {
                 foreach ($rows as $item) {
 
+                    $estado = $item->getEstado();
+
                     $row = [
                         $globalIndex++,
                         'UGO',
@@ -73,7 +75,6 @@ class DownloadAttendanceController extends Controller
                         $item->pnte->name ?? '-',
                         strtoupper($item->title) ?? '-',
                         strtoupper($item->theme ?? null) ?? '-',
-                        $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
                         $item->region->name ?? null,
                         $item->provincia->name ?? null,
                         $item->distrito->name ?? null,
@@ -81,44 +82,29 @@ class DownloadAttendanceController extends Controller
                         strtoupper($item->entidad ?? null) ?? '-',
                         strtoupper($item->entidad_aliada ?? null) ?? '-',
                         $item->asesor ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename) : null,
-                        $item->pasaje == 'n' ? 'NO' : ($item->pasaje == 's' ? 'SI' : null),
-                        $item->monto ?? null,
+                        $item->pasaje == 'n' ? 'NO' : ($item->pasaje == 's' ? 'SI' : '-'),
+                        $item->monto ?? 0,
                         $item->beneficiarios ?? null,
+                        $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
+                        $item->attendance_list_count > 0 ? 'CON LISTA' : 'SIN LISTA',
+
+                        $item->total_asesorias ?? 0,
+                        $item->total_formalizaciones ?? 0,
+
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+
+                        $estado, // ✅ 
+
                         Carbon::parse($item->created_at)->format('d/m/Y'),
 
+                        $item->attendance_list_count,
 
-                        $item->attendanceList?->count() ?? 'SIN LISTA',
-                        $item->totalAsesorias,
-                        $item->totalFormalizaciones
-
-                        // Carbon::parse($item->startDate)->format('d/m/Y'),
-                        // Carbon::parse($item->endDate)->format('d/m/Y'),
-                        // Carbon::parse($item->startDate)
-                        //     ->diffInDays(Carbon::parse($item->endDate)) + 1,
-                        // $item->region->name ?? '-',
-                        // $item->provincia->name ?? '-',
-                        // $item->distrito->name ?? '-',
-                        // $item->address ?? '-',
-                        // $item->asesor
-                        //     ? strtoupper(
-                        //         $item->asesor->name . ' ' .
-                        //             $item->asesor->lastname . ' ' .
-                        //             $item->asesor->middlename
-                        //     )
-                        //     : '-',
-                        // $item->profile
-                        //     ? strtoupper(
-                        //         $item->profile->name . ' ' .
-                        //             $item->profile->lastname . ' ' .
-                        //             $item->profile->middlename
-                        //     )
-                        //     : '-',
-                        // $item->description ?? '-',
-                        // Carbon::parse($item->created_at)->format('d/m/Y'),
-                        // 'https://programa.soporte-pnte.com/admin/ugo/eventos-inscritos/' . $item->slug,
-                        // $item->eventsoffice_id == 3
-                        //     ? 'https://inscripcion.soporte-pnte.com/fortalece-tu-mercado/' . $item->slug
-                        //     : 'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
                     ];
 
                     $col = 'A';
@@ -146,6 +132,35 @@ class DownloadAttendanceController extends Controller
             ], 500);
         }
     }
+
+    // Carbon::parse($item->startDate)->format('d/m/Y'),
+    // Carbon::parse($item->endDate)->format('d/m/Y'),
+    // Carbon::parse($item->startDate)
+    //     ->diffInDays(Carbon::parse($item->endDate)) + 1,
+    // $item->region->name ?? '-',
+    // $item->provincia->name ?? '-',
+    // $item->distrito->name ?? '-',
+    // $item->address ?? '-',
+    // $item->asesor
+    //     ? strtoupper(
+    //         $item->asesor->name . ' ' .
+    //             $item->asesor->lastname . ' ' .
+    //             $item->asesor->middlename
+    //     )
+    //     : '-',
+    // $item->profile
+    //     ? strtoupper(
+    //         $item->profile->name . ' ' .
+    //             $item->profile->lastname . ' ' .
+    //             $item->profile->middlename
+    //     )
+    //     : '-',
+    // $item->description ?? '-',
+    // Carbon::parse($item->created_at)->format('d/m/Y'),
+    // 'https://programa.soporte-pnte.com/admin/ugo/eventos-inscritos/' . $item->slug,
+    // $item->eventsoffice_id == 3
+    //     ? 'https://inscripcion.soporte-pnte.com/fortalece-tu-mercado/' . $item->slug
+    //     : 'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
 
 
     public function exportRegistrantsUgoEvents($slug)
