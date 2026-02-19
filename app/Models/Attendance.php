@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class Attendance extends Model
 {
@@ -98,7 +99,16 @@ class Attendance extends Model
             'profile:id,user_id,name,lastname,middlename',
             'asesor',
             'pnte'
-        ])->withCount('attendanceList');
+        ])
+            ->withCount('attendanceList')
+            ->withCount([
+                'attendanceList as total_asesorias' => function ($q) {
+                    $q->where('is_asesoria', 's');
+                },
+                'attendanceList as total_formalizaciones' => function ($q) {
+                    $q->where('was_formalizado', 's');
+                }
+            ]);
 
         // if (!empty($filters['asesor'])) {
         //     $query->where('people_id', $filters['asesor']);
@@ -125,8 +135,6 @@ class Attendance extends Model
             });
         }
 
-
-
         if (!empty($filters['year'])) {
 
             $query->whereYear('created_at', $filters['year']);
@@ -147,9 +155,6 @@ class Attendance extends Model
         }
     }
 
-
-
-
     // eventos asignados a un asesor
 
     public function scopeWithEvents($query, $filters)
@@ -163,5 +168,28 @@ class Attendance extends Model
             'asesor',
             'pnte'
         ])->withCount('attendanceList');
+    }
+
+    public function getEstado()
+    {
+        $today = Carbon::today();
+
+        // 4️⃣ FINALIZADOS (tiene registros)
+        if ($this->attendance_list_count > 0) {
+            return '4. FINALIZADOS';
+        }
+
+        // 3️⃣ PENDIENTE DE RESULTADOS (ya pasó endDate)
+        if (Carbon::parse($this->endDate)->lt($today)) {
+            return '3. PENDIENTE DE RESULTADOS';
+        }
+
+        // 1️⃣ PROGRAMACION DIARIA (creado hoy)
+        if (Carbon::parse($this->created_at)->isToday()) {
+            return '1. PROGRAMACION DIARIA';
+        }
+
+        // 2️⃣ PROGRAMACION CONSOLIDADA (todo lo demás)
+        return '2. PROGRAMACION CONSOLIDADA';
     }
 }
