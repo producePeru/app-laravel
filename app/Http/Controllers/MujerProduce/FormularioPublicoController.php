@@ -1193,18 +1193,22 @@ class FormularioPublicoController extends Controller
 
         $today = Carbon::today()->toDateString();
 
+        $now = Carbon::now();
+
         $query->with([
             'capacitador:id,name',
             'image:id,url,name',
-            'dates' => function ($q) use ($today) {
+            'dates' => function ($q) use ($now) {
 
-                $q->whereNull('mype_id') // 🔹 Solo horarios disponibles
-                    ->orderByRaw("
-            CASE 
-                WHEN date >= ? THEN 0
-                ELSE 1
-            END
-        ", [$today])
+                $q->whereNull('mype_id') // 🔹 No reservados
+                    ->where(function ($sub) use ($now) {
+
+                        $sub->whereDate('date', '>', $now->toDateString()) // fechas futuras
+                            ->orWhere(function ($today) use ($now) {
+                                $today->whereDate('date', '=', $now->toDateString())
+                                    ->whereTime('startTime', '>=', $now->format('H:i:s')); // hoy pero hora futura
+                            });
+                    })
                     ->orderBy('date', 'ASC')
                     ->orderBy('startTime', 'ASC');
             }
@@ -1274,6 +1278,7 @@ class FormularioPublicoController extends Controller
             'names'       => $participant->names,
             'ruc'         => $participant->ruc,
             'doc_number'  => $participant->doc_number,
+            'phone'       => $participant->phone ? 'si' : 'no',
             'status'      => 200
         ], 200);
     }
@@ -1285,7 +1290,8 @@ class FormularioPublicoController extends Controller
             'ruc'       => 'nullable|string',
             'dni'       => 'required|string',
             'names'     => 'required|string',
-            'advice_id' => 'required|integer' // ← ahora es MPAdviceDate ID
+            'advice_id' => 'required|integer|exists:mp_advice_dates,id',
+            'phone'     => ['required', 'regex:/^9\d{8}$/'] // ✅ 9 dígitos y empieza con 9
         ]);
 
         // 1️⃣ Buscar participante
@@ -1300,7 +1306,14 @@ class FormularioPublicoController extends Controller
             ], 404);
         }
 
-        // 2️⃣ Buscar horario (MPAdviceDate)
+        // 2️⃣ Actualizar teléfono
+        if ($participant->phone !== $data['phone']) {
+            $participant->update([
+                'phone' => $data['phone']
+            ]);
+        }
+
+        // 3️⃣ Buscar horario
         $schedule = MPAdviceDate::find($data['advice_id']);
 
         if (!$schedule) {
@@ -1309,7 +1322,7 @@ class FormularioPublicoController extends Controller
             ], 404);
         }
 
-        // 3️⃣ Validar si ya fue reservado
+        // 4️⃣ Validar si ya fue reservado
         if (!is_null($schedule->mype_id)) {
             return response()->json([
                 'message' => 'Este horario ya fue reservado.',
@@ -1317,26 +1330,29 @@ class FormularioPublicoController extends Controller
             ], 409);
         }
 
-        // 4️⃣ Validar que la fecha no sea pasada
-        if ($schedule->date->isPast()) {
+        // 5️⃣ Validar que la fecha no sea pasada
+        if ($schedule->start_date_time->isPast()) {
             return response()->json([
                 'message' => 'No se puede reservar un horario pasado.',
                 'status'  => 422
             ], 422);
         }
 
-        // 5️⃣ Reservar
-        $schedule->mype_id = $participant->id;
-        $schedule->save();
+        // 6️⃣ Reservar
+        $schedule->update([
+            'mype_id' => $participant->id
+        ]);
 
         return response()->json([
             'message'       => 'Horario reservado correctamente.',
             'schedule_id'   => $schedule->id,
             'advice_id'     => $schedule->mp_personalized_advice_id,
             'mype_id'       => $participant->id,
+            'phone_updated' => $participant->phone,
             'status'        => 200
         ], 200);
     }
+
 
     public function mpMyAdvice($dni)
     {
