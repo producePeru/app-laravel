@@ -1156,7 +1156,7 @@ class MujerProduceController extends Controller
             'image_name' => $item->image->name ?? null,
 
             'user_id'    => $item->user_id,
-            'created_at' => $item->created_at,
+            'created_at' => Carbon::parse($item->creted_at)->format('d/m/Y H:s'),
             'updated_at' => $item->updated_at,
         ];
     }

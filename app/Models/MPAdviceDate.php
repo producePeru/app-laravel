@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class MPAdviceDate extends Model
 {
@@ -30,5 +31,12 @@ class MPAdviceDate extends Model
     public function participant()
     {
         return $this->belongsTo(MPParticipant::class, 'mype_id');
+    }
+
+    public function getStartDateTimeAttribute()
+    {
+        return Carbon::parse(
+            $this->date->format('Y-m-d') . ' ' . $this->startTime
+        );
     }
 }
