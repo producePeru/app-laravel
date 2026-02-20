@@ -1533,3 +1533,23 @@ ADD CONSTRAINT fk_mp_advice_dates_mype
     FOREIGN KEY (mype_id)
     REFERENCES mp_participantes(id)
     ON DELETE SET NULL;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+laravel
+Str::limit(strip_tags($item->description), 150, '...'),

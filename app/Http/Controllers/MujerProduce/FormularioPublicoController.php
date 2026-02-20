@@ -1230,7 +1230,7 @@ class FormularioPublicoController extends Controller
         return [
             'id'           => $item->id,
             'title'        => $item->title,
-            'description'  => Str::limit(strip_tags($item->description), 150, '...'),
+            'description'  => $item->description,
             'requirements' => $item->requirements,
             'link'         => $item->link,
 
