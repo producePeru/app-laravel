@@ -103,10 +103,12 @@ class DownloadAttendanceController extends Controller
                         $estado, // ✅ 
 
                         Carbon::parse($item->created_at)->format('d/m/Y'),
-                        'https://programa.soporte-pnte.com/admin/ugo/eventos-inscritos/' . $item->slug,
-                        $item->eventsoffice_id == 3
-                            ? 'https://inscripcion.soporte-pnte.com/fortalece-tu-mercado/' . $item->slug
-                            : 'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
+
+
+                        'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/' . $item->slug,
+
+
+                        'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $item->slug
 
 
                     ];
