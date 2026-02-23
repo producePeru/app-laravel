@@ -86,8 +86,9 @@ class DownloadAttendanceController extends Controller
                         $item->monto ?? 0,
                         $item->beneficiarios ?? null,
                         $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
-                        $item->attendance_list_count > 0 ? 'CON LISTA' : 'SIN LISTA',
 
+                        $item->attendance_list_count > 0 ? 'CON LISTA' : 'SIN LISTA',
+                        $item->attendance_list_count ?? 0,
                         $item->total_asesorias ?? 0,
                         $item->total_formalizaciones ?? 0,
 
@@ -102,8 +103,11 @@ class DownloadAttendanceController extends Controller
                         $estado, // ✅ 
 
                         Carbon::parse($item->created_at)->format('d/m/Y'),
+                        'https://programa.soporte-pnte.com/admin/ugo/eventos-inscritos/' . $item->slug,
+                        $item->eventsoffice_id == 3
+                            ? 'https://inscripcion.soporte-pnte.com/fortalece-tu-mercado/' . $item->slug
+                            : 'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
 
-                        $item->attendance_list_count,
 
                     ];
 

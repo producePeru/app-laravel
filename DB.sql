@@ -1503,36 +1503,36 @@ CREATE TABLE mp_personalized_advice (
 
 
 
-CREATE TABLE mp_advice_dates (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+-- CREATE TABLE mp_advice_dates (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
-    mp_personalized_advice_id BIGINT UNSIGNED NOT NULL,
+--     mp_personalized_advice_id BIGINT UNSIGNED NOT NULL,
 
-    date DATE NOT NULL,
-    startTime TIME NOT NULL,
-    endTime TIME NOT NULL,
+--     date DATE NOT NULL,
+--     startTime TIME NOT NULL,
+--     endTime TIME NOT NULL,
 
-    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL,
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL DEFAULT NULL,
 
-    INDEX idx_mp_personalized_advice_id (mp_personalized_advice_id),
-    INDEX idx_deleted_at (deleted_at),
+--     INDEX idx_mp_personalized_advice_id (mp_personalized_advice_id),
+--     INDEX idx_deleted_at (deleted_at),
 
-    CONSTRAINT fk_mp_advice_dates_mp_personalized_advice
-        FOREIGN KEY (mp_personalized_advice_id)
-        REFERENCES mp_personalized_advice(id)
-        ON DELETE CASCADE
+--     CONSTRAINT fk_mp_advice_dates_mp_personalized_advice
+--         FOREIGN KEY (mp_personalized_advice_id)
+--         REFERENCES mp_personalized_advice(id)
+--         ON DELETE CASCADE
 
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-ALTER TABLE mp_advice_dates
-ADD COLUMN mype_id BIGINT UNSIGNED NULL AFTER mp_personalized_advice_id,
-ADD CONSTRAINT fk_mp_advice_dates_mype
-    FOREIGN KEY (mype_id)
-    REFERENCES mp_participantes(id)
-    ON DELETE SET NULL;
+-- ALTER TABLE mp_advice_dates
+-- ADD COLUMN mype_id BIGINT UNSIGNED NULL AFTER mp_personalized_advice_id,
+-- ADD CONSTRAINT fk_mp_advice_dates_mype
+--     FOREIGN KEY (mype_id)
+--     REFERENCES mp_participantes(id)
+--     ON DELETE SET NULL;
 
 
 
