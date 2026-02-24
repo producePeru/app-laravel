@@ -1420,4 +1420,49 @@ class FormularioPublicoController extends Controller
             'updated_at' => $item->updated_at,
         ];
     }
+
+    public function cancelMyAdvice(Request $request)
+    {
+        $data = $request->validate([
+            'advice_date_id' => [
+                'required',
+                'integer',
+                'exists:mp_advice_dates,id,deleted_at,NULL'
+            ],
+            'dni' => ['required', 'string'],
+        ]);
+
+        $participant = MPParticipant::where('doc_number', $data['dni'])->first();
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'Participante no encontrado.'
+            ], 404);
+        }
+
+        $schedule = MPAdviceDate::where('id', $data['advice_date_id'])
+            ->where('mype_id', $participant->id)
+            ->first();
+
+        if (!$schedule) {
+            return response()->json([
+                'message' => 'Reserva no encontrada para este participante.'
+            ], 404);
+        }
+
+        if ($schedule->start_date_time->isPast()) {
+            return response()->json([
+                'message' => 'No se puede cancelar un horario pasado.'
+            ], 422);
+        }
+
+        $schedule->update([
+            'mype_id' => null
+        ]);
+
+        return response()->json([
+            'message' => 'Reserva cancelada correctamente.',
+            'status'  => 200
+        ], 200);
+    }
 }
