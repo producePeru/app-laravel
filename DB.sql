@@ -1539,8 +1539,48 @@ CREATE TABLE mp_personalized_advice (
 
 
 
+-- ALTER TABLE mp_advice_dates
+-- ADD COLUMN attend TINYINT(1) NOT NULL DEFAULT 0
+-- AFTER endTime;
 
 
+
+
+
+
+
+
+-- CREATE TABLE email_template (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL,
+--     content LONGTEXT NOT NULL,
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL DEFAULT NULL
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE emails (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    date DATE NOT NULL,
+    template_id BIGINT UNSIGNED NOT NULL,
+    `count` INT NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_emails_template
+        FOREIGN KEY (template_id)
+        REFERENCES email_templates(id)
+        ON DELETE CASCADE
+
+) ENGINE=InnoDB 
+DEFAULT CHARSET=utf8mb4 
+COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE email_templates
+ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL
+AFTER updated_at;
 
 
 

@@ -1134,6 +1134,7 @@ class MujerProduceController extends Controller
                     'endTime'    => $date->endTime,
 
                     'mype_id'    => $date->mype_id,
+                    'attend'    => $date->attend ? true : false,
 
                     // 🔹 Datos del participante si está reservado
                     'participant' => $date->participant ? [
@@ -1270,5 +1271,47 @@ class MujerProduceController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function removeAttend($id)
+    {
+        $adviceDate = MPAdviceDate::find($id);
+
+        if (!$adviceDate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Registro no encontrado'
+            ], 404);
+        }
+
+        $adviceDate->mype_id = null;
+        $adviceDate->attend = 0;
+        $adviceDate->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'actualizado correctamente'
+        ], 200);
+    }
+
+    public function updateAttend($id)
+    {
+        $adviceDate = MPAdviceDate::find($id);
+
+        if (!$adviceDate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Registro no encontrado'
+            ], 404);
+        }
+
+        $adviceDate->attend = !$adviceDate->attend;
+
+        $adviceDate->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'actualizado correctamente'
+        ], 200);
     }
 }
