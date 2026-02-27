@@ -86,6 +86,20 @@ return [
             ]
         ],
 
+        'hostinger3k' => [    // capacitaciones@pnte-mype.com 3k
+            'transport'  => env('MAIL_MAILER_HOSTINGER_3K', 'smtp'),
+            'host'       => env('MAIL_HOST_HOSTINGER_3K', 'smtp.hostinger.com'),
+            'port'       => env('MAIL_PORT_HOSTINGER_3K', 465),
+            'username'   => env('MAIL_USERNAME_HOSTINGER_3K'),
+            'password'   => env('MAIL_PASSWORD_HOSTINGER_3K'),
+            'encryption' => env('MAIL_ENCRYPTION_HOSTINGER_3K', 'ssl'),
+            'timeout'    => null,
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS_HOSTINGER_3K', 'capacitaciones@soporte-pnte.com'),
+                'name'    => env('MAIL_FROM_NAME_HOSTINGER_3K', 'PROGRAMA NACIONAL TU EMPRESA'),
+            ]
+        ],
+
         'digitalizacion' => [    // digitalizacion
             'transport'  => env('MAIL_MAILER', 'smtp'),
             'host'       => env('MAIL_HOST', 'smtp.hostinger.com'),

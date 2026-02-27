@@ -18,7 +18,8 @@ class MPAdviceDate extends Model
         'mype_id',
         'date',
         'startTime',
-        'endTime'
+        'endTime',
+        'attend'
     ];
 
     protected $casts = [

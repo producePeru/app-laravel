@@ -152,3 +152,134 @@ WHERE user_id = 15
 
 
 
+
+
+
+
+
+ENVIAR CORREOS hostinger
+php artisan make:job SendHonstigerTemplateEmailJob
+
+<?php
+
+namespace App\Jobs;
+
+use App\Models\EmailTemplate;
+use App\Models\EmailSend;
+use Illuminate\Bus\Queueable;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Carbon\Carbon;
+
+class SendTemplateEmailJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    protected $email;
+    protected $template;
+
+    public function __construct($email, EmailTemplate $template)
+    {
+        $this->email = $email;
+        $this->template = $template;
+    }
+
+    public function handle()
+    {
+        $mailer = 'correospp93';
+
+        Mail::mailer($mailer)
+            ->html($this->template->content, function ($message) {
+                $message->to($this->email)
+                        ->subject($this->template->name);
+            });
+
+        // 🔥 Registrar envío
+        $today = Carbon::today()->toDateString();
+
+        $record = EmailSend::firstOrCreate(
+            [
+                'date' => $today,
+                'template_id' => $this->template->id
+            ],
+            [
+                'count' => 0
+            ]
+        );
+
+        $record->increment('count');
+    }
+}
+
+
+CONTROLLER
+use App\Models\EmailTemplate;
+use App\Models\EmailSend;
+use App\Jobs\SendTemplateEmailJob;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+
+public function sendEmails(Request $request)
+{
+    $request->validate([
+        'template_id' => 'required|exists:email_template,id',
+        'emails' => 'required|array|max:1000',
+        'emails.*' => 'email:rfc,dns'
+    ]);
+
+    $template = EmailTemplate::findOrFail($request->template_id);
+    $emails = $request->emails;
+
+    $today = Carbon::today()->toDateString();
+
+    $emailSend = EmailSend::firstOrCreate(
+        [
+            'date' => $today,
+            'template_id' => $template->id
+        ],
+        [
+            'count' => 0
+        ]
+    );
+
+    $currentCount = $emailSend->count;
+    $requestCount = count($emails);
+
+    // 🔴 Validar límite diario 3000
+    if ($currentCount >= 3000) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Se ha alcanzado el límite diario de 3000 envíos para este template.'
+        ], 400);
+    }
+
+    if (($currentCount + $requestCount) > 3000) {
+
+        $remaining = 3000 - $currentCount;
+
+        return response()->json([
+            'success' => false,
+            'message' => "Solo puedes enviar {$remaining} correos más hoy con este template."
+        ], 400);
+    }
+
+    // ✅ Incrementar inmediatamente para bloquear cupo
+    $emailSend->increment('count', $requestCount);
+
+    // 🔥 Encolar con delay 30 segundos cada uno
+    foreach ($emails as $index => $email) {
+        SendHonstigerTemplateEmailJob::dispatch($email, $template)
+            ->delay(now()->addSeconds($index * 30));
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Correos encolados correctamente.',
+        'total_queued' => $requestCount,
+        'daily_total_after' => $currentCount + $requestCount
+    ], 200);
+}
+

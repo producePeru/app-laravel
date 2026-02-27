@@ -12,6 +12,10 @@ Route::controller(MujerProduceController::class)->group(function () {
     Route::get('mp-index-advice', 'mpIndexAdvice');
 
     Route::put('update-personalized-advice/{id}', 'updatePersonalizedAdvice');
+
+    Route::delete('remove-attend/{id}', 'removeAttend');
+
+    Route::put('update-attend/{id}', 'updateAttend');
 });
 
 
