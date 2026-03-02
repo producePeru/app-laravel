@@ -1314,4 +1314,23 @@ class MujerProduceController extends Controller
             'message' => 'actualizado correctamente'
         ], 200);
     }
+
+    public function deleteAttend($id)
+    {
+        $adviceDate = MPEvent::find($id);
+
+        if (!$adviceDate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Registro no encontrado'
+            ], 404);
+        }
+
+        $adviceDate->delete();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Eliminado correctamente'
+        ], 200);
+    }
 }
