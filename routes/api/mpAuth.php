@@ -16,6 +16,8 @@ Route::controller(MujerProduceController::class)->group(function () {
     Route::delete('remove-attend/{id}', 'removeAttend');
 
     Route::put('update-attend/{id}', 'updateAttend');
+
+    Route::delete('delete-attend/{id}', 'deleteAttend');
 });
 
 
