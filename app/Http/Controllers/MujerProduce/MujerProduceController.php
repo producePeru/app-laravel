@@ -127,23 +127,48 @@ class MujerProduceController extends Controller
 
     // EVENTOS
 
-    private function generateSlug($title, $date)
+    // private function generateSlug($title, $date)
+    // {
+    //     // Convertir a slug base
+    //     $base = \Illuminate\Support\Str::slug($title);
+
+    //     $slug = $base;
+    //     $counter = 2;
+
+    //     // Buscar si existe
+    //     while (MpEvent::where('slug', $slug)->exists()) {
+    //         $slug = $base . '-' . $counter;
+    //         $counter++;
+    //     }
+
+    //     return $slug;
+    // }
+
+    private function generateSlug($title, $date = null)
     {
-        // Convertir a slug base
-        $base = \Illuminate\Support\Str::slug($title);
+        // Slug base
+        $base = Str::slug($title);
+
+        // Si quieres incluir la fecha en el slug
+        if ($date) {
+            $base .= '-' . date('Ymd', strtotime($date));
+        }
 
         $slug = $base;
-        $counter = 2;
+        $counter = 1;
 
-        // Buscar si existe
-        while (MpEvent::where('slug', $slug)->exists()) {
+        // Verifica incluso los eliminados (SoftDeletes)
+        while (
+            MpEvent::withTrashed()
+            ->where('slug', $slug)
+            ->exists()
+        ) {
             $slug = $base . '-' . $counter;
             $counter++;
         }
 
         return $slug;
     }
-
 
     public function mpStoreEvent(Request $request)
     {
@@ -234,7 +259,7 @@ class MujerProduceController extends Controller
 
         $query->withItems($filters)
             ->withCount('attendances')
-            ->orderBy('created_at', 'DESC');
+            ->orderBy('date', 'DESC');
 
         $items = $query->paginate(100)->through(function ($item) {
             return $this->mapItems($item);
