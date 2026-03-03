@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AttendanceList extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'ugo_postulantes';
 
@@ -17,7 +18,7 @@ class AttendanceList extends Model
         'socialReason',
         'economicsector_id',
         'comercialactivity_id',
-        'category_id',
+        'category_id',          // rubro
 
         'howKnowEvent_id',
         'slug',
@@ -86,10 +87,12 @@ class AttendanceList extends Model
     {
         return $this->belongsTo('App\Models\EconomicSector');
     }
-    // public function comercialactivity()
-    // {
-    //     return $this->belongsTo('App\Models\ComercialActivities');
-    // }
+
+    public function comercialactivity()
+    {
+        return $this->belongsTo(ComercialActivities::class, 'comercialactivity_id');
+    }
+
     public function list()
     {
         return $this->belongsTo(Attendance::class, 'attendancelist_id');

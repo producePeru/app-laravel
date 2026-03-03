@@ -295,21 +295,22 @@ class AttendanceController extends Controller
             $registro = Attendance::findOrFail($id);
             $data = $request->all();
 
-            /**
-             * VALIDACIONES POR ROL
-             */
+            /** VALIDACIONES POR ROL **/
             if ($user->rol == 2) {
 
-                if (
-                    $registro->user_id != $user->id ||
-                    $registro->asesorId != $user->id
-                ) {
+                if ($registro->user_id != $user->id || $registro->asesorId != $user->id) {
                     return response()->json([
                         'message' => 'No tiene permisos para editar este registro',
                         'status'  => 403
                     ]);
                 }
 
+                if (now()->greaterThan($registro->created_at->addHours(24))) {
+                    return response()->json([
+                        'message' => 'No puede editar el registro después de 24 horas de su creación',
+                        'status'  => 405
+                    ]);
+                }
                 // No puede cambiar estos campos
                 unset($data['user_id'], $data['asesorId']);
             }
@@ -452,6 +453,8 @@ class AttendanceController extends Controller
         $query = AttendanceList::with([
             'typedocument:id,avr',
             'gender:id,avr',
+            'rubro:id,name',
+            'comercialactivity:id,name',
             'economicsector:id,name',
             'country:id,name',
             'list'
@@ -466,7 +469,15 @@ class AttendanceController extends Controller
             return [
                 'id' => $item->id,
                 'typedocument_name'     => $item->typedocument->avr,
+                'socialReason'          => $item->socialReason ?? null,
                 'documentnumber'        => $item->documentnumber,
+                'economicsector_id'     => $item->economicsector->id ?? null,
+                'category_id'           => $item->rubro->id ?? null,
+                'comercialactivity_id'  => $item->comercialactivity->id ?? null,
+                'city_id'               => $item->city_id ?? null,
+                'province_id'           => $item->province_id ?? null,
+                'district_id'           => $item->district_id ?? null,
+                'country_id'            => $item->country_id ?? null,
                 'lastname'              => mb_strtoupper($item->lastname),
                 'middlename'            => mb_strtoupper($item->middlename),
                 'name'                  => mb_strtoupper($item->name),
@@ -477,16 +488,13 @@ class AttendanceController extends Controller
                 'country_name'          => mb_strtoupper($item->country->name ?? null),
                 'is_asesoria'           => $item->is_asesoria,
                 'was_formalizado'       => $item->was_formalizado,
-
                 'typedocument_id'       => $item->typedocument->id,
                 'gender_id'             => $item->gender->id,
-
-                'created_at'            => Carbon::parse($item->created_at)->format('d-m-Y H:i'),
-
                 'ruc'                   => $item->ruc ?? null,
                 'comercialName'        => $item->comercialName ?? null,
                 'comercialActivity'     => $item->comercialActivity,
-                'mercado'               => $item->mercado
+                'mercado'               => $item->mercado,
+                'created_at'            => Carbon::parse($item->created_at)->format('d-m-Y H:i'),
             ];
         });
 
@@ -644,11 +652,6 @@ class AttendanceController extends Controller
             ], 500);
         }
     }
-
-
-
-
-
 
 
 
@@ -942,5 +945,85 @@ class AttendanceController extends Controller
             'status' => 200,
             'message' => 'Registro actualizado correctamente.'
         ]);
+    }
+
+    public function updateParticipant(Request $request, $id)
+    {
+        try {
+
+            $participant = AttendanceList::findOrFail($id);
+
+            // 🔒 Verificar si han pasado más de 24 horas
+            $createdAt = Carbon::parse($participant->created_at);
+            $now = Carbon::now();
+
+            if ($createdAt->diffInHours($now) >= 24) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 403,
+                    'message' => 'No se puede actualizar el participante después de 24 horas de su registro.'
+                ], 403);
+            }
+
+            $participant->update($request->all());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Participante actualizado correctamente.',
+                'data'    => $participant,
+                'status'  => 200
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Participante no encontrado.'
+            ], 404);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error inesperado.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteParticipant($id)
+    {
+        try {
+
+            $participant = AttendanceList::findOrFail($id);
+
+            // 🔒 Verificar si ya pasaron más de 24 horas
+            if (now()->greaterThan($participant->created_at->addHours(24))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede eliminar el participante después de 24 horas de su creación.',
+                    'status'  => 403
+                ], 403);
+            }
+
+            $participant->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Participante eliminado correctamente.',
+                'status'  => 200
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Participante no encontrado.'
+            ], 404);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error inesperado.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 }
