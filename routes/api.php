@@ -683,6 +683,8 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
     Route::post('email-create-activity',        [AttendanceController::class, 'sendAttendanceMail']);        // migra los eventos de UGO al calendario sr Carlos
     Route::get('events-by-region',              [AttendanceController::class, 'eventsByRegion']);        // migra los eventos de UGO al calendario sr Carlos
 
+    Route::put('update-participant/{id}',       [AttendanceController::class, 'updateParticipant']);
+    Route::delete('delete-participant/{id}',    [AttendanceController::class, 'deleteParticipant']);
 });
 
 
