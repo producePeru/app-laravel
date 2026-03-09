@@ -87,12 +87,13 @@ class PageController extends Controller
 
     public function allPagesTypeUgo()
     {
+        // ksksksk
         try {
 
             $type = "ases";
 
             $pages = Page::where('office', 'UGO')
-                ->where('group', $type) // ← filtro dinámico
+                // ->where('group', $type) // ← filtro dinámico
                 ->orderBy('id', 'asc')
                 ->paginate(150);
 

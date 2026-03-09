@@ -272,5 +272,17 @@ class Formalization20 extends Model
                 $q->where('cdetype_id', $filters['typeCdes']);
             });
         }
+
+        if (!empty($filters['capas'])) {
+            if ($filters['capas'] === 'up') {
+                $query->whereNotNull('ruc')
+                    ->orderBy('ruc', 'asc');
+            }
+
+            if ($filters['capas'] === 'down') {
+                $query->whereNull('ruc')
+                    ->orderBy('created_at', 'desc');
+            }
+        }
     }
 }

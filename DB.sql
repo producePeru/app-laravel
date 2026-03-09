@@ -1578,9 +1578,41 @@ CREATE TABLE mp_personalized_advice (
 -- COLLATE=utf8mb4_unicode_ci;
 
 
--- ALTER TABLE email_templates
+-- ALTER TABLE ugo_postulantes
 -- ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL
 -- AFTER updated_at;
+
+
+
+CREATE TABLE surveys (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nameTable VARCHAR(100) NOT NULL,
+    label TEXT NOT NULL,
+    type ENUM('text','select','radio','checkbox-multiple','search') NOT NULL,
+    model VARCHAR(100),
+    required BOOLEAN DEFAULT FALSE,
+    position INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+
+
+CREATE TABLE surveys_options (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    survey_id BIGINT UNSIGNED NOT NULL,
+    label TEXT NOT NULL,
+    value VARCHAR(250),
+    status CHAR(1) DEFAULT '1',
+    position INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (survey_id) REFERENCES surveys(id)
+);
+
+
 
 
 
