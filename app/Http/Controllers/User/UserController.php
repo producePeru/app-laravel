@@ -117,20 +117,25 @@ class UserController extends Controller
             if (!$permission['hasPermission']) {
                 return response()->json([
                     'message' => 'No tienes permiso para acceder a esta sección',
-                    'status' => 403
-                ]);
+                    'status'  => 403
+                ], 403);
             }
 
             $filters = [
-                'name'      => $request->input('name')
+                'name' => $request->input('name')
             ];
 
-            $query = User::where(['active' => 1, 'office_id' => 1])->orderBy('id', 'desc');
+            $query = User::with(['pages', 'cde', 'office'])
+                ->where([
+                    'active'    => 1,
+                    'office_id' => 1
+                ])
+                ->orderBy('id', 'desc');
 
             $query->withDataItems($filters);
 
-            $users = $query->paginate(150)->through(function ($advisory) {
-                return $this->mapEvents($advisory);
+            $users = $query->paginate(150)->through(function ($user) {
+                return $this->mapEvents($user);
             });
 
             return response()->json([
@@ -138,11 +143,12 @@ class UserController extends Controller
                 'status' => 200
             ]);
         } catch (\Exception $e) {
+
             return response()->json([
-                'error' => 'Error al obtener los usuarios',
+                'error'   => 'Error al obtener los usuarios',
                 'message' => $e->getMessage(),
-                'status' => 500,
-                'trace' => config('app.debug') ? $e->getTrace() : null
+                'status'  => 500,
+                'trace'   => config('app.debug') ? $e->getTrace() : null
             ], 500);
         }
     }
@@ -150,25 +156,54 @@ class UserController extends Controller
     private function mapEvents($item)
     {
         return [
-            'id'                => $item->id,
-            'email'             => $item->email,
-            'name'              => isset($item->name) ? strtoupper($item->name) : null,
-            'lastname'          => $item->lastname,
-            'middlename'        => $item->middlename,
-            'fullname'          => trim(
-                (isset($item->lastname) ? strtoupper($item->lastname) : '') . ' ' .
-                    (isset($item->middlename) ? strtoupper($item->middlename) : '')
+            'id'         => $item->id,
+            'email'      => $item->email,
+            'name'       => $item->name ? strtoupper($item->name) : null,
+            'lastname'   => $item->lastname,
+            'middlename' => $item->middlename,
+            'fullname'   => trim(
+                ($item->lastname ? strtoupper($item->lastname) : '') . ' ' .
+                    ($item->middlename ? strtoupper($item->middlename) : '')
             ) ?: null,
 
-            'dni'               => $item->dni ?? null,
-            'phone'             => $item->phone ?? null,
-            'personalemail'     => $item->personalemail ?? null,
-            'birthday'          => $item->birthday ? $item->birthday : null,
-            'cde_id'           => $item->cde_id ?? null,
-            'cde_name'         => isset($item->cde->name) ? strtoupper($item->cde->name) : null,
-            'office_id'        => $item->office_id ?? null,
-            'office_name'      => isset($item->office->name) ? strtoupper($item->office->name) : null,
-            'gender_id'        => $item->gender_id ?? null
+            'dni'           => $item->dni ?? null,
+            'phone'         => $item->phone ?? null,
+            'personalemail' => $item->personalemail ?? null,
+            'birthday'      => $item->birthday ?? null,
+            'cde_id'        => $item->cde_id ?? null,
+            'cde_name'      => isset($item->cde->name) ? strtoupper($item->cde->name) : null,
+            'office_id'     => $item->office_id ?? null,
+            'office_name'   => isset($item->office->name) ? strtoupper($item->office->name) : null,
+            'gender_id'     => $item->gender_id ?? null,
+
+            'pages' => $item->pages->map(function ($page) {
+
+                // 🔥 Traducción de permisos
+                $permissionLabels = [
+                    'can_view_all' => 'puede ver',
+                    'can_create'   => 'puede crear',
+                    'can_update'   => 'puede actualizar',
+                    'can_delete'   => 'puede eliminar',
+                    'can_download' => 'puede descargar',
+                    'can_finish'   => 'puede finalizar',
+                    'can_import'   => 'puede importar',
+                ];
+
+                $permissions = collect($page->pivot->toArray())
+                    ->filter(fn($value, $key) => str_starts_with($key, 'can_') && $value == 1)
+                    ->map(function ($value, $key) use ($permissionLabels) {
+                        return $permissionLabels[$key] ?? $key;
+                    })
+                    ->values()
+                    ->toArray();
+
+                return [
+                    'page_id'     => $page->id,
+                    'page_name'   => $page->name,
+                    'page_slug'   => $page->slug,
+                    'permissions' => $permissions
+                ];
+            })->values()
         ];
     }
 

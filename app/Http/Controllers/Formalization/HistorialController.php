@@ -102,6 +102,7 @@ class HistorialController extends Controller
             'dateEnd'   => $request->input('dateEnd'),
             'year'      => $request->input('year'),
             'typeCdes'  => $request->input('typeCdes'),
+            'capas'     => $request->input('capas'),
         ];
 
         $user = Auth::user();
@@ -203,6 +204,7 @@ class HistorialController extends Controller
             'dateEnd'   => $request->input('dateEnd'),
             'year'      => $request->input('year'),
             'typeCdes'  => $request->input('typeCdes'),
+            'capas'     => $request->input('capas'),
         ];
 
         $user = Auth::user();
@@ -298,6 +300,7 @@ class HistorialController extends Controller
             'dateEnd'   => $request->input('dateEnd'),
             'year'      => $request->input('year'),
             'typeCdes'  => $request->input('typeCdes'),
+            'capas'     => $request->input('capas'),
         ];
 
         $user = Auth::user();

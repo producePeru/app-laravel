@@ -1465,4 +1465,120 @@ class FormularioPublicoController extends Controller
             'status'  => 200
         ], 200);
     }
+
+    public function registerParticipantNew(Request $request)
+    {
+        try {
+            $request->validate([
+                'ruc'                   => 'nullable|string|max:11',
+                'social_reason'         => 'nullable|string|max:255',
+                'economic_sector_id'    => 'nullable|exists:economicsectors,id',
+                'rubro_id'              => 'nullable|exists:categories,id',
+                'comercial_activity_id' => 'nullable|exists:activities,id',
+                'city_id'               => 'nullable|exists:cities,id',
+                'province_id'           => 'nullable|exists:provinces,id',
+                'district_id'           => 'nullable|exists:districts,id',
+
+                't_doc_id'              => 'nullable|exists:typedocuments,id',
+                'doc_number'            => 'required|string|max:12',
+                'country_id'            => 'nullable|exists:countries,id',
+                'date_of_birth'         => 'nullable|date_format:d/m/Y',
+                'names'                 => 'nullable|string|max:100',
+                'last_name'             => 'nullable|string|max:100',
+                'middle_name'           => 'nullable|string|max:100',
+                'civil_status_id'       => 'nullable|exists:civilstatus,id',
+                'num_soons'             => 'nullable|max:3',
+                'gender_id'             => 'nullable|exists:genders,id',
+                'sick'                  => 'nullable|string|max:10',
+                'academicdegree_id'     => 'nullable|exists:academicdegree,id',
+                'phone'                 => 'nullable|max:9',
+                'email'                 => 'nullable|string|max:200',
+                'role_company_id'       => 'nullable|exists:role_company,id',
+
+                'obs_ruc'               => 'nullable|in:1',
+                'obs_dni'               => 'nullable|in:1',
+            ]);
+
+            if ($request->filled('date_of_birth')) {
+                $request->merge([
+                    'date_of_birth' => Carbon::createFromFormat(
+                        'd/m/Y',
+                        $request->date_of_birth
+                    )->format('Y-m-d')
+                ]);
+            }
+
+            $action = 'updated';
+
+            $participant = MPParticipant::where('doc_number', $request->doc_number)->first();
+
+            if ($participant) {
+
+                // CASO 1: doc_number existe
+
+                if (is_null($participant->ruc)) {
+
+                    if ($request->filled('ruc')) {
+                        $existsRuc = MPParticipant::where('ruc', $request->ruc)
+                            ->where('id', '!=', $participant->id)
+                            ->exists();
+
+                        if ($existsRuc) {
+                            return response()->json([
+                                'status'  => 409,
+                                'message' => 'El RUC ya se encuentra registrado en otro participante'
+                            ], 409);
+                        }
+                    }
+
+                    $participant->update($request->all());
+                } else {
+
+                    $data = collect($request->all())
+                        ->filter(fn($value) => !is_null($value))
+                        ->toArray();
+
+                    $participant->update($data);
+                }
+            } else {
+
+                if ($request->filled('ruc')) {
+                    $existsRuc = MPParticipant::where('ruc', $request->ruc)->exists();
+
+                    if ($existsRuc) {
+                        return response()->json([
+                            'status'  => 409,
+                            'message' => 'El RUC ya se encuentra registrado'
+                        ], 409);
+                    }
+                }
+
+                $participant = MPParticipant::create($request->all());
+
+                $action = 'created';
+            }
+
+            return response()->json([
+                'status'  => 200,
+                'message' => $action === 'created'
+                    ? 'Participante creado correctamente'
+                    : 'Participante actualizado correctamente',
+                'data'    => $participant
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            return response()->json([
+                'status'  => 422,
+                'message' => 'Error de validación',
+                'errors'  => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Error interno del servidor',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
 }
