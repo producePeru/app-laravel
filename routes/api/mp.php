@@ -80,6 +80,8 @@ Route::controller(FormularioPublicoController::class)->group(function () {
     Route::get('my-advices/{dni}', 'mpMyAdvice');
 
     Route::post('cancel-my-advice', 'cancelMyAdvice');
+
+    Route::post('register-participant-new', 'registerParticipantNew');
 });
 
 // mp
