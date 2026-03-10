@@ -20,34 +20,20 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3DataStoreConnectionSignalsSearchSnippet extends \Google\Model
 {
   /**
-   * Title of the enclosing document.
-   *
    * @var string
    */
   public $documentTitle;
   /**
-   * Uri for the document. Present if specified for the document.
-   *
    * @var string
    */
   public $documentUri;
   /**
-   * Metadata associated with the document.
-   *
-   * @var array[]
-   */
-  public $metadata;
-  /**
-   * Text included in the prompt.
-   *
    * @var string
    */
   public $text;
 
   /**
-   * Title of the enclosing document.
-   *
-   * @param string $documentTitle
+   * @param string
    */
   public function setDocumentTitle($documentTitle)
   {
@@ -61,9 +47,7 @@ class GoogleCloudDialogflowCxV3DataStoreConnectionSignalsSearchSnippet extends \
     return $this->documentTitle;
   }
   /**
-   * Uri for the document. Present if specified for the document.
-   *
-   * @param string $documentUri
+   * @param string
    */
   public function setDocumentUri($documentUri)
   {
@@ -77,25 +61,7 @@ class GoogleCloudDialogflowCxV3DataStoreConnectionSignalsSearchSnippet extends \
     return $this->documentUri;
   }
   /**
-   * Metadata associated with the document.
-   *
-   * @param array[] $metadata
-   */
-  public function setMetadata($metadata)
-  {
-    $this->metadata = $metadata;
-  }
-  /**
-   * @return array[]
-   */
-  public function getMetadata()
-  {
-    return $this->metadata;
-  }
-  /**
-   * Text included in the prompt.
-   *
-   * @param string $text
+   * @param string
    */
   public function setText($text)
   {

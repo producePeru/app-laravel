@@ -19,88 +19,44 @@ namespace Google\Service\Firestore;
 
 class Value extends \Google\Model
 {
-  /**
-   * Null value.
-   */
-  public const NULL_VALUE_NULL_VALUE = 'NULL_VALUE';
   protected $arrayValueType = ArrayValue::class;
   protected $arrayValueDataType = '';
   /**
-   * A boolean value.
-   *
    * @var bool
    */
   public $booleanValue;
   /**
-   * A bytes value. Must not exceed 1 MiB - 89 bytes. Only the first 1,500 bytes
-   * are considered by queries.
-   *
    * @var string
    */
   public $bytesValue;
-  /**
-   * A double value.
-   *
-   * @var 
-   */
   public $doubleValue;
-  /**
-   * Value which references a field. This is considered relative (vs absolute)
-   * since it only refers to a field and not a field within a particular
-   * document. **Requires:** * Must follow field reference limitations. * Not
-   * allowed to be used when writing documents.
-   *
-   * @var string
-   */
-  public $fieldReferenceValue;
-  protected $functionValueType = FirestoreFunction::class;
-  protected $functionValueDataType = '';
   protected $geoPointValueType = LatLng::class;
   protected $geoPointValueDataType = '';
   /**
-   * An integer value.
-   *
    * @var string
    */
   public $integerValue;
   protected $mapValueType = MapValue::class;
   protected $mapValueDataType = '';
   /**
-   * A null value.
-   *
    * @var string
    */
   public $nullValue;
-  protected $pipelineValueType = Pipeline::class;
-  protected $pipelineValueDataType = '';
   /**
-   * A reference to a document. For example:
-   * `projects/{project_id}/databases/{database_id}/documents/{document_path}`.
-   *
    * @var string
    */
   public $referenceValue;
   /**
-   * A string value. The string, represented as UTF-8, must not exceed 1 MiB -
-   * 89 bytes. Only the first 1,500 bytes of the UTF-8 representation are
-   * considered by queries.
-   *
    * @var string
    */
   public $stringValue;
   /**
-   * A timestamp value. Precise only to microseconds. When stored, any
-   * additional precision is rounded down.
-   *
    * @var string
    */
   public $timestampValue;
 
   /**
-   * An array value. Cannot directly contain another array value, though can
-   * contain a map which contains another array.
-   *
-   * @param ArrayValue $arrayValue
+   * @param ArrayValue
    */
   public function setArrayValue(ArrayValue $arrayValue)
   {
@@ -114,9 +70,7 @@ class Value extends \Google\Model
     return $this->arrayValue;
   }
   /**
-   * A boolean value.
-   *
-   * @param bool $booleanValue
+   * @param bool
    */
   public function setBooleanValue($booleanValue)
   {
@@ -130,10 +84,7 @@ class Value extends \Google\Model
     return $this->booleanValue;
   }
   /**
-   * A bytes value. Must not exceed 1 MiB - 89 bytes. Only the first 1,500 bytes
-   * are considered by queries.
-   *
-   * @param string $bytesValue
+   * @param string
    */
   public function setBytesValue($bytesValue)
   {
@@ -155,45 +106,7 @@ class Value extends \Google\Model
     return $this->doubleValue;
   }
   /**
-   * Value which references a field. This is considered relative (vs absolute)
-   * since it only refers to a field and not a field within a particular
-   * document. **Requires:** * Must follow field reference limitations. * Not
-   * allowed to be used when writing documents.
-   *
-   * @param string $fieldReferenceValue
-   */
-  public function setFieldReferenceValue($fieldReferenceValue)
-  {
-    $this->fieldReferenceValue = $fieldReferenceValue;
-  }
-  /**
-   * @return string
-   */
-  public function getFieldReferenceValue()
-  {
-    return $this->fieldReferenceValue;
-  }
-  /**
-   * A value that represents an unevaluated expression. **Requires:** * Not
-   * allowed to be used when writing documents.
-   *
-   * @param FirestoreFunction $functionValue
-   */
-  public function setFunctionValue(FirestoreFunction $functionValue)
-  {
-    $this->functionValue = $functionValue;
-  }
-  /**
-   * @return FirestoreFunction
-   */
-  public function getFunctionValue()
-  {
-    return $this->functionValue;
-  }
-  /**
-   * A geo point value representing a point on the surface of Earth.
-   *
-   * @param LatLng $geoPointValue
+   * @param LatLng
    */
   public function setGeoPointValue(LatLng $geoPointValue)
   {
@@ -207,9 +120,7 @@ class Value extends \Google\Model
     return $this->geoPointValue;
   }
   /**
-   * An integer value.
-   *
-   * @param string $integerValue
+   * @param string
    */
   public function setIntegerValue($integerValue)
   {
@@ -223,9 +134,7 @@ class Value extends \Google\Model
     return $this->integerValue;
   }
   /**
-   * A map value.
-   *
-   * @param MapValue $mapValue
+   * @param MapValue
    */
   public function setMapValue(MapValue $mapValue)
   {
@@ -239,45 +148,21 @@ class Value extends \Google\Model
     return $this->mapValue;
   }
   /**
-   * A null value.
-   *
-   * Accepted values: NULL_VALUE
-   *
-   * @param self::NULL_VALUE_* $nullValue
+   * @param string
    */
   public function setNullValue($nullValue)
   {
     $this->nullValue = $nullValue;
   }
   /**
-   * @return self::NULL_VALUE_*
+   * @return string
    */
   public function getNullValue()
   {
     return $this->nullValue;
   }
   /**
-   * A value that represents an unevaluated pipeline. **Requires:** * Not
-   * allowed to be used when writing documents.
-   *
-   * @param Pipeline $pipelineValue
-   */
-  public function setPipelineValue(Pipeline $pipelineValue)
-  {
-    $this->pipelineValue = $pipelineValue;
-  }
-  /**
-   * @return Pipeline
-   */
-  public function getPipelineValue()
-  {
-    return $this->pipelineValue;
-  }
-  /**
-   * A reference to a document. For example:
-   * `projects/{project_id}/databases/{database_id}/documents/{document_path}`.
-   *
-   * @param string $referenceValue
+   * @param string
    */
   public function setReferenceValue($referenceValue)
   {
@@ -291,11 +176,7 @@ class Value extends \Google\Model
     return $this->referenceValue;
   }
   /**
-   * A string value. The string, represented as UTF-8, must not exceed 1 MiB -
-   * 89 bytes. Only the first 1,500 bytes of the UTF-8 representation are
-   * considered by queries.
-   *
-   * @param string $stringValue
+   * @param string
    */
   public function setStringValue($stringValue)
   {
@@ -309,10 +190,7 @@ class Value extends \Google\Model
     return $this->stringValue;
   }
   /**
-   * A timestamp value. Precise only to microseconds. When stored, any
-   * additional precision is rounded down.
-   *
-   * @param string $timestampValue
+   * @param string
    */
   public function setTimestampValue($timestampValue)
   {

@@ -20,24 +20,16 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2beta1IntentMessageTelephonySynthesizeSpeech extends \Google\Model
 {
   /**
-   * The SSML to be synthesized. For more information, see
-   * [SSML](https://developers.google.com/actions/reference/ssml).
-   *
    * @var string
    */
   public $ssml;
   /**
-   * The raw text to be synthesized.
-   *
    * @var string
    */
   public $text;
 
   /**
-   * The SSML to be synthesized. For more information, see
-   * [SSML](https://developers.google.com/actions/reference/ssml).
-   *
-   * @param string $ssml
+   * @param string
    */
   public function setSsml($ssml)
   {
@@ -51,9 +43,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageTelephonySynthesizeSpeech extends
     return $this->ssml;
   }
   /**
-   * The raw text to be synthesized.
-   *
-   * @param string $text
+   * @param string
    */
   public function setText($text)
   {

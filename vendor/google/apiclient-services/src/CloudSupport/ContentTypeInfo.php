@@ -20,40 +20,28 @@ namespace Google\Service\CloudSupport;
 class ContentTypeInfo extends \Google\Model
 {
   /**
-   * # gdata.* are outside protos with mising documentation
-   *
    * @var string
    */
   public $bestGuess;
   /**
-   * # gdata.* are outside protos with mising documentation
-   *
    * @var string
    */
   public $fromBytes;
   /**
-   * # gdata.* are outside protos with mising documentation
-   *
    * @var string
    */
   public $fromFileName;
   /**
-   * # gdata.* are outside protos with mising documentation
-   *
    * @var string
    */
   public $fromHeader;
   /**
-   * # gdata.* are outside protos with mising documentation
-   *
    * @var string
    */
   public $fromUrlPath;
 
   /**
-   * # gdata.* are outside protos with mising documentation
-   *
-   * @param string $bestGuess
+   * @param string
    */
   public function setBestGuess($bestGuess)
   {
@@ -67,9 +55,7 @@ class ContentTypeInfo extends \Google\Model
     return $this->bestGuess;
   }
   /**
-   * # gdata.* are outside protos with mising documentation
-   *
-   * @param string $fromBytes
+   * @param string
    */
   public function setFromBytes($fromBytes)
   {
@@ -83,9 +69,7 @@ class ContentTypeInfo extends \Google\Model
     return $this->fromBytes;
   }
   /**
-   * # gdata.* are outside protos with mising documentation
-   *
-   * @param string $fromFileName
+   * @param string
    */
   public function setFromFileName($fromFileName)
   {
@@ -99,9 +83,7 @@ class ContentTypeInfo extends \Google\Model
     return $this->fromFileName;
   }
   /**
-   * # gdata.* are outside protos with mising documentation
-   *
-   * @param string $fromHeader
+   * @param string
    */
   public function setFromHeader($fromHeader)
   {
@@ -115,9 +97,7 @@ class ContentTypeInfo extends \Google\Model
     return $this->fromHeader;
   }
   /**
-   * # gdata.* are outside protos with mising documentation
-   *
-   * @param string $fromUrlPath
+   * @param string
    */
   public function setFromUrlPath($fromUrlPath)
   {

@@ -20,16 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3RestoreAgentRequestGitSource extends \Google\Model
 {
   /**
-   * tracking branch for the git pull
-   *
    * @var string
    */
   public $trackingBranch;
 
   /**
-   * tracking branch for the git pull
-   *
-   * @param string $trackingBranch
+   * @param string
    */
   public function setTrackingBranch($trackingBranch)
   {

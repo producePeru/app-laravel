@@ -197,10 +197,6 @@ class Standard extends PrettyPrinterAbstract {
     }
 
     protected function pScalar_Int(Scalar\Int_ $node): string {
-        if ($node->getAttribute('shouldPrintRawValue') === true) {
-            return $node->getAttribute('rawValue');
-        }
-
         if ($node->value === -\PHP_INT_MAX - 1) {
             // PHP_INT_MIN cannot be represented as a literal,
             // because the sign is not part of the literal
@@ -208,7 +204,6 @@ class Standard extends PrettyPrinterAbstract {
         }
 
         $kind = $node->getAttribute('kind', Scalar\Int_::KIND_DEC);
-
         if (Scalar\Int_::KIND_DEC === $kind) {
             return (string) $node->value;
         }
@@ -430,14 +425,6 @@ class Standard extends PrettyPrinterAbstract {
         return $this->pInfixOp(BinaryOp\Coalesce::class, $node->left, ' ?? ', $node->right, $precedence, $lhsPrecedence);
     }
 
-    protected function pExpr_BinaryOp_Pipe(BinaryOp\Pipe $node, int $precedence, int $lhsPrecedence): string {
-        if ($node->right instanceof Expr\ArrowFunction) {
-            // Force parentheses around arrow functions.
-            $lhsPrecedence = $this->precedenceMap[Expr\ArrowFunction::class][0];
-        }
-        return $this->pInfixOp(BinaryOp\Pipe::class, $node->left, ' |> ', $node->right, $precedence, $lhsPrecedence);
-    }
-
     protected function pExpr_Instanceof(Expr\Instanceof_ $node, int $precedence, int $lhsPrecedence): string {
         return $this->pPostfixOp(
             Expr\Instanceof_::class, $node->expr,
@@ -528,10 +515,6 @@ class Standard extends PrettyPrinterAbstract {
 
     protected function pExpr_Cast_Unset(Cast\Unset_ $node, int $precedence, int $lhsPrecedence): string {
         return $this->pPrefixOp(Cast\Unset_::class, '(unset) ', $node->expr, $precedence, $lhsPrecedence);
-    }
-
-    protected function pExpr_Cast_Void(Cast\Void_ $node, int $precedence, int $lhsPrecedence): string {
-        return $this->pPrefixOp(Cast\Void_::class, '(void) ', $node->expr, $precedence, $lhsPrecedence);
     }
 
     // Function calls and similar constructs

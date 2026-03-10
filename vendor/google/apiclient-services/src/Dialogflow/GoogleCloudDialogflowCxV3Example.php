@@ -19,71 +19,30 @@ namespace Google\Service\Dialogflow;
 
 class GoogleCloudDialogflowCxV3Example extends \Google\Collection
 {
-  /**
-   * Unspecified output.
-   */
-  public const CONVERSATION_STATE_OUTPUT_STATE_UNSPECIFIED = 'OUTPUT_STATE_UNSPECIFIED';
-  /**
-   * Succeeded.
-   */
-  public const CONVERSATION_STATE_OUTPUT_STATE_OK = 'OUTPUT_STATE_OK';
-  /**
-   * Cancelled.
-   */
-  public const CONVERSATION_STATE_OUTPUT_STATE_CANCELLED = 'OUTPUT_STATE_CANCELLED';
-  /**
-   * Failed.
-   */
-  public const CONVERSATION_STATE_OUTPUT_STATE_FAILED = 'OUTPUT_STATE_FAILED';
-  /**
-   * Escalated.
-   */
-  public const CONVERSATION_STATE_OUTPUT_STATE_ESCALATED = 'OUTPUT_STATE_ESCALATED';
-  /**
-   * Pending.
-   */
-  public const CONVERSATION_STATE_OUTPUT_STATE_PENDING = 'OUTPUT_STATE_PENDING';
   protected $collection_key = 'actions';
   protected $actionsType = GoogleCloudDialogflowCxV3Action::class;
   protected $actionsDataType = 'array';
   /**
-   * Required. Example's output state.
-   *
    * @var string
    */
   public $conversationState;
   /**
-   * Output only. The timestamp of initial example creation.
-   *
    * @var string
    */
   public $createTime;
   /**
-   * Optional. The high level concise description of the example. The max number
-   * of characters is 200.
-   *
    * @var string
    */
   public $description;
   /**
-   * Required. The display name of the example.
-   *
    * @var string
    */
   public $displayName;
   /**
-   * Optional. The language code of the example. If not specified, the agent's
-   * default language is used. Note: languages must be enabled in the agent
-   * before they can be used. Note: example's language code is not currently
-   * used in dialogflow agents.
-   *
    * @var string
    */
   public $languageCode;
   /**
-   * The unique identifier of the playbook example. Format:
-   * `projects//locations//agents//playbooks//examples/`.
-   *
    * @var string
    */
   public $name;
@@ -92,24 +51,16 @@ class GoogleCloudDialogflowCxV3Example extends \Google\Collection
   protected $playbookOutputType = GoogleCloudDialogflowCxV3PlaybookOutput::class;
   protected $playbookOutputDataType = '';
   /**
-   * Output only. Estimated number of tokes current example takes when sent to
-   * the LLM.
-   *
    * @var string
    */
   public $tokenCount;
   /**
-   * Output only. Last time the example was updated.
-   *
    * @var string
    */
   public $updateTime;
 
   /**
-   * Required. The ordered list of actions performed by the end user and the
-   * Dialogflow agent.
-   *
-   * @param GoogleCloudDialogflowCxV3Action[] $actions
+   * @param GoogleCloudDialogflowCxV3Action[]
    */
   public function setActions($actions)
   {
@@ -123,29 +74,21 @@ class GoogleCloudDialogflowCxV3Example extends \Google\Collection
     return $this->actions;
   }
   /**
-   * Required. Example's output state.
-   *
-   * Accepted values: OUTPUT_STATE_UNSPECIFIED, OUTPUT_STATE_OK,
-   * OUTPUT_STATE_CANCELLED, OUTPUT_STATE_FAILED, OUTPUT_STATE_ESCALATED,
-   * OUTPUT_STATE_PENDING
-   *
-   * @param self::CONVERSATION_STATE_* $conversationState
+   * @param string
    */
   public function setConversationState($conversationState)
   {
     $this->conversationState = $conversationState;
   }
   /**
-   * @return self::CONVERSATION_STATE_*
+   * @return string
    */
   public function getConversationState()
   {
     return $this->conversationState;
   }
   /**
-   * Output only. The timestamp of initial example creation.
-   *
-   * @param string $createTime
+   * @param string
    */
   public function setCreateTime($createTime)
   {
@@ -159,10 +102,7 @@ class GoogleCloudDialogflowCxV3Example extends \Google\Collection
     return $this->createTime;
   }
   /**
-   * Optional. The high level concise description of the example. The max number
-   * of characters is 200.
-   *
-   * @param string $description
+   * @param string
    */
   public function setDescription($description)
   {
@@ -176,9 +116,7 @@ class GoogleCloudDialogflowCxV3Example extends \Google\Collection
     return $this->description;
   }
   /**
-   * Required. The display name of the example.
-   *
-   * @param string $displayName
+   * @param string
    */
   public function setDisplayName($displayName)
   {
@@ -192,12 +130,7 @@ class GoogleCloudDialogflowCxV3Example extends \Google\Collection
     return $this->displayName;
   }
   /**
-   * Optional. The language code of the example. If not specified, the agent's
-   * default language is used. Note: languages must be enabled in the agent
-   * before they can be used. Note: example's language code is not currently
-   * used in dialogflow agents.
-   *
-   * @param string $languageCode
+   * @param string
    */
   public function setLanguageCode($languageCode)
   {
@@ -211,10 +144,7 @@ class GoogleCloudDialogflowCxV3Example extends \Google\Collection
     return $this->languageCode;
   }
   /**
-   * The unique identifier of the playbook example. Format:
-   * `projects//locations//agents//playbooks//examples/`.
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -228,9 +158,7 @@ class GoogleCloudDialogflowCxV3Example extends \Google\Collection
     return $this->name;
   }
   /**
-   * Optional. The input to the playbook in the example.
-   *
-   * @param GoogleCloudDialogflowCxV3PlaybookInput $playbookInput
+   * @param GoogleCloudDialogflowCxV3PlaybookInput
    */
   public function setPlaybookInput(GoogleCloudDialogflowCxV3PlaybookInput $playbookInput)
   {
@@ -244,9 +172,7 @@ class GoogleCloudDialogflowCxV3Example extends \Google\Collection
     return $this->playbookInput;
   }
   /**
-   * Optional. The output of the playbook in the example.
-   *
-   * @param GoogleCloudDialogflowCxV3PlaybookOutput $playbookOutput
+   * @param GoogleCloudDialogflowCxV3PlaybookOutput
    */
   public function setPlaybookOutput(GoogleCloudDialogflowCxV3PlaybookOutput $playbookOutput)
   {
@@ -260,10 +186,7 @@ class GoogleCloudDialogflowCxV3Example extends \Google\Collection
     return $this->playbookOutput;
   }
   /**
-   * Output only. Estimated number of tokes current example takes when sent to
-   * the LLM.
-   *
-   * @param string $tokenCount
+   * @param string
    */
   public function setTokenCount($tokenCount)
   {
@@ -277,9 +200,7 @@ class GoogleCloudDialogflowCxV3Example extends \Google\Collection
     return $this->tokenCount;
   }
   /**
-   * Output only. Last time the example was updated.
-   *
-   * @param string $updateTime
+   * @param string
    */
   public function setUpdateTime($updateTime)
   {

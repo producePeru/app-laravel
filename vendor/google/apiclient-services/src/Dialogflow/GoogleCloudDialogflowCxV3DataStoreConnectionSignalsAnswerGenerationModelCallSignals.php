@@ -20,30 +20,20 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3DataStoreConnectionSignalsAnswerGenerationModelCallSignals extends \Google\Model
 {
   /**
-   * Name of the generative model. For example, "gemini-ultra", "gemini-pro",
-   * "gemini-1.5-flash" etc. Defaults to "Other" if the model is unknown.
-   *
    * @var string
    */
   public $model;
   /**
-   * Output of the generative model.
-   *
    * @var string
    */
   public $modelOutput;
   /**
-   * Prompt as sent to the model.
-   *
    * @var string
    */
   public $renderedPrompt;
 
   /**
-   * Name of the generative model. For example, "gemini-ultra", "gemini-pro",
-   * "gemini-1.5-flash" etc. Defaults to "Other" if the model is unknown.
-   *
-   * @param string $model
+   * @param string
    */
   public function setModel($model)
   {
@@ -57,9 +47,7 @@ class GoogleCloudDialogflowCxV3DataStoreConnectionSignalsAnswerGenerationModelCa
     return $this->model;
   }
   /**
-   * Output of the generative model.
-   *
-   * @param string $modelOutput
+   * @param string
    */
   public function setModelOutput($modelOutput)
   {
@@ -73,9 +61,7 @@ class GoogleCloudDialogflowCxV3DataStoreConnectionSignalsAnswerGenerationModelCa
     return $this->modelOutput;
   }
   /**
-   * Prompt as sent to the model.
-   *
-   * @param string $renderedPrompt
+   * @param string
    */
   public function setRenderedPrompt($renderedPrompt)
   {

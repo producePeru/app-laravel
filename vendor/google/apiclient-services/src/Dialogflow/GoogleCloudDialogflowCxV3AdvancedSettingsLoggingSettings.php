@@ -20,32 +20,20 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3AdvancedSettingsLoggingSettings extends \Google\Model
 {
   /**
-   * Enables consent-based end-user input redaction, if true, a pre-defined
-   * session parameter `$session.params.conversation-redaction` will be used to
-   * determine if the utterance should be redacted.
-   *
    * @var bool
    */
   public $enableConsentBasedRedaction;
   /**
-   * Enables DF Interaction logging.
-   *
    * @var bool
    */
   public $enableInteractionLogging;
   /**
-   * Enables Google Cloud Logging.
-   *
    * @var bool
    */
   public $enableStackdriverLogging;
 
   /**
-   * Enables consent-based end-user input redaction, if true, a pre-defined
-   * session parameter `$session.params.conversation-redaction` will be used to
-   * determine if the utterance should be redacted.
-   *
-   * @param bool $enableConsentBasedRedaction
+   * @param bool
    */
   public function setEnableConsentBasedRedaction($enableConsentBasedRedaction)
   {
@@ -59,9 +47,7 @@ class GoogleCloudDialogflowCxV3AdvancedSettingsLoggingSettings extends \Google\M
     return $this->enableConsentBasedRedaction;
   }
   /**
-   * Enables DF Interaction logging.
-   *
-   * @param bool $enableInteractionLogging
+   * @param bool
    */
   public function setEnableInteractionLogging($enableInteractionLogging)
   {
@@ -75,9 +61,7 @@ class GoogleCloudDialogflowCxV3AdvancedSettingsLoggingSettings extends \Google\M
     return $this->enableInteractionLogging;
   }
   /**
-   * Enables Google Cloud Logging.
-   *
-   * @param bool $enableStackdriverLogging
+   * @param bool
    */
   public function setEnableStackdriverLogging($enableStackdriverLogging)
   {

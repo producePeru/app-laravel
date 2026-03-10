@@ -22,19 +22,12 @@ class AutoscalingConfigOverrides extends \Google\Model
   protected $autoscalingLimitsType = AutoscalingLimits::class;
   protected $autoscalingLimitsDataType = '';
   /**
-   * Optional. If specified, overrides the autoscaling target
-   * high_priority_cpu_utilization_percent in the top-level autoscaling
-   * configuration for the selected replicas.
-   *
    * @var int
    */
   public $autoscalingTargetHighPriorityCpuUtilizationPercent;
 
   /**
-   * Optional. If specified, overrides the min/max limit in the top-level
-   * autoscaling configuration for the selected replicas.
-   *
-   * @param AutoscalingLimits $autoscalingLimits
+   * @param AutoscalingLimits
    */
   public function setAutoscalingLimits(AutoscalingLimits $autoscalingLimits)
   {
@@ -48,11 +41,7 @@ class AutoscalingConfigOverrides extends \Google\Model
     return $this->autoscalingLimits;
   }
   /**
-   * Optional. If specified, overrides the autoscaling target
-   * high_priority_cpu_utilization_percent in the top-level autoscaling
-   * configuration for the selected replicas.
-   *
-   * @param int $autoscalingTargetHighPriorityCpuUtilizationPercent
+   * @param int
    */
   public function setAutoscalingTargetHighPriorityCpuUtilizationPercent($autoscalingTargetHighPriorityCpuUtilizationPercent)
   {

@@ -86,6 +86,34 @@ return [
             ]
         ],
 
+        'hostinger3k' => [    // capacitaciones@pnte-mype.com 3k
+            'transport'  => env('MAIL_MAILER_HOSTINGER_3K', 'smtp'),
+            'host'       => env('MAIL_HOST_HOSTINGER_3K', 'smtp.hostinger.com'),
+            'port'       => env('MAIL_PORT_HOSTINGER_3K', 465),
+            'username'   => env('MAIL_USERNAME_HOSTINGER_3K'),
+            'password'   => env('MAIL_PASSWORD_HOSTINGER_3K'),
+            'encryption' => env('MAIL_ENCRYPTION_HOSTINGER_3K', 'ssl'),
+            'timeout'    => null,
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS_HOSTINGER_3K', 'capacitaciones@soporte-pnte.com'),
+                'name'    => env('MAIL_FROM_NAME_HOSTINGER_3K', 'PROGRAMA NACIONAL TU EMPRESA'),
+            ]
+        ],
+
+        'digitalizacion' => [    // digitalizacion
+            'transport'  => env('MAIL_MAILER', 'smtp'),
+            'host'       => env('MAIL_HOST', 'smtp.hostinger.com'),
+            'port'       => env('MAIL_PORT', 465),
+            'username'   => env('MAIL_USERNAME'),
+            'password'   => env('MAIL_PASSWORD'),
+            'encryption' => env('MAIL_ENCRYPTION', 'ssl'),
+            'timeout'    => null,
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS', 'capacitaciones@soporte-pnte.com'),
+                'name'    => env('MAIL_FROM_NAME', 'PROGRAMA NACIONAL TU EMPRESA'),
+            ]
+        ],
+
         'office365' => [   // capacitaciones_tuempresa@produce.gob.pe                      
             'transport' => env('MAIL_MAILER_OFFICE365', 'smtp'),
             'host'      => env('MAIL_HOST_OFFICE365'),
@@ -109,6 +137,19 @@ return [
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS_LUCHO'),
                 'name' => env('MAIL_FROM_NAME_LUCHO'),
+            ],
+        ],
+
+        'mujerproduce' => [    // mujerproduce@produce.gob.pe
+            'transport' => env('MAIL_MAILER_MP', 'smtp'),
+            'host' => env('MAIL_HOST_MP'),
+            'port' => env('MAIL_PORT_MP'),
+            'username' => env('MAIL_USERNAME_MP'),
+            'password' => env('MAIL_PASSWORD_MP'),
+            'encryption' => env('MAIL_ENCRYPTION_MP'),
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS_MP'),
+                'name' => env('MAIL_FROM_NAME_MP'),
             ],
         ],
 

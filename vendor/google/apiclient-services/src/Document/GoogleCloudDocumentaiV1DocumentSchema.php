@@ -21,14 +21,10 @@ class GoogleCloudDocumentaiV1DocumentSchema extends \Google\Collection
 {
   protected $collection_key = 'entityTypes';
   /**
-   * Description of the schema.
-   *
    * @var string
    */
   public $description;
   /**
-   * Display name to show to users.
-   *
    * @var string
    */
   public $displayName;
@@ -38,9 +34,7 @@ class GoogleCloudDocumentaiV1DocumentSchema extends \Google\Collection
   protected $metadataDataType = '';
 
   /**
-   * Description of the schema.
-   *
-   * @param string $description
+   * @param string
    */
   public function setDescription($description)
   {
@@ -54,9 +48,7 @@ class GoogleCloudDocumentaiV1DocumentSchema extends \Google\Collection
     return $this->description;
   }
   /**
-   * Display name to show to users.
-   *
-   * @param string $displayName
+   * @param string
    */
   public function setDisplayName($displayName)
   {
@@ -70,9 +62,7 @@ class GoogleCloudDocumentaiV1DocumentSchema extends \Google\Collection
     return $this->displayName;
   }
   /**
-   * Entity types of the schema.
-   *
-   * @param GoogleCloudDocumentaiV1DocumentSchemaEntityType[] $entityTypes
+   * @param GoogleCloudDocumentaiV1DocumentSchemaEntityType[]
    */
   public function setEntityTypes($entityTypes)
   {
@@ -86,9 +76,7 @@ class GoogleCloudDocumentaiV1DocumentSchema extends \Google\Collection
     return $this->entityTypes;
   }
   /**
-   * Metadata of the schema.
-   *
-   * @param GoogleCloudDocumentaiV1DocumentSchemaMetadata $metadata
+   * @param GoogleCloudDocumentaiV1DocumentSchemaMetadata
    */
   public function setMetadata(GoogleCloudDocumentaiV1DocumentSchemaMetadata $metadata)
   {

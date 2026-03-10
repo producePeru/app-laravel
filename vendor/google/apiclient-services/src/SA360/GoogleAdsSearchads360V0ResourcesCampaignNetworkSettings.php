@@ -20,38 +20,24 @@ namespace Google\Service\SA360;
 class GoogleAdsSearchads360V0ResourcesCampaignNetworkSettings extends \Google\Model
 {
   /**
-   * Whether ads will be served on specified placements in the Google Display
-   * Network. Placements are specified using the Placement criterion.
-   *
    * @var bool
    */
   public $targetContentNetwork;
   /**
-   * Whether ads will be served with google.com search results.
-   *
    * @var bool
    */
   public $targetGoogleSearch;
   /**
-   * Whether ads will be served on the Google Partner Network. This is available
-   * only to some select Google partner accounts.
-   *
    * @var bool
    */
   public $targetPartnerSearchNetwork;
   /**
-   * Whether ads will be served on partner sites in the Google Search Network
-   * (requires `target_google_search` to also be `true`).
-   *
    * @var bool
    */
   public $targetSearchNetwork;
 
   /**
-   * Whether ads will be served on specified placements in the Google Display
-   * Network. Placements are specified using the Placement criterion.
-   *
-   * @param bool $targetContentNetwork
+   * @param bool
    */
   public function setTargetContentNetwork($targetContentNetwork)
   {
@@ -65,9 +51,7 @@ class GoogleAdsSearchads360V0ResourcesCampaignNetworkSettings extends \Google\Mo
     return $this->targetContentNetwork;
   }
   /**
-   * Whether ads will be served with google.com search results.
-   *
-   * @param bool $targetGoogleSearch
+   * @param bool
    */
   public function setTargetGoogleSearch($targetGoogleSearch)
   {
@@ -81,10 +65,7 @@ class GoogleAdsSearchads360V0ResourcesCampaignNetworkSettings extends \Google\Mo
     return $this->targetGoogleSearch;
   }
   /**
-   * Whether ads will be served on the Google Partner Network. This is available
-   * only to some select Google partner accounts.
-   *
-   * @param bool $targetPartnerSearchNetwork
+   * @param bool
    */
   public function setTargetPartnerSearchNetwork($targetPartnerSearchNetwork)
   {
@@ -98,10 +79,7 @@ class GoogleAdsSearchads360V0ResourcesCampaignNetworkSettings extends \Google\Mo
     return $this->targetPartnerSearchNetwork;
   }
   /**
-   * Whether ads will be served on partner sites in the Google Search Network
-   * (requires `target_google_search` to also be `true`).
-   *
-   * @param bool $targetSearchNetwork
+   * @param bool
    */
   public function setTargetSearchNetwork($targetSearchNetwork)
   {

@@ -23,19 +23,12 @@ class GoogleCloudDialogflowCxV3FulfillmentConditionalCasesCase extends \Google\C
   protected $caseContentType = GoogleCloudDialogflowCxV3FulfillmentConditionalCasesCaseCaseContent::class;
   protected $caseContentDataType = 'array';
   /**
-   * The condition to activate and select this case. Empty means the condition
-   * is always true. The condition is evaluated against form parameters or
-   * session parameters. See the [conditions reference](https://cloud.google.com
-   * /dialogflow/cx/docs/reference/condition).
-   *
    * @var string
    */
   public $condition;
 
   /**
-   * A list of case content.
-   *
-   * @param GoogleCloudDialogflowCxV3FulfillmentConditionalCasesCaseCaseContent[] $caseContent
+   * @param GoogleCloudDialogflowCxV3FulfillmentConditionalCasesCaseCaseContent[]
    */
   public function setCaseContent($caseContent)
   {
@@ -49,12 +42,7 @@ class GoogleCloudDialogflowCxV3FulfillmentConditionalCasesCase extends \Google\C
     return $this->caseContent;
   }
   /**
-   * The condition to activate and select this case. Empty means the condition
-   * is always true. The condition is evaluated against form parameters or
-   * session parameters. See the [conditions reference](https://cloud.google.com
-   * /dialogflow/cx/docs/reference/condition).
-   *
-   * @param string $condition
+   * @param string
    */
   public function setCondition($condition)
   {

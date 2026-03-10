@@ -22,23 +22,16 @@ class RelocateBucketRequest extends \Google\Model
   protected $destinationCustomPlacementConfigType = RelocateBucketRequestDestinationCustomPlacementConfig::class;
   protected $destinationCustomPlacementConfigDataType = '';
   /**
-   * The new location the bucket will be relocated to.
-   *
    * @var string
    */
   public $destinationLocation;
   /**
-   * If true, validate the operation, but do not actually relocate the bucket.
-   *
    * @var bool
    */
   public $validateOnly;
 
   /**
-   * The bucket's new custom placement configuration if relocating to a Custom
-   * Dual Region.
-   *
-   * @param RelocateBucketRequestDestinationCustomPlacementConfig $destinationCustomPlacementConfig
+   * @param RelocateBucketRequestDestinationCustomPlacementConfig
    */
   public function setDestinationCustomPlacementConfig(RelocateBucketRequestDestinationCustomPlacementConfig $destinationCustomPlacementConfig)
   {
@@ -52,9 +45,7 @@ class RelocateBucketRequest extends \Google\Model
     return $this->destinationCustomPlacementConfig;
   }
   /**
-   * The new location the bucket will be relocated to.
-   *
-   * @param string $destinationLocation
+   * @param string
    */
   public function setDestinationLocation($destinationLocation)
   {
@@ -68,9 +59,7 @@ class RelocateBucketRequest extends \Google\Model
     return $this->destinationLocation;
   }
   /**
-   * If true, validate the operation, but do not actually relocate the bucket.
-   *
-   * @param bool $validateOnly
+   * @param bool
    */
   public function setValidateOnly($validateOnly)
   {

@@ -29,22 +29,16 @@ class GoogleCloudDialogflowV2beta1IntentMessageTableCard extends \Google\Collect
   protected $rowsType = GoogleCloudDialogflowV2beta1IntentMessageTableCardRow::class;
   protected $rowsDataType = 'array';
   /**
-   * Optional. Subtitle to the title.
-   *
    * @var string
    */
   public $subtitle;
   /**
-   * Required. Title of the card.
-   *
    * @var string
    */
   public $title;
 
   /**
-   * Optional. List of buttons for the card.
-   *
-   * @param GoogleCloudDialogflowV2beta1IntentMessageBasicCardButton[] $buttons
+   * @param GoogleCloudDialogflowV2beta1IntentMessageBasicCardButton[]
    */
   public function setButtons($buttons)
   {
@@ -58,9 +52,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageTableCard extends \Google\Collect
     return $this->buttons;
   }
   /**
-   * Optional. Display properties for the columns in this table.
-   *
-   * @param GoogleCloudDialogflowV2beta1IntentMessageColumnProperties[] $columnProperties
+   * @param GoogleCloudDialogflowV2beta1IntentMessageColumnProperties[]
    */
   public function setColumnProperties($columnProperties)
   {
@@ -74,9 +66,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageTableCard extends \Google\Collect
     return $this->columnProperties;
   }
   /**
-   * Optional. Image which should be displayed on the card.
-   *
-   * @param GoogleCloudDialogflowV2beta1IntentMessageImage $image
+   * @param GoogleCloudDialogflowV2beta1IntentMessageImage
    */
   public function setImage(GoogleCloudDialogflowV2beta1IntentMessageImage $image)
   {
@@ -90,9 +80,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageTableCard extends \Google\Collect
     return $this->image;
   }
   /**
-   * Optional. Rows in this table of data.
-   *
-   * @param GoogleCloudDialogflowV2beta1IntentMessageTableCardRow[] $rows
+   * @param GoogleCloudDialogflowV2beta1IntentMessageTableCardRow[]
    */
   public function setRows($rows)
   {
@@ -106,9 +94,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageTableCard extends \Google\Collect
     return $this->rows;
   }
   /**
-   * Optional. Subtitle to the title.
-   *
-   * @param string $subtitle
+   * @param string
    */
   public function setSubtitle($subtitle)
   {
@@ -122,9 +108,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageTableCard extends \Google\Collect
     return $this->subtitle;
   }
   /**
-   * Required. Title of the card.
-   *
-   * @param string $title
+   * @param string
    */
   public function setTitle($title)
   {

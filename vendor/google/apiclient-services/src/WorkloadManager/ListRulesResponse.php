@@ -20,31 +20,29 @@ namespace Google\Service\WorkloadManager;
 class ListRulesResponse extends \Google\Collection
 {
   protected $collection_key = 'rules';
-  protected $invalidRulesWrapperType = InvalidRulesWrapper::class;
-  protected $invalidRulesWrapperDataType = '';
+  /**
+   * @var string
+   */
+  public $nextPageToken;
   protected $rulesType = Rule::class;
   protected $rulesDataType = 'array';
 
   /**
-   * A wrapper of the invalid rules that failed to be validated.
-   *
-   * @param InvalidRulesWrapper $invalidRulesWrapper
+   * @param string
    */
-  public function setInvalidRulesWrapper(InvalidRulesWrapper $invalidRulesWrapper)
+  public function setNextPageToken($nextPageToken)
   {
-    $this->invalidRulesWrapper = $invalidRulesWrapper;
+    $this->nextPageToken = $nextPageToken;
   }
   /**
-   * @return InvalidRulesWrapper
+   * @return string
    */
-  public function getInvalidRulesWrapper()
+  public function getNextPageToken()
   {
-    return $this->invalidRulesWrapper;
+    return $this->nextPageToken;
   }
   /**
-   * all rules in response
-   *
-   * @param Rule[] $rules
+   * @param Rule[]
    */
   public function setRules($rules)
   {

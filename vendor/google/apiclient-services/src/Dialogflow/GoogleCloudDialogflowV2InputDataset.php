@@ -20,18 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2InputDataset extends \Google\Model
 {
   /**
-   * Required. ConversationDataset resource name. Format:
-   * `projects//locations//conversationDatasets/`
-   *
    * @var string
    */
   public $dataset;
 
   /**
-   * Required. ConversationDataset resource name. Format:
-   * `projects//locations//conversationDatasets/`
-   *
-   * @param string $dataset
+   * @param string
    */
   public function setDataset($dataset)
   {

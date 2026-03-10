@@ -19,28 +19,9 @@ namespace Google\Service\GKEHub;
 
 class ConfigManagementSpec extends \Google\Model
 {
-  /**
-   * Unspecified
-   */
-  public const MANAGEMENT_MANAGEMENT_UNSPECIFIED = 'MANAGEMENT_UNSPECIFIED';
-  /**
-   * Google will manage the Feature for the cluster.
-   */
-  public const MANAGEMENT_MANAGEMENT_AUTOMATIC = 'MANAGEMENT_AUTOMATIC';
-  /**
-   * User will manually manage the Feature for the cluster.
-   */
-  public const MANAGEMENT_MANAGEMENT_MANUAL = 'MANAGEMENT_MANUAL';
   protected $binauthzType = ConfigManagementBinauthzConfig::class;
   protected $binauthzDataType = '';
   /**
-   * Optional. The user-specified cluster name used by Config Sync cluster-name-
-   * selector annotation or ClusterSelector, for applying configs to only a
-   * subset of clusters. Omit this field if the cluster's fleet membership name
-   * is used by Config Sync cluster-name-selector annotation or ClusterSelector.
-   * Set this field if a name different from the cluster's fleet membership name
-   * is used by Config Sync cluster-name-selector annotation or ClusterSelector.
-   *
    * @var string
    */
   public $cluster;
@@ -49,33 +30,24 @@ class ConfigManagementSpec extends \Google\Model
   protected $hierarchyControllerType = ConfigManagementHierarchyControllerConfig::class;
   protected $hierarchyControllerDataType = '';
   /**
-   * Optional. Enables automatic Feature management.
-   *
    * @var string
    */
   public $management;
   protected $policyControllerType = ConfigManagementPolicyController::class;
   protected $policyControllerDataType = '';
   /**
-   * Optional. Version of ACM installed.
-   *
    * @var string
    */
   public $version;
 
   /**
-   * Optional. Binauthz conifguration for the cluster. Deprecated: This field
-   * will be ignored and should not be set.
-   *
-   * @deprecated
-   * @param ConfigManagementBinauthzConfig $binauthz
+   * @param ConfigManagementBinauthzConfig
    */
   public function setBinauthz(ConfigManagementBinauthzConfig $binauthz)
   {
     $this->binauthz = $binauthz;
   }
   /**
-   * @deprecated
    * @return ConfigManagementBinauthzConfig
    */
   public function getBinauthz()
@@ -83,14 +55,7 @@ class ConfigManagementSpec extends \Google\Model
     return $this->binauthz;
   }
   /**
-   * Optional. The user-specified cluster name used by Config Sync cluster-name-
-   * selector annotation or ClusterSelector, for applying configs to only a
-   * subset of clusters. Omit this field if the cluster's fleet membership name
-   * is used by Config Sync cluster-name-selector annotation or ClusterSelector.
-   * Set this field if a name different from the cluster's fleet membership name
-   * is used by Config Sync cluster-name-selector annotation or ClusterSelector.
-   *
-   * @param string $cluster
+   * @param string
    */
   public function setCluster($cluster)
   {
@@ -104,9 +69,7 @@ class ConfigManagementSpec extends \Google\Model
     return $this->cluster;
   }
   /**
-   * Optional. Config Sync configuration for the cluster.
-   *
-   * @param ConfigManagementConfigSync $configSync
+   * @param ConfigManagementConfigSync
    */
   public function setConfigSync(ConfigManagementConfigSync $configSync)
   {
@@ -120,20 +83,13 @@ class ConfigManagementSpec extends \Google\Model
     return $this->configSync;
   }
   /**
-   * Optional. Hierarchy Controller configuration for the cluster. Deprecated:
-   * Configuring Hierarchy Controller through the configmanagement feature is no
-   * longer recommended. Use https://github.com/kubernetes-sigs/hierarchical-
-   * namespaces instead.
-   *
-   * @deprecated
-   * @param ConfigManagementHierarchyControllerConfig $hierarchyController
+   * @param ConfigManagementHierarchyControllerConfig
    */
   public function setHierarchyController(ConfigManagementHierarchyControllerConfig $hierarchyController)
   {
     $this->hierarchyController = $hierarchyController;
   }
   /**
-   * @deprecated
    * @return ConfigManagementHierarchyControllerConfig
    */
   public function getHierarchyController()
@@ -141,38 +97,27 @@ class ConfigManagementSpec extends \Google\Model
     return $this->hierarchyController;
   }
   /**
-   * Optional. Enables automatic Feature management.
-   *
-   * Accepted values: MANAGEMENT_UNSPECIFIED, MANAGEMENT_AUTOMATIC,
-   * MANAGEMENT_MANUAL
-   *
-   * @param self::MANAGEMENT_* $management
+   * @param string
    */
   public function setManagement($management)
   {
     $this->management = $management;
   }
   /**
-   * @return self::MANAGEMENT_*
+   * @return string
    */
   public function getManagement()
   {
     return $this->management;
   }
   /**
-   * Optional. Policy Controller configuration for the cluster. Deprecated:
-   * Configuring Policy Controller through the configmanagement feature is no
-   * longer recommended. Use the policycontroller feature instead.
-   *
-   * @deprecated
-   * @param ConfigManagementPolicyController $policyController
+   * @param ConfigManagementPolicyController
    */
   public function setPolicyController(ConfigManagementPolicyController $policyController)
   {
     $this->policyController = $policyController;
   }
   /**
-   * @deprecated
    * @return ConfigManagementPolicyController
    */
   public function getPolicyController()
@@ -180,9 +125,7 @@ class ConfigManagementSpec extends \Google\Model
     return $this->policyController;
   }
   /**
-   * Optional. Version of ACM installed.
-   *
-   * @param string $version
+   * @param string
    */
   public function setVersion($version)
   {

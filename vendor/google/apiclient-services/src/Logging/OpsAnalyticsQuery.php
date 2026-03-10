@@ -20,20 +20,12 @@ namespace Google\Service\Logging;
 class OpsAnalyticsQuery extends \Google\Model
 {
   /**
-   * Required. A logs analytics SQL query, which generally follows BigQuery
-   * format.This is the SQL query that appears in the Log Analytics UI's query
-   * editor.
-   *
    * @var string
    */
   public $sqlQueryText;
 
   /**
-   * Required. A logs analytics SQL query, which generally follows BigQuery
-   * format.This is the SQL query that appears in the Log Analytics UI's query
-   * editor.
-   *
-   * @param string $sqlQueryText
+   * @param string
    */
   public function setSqlQueryText($sqlQueryText)
   {

@@ -20,24 +20,6 @@ namespace Google\Service\NetworkSecurity;
 class SecurityProfile extends \Google\Model
 {
   /**
-   * Profile type not specified.
-   */
-  public const TYPE_PROFILE_TYPE_UNSPECIFIED = 'PROFILE_TYPE_UNSPECIFIED';
-  /**
-   * Profile type for threat prevention.
-   */
-  public const TYPE_THREAT_PREVENTION = 'THREAT_PREVENTION';
-  /**
-   * Profile type for packet mirroring v2
-   */
-  public const TYPE_CUSTOM_MIRRORING = 'CUSTOM_MIRRORING';
-  /**
-   * Profile type for TPPI.
-   */
-  public const TYPE_CUSTOM_INTERCEPT = 'CUSTOM_INTERCEPT';
-  /**
-   * Output only. Resource creation timestamp.
-   *
    * @var string
    */
   public $createTime;
@@ -46,54 +28,34 @@ class SecurityProfile extends \Google\Model
   protected $customMirroringProfileType = CustomMirroringProfile::class;
   protected $customMirroringProfileDataType = '';
   /**
-   * Optional. An optional description of the profile. Max length 512
-   * characters.
-   *
    * @var string
    */
   public $description;
   /**
-   * Output only. This checksum is computed by the server based on the value of
-   * other fields, and may be sent on update and delete requests to ensure the
-   * client has an up-to-date value before proceeding.
-   *
    * @var string
    */
   public $etag;
   /**
-   * Optional. Labels as key value pairs.
-   *
    * @var string[]
    */
   public $labels;
   /**
-   * Immutable. Identifier. Name of the SecurityProfile resource. It matches
-   * pattern `projects|organizations/locations/{location}/securityProfiles/{secu
-   * rity_profile}`.
-   *
    * @var string
    */
   public $name;
   protected $threatPreventionProfileType = ThreatPreventionProfile::class;
   protected $threatPreventionProfileDataType = '';
   /**
-   * Immutable. The single ProfileType that the SecurityProfile resource
-   * configures.
-   *
    * @var string
    */
   public $type;
   /**
-   * Output only. Last resource update timestamp.
-   *
    * @var string
    */
   public $updateTime;
 
   /**
-   * Output only. Resource creation timestamp.
-   *
-   * @param string $createTime
+   * @param string
    */
   public function setCreateTime($createTime)
   {
@@ -107,9 +69,7 @@ class SecurityProfile extends \Google\Model
     return $this->createTime;
   }
   /**
-   * The custom TPPI configuration for the SecurityProfile.
-   *
-   * @param CustomInterceptProfile $customInterceptProfile
+   * @param CustomInterceptProfile
    */
   public function setCustomInterceptProfile(CustomInterceptProfile $customInterceptProfile)
   {
@@ -123,9 +83,7 @@ class SecurityProfile extends \Google\Model
     return $this->customInterceptProfile;
   }
   /**
-   * The custom Packet Mirroring v2 configuration for the SecurityProfile.
-   *
-   * @param CustomMirroringProfile $customMirroringProfile
+   * @param CustomMirroringProfile
    */
   public function setCustomMirroringProfile(CustomMirroringProfile $customMirroringProfile)
   {
@@ -139,10 +97,7 @@ class SecurityProfile extends \Google\Model
     return $this->customMirroringProfile;
   }
   /**
-   * Optional. An optional description of the profile. Max length 512
-   * characters.
-   *
-   * @param string $description
+   * @param string
    */
   public function setDescription($description)
   {
@@ -156,11 +111,7 @@ class SecurityProfile extends \Google\Model
     return $this->description;
   }
   /**
-   * Output only. This checksum is computed by the server based on the value of
-   * other fields, and may be sent on update and delete requests to ensure the
-   * client has an up-to-date value before proceeding.
-   *
-   * @param string $etag
+   * @param string
    */
   public function setEtag($etag)
   {
@@ -174,9 +125,7 @@ class SecurityProfile extends \Google\Model
     return $this->etag;
   }
   /**
-   * Optional. Labels as key value pairs.
-   *
-   * @param string[] $labels
+   * @param string[]
    */
   public function setLabels($labels)
   {
@@ -190,11 +139,7 @@ class SecurityProfile extends \Google\Model
     return $this->labels;
   }
   /**
-   * Immutable. Identifier. Name of the SecurityProfile resource. It matches
-   * pattern `projects|organizations/locations/{location}/securityProfiles/{secu
-   * rity_profile}`.
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -208,9 +153,7 @@ class SecurityProfile extends \Google\Model
     return $this->name;
   }
   /**
-   * The threat prevention configuration for the SecurityProfile.
-   *
-   * @param ThreatPreventionProfile $threatPreventionProfile
+   * @param ThreatPreventionProfile
    */
   public function setThreatPreventionProfile(ThreatPreventionProfile $threatPreventionProfile)
   {
@@ -224,29 +167,21 @@ class SecurityProfile extends \Google\Model
     return $this->threatPreventionProfile;
   }
   /**
-   * Immutable. The single ProfileType that the SecurityProfile resource
-   * configures.
-   *
-   * Accepted values: PROFILE_TYPE_UNSPECIFIED, THREAT_PREVENTION,
-   * CUSTOM_MIRRORING, CUSTOM_INTERCEPT
-   *
-   * @param self::TYPE_* $type
+   * @param string
    */
   public function setType($type)
   {
     $this->type = $type;
   }
   /**
-   * @return self::TYPE_*
+   * @return string
    */
   public function getType()
   {
     return $this->type;
   }
   /**
-   * Output only. Last resource update timestamp.
-   *
-   * @param string $updateTime
+   * @param string
    */
   public function setUpdateTime($updateTime)
   {

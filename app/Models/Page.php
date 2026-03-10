@@ -32,7 +32,17 @@ class Page extends Model
     public function users()
     {
         return $this->belongsToMany(User::class)
-            ->withPivot(['can_view_all', 'can_create', 'can_update', 'can_delete', 'can_download', 'can_finish', 'can_import'])
-            ->withTimestamps();
+            ->withPivot([
+                'can_view_all',
+                'can_create',
+                'can_update',
+                'can_delete',
+                'can_download',
+                'can_finish',
+                'can_import',
+                'can_download_everything',
+                'can_date_range',
+                'can_download_reporte',
+            ])->withTimestamps();
     }
 }

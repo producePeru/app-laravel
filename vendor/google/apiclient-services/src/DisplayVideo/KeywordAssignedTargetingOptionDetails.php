@@ -20,26 +20,16 @@ namespace Google\Service\DisplayVideo;
 class KeywordAssignedTargetingOptionDetails extends \Google\Model
 {
   /**
-   * Required. The keyword, for example `car insurance`. Positive keyword cannot
-   * be offensive word. Must be UTF-8 encoded with a maximum size of 255 bytes.
-   * Maximum number of characters is 80. Maximum number of words is 10.
-   *
    * @var string
    */
   public $keyword;
   /**
-   * Indicates if this option is being negatively targeted.
-   *
    * @var bool
    */
   public $negative;
 
   /**
-   * Required. The keyword, for example `car insurance`. Positive keyword cannot
-   * be offensive word. Must be UTF-8 encoded with a maximum size of 255 bytes.
-   * Maximum number of characters is 80. Maximum number of words is 10.
-   *
-   * @param string $keyword
+   * @param string
    */
   public function setKeyword($keyword)
   {
@@ -53,9 +43,7 @@ class KeywordAssignedTargetingOptionDetails extends \Google\Model
     return $this->keyword;
   }
   /**
-   * Indicates if this option is being negatively targeted.
-   *
-   * @param bool $negative
+   * @param bool
    */
   public function setNegative($negative)
   {

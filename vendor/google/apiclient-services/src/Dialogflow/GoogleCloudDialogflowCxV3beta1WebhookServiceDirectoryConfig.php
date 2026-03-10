@@ -22,19 +22,12 @@ class GoogleCloudDialogflowCxV3beta1WebhookServiceDirectoryConfig extends \Googl
   protected $genericWebServiceType = GoogleCloudDialogflowCxV3beta1WebhookGenericWebService::class;
   protected $genericWebServiceDataType = '';
   /**
-   * Required. The name of [Service Directory](https://cloud.google.com/service-
-   * directory) service. Format: `projects//locations//namespaces//services/`.
-   * `Location ID` of the service directory must be the same as the location of
-   * the agent.
-   *
    * @var string
    */
   public $service;
 
   /**
-   * Generic Service configuration of this webhook.
-   *
-   * @param GoogleCloudDialogflowCxV3beta1WebhookGenericWebService $genericWebService
+   * @param GoogleCloudDialogflowCxV3beta1WebhookGenericWebService
    */
   public function setGenericWebService(GoogleCloudDialogflowCxV3beta1WebhookGenericWebService $genericWebService)
   {
@@ -48,12 +41,7 @@ class GoogleCloudDialogflowCxV3beta1WebhookServiceDirectoryConfig extends \Googl
     return $this->genericWebService;
   }
   /**
-   * Required. The name of [Service Directory](https://cloud.google.com/service-
-   * directory) service. Format: `projects//locations//namespaces//services/`.
-   * `Location ID` of the service directory must be the same as the location of
-   * the agent.
-   *
-   * @param string $service
+   * @param string
    */
   public function setService($service)
   {

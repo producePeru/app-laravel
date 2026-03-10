@@ -21,26 +21,18 @@ class GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsMetadata e
 {
   protected $collection_key = 'partialErrors';
   /**
-   * The number of requested analyses that have completed successfully so far.
-   *
    * @var int
    */
   public $completedAnalysesCount;
   /**
-   * The time the operation was created.
-   *
    * @var string
    */
   public $createTime;
   /**
-   * The time the operation finished running.
-   *
    * @var string
    */
   public $endTime;
   /**
-   * The number of requested analyses that have failed so far.
-   *
    * @var int
    */
   public $failedAnalysesCount;
@@ -49,17 +41,12 @@ class GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsMetadata e
   protected $requestType = GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsRequest::class;
   protected $requestDataType = '';
   /**
-   * Total number of analyses requested. Computed by the number of conversations
-   * returned by `filter` multiplied by `analysis_percentage` in the request.
-   *
    * @var int
    */
   public $totalRequestedAnalysesCount;
 
   /**
-   * The number of requested analyses that have completed successfully so far.
-   *
-   * @param int $completedAnalysesCount
+   * @param int
    */
   public function setCompletedAnalysesCount($completedAnalysesCount)
   {
@@ -73,9 +60,7 @@ class GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsMetadata e
     return $this->completedAnalysesCount;
   }
   /**
-   * The time the operation was created.
-   *
-   * @param string $createTime
+   * @param string
    */
   public function setCreateTime($createTime)
   {
@@ -89,9 +74,7 @@ class GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsMetadata e
     return $this->createTime;
   }
   /**
-   * The time the operation finished running.
-   *
-   * @param string $endTime
+   * @param string
    */
   public function setEndTime($endTime)
   {
@@ -105,9 +88,7 @@ class GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsMetadata e
     return $this->endTime;
   }
   /**
-   * The number of requested analyses that have failed so far.
-   *
-   * @param int $failedAnalysesCount
+   * @param int
    */
   public function setFailedAnalysesCount($failedAnalysesCount)
   {
@@ -121,10 +102,7 @@ class GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsMetadata e
     return $this->failedAnalysesCount;
   }
   /**
-   * Output only. Partial errors during bulk analyze operation that might cause
-   * the operation output to be incomplete.
-   *
-   * @param GoogleRpcStatus[] $partialErrors
+   * @param GoogleRpcStatus[]
    */
   public function setPartialErrors($partialErrors)
   {
@@ -138,9 +116,7 @@ class GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsMetadata e
     return $this->partialErrors;
   }
   /**
-   * The original request for bulk analyze.
-   *
-   * @param GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsRequest $request
+   * @param GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsRequest
    */
   public function setRequest(GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsRequest $request)
   {
@@ -154,10 +130,7 @@ class GoogleCloudContactcenterinsightsV1alpha1BulkAnalyzeConversationsMetadata e
     return $this->request;
   }
   /**
-   * Total number of analyses requested. Computed by the number of conversations
-   * returned by `filter` multiplied by `analysis_percentage` in the request.
-   *
-   * @param int $totalRequestedAnalysesCount
+   * @param int
    */
   public function setTotalRequestedAnalysesCount($totalRequestedAnalysesCount)
   {

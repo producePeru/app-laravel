@@ -21,18 +21,10 @@ class GoogleCloudDialogflowCxV3TransitionRouteGroup extends \Google\Collection
 {
   protected $collection_key = 'transitionRoutes';
   /**
-   * Required. The human-readable name of the transition route group, unique
-   * within the flow. The display name can be no longer than 30 characters.
-   *
    * @var string
    */
   public $displayName;
   /**
-   * The unique identifier of the transition route group.
-   * TransitionRouteGroups.CreateTransitionRouteGroup populates the name
-   * automatically. Format:
-   * `projects//locations//agents//flows//transitionRouteGroups/` .
-   *
    * @var string
    */
   public $name;
@@ -40,10 +32,7 @@ class GoogleCloudDialogflowCxV3TransitionRouteGroup extends \Google\Collection
   protected $transitionRoutesDataType = 'array';
 
   /**
-   * Required. The human-readable name of the transition route group, unique
-   * within the flow. The display name can be no longer than 30 characters.
-   *
-   * @param string $displayName
+   * @param string
    */
   public function setDisplayName($displayName)
   {
@@ -57,12 +46,7 @@ class GoogleCloudDialogflowCxV3TransitionRouteGroup extends \Google\Collection
     return $this->displayName;
   }
   /**
-   * The unique identifier of the transition route group.
-   * TransitionRouteGroups.CreateTransitionRouteGroup populates the name
-   * automatically. Format:
-   * `projects//locations//agents//flows//transitionRouteGroups/` .
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -76,9 +60,7 @@ class GoogleCloudDialogflowCxV3TransitionRouteGroup extends \Google\Collection
     return $this->name;
   }
   /**
-   * Transition routes associated with the TransitionRouteGroup.
-   *
-   * @param GoogleCloudDialogflowCxV3TransitionRoute[] $transitionRoutes
+   * @param GoogleCloudDialogflowCxV3TransitionRoute[]
    */
   public function setTransitionRoutes($transitionRoutes)
   {

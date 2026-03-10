@@ -214,8 +214,12 @@ Route::prefix('mp')->group(function () {
     require __DIR__ . '/api/mp.php';
 });
 
+Route::prefix('mp')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/mpAuth.php';
+});
+
 // PUBLICAS
-Route::prefix('api')->middleware('auth:sanctum')->group(function () {
+Route::prefix('api')->group(function () {
     require __DIR__ . '/api/apis.php';
 });
 
@@ -240,6 +244,12 @@ Route::prefix('image')->group(function () {
 Route::prefix('google')->group(function () {
     require __DIR__ . '/api/google.php';
 });
+
+
+Route::prefix('purchases-my-peru')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/purchasesmyperu.php';
+});
+
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
@@ -541,6 +551,9 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('civil-status', [SelectController::class, 'getCivilStatus']);
     Route::get('academic-degree', [SelectController::class, 'getAcademicDegree']);
     Route::get('role-company', [SelectController::class, 'getRoleCompany']);
+    Route::get('sector-priorizado', [SelectController::class, 'getSectorPriorizado']);
+    Route::get('cp-components', [SelectController::class, 'getCpComponents']);
+    Route::get('cp-themes/{idComponent}', [SelectController::class, 'getThemes']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
@@ -666,6 +679,12 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
     Route::post('migrate-events',               [AttendanceController::class, 'migrateEvents']);        // migra los eventos de UGO al calendario sr Carlos
     Route::put('event-finally/{id}',            [AttendanceController::class, 'eventFinally']);        // migra los eventos de UGO al calendario sr Carlos
 
+    Route::put('update-values-select',          [AttendanceController::class, 'updateValuesSelect']);
+    Route::post('email-create-activity',        [AttendanceController::class, 'sendAttendanceMail']);        // migra los eventos de UGO al calendario sr Carlos
+    Route::get('events-by-region',              [AttendanceController::class, 'eventsByRegion']);        // migra los eventos de UGO al calendario sr Carlos
+
+    Route::put('update-participant/{id}',       [AttendanceController::class, 'updateParticipant']);
+    Route::delete('delete-participant/{id}',    [AttendanceController::class, 'deleteParticipant']);
 });
 
 

@@ -24,17 +24,12 @@ class GoogleCloudContactcenterinsightsV1ConversationDataSource extends \Google\M
   protected $gcsSourceType = GoogleCloudContactcenterinsightsV1GcsSource::class;
   protected $gcsSourceDataType = '';
   /**
-   * Cloud Storage URI that points to a file that contains the conversation
-   * metadata.
-   *
    * @var string
    */
   public $metadataUri;
 
   /**
-   * The source when the conversation comes from Dialogflow.
-   *
-   * @param GoogleCloudContactcenterinsightsV1DialogflowSource $dialogflowSource
+   * @param GoogleCloudContactcenterinsightsV1DialogflowSource
    */
   public function setDialogflowSource(GoogleCloudContactcenterinsightsV1DialogflowSource $dialogflowSource)
   {
@@ -48,9 +43,7 @@ class GoogleCloudContactcenterinsightsV1ConversationDataSource extends \Google\M
     return $this->dialogflowSource;
   }
   /**
-   * A Cloud Storage location specification for the audio and transcript.
-   *
-   * @param GoogleCloudContactcenterinsightsV1GcsSource $gcsSource
+   * @param GoogleCloudContactcenterinsightsV1GcsSource
    */
   public function setGcsSource(GoogleCloudContactcenterinsightsV1GcsSource $gcsSource)
   {
@@ -64,10 +57,7 @@ class GoogleCloudContactcenterinsightsV1ConversationDataSource extends \Google\M
     return $this->gcsSource;
   }
   /**
-   * Cloud Storage URI that points to a file that contains the conversation
-   * metadata.
-   *
-   * @param string $metadataUri
+   * @param string
    */
   public function setMetadataUri($metadataUri)
   {

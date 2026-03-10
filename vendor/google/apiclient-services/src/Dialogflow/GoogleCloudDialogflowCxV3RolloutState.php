@@ -20,28 +20,20 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3RolloutState extends \Google\Model
 {
   /**
-   * Start time of the current step.
-   *
    * @var string
    */
   public $startTime;
   /**
-   * Display name of the current auto rollout step.
-   *
    * @var string
    */
   public $step;
   /**
-   * Index of the current step in the auto rollout steps list.
-   *
    * @var int
    */
   public $stepIndex;
 
   /**
-   * Start time of the current step.
-   *
-   * @param string $startTime
+   * @param string
    */
   public function setStartTime($startTime)
   {
@@ -55,9 +47,7 @@ class GoogleCloudDialogflowCxV3RolloutState extends \Google\Model
     return $this->startTime;
   }
   /**
-   * Display name of the current auto rollout step.
-   *
-   * @param string $step
+   * @param string
    */
   public function setStep($step)
   {
@@ -71,9 +61,7 @@ class GoogleCloudDialogflowCxV3RolloutState extends \Google\Model
     return $this->step;
   }
   /**
-   * Index of the current step in the auto rollout steps list.
-   *
-   * @param int $stepIndex
+   * @param int
    */
   public function setStepIndex($stepIndex)
   {

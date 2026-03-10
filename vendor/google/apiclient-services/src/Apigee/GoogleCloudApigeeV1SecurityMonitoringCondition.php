@@ -20,8 +20,6 @@ namespace Google\Service\Apigee;
 class GoogleCloudApigeeV1SecurityMonitoringCondition extends \Google\Model
 {
   /**
-   * Output only. The time of the security monitoring condition creation.
-   *
    * @var string
    */
   public $createTime;
@@ -30,49 +28,32 @@ class GoogleCloudApigeeV1SecurityMonitoringCondition extends \Google\Model
   protected $includeAllResourcesType = GoogleCloudApigeeV1BatchComputeSecurityAssessmentResultsRequestIncludeAll::class;
   protected $includeAllResourcesDataType = '';
   /**
-   * Identifier. Name of the security monitoring condition resource. Format: org
-   * anizations/{org}/securityMonitoringConditions/{security_monitoring_conditio
-   * n}
-   *
    * @var string
    */
   public $name;
   /**
-   * Required. ID of security profile of the security monitoring condition.
-   *
    * @var string
    */
   public $profile;
   /**
-   * Optional. Scope of the security monitoring condition. For Apigee, the
-   * environment is the scope of the resources.
-   *
    * @var string
    */
   public $scope;
   /**
-   * Output only. Total number of deployed resources within scope.
-   *
    * @var int
    */
   public $totalDeployedResources;
   /**
-   * Output only. Total number of monitored resources within this condition.
-   *
    * @var int
    */
   public $totalMonitoredResources;
   /**
-   * Output only. The time of the security monitoring condition update.
-   *
    * @var string
    */
   public $updateTime;
 
   /**
-   * Output only. The time of the security monitoring condition creation.
-   *
-   * @param string $createTime
+   * @param string
    */
   public function setCreateTime($createTime)
   {
@@ -86,9 +67,7 @@ class GoogleCloudApigeeV1SecurityMonitoringCondition extends \Google\Model
     return $this->createTime;
   }
   /**
-   * Include only these resources.
-   *
-   * @param GoogleCloudApigeeV1BatchComputeSecurityAssessmentResultsRequestResourceArray $include
+   * @param GoogleCloudApigeeV1BatchComputeSecurityAssessmentResultsRequestResourceArray
    */
   public function setInclude(GoogleCloudApigeeV1BatchComputeSecurityAssessmentResultsRequestResourceArray $include)
   {
@@ -102,9 +81,7 @@ class GoogleCloudApigeeV1SecurityMonitoringCondition extends \Google\Model
     return $this->include;
   }
   /**
-   * Include all resources under the scope.
-   *
-   * @param GoogleCloudApigeeV1BatchComputeSecurityAssessmentResultsRequestIncludeAll $includeAllResources
+   * @param GoogleCloudApigeeV1BatchComputeSecurityAssessmentResultsRequestIncludeAll
    */
   public function setIncludeAllResources(GoogleCloudApigeeV1BatchComputeSecurityAssessmentResultsRequestIncludeAll $includeAllResources)
   {
@@ -118,11 +95,7 @@ class GoogleCloudApigeeV1SecurityMonitoringCondition extends \Google\Model
     return $this->includeAllResources;
   }
   /**
-   * Identifier. Name of the security monitoring condition resource. Format: org
-   * anizations/{org}/securityMonitoringConditions/{security_monitoring_conditio
-   * n}
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -136,9 +109,7 @@ class GoogleCloudApigeeV1SecurityMonitoringCondition extends \Google\Model
     return $this->name;
   }
   /**
-   * Required. ID of security profile of the security monitoring condition.
-   *
-   * @param string $profile
+   * @param string
    */
   public function setProfile($profile)
   {
@@ -152,10 +123,7 @@ class GoogleCloudApigeeV1SecurityMonitoringCondition extends \Google\Model
     return $this->profile;
   }
   /**
-   * Optional. Scope of the security monitoring condition. For Apigee, the
-   * environment is the scope of the resources.
-   *
-   * @param string $scope
+   * @param string
    */
   public function setScope($scope)
   {
@@ -169,9 +137,7 @@ class GoogleCloudApigeeV1SecurityMonitoringCondition extends \Google\Model
     return $this->scope;
   }
   /**
-   * Output only. Total number of deployed resources within scope.
-   *
-   * @param int $totalDeployedResources
+   * @param int
    */
   public function setTotalDeployedResources($totalDeployedResources)
   {
@@ -185,9 +151,7 @@ class GoogleCloudApigeeV1SecurityMonitoringCondition extends \Google\Model
     return $this->totalDeployedResources;
   }
   /**
-   * Output only. Total number of monitored resources within this condition.
-   *
-   * @param int $totalMonitoredResources
+   * @param int
    */
   public function setTotalMonitoredResources($totalMonitoredResources)
   {
@@ -201,9 +165,7 @@ class GoogleCloudApigeeV1SecurityMonitoringCondition extends \Google\Model
     return $this->totalMonitoredResources;
   }
   /**
-   * Output only. The time of the security monitoring condition update.
-   *
-   * @param string $updateTime
+   * @param string
    */
   public function setUpdateTime($updateTime)
   {

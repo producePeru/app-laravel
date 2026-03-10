@@ -20,18 +20,12 @@ namespace Google\Service\CloudDeploy;
 class CloudRunRenderMetadata extends \Google\Model
 {
   /**
-   * Output only. The name of the Cloud Run Service in the rendered manifest.
-   * Format is `projects/{project}/locations/{location}/services/{service}`.
-   *
    * @var string
    */
   public $service;
 
   /**
-   * Output only. The name of the Cloud Run Service in the rendered manifest.
-   * Format is `projects/{project}/locations/{location}/services/{service}`.
-   *
-   * @param string $service
+   * @param string
    */
   public function setService($service)
   {

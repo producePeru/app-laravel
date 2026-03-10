@@ -21,8 +21,6 @@ class ExecuteQueryResponse extends \Google\Collection
 {
   protected $collection_key = 'errors';
   /**
-   * The result of executing the requested operation.
-   *
    * @var array[]
    */
   public $data;
@@ -30,9 +28,7 @@ class ExecuteQueryResponse extends \Google\Collection
   protected $errorsDataType = 'array';
 
   /**
-   * The result of executing the requested operation.
-   *
-   * @param array[] $data
+   * @param array[]
    */
   public function setData($data)
   {
@@ -46,9 +42,7 @@ class ExecuteQueryResponse extends \Google\Collection
     return $this->data;
   }
   /**
-   * Errors of this response.
-   *
-   * @param GraphqlError[] $errors
+   * @param GraphqlError[]
    */
   public function setErrors($errors)
   {

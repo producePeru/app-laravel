@@ -22,20 +22,12 @@ class KeyAccessJustificationsPolicyConfig extends \Google\Model
   protected $defaultKeyAccessJustificationPolicyType = KeyAccessJustificationsPolicy::class;
   protected $defaultKeyAccessJustificationPolicyDataType = '';
   /**
-   * Identifier. The resource name for this KeyAccessJustificationsPolicyConfig
-   * in the format of "{organizations|folders|projects}/kajPolicyConfig".
-   *
    * @var string
    */
   public $name;
 
   /**
-   * Optional. The default key access justification policy used when a CryptoKey
-   * is created in this folder. This is only used when a Key Access
-   * Justifications policy is not provided in the CreateCryptoKeyRequest. This
-   * overrides any default policies in its ancestry.
-   *
-   * @param KeyAccessJustificationsPolicy $defaultKeyAccessJustificationPolicy
+   * @param KeyAccessJustificationsPolicy
    */
   public function setDefaultKeyAccessJustificationPolicy(KeyAccessJustificationsPolicy $defaultKeyAccessJustificationPolicy)
   {
@@ -49,10 +41,7 @@ class KeyAccessJustificationsPolicyConfig extends \Google\Model
     return $this->defaultKeyAccessJustificationPolicy;
   }
   /**
-   * Identifier. The resource name for this KeyAccessJustificationsPolicyConfig
-   * in the format of "{organizations|folders|projects}/kajPolicyConfig".
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {

@@ -9,6 +9,8 @@ Route::controller(MujerProduceController::class)->group(function () {
 
     Route::post('register-capacitador', 'registerCapacitador');
 
+    Route::put('update-capacitador/{idCapacitador}', 'updateCapacitador');
+
     Route::get('all-capacitadores', 'allCapacitadores');
 
     Route::post('store-event', 'mpStoreEvent');
@@ -30,6 +32,12 @@ Route::controller(MujerProduceController::class)->group(function () {
     Route::get('participant-diagnostic', 'mpIndexParticipantDiagnostic');
 
     Route::put('update-order', 'updateOrder');
+
+    Route::put('toggle-attendance', 'toggleAttendance');
+
+    Route::post('delete-assistant', 'deleteAssistant');
+
+    Route::get('detail-share/{idRow}', 'detailShare');
 });
 
 
@@ -52,6 +60,26 @@ Route::controller(FormularioPublicoController::class)->group(function () {
     Route::post('register-consulting', 'registerConsulting');     // inicia diagnostico
 
     Route::post('register-diagnostic-response', 'registerDiagnosticResponse');
+
+    Route::post('sala-link-meet', 'salaLinkMeet');
+
+    Route::post('attendance-participant', 'attendanceParticipant');
+
+    Route::put('update-participant/{idRow}', 'updateParticipant');
+
+    Route::get('index-events-soon', 'mpIndexEventsSoon');
+
+    Route::post('send-event-email', 'sendEventEmail');
+
+    Route::get('advices', 'mpIndexAdvice');
+
+    Route::get('advice-participant/{dni}', 'mpAdviceParticipant');
+
+    Route::post('reserve-advice', 'reserveAdvice');
+
+    Route::get('my-advices/{dni}', 'mpMyAdvice');
+
+    Route::post('cancel-my-advice', 'cancelMyAdvice');
 });
 
 // mp

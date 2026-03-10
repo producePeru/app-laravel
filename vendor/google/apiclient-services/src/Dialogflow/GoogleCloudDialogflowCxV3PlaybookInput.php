@@ -20,18 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3PlaybookInput extends \Google\Model
 {
   /**
-   * Optional. Summary string of the preceding conversation for the child
-   * playbook invocation.
-   *
    * @var string
    */
   public $precedingConversationSummary;
 
   /**
-   * Optional. Summary string of the preceding conversation for the child
-   * playbook invocation.
-   *
-   * @param string $precedingConversationSummary
+   * @param string
    */
   public function setPrecedingConversationSummary($precedingConversationSummary)
   {

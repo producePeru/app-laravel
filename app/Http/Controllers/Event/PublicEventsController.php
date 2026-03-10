@@ -90,7 +90,8 @@ class PublicEventsController extends Controller
                             'city_id'               => null,
                             'address'               => $responseData['direccion'] ?? null,
                             'estado'                => $responseData['estado'] ?? null,
-                            'condicion'             => $responseData['condicion']
+                            'condicion'             => $responseData['condicion'],
+                            'data'                  => $responseData
                         ]
                     ]);
                 } else {

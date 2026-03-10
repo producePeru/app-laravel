@@ -20,24 +20,16 @@ namespace Google\Service\SmartDeviceManagement;
 class GoogleHomeEnterpriseSdmV1Structure extends \Google\Model
 {
   /**
-   * Output only. The resource name of the structure. For example:
-   * "enterprises/XYZ/structures/ABC".
-   *
    * @var string
    */
   public $name;
   /**
-   * Structure traits.
-   *
    * @var array[]
    */
   public $traits;
 
   /**
-   * Output only. The resource name of the structure. For example:
-   * "enterprises/XYZ/structures/ABC".
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -51,9 +43,7 @@ class GoogleHomeEnterpriseSdmV1Structure extends \Google\Model
     return $this->name;
   }
   /**
-   * Structure traits.
-   *
-   * @param array[] $traits
+   * @param array[]
    */
   public function setTraits($traits)
   {

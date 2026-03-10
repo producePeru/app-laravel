@@ -20,26 +20,12 @@ namespace Google\Service\Texttospeech;
 class AdvancedVoiceOptions extends \Google\Model
 {
   /**
-   * Only for Journey voices. If false, the synthesis is context aware and has a
-   * higher latency.
-   *
    * @var bool
    */
   public $lowLatencyJourneySynthesis;
-  /**
-   * Optional. Input only. If true, relaxes safety filters for Gemini TTS. Only
-   * supported for accounts linked to Invoiced (Offline) Cloud billing accounts.
-   * Otherwise, will return result google.rpc.Code.INVALID_ARGUMENT.
-   *
-   * @var bool
-   */
-  public $relaxSafetyFilters;
 
   /**
-   * Only for Journey voices. If false, the synthesis is context aware and has a
-   * higher latency.
-   *
-   * @param bool $lowLatencyJourneySynthesis
+   * @param bool
    */
   public function setLowLatencyJourneySynthesis($lowLatencyJourneySynthesis)
   {
@@ -51,24 +37,6 @@ class AdvancedVoiceOptions extends \Google\Model
   public function getLowLatencyJourneySynthesis()
   {
     return $this->lowLatencyJourneySynthesis;
-  }
-  /**
-   * Optional. Input only. If true, relaxes safety filters for Gemini TTS. Only
-   * supported for accounts linked to Invoiced (Offline) Cloud billing accounts.
-   * Otherwise, will return result google.rpc.Code.INVALID_ARGUMENT.
-   *
-   * @param bool $relaxSafetyFilters
-   */
-  public function setRelaxSafetyFilters($relaxSafetyFilters)
-  {
-    $this->relaxSafetyFilters = $relaxSafetyFilters;
-  }
-  /**
-   * @return bool
-   */
-  public function getRelaxSafetyFilters()
-  {
-    return $this->relaxSafetyFilters;
   }
 }
 

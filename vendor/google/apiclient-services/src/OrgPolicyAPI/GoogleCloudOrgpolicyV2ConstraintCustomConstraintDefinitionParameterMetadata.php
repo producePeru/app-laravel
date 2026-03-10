@@ -20,16 +20,12 @@ namespace Google\Service\OrgPolicyAPI;
 class GoogleCloudOrgpolicyV2ConstraintCustomConstraintDefinitionParameterMetadata extends \Google\Model
 {
   /**
-   * Detailed description of what this `parameter` is and use of it. Mutable.
-   *
    * @var string
    */
   public $description;
 
   /**
-   * Detailed description of what this `parameter` is and use of it. Mutable.
-   *
-   * @param string $description
+   * @param string
    */
   public function setDescription($description)
   {

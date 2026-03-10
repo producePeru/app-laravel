@@ -20,45 +20,28 @@ namespace Google\Service\Walletobjects;
 class ContentTypeInfo extends \Google\Model
 {
   /**
-   * Scotty's best guess of what the content type of the file is.
-   *
    * @var string
    */
   public $bestGuess;
   /**
-   * The content type of the file derived by looking at specific bytes (i.e.
-   * "magic bytes") of the actual file.
-   *
    * @var string
    */
   public $fromBytes;
   /**
-   * The content type of the file derived from the file extension of the
-   * original file name used by the client.
-   *
    * @var string
    */
   public $fromFileName;
   /**
-   * The content type of the file as specified in the request headers, multipart
-   * headers, or RUPIO start request.
-   *
    * @var string
    */
   public $fromHeader;
   /**
-   * The content type of the file derived from the file extension of the URL
-   * path. The URL path is assumed to represent a file name (which is typically
-   * only true for agents that are providing a REST API).
-   *
    * @var string
    */
   public $fromUrlPath;
 
   /**
-   * Scotty's best guess of what the content type of the file is.
-   *
-   * @param string $bestGuess
+   * @param string
    */
   public function setBestGuess($bestGuess)
   {
@@ -72,10 +55,7 @@ class ContentTypeInfo extends \Google\Model
     return $this->bestGuess;
   }
   /**
-   * The content type of the file derived by looking at specific bytes (i.e.
-   * "magic bytes") of the actual file.
-   *
-   * @param string $fromBytes
+   * @param string
    */
   public function setFromBytes($fromBytes)
   {
@@ -89,10 +69,7 @@ class ContentTypeInfo extends \Google\Model
     return $this->fromBytes;
   }
   /**
-   * The content type of the file derived from the file extension of the
-   * original file name used by the client.
-   *
-   * @param string $fromFileName
+   * @param string
    */
   public function setFromFileName($fromFileName)
   {
@@ -106,10 +83,7 @@ class ContentTypeInfo extends \Google\Model
     return $this->fromFileName;
   }
   /**
-   * The content type of the file as specified in the request headers, multipart
-   * headers, or RUPIO start request.
-   *
-   * @param string $fromHeader
+   * @param string
    */
   public function setFromHeader($fromHeader)
   {
@@ -123,11 +97,7 @@ class ContentTypeInfo extends \Google\Model
     return $this->fromHeader;
   }
   /**
-   * The content type of the file derived from the file extension of the URL
-   * path. The URL path is assumed to represent a file name (which is typically
-   * only true for agents that are providing a REST API).
-   *
-   * @param string $fromUrlPath
+   * @param string
    */
   public function setFromUrlPath($fromUrlPath)
   {

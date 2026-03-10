@@ -21,40 +21,28 @@ class GoogleCloudDialogflowCxV3AgentGitIntegrationSettingsGithubSettings extends
 {
   protected $collection_key = 'branches';
   /**
-   * The access token used to authenticate the access to the GitHub repository.
-   *
    * @var string
    */
   public $accessToken;
   /**
-   * A list of branches configured to be used from Dialogflow.
-   *
    * @var string[]
    */
   public $branches;
   /**
-   * The unique repository display name for the GitHub repository.
-   *
    * @var string
    */
   public $displayName;
   /**
-   * The GitHub repository URI related to the agent.
-   *
    * @var string
    */
   public $repositoryUri;
   /**
-   * The branch of the GitHub repository tracked for this agent.
-   *
    * @var string
    */
   public $trackingBranch;
 
   /**
-   * The access token used to authenticate the access to the GitHub repository.
-   *
-   * @param string $accessToken
+   * @param string
    */
   public function setAccessToken($accessToken)
   {
@@ -68,9 +56,7 @@ class GoogleCloudDialogflowCxV3AgentGitIntegrationSettingsGithubSettings extends
     return $this->accessToken;
   }
   /**
-   * A list of branches configured to be used from Dialogflow.
-   *
-   * @param string[] $branches
+   * @param string[]
    */
   public function setBranches($branches)
   {
@@ -84,9 +70,7 @@ class GoogleCloudDialogflowCxV3AgentGitIntegrationSettingsGithubSettings extends
     return $this->branches;
   }
   /**
-   * The unique repository display name for the GitHub repository.
-   *
-   * @param string $displayName
+   * @param string
    */
   public function setDisplayName($displayName)
   {
@@ -100,9 +84,7 @@ class GoogleCloudDialogflowCxV3AgentGitIntegrationSettingsGithubSettings extends
     return $this->displayName;
   }
   /**
-   * The GitHub repository URI related to the agent.
-   *
-   * @param string $repositoryUri
+   * @param string
    */
   public function setRepositoryUri($repositoryUri)
   {
@@ -116,9 +98,7 @@ class GoogleCloudDialogflowCxV3AgentGitIntegrationSettingsGithubSettings extends
     return $this->repositoryUri;
   }
   /**
-   * The branch of the GitHub repository tracked for this agent.
-   *
-   * @param string $trackingBranch
+   * @param string
    */
   public function setTrackingBranch($trackingBranch)
   {

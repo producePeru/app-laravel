@@ -20,18 +20,12 @@ namespace Google\Service\Dataflow;
 class GetWorkerStacktracesRequest extends \Google\Model
 {
   /**
-   * The worker for which to get stacktraces. The returned stacktraces will be
-   * for the SDK harness running on this worker.
-   *
    * @var string
    */
   public $workerId;
 
   /**
-   * The worker for which to get stacktraces. The returned stacktraces will be
-   * for the SDK harness running on this worker.
-   *
-   * @param string $workerId
+   * @param string
    */
   public function setWorkerId($workerId)
   {

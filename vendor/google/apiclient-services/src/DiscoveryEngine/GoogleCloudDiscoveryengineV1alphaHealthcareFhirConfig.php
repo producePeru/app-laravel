@@ -20,28 +20,16 @@ namespace Google\Service\DiscoveryEngine;
 class GoogleCloudDiscoveryengineV1alphaHealthcareFhirConfig extends \Google\Model
 {
   /**
-   * Whether to enable configurable schema for `HEALTHCARE_FHIR` vertical. If
-   * set to `true`, the predefined healthcare fhir schema can be extended for
-   * more customized searching and filtering.
-   *
    * @var bool
    */
   public $enableConfigurableSchema;
   /**
-   * Whether to enable static indexing for `HEALTHCARE_FHIR` batch ingestion. If
-   * set to `true`, the batch ingestion will be processed in a static indexing
-   * mode which is slower but more capable of handling larger volume.
-   *
    * @var bool
    */
   public $enableStaticIndexingForBatchIngestion;
 
   /**
-   * Whether to enable configurable schema for `HEALTHCARE_FHIR` vertical. If
-   * set to `true`, the predefined healthcare fhir schema can be extended for
-   * more customized searching and filtering.
-   *
-   * @param bool $enableConfigurableSchema
+   * @param bool
    */
   public function setEnableConfigurableSchema($enableConfigurableSchema)
   {
@@ -55,11 +43,7 @@ class GoogleCloudDiscoveryengineV1alphaHealthcareFhirConfig extends \Google\Mode
     return $this->enableConfigurableSchema;
   }
   /**
-   * Whether to enable static indexing for `HEALTHCARE_FHIR` batch ingestion. If
-   * set to `true`, the batch ingestion will be processed in a static indexing
-   * mode which is slower but more capable of handling larger volume.
-   *
-   * @param bool $enableStaticIndexingForBatchIngestion
+   * @param bool
    */
   public function setEnableStaticIndexingForBatchIngestion($enableStaticIndexingForBatchIngestion)
   {

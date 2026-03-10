@@ -21,25 +21,16 @@ class GoogleCloudDialogflowCxV3DeploymentResult extends \Google\Collection
 {
   protected $collection_key = 'deploymentTestResults';
   /**
-   * Results of test cases running before the deployment. Format:
-   * `projects//locations//agents//testCases//results/`.
-   *
    * @var string[]
    */
   public $deploymentTestResults;
   /**
-   * The name of the experiment triggered by this deployment. Format:
-   * projects//locations//agents//environments//experiments/.
-   *
    * @var string
    */
   public $experiment;
 
   /**
-   * Results of test cases running before the deployment. Format:
-   * `projects//locations//agents//testCases//results/`.
-   *
-   * @param string[] $deploymentTestResults
+   * @param string[]
    */
   public function setDeploymentTestResults($deploymentTestResults)
   {
@@ -53,10 +44,7 @@ class GoogleCloudDialogflowCxV3DeploymentResult extends \Google\Collection
     return $this->deploymentTestResults;
   }
   /**
-   * The name of the experiment triggered by this deployment. Format:
-   * projects//locations//agents//environments//experiments/.
-   *
-   * @param string $experiment
+   * @param string
    */
   public function setExperiment($experiment)
   {

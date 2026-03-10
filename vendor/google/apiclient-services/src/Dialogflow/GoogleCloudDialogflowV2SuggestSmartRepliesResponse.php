@@ -21,18 +21,10 @@ class GoogleCloudDialogflowV2SuggestSmartRepliesResponse extends \Google\Collect
 {
   protected $collection_key = 'smartReplyAnswers';
   /**
-   * Number of messages prior to and including latest_message to compile the
-   * suggestion. It may be smaller than the
-   * SuggestSmartRepliesRequest.context_size field in the request if there
-   * aren't that many messages in the conversation.
-   *
    * @var int
    */
   public $contextSize;
   /**
-   * The name of the latest conversation message used to compile suggestion for.
-   * Format: `projects//locations//conversations//messages/`.
-   *
    * @var string
    */
   public $latestMessage;
@@ -40,12 +32,7 @@ class GoogleCloudDialogflowV2SuggestSmartRepliesResponse extends \Google\Collect
   protected $smartReplyAnswersDataType = 'array';
 
   /**
-   * Number of messages prior to and including latest_message to compile the
-   * suggestion. It may be smaller than the
-   * SuggestSmartRepliesRequest.context_size field in the request if there
-   * aren't that many messages in the conversation.
-   *
-   * @param int $contextSize
+   * @param int
    */
   public function setContextSize($contextSize)
   {
@@ -59,10 +46,7 @@ class GoogleCloudDialogflowV2SuggestSmartRepliesResponse extends \Google\Collect
     return $this->contextSize;
   }
   /**
-   * The name of the latest conversation message used to compile suggestion for.
-   * Format: `projects//locations//conversations//messages/`.
-   *
-   * @param string $latestMessage
+   * @param string
    */
   public function setLatestMessage($latestMessage)
   {
@@ -76,11 +60,7 @@ class GoogleCloudDialogflowV2SuggestSmartRepliesResponse extends \Google\Collect
     return $this->latestMessage;
   }
   /**
-   * Output only. Multiple reply options provided by smart reply service. The
-   * order is based on the rank of the model prediction. The maximum number of
-   * the returned replies is set in SmartReplyConfig.
-   *
-   * @param GoogleCloudDialogflowV2SmartReplyAnswer[] $smartReplyAnswers
+   * @param GoogleCloudDialogflowV2SmartReplyAnswer[]
    */
   public function setSmartReplyAnswers($smartReplyAnswers)
   {

@@ -20,30 +20,20 @@ namespace Google\Service\Compute;
 class ServiceAttachmentConsumerProjectLimit extends \Google\Model
 {
   /**
-   * The value of the limit to set. For endpoint_url, the limit should be no
-   * more than 1.
-   *
    * @var string
    */
   public $connectionLimit;
   /**
-   * The network URL for the network to set the limit for.
-   *
    * @var string
    */
   public $networkUrl;
   /**
-   * The project id or number for the project to set the limit for.
-   *
    * @var string
    */
   public $projectIdOrNum;
 
   /**
-   * The value of the limit to set. For endpoint_url, the limit should be no
-   * more than 1.
-   *
-   * @param string $connectionLimit
+   * @param string
    */
   public function setConnectionLimit($connectionLimit)
   {
@@ -57,9 +47,7 @@ class ServiceAttachmentConsumerProjectLimit extends \Google\Model
     return $this->connectionLimit;
   }
   /**
-   * The network URL for the network to set the limit for.
-   *
-   * @param string $networkUrl
+   * @param string
    */
   public function setNetworkUrl($networkUrl)
   {
@@ -73,9 +61,7 @@ class ServiceAttachmentConsumerProjectLimit extends \Google\Model
     return $this->networkUrl;
   }
   /**
-   * The project id or number for the project to set the limit for.
-   *
-   * @param string $projectIdOrNum
+   * @param string
    */
   public function setProjectIdOrNum($projectIdOrNum)
   {

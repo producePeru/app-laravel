@@ -21,44 +21,26 @@ class GoogleCloudDataplexV1EntryLink extends \Google\Collection
 {
   protected $collection_key = 'entryReferences';
   /**
-   * Output only. The time when the Entry Link was created.
-   *
    * @var string
    */
   public $createTime;
   /**
-   * Required. Immutable. Relative resource name of the Entry Link Type used to
-   * create this Entry Link. For example: Entry link between synonym terms in a
-   * glossary: projects/dataplex-types/locations/global/entryLinkTypes/synonym
-   * Entry link between related terms in a glossary: projects/dataplex-
-   * types/locations/global/entryLinkTypes/related Entry link between glossary
-   * terms and data assets: projects/dataplex-
-   * types/locations/global/entryLinkTypes/definition
-   *
    * @var string
    */
   public $entryLinkType;
   protected $entryReferencesType = GoogleCloudDataplexV1EntryLinkEntryReference::class;
   protected $entryReferencesDataType = 'array';
   /**
-   * Output only. Immutable. Identifier. The relative resource name of the Entry
-   * Link, of the form: projects/{project_id_or_number}/locations/{location_id}/
-   * entryGroups/{entry_group_id}/entryLinks/{entry_link_id}
-   *
    * @var string
    */
   public $name;
   /**
-   * Output only. The time when the Entry Link was last updated.
-   *
    * @var string
    */
   public $updateTime;
 
   /**
-   * Output only. The time when the Entry Link was created.
-   *
-   * @param string $createTime
+   * @param string
    */
   public function setCreateTime($createTime)
   {
@@ -72,15 +54,7 @@ class GoogleCloudDataplexV1EntryLink extends \Google\Collection
     return $this->createTime;
   }
   /**
-   * Required. Immutable. Relative resource name of the Entry Link Type used to
-   * create this Entry Link. For example: Entry link between synonym terms in a
-   * glossary: projects/dataplex-types/locations/global/entryLinkTypes/synonym
-   * Entry link between related terms in a glossary: projects/dataplex-
-   * types/locations/global/entryLinkTypes/related Entry link between glossary
-   * terms and data assets: projects/dataplex-
-   * types/locations/global/entryLinkTypes/definition
-   *
-   * @param string $entryLinkType
+   * @param string
    */
   public function setEntryLinkType($entryLinkType)
   {
@@ -94,10 +68,7 @@ class GoogleCloudDataplexV1EntryLink extends \Google\Collection
     return $this->entryLinkType;
   }
   /**
-   * Required. Specifies the Entries referenced in the Entry Link. There should
-   * be exactly two entry references.
-   *
-   * @param GoogleCloudDataplexV1EntryLinkEntryReference[] $entryReferences
+   * @param GoogleCloudDataplexV1EntryLinkEntryReference[]
    */
   public function setEntryReferences($entryReferences)
   {
@@ -111,11 +82,7 @@ class GoogleCloudDataplexV1EntryLink extends \Google\Collection
     return $this->entryReferences;
   }
   /**
-   * Output only. Immutable. Identifier. The relative resource name of the Entry
-   * Link, of the form: projects/{project_id_or_number}/locations/{location_id}/
-   * entryGroups/{entry_group_id}/entryLinks/{entry_link_id}
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -129,9 +96,7 @@ class GoogleCloudDataplexV1EntryLink extends \Google\Collection
     return $this->name;
   }
   /**
-   * Output only. The time when the Entry Link was last updated.
-   *
-   * @param string $updateTime
+   * @param string
    */
   public function setUpdateTime($updateTime)
   {

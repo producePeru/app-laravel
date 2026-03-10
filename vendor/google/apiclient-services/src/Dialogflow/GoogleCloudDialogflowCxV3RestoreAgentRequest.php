@@ -20,51 +20,22 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3RestoreAgentRequest extends \Google\Model
 {
   /**
-   * Unspecified. Treated as KEEP.
-   */
-  public const RESTORE_OPTION_RESTORE_OPTION_UNSPECIFIED = 'RESTORE_OPTION_UNSPECIFIED';
-  /**
-   * Always respect the settings from the exported agent file. It may cause a
-   * restoration failure if some settings (e.g. model type) are not supported in
-   * the target agent.
-   */
-  public const RESTORE_OPTION_KEEP = 'KEEP';
-  /**
-   * Fallback to default settings if some settings are not supported in the
-   * target agent.
-   */
-  public const RESTORE_OPTION_FALLBACK = 'FALLBACK';
-  /**
-   * Uncompressed raw byte content for agent.
-   *
    * @var string
    */
   public $agentContent;
   /**
-   * The [Google Cloud Storage](https://cloud.google.com/storage/docs/) URI to
-   * restore agent from. The format of this URI must be `gs:`. Dialogflow
-   * performs a read operation for the Cloud Storage object on the caller's
-   * behalf, so your request authentication must have read permissions for the
-   * object. For more information, see [Dialogflow access
-   * control](https://cloud.google.com/dialogflow/cx/docs/concept/access-
-   * control#storage).
-   *
    * @var string
    */
   public $agentUri;
   protected $gitSourceType = GoogleCloudDialogflowCxV3RestoreAgentRequestGitSource::class;
   protected $gitSourceDataType = '';
   /**
-   * Agent restore mode. If not specified, `KEEP` is assumed.
-   *
    * @var string
    */
   public $restoreOption;
 
   /**
-   * Uncompressed raw byte content for agent.
-   *
-   * @param string $agentContent
+   * @param string
    */
   public function setAgentContent($agentContent)
   {
@@ -78,15 +49,7 @@ class GoogleCloudDialogflowCxV3RestoreAgentRequest extends \Google\Model
     return $this->agentContent;
   }
   /**
-   * The [Google Cloud Storage](https://cloud.google.com/storage/docs/) URI to
-   * restore agent from. The format of this URI must be `gs:`. Dialogflow
-   * performs a read operation for the Cloud Storage object on the caller's
-   * behalf, so your request authentication must have read permissions for the
-   * object. For more information, see [Dialogflow access
-   * control](https://cloud.google.com/dialogflow/cx/docs/concept/access-
-   * control#storage).
-   *
-   * @param string $agentUri
+   * @param string
    */
   public function setAgentUri($agentUri)
   {
@@ -100,9 +63,7 @@ class GoogleCloudDialogflowCxV3RestoreAgentRequest extends \Google\Model
     return $this->agentUri;
   }
   /**
-   * Setting for restoring from a git branch
-   *
-   * @param GoogleCloudDialogflowCxV3RestoreAgentRequestGitSource $gitSource
+   * @param GoogleCloudDialogflowCxV3RestoreAgentRequestGitSource
    */
   public function setGitSource(GoogleCloudDialogflowCxV3RestoreAgentRequestGitSource $gitSource)
   {
@@ -116,18 +77,14 @@ class GoogleCloudDialogflowCxV3RestoreAgentRequest extends \Google\Model
     return $this->gitSource;
   }
   /**
-   * Agent restore mode. If not specified, `KEEP` is assumed.
-   *
-   * Accepted values: RESTORE_OPTION_UNSPECIFIED, KEEP, FALLBACK
-   *
-   * @param self::RESTORE_OPTION_* $restoreOption
+   * @param string
    */
   public function setRestoreOption($restoreOption)
   {
     $this->restoreOption = $restoreOption;
   }
   /**
-   * @return self::RESTORE_OPTION_*
+   * @return string
    */
   public function getRestoreOption()
   {

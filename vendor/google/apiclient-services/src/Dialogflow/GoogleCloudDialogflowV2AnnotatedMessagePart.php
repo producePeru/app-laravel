@@ -20,37 +20,20 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2AnnotatedMessagePart extends \Google\Model
 {
   /**
-   * The [Dialogflow system entity
-   * type](https://cloud.google.com/dialogflow/docs/reference/system-entities)
-   * of this message part. If this is empty, Dialogflow could not annotate the
-   * phrase part with a system entity.
-   *
    * @var string
    */
   public $entityType;
   /**
-   * The [Dialogflow system entity formatted value
-   * ](https://cloud.google.com/dialogflow/docs/reference/system-entities) of
-   * this message part. For example for a system entity of type `@sys.unit-
-   * currency`, this may contain: { "amount": 5, "currency": "USD" }
-   *
    * @var array
    */
   public $formattedValue;
   /**
-   * A part of a message possibly annotated with an entity.
-   *
    * @var string
    */
   public $text;
 
   /**
-   * The [Dialogflow system entity
-   * type](https://cloud.google.com/dialogflow/docs/reference/system-entities)
-   * of this message part. If this is empty, Dialogflow could not annotate the
-   * phrase part with a system entity.
-   *
-   * @param string $entityType
+   * @param string
    */
   public function setEntityType($entityType)
   {
@@ -64,12 +47,7 @@ class GoogleCloudDialogflowV2AnnotatedMessagePart extends \Google\Model
     return $this->entityType;
   }
   /**
-   * The [Dialogflow system entity formatted value
-   * ](https://cloud.google.com/dialogflow/docs/reference/system-entities) of
-   * this message part. For example for a system entity of type `@sys.unit-
-   * currency`, this may contain: { "amount": 5, "currency": "USD" }
-   *
-   * @param array $formattedValue
+   * @param array
    */
   public function setFormattedValue($formattedValue)
   {
@@ -83,9 +61,7 @@ class GoogleCloudDialogflowV2AnnotatedMessagePart extends \Google\Model
     return $this->formattedValue;
   }
   /**
-   * A part of a message possibly annotated with an entity.
-   *
-   * @param string $text
+   * @param string
    */
   public function setText($text)
   {

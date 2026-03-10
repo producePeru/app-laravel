@@ -10,6 +10,8 @@
 .htaccessx
 .david.pug
 
+/public/storage/images
+/public/exports
 /public/storage/images/cyberwow
 # .phpunit.result.cache
 # Homestead.json

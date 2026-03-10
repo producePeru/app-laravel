@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\MujerProduce;
 
 use App\Http\Controllers\Controller;
+use App\Mail\EventMujerProduceMail;
+use App\Models\MPAdvice;
+use App\Models\MPAdviceDate;
 use Illuminate\Support\Facades\DB;
 use App\Models\MPDiagnostico;
 use App\Models\MPParticipant;
@@ -13,6 +16,10 @@ use App\Models\MPEvent;
 use GuzzleHttp\Client;
 use App\Models\Token;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+
+Carbon::setLocale('es');
 
 class FormularioPublicoController extends Controller
 {
@@ -260,18 +267,16 @@ class FormularioPublicoController extends Controller
         }
     }
 
-
-
     // Registramos a un participante de mujer produce
     public function registerParticipant(Request $request)
     {
         try {
 
             // =======================================================
-            // 1. VALIDACIÓN DEL REQUEST
+            // 1. VALIDACIÓN
             // =======================================================
             $request->validate([
-                'ruc'                   => 'required|string|max:11',
+                'ruc'                   => 'nullable|string|max:11',
                 'social_reason'         => 'nullable|string|max:255',
                 'economic_sector_id'    => 'nullable|exists:economicsectors,id',
                 'rubro_id'              => 'nullable|exists:categories,id',
@@ -303,7 +308,7 @@ class FormularioPublicoController extends Controller
             ]);
 
             // =======================================================
-            // 2. NORMALIZAR FECHA (d/m/Y → Y-m-d)
+            // 2. NORMALIZAR FECHA
             // =======================================================
             if ($request->filled('date_of_birth')) {
                 $request->merge([
@@ -315,15 +320,84 @@ class FormularioPublicoController extends Controller
             }
 
             // =======================================================
-            // 3. CREAR O ACTUALIZAR PARTICIPANTE
+            // 3. LÓGICA DE PARTICIPANTE (REGLAS DE NEGOCIO)
             // =======================================================
-            $participant = MPParticipant::updateOrCreate(
-                [
-                    'ruc'        => $request->ruc,
-                    'doc_number' => $request->doc_number,
-                ],
-                $request->except('slug')
-            );
+            $action = 'updated';
+
+            // Buscar por doc_number
+            $participant = MPParticipant::where('doc_number', $request->doc_number)->first();
+
+            if ($participant) {
+
+                /*
+                |------------------------------------------------------
+                | CASO 1:
+                | doc_number EXISTE
+                |------------------------------------------------------
+                */
+
+                // Si el RUC en BD es NULL → se puede completar / modificar
+                if (is_null($participant->ruc)) {
+
+                    // Validar que el nuevo RUC no esté en otra fila
+                    if ($request->filled('ruc')) {
+                        $existsRuc = MPParticipant::where('ruc', $request->ruc)
+                            ->where('id', '!=', $participant->id)
+                            ->exists();
+
+                        if ($existsRuc) {
+                            return response()->json([
+                                'status'  => 409,
+                                'message' => 'El RUC ya se encuentra registrado en otro participante'
+                            ], 409);
+                        }
+                    }
+
+                    $participant->update($request->except('slug'));
+                } else {
+
+                    /*
+                    |--------------------------------------------------
+                    | CASO 2:
+                    | doc_number y ruc YA EXISTEN
+                    |--------------------------------------------------
+                    | → NO sobreescribir datos existentes con NULL
+                    */
+
+                    $data = collect($request->except('slug'))
+                        ->filter(fn($value) => !is_null($value))
+                        ->toArray();
+
+                    $participant->update($data);
+                }
+            } else {
+
+                /*
+                |------------------------------------------------------
+                | CASO 3:
+                | doc_number NO EXISTE
+                |------------------------------------------------------
+                */
+
+                // Validar que el RUC no exista si viene informado
+                if ($request->filled('ruc')) {
+                    $existsRuc = MPParticipant::where('ruc', $request->ruc)->exists();
+
+                    if ($existsRuc) {
+                        return response()->json([
+                            'status'  => 409,
+                            'message' => 'El RUC ya se encuentra registrado'
+                        ], 409);
+                    }
+                }
+
+                // Crear nuevo participante
+                $participant = MPParticipant::create(
+                    $request->except('slug')
+                );
+
+                $action = 'created';
+            }
 
             // =======================================================
             // 4. BUSCAR EVENTO
@@ -352,8 +426,8 @@ class FormularioPublicoController extends Controller
             // =======================================================
             return response()->json([
                 'status'  => 200,
-                'message' => $participant->wasRecentlyCreated
-                    ? 'Participante registrado y asistencia creada'
+                'message' => $action === 'created'
+                    ? 'Participante creado y asistencia registrada'
                     : 'Participante actualizado y asistencia verificada',
                 'data'    => $participant
             ]);
@@ -490,8 +564,12 @@ class FormularioPublicoController extends Controller
                     'province'  => $event->province->name ?? null,
                     'district'  => $event->district->name ?? null,
                     'modality'  => $event->modality->name ?? null,
-                    'hours'     => $event->hours,
+                    // 'hours'     => $event->hours,
+                    'hourStart' => $event->hourStart,
+                    'hourEnd'   => $event->hourEnd,
+
                     'place'     => $event->place,
+                    'link'      => $event->link,
                     'date'      => Carbon::parse($event->date)->format('d/m/Y')
                 ]
             ], 200);
@@ -557,7 +635,7 @@ class FormularioPublicoController extends Controller
                         // 👇 regla fija
                         'md' => $q->type === 'l'
                             ? 12
-                            : (mb_strlen($q->label) > 45 ? 12 : 6),
+                            : (mb_strlen($q->label) > 60 ? 12 : 6),
 
                         // opciones solo select
                         'options' => $q->type === 'o'
@@ -585,7 +663,6 @@ class FormularioPublicoController extends Controller
     }
 
 
-
     public function registerConsulting(Request $request)
     {
         try {
@@ -595,22 +672,24 @@ class FormularioPublicoController extends Controller
             // =========================
             $request->validate([
                 'typedocument_id' => 'required|integer',
-                'ruc'             => 'required|string|max:20',
+                'ruc'             => 'nullable|string|max:20',
                 'documentnumber'  => 'required|string|max:20',
             ]);
 
             // =========================
             // 2. BÚSQUEDA DEL PARTICIPANTE
             // =========================
-            $participant = MPParticipant::where('ruc', $request->ruc)
-                ->where('doc_number', $request->documentnumber)
+            $participant = MPParticipant::where('doc_number', $request->documentnumber)
+                ->when($request->filled('ruc'), function ($query) use ($request) {
+                    $query->where('ruc', $request->ruc);
+                })
                 ->first();
 
             if (!$participant) {
                 return response()->json([
                     'status'  => 404,
                     'message' => 'El participante no existe'
-                ], 404);
+                ]);
             }
 
             // =========================
@@ -685,7 +764,7 @@ class FormularioPublicoController extends Controller
             // 1. VALIDACIÓN BASE
             // ===============================
             $request->validate([
-                'ruc'            => 'required|string',
+                'ruc'            => 'nullable|string',
                 'documentnumber' => 'required|string',
             ]);
 
@@ -778,5 +857,612 @@ class FormularioPublicoController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function salaLinkMeet(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'doc_number' => 'required|string',
+                'slug'       => 'required|string',
+            ]);
+
+            // 1. Validar que el participante exista
+            $participant = MPParticipant::where('doc_number', $validated['doc_number'])->first();
+
+            if (!$participant) {
+                return response()->json([
+                    'status'    => 403,
+                    'success'   => false,
+                    'message'   => 'No te encuentras registrado.'
+                ]);
+            }
+
+            // 2. Buscar evento por slug
+            $event = MPEvent::where('slug', $validated['slug'])
+                ->select('id', 'link')
+                ->first();
+
+            if (!$event) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El evento no existe.'
+                ], 404);
+            }
+
+            // 3. Validar que el evento tenga link
+            if (!$event->link) {
+                return response()->json([
+                    'status'    => 401,
+                    'success'   => false,
+                    'message'   => 'El enlace de la sala aún no está disponible.'
+                ]);
+            }
+
+            // 4. Retornar link
+            return response()->json([
+                'status'    => 200,
+                'success'   => true,
+                'data'      => [
+                    'link' => $event->link
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al validar el acceso.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function attendanceParticipant(Request $request)
+    {
+        try {
+            // Validación básica
+            $request->validate([
+                'doc_number' => 'required|string',
+                'slug'       => 'required|string',
+            ]);
+
+            DB::beginTransaction();
+
+            // Buscar participante por documento
+            $participant = MPParticipant::where('doc_number', $request->doc_number)->first();
+
+            if (!$participant) {
+                return response()->json([
+                    'message' => 'Participante no encontrado'
+                ], 404);
+            }
+
+            // Buscar evento por slug
+            $event = MPEvent::where('slug', $request->slug)->first();
+
+            if (!$event) {
+                return response()->json([
+                    'message' => 'Evento no encontrado'
+                ], 404);
+            }
+
+            // Registrar asistencia (evita duplicados)
+            $attendance = MPAttendance::updateOrCreate(
+                [
+                    'participant_id' => $participant->id,
+                    'event_id'       => $event->id,
+                ],
+                [
+                    'attendance' => 1
+                ]
+            );
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Asistencia registrada correctamente',
+                'data'    => $attendance
+            ], 200);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Error al registrar la asistencia',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function updateParticipant(Request $request, $id)
+    {
+        try {
+
+            // =======================================================
+            // 1. VALIDACIÓN
+            // =======================================================
+            $request->validate([
+                'doc_number'            => 'required|string|max:12',
+                'ruc'                   => 'nullable|string|max:11',
+
+                'social_reason'         => 'nullable|string|max:255',
+                'economic_sector_id'    => 'nullable|exists:economicsectors,id',
+                'rubro_id'              => 'nullable|exists:categories,id',
+                'comercial_activity_id' => 'nullable|exists:activities,id',
+                'city_id'               => 'nullable|exists:cities,id',
+                'province_id'           => 'nullable|exists:provinces,id',
+                'district_id'           => 'nullable|exists:districts,id',
+
+                't_doc_id'              => 'nullable|exists:typedocuments,id',
+                'country_id'            => 'nullable|exists:countries,id',
+                'date_of_birth'         => 'nullable|date_format:d/m/Y',
+                'names'                 => 'nullable|string|max:100',
+                'last_name'             => 'nullable|string|max:100',
+                'middle_name'           => 'nullable|string|max:100',
+                'civil_status_id'       => 'nullable|exists:civilstatus,id',
+                'num_soons'             => 'nullable|max:3',
+                'gender_id'             => 'nullable|exists:genders,id',
+                'sick'                  => 'nullable|string|max:10',
+                'academicdegree_id'     => 'nullable|exists:academicdegree,id',
+                'phone'                 => 'nullable|max:9',
+                'email'                 => 'nullable|string|max:200',
+                'role_company_id'       => 'nullable|exists:role_company,id',
+            ]);
+
+            // =======================================================
+            // 2. BUSCAR PARTICIPANTE
+            // =======================================================
+            $participant = MPParticipant::find($id);
+
+            if (!$participant) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'Participante no encontrado'
+                ], 404);
+            }
+
+            // =======================================================
+            // 3. PREPARAR DATA A ACTUALIZAR
+            // =======================================================
+            $data = $request->all();
+
+            // =======================================================
+            // 4. VALIDAR RUC (SI EXISTE, NO SE ACTUALIZA)
+            // =======================================================
+            if ($request->filled('ruc')) {
+
+                $existsRuc = MPParticipant::where('ruc', $request->ruc)
+                    ->where('id', '!=', $participant->id)
+                    ->exists();
+
+                if ($existsRuc) {
+                    // ❌ NO se actualiza el RUC
+                    unset($data['ruc']);
+                }
+            }
+
+            // =======================================================
+            // 5. NORMALIZAR FECHA
+            // =======================================================
+            if ($request->filled('date_of_birth')) {
+                $data['date_of_birth'] = Carbon::createFromFormat(
+                    'd/m/Y',
+                    $request->date_of_birth
+                )->format('Y-m-d');
+            }
+
+            // =======================================================
+            // 6. ACTUALIZAR PARTICIPANTE
+            // =======================================================
+            $participant->update($data);
+
+            // =======================================================
+            // 7. RESPUESTA
+            // =======================================================
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Participante actualizado correctamente',
+                'data'    => $participant
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            return response()->json([
+                'status'  => 422,
+                'message' => 'Error de validación',
+                'errors'  => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Error interno del servidor',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function mpIndexEventsSoon(Request $request)
+    {
+        $today = Carbon::today()->toDateString();
+
+        $items = MpEvent::query()
+            ->whereDate('date', '>=', $today) // solo futuros
+            ->with([
+                'capacitador:id,name',
+                'modality:id,name',
+                'city:id,name',
+                'province:id,name',
+                'district:id,name'
+            ])
+            ->orderBy('date', 'ASC') // más próximos primero
+            ->get()
+            ->map(function ($item) {
+                return $this->mapItems($item);
+            });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
+    private function mapItems($item)
+    {
+        $date = $item->date ? Carbon::parse($item->date) : null;
+
+        return [
+            'title'        => $item->title,
+
+            'slug'         => $item->slug,
+
+            'component'    => $item->component,
+
+            'capacitador'  => $item->capacitador,
+
+            'modality'     => $item->modality->name ?? null,
+
+            'hourStart' => $item->hourStart
+                ? Carbon::createFromFormat('H:i:s', $item->hourStart)->format('g:i A')
+                : null,
+
+            'hourEnd' => $item->hourEnd
+                ? Carbon::createFromFormat('H:i:s', $item->hourEnd)->format('g:i A')
+                : null,
+
+            // formato solicitado: día, mes (ene, feb), año
+            'date' => $date ? [
+                'day'   => $date->format('d'),
+                'month' => strtolower($date->translatedFormat('M')), // ene, feb
+                'year'  => $date->format('Y'),
+            ] : null,
+
+            'place' => $item->modality->name == "PRESENCIAL" ? $item->city->name . ' / ' . $item->province->name . ' / ' . $item->district->name . ' / ' . $item->place : null
+        ];
+    }
+
+
+
+    // enviamos correo por participar en mujer produce de acuerdo al payload que se manda
+    public function sendEventEmail(Request $request)
+    {
+        $mailer = 'mujerproduce'; // capacitaciones || office365
+
+        $payload = $request->validate([
+            'title'      => 'required|string',
+            'link'       => 'required|url',
+            'date'       => 'required|string', // 24/01/2026
+            'hourStart'  => 'required|string', // 14:00:00
+            'hourEnd'    => 'required|string', // 19:00:00
+            'email'      => 'required|email',
+        ]);
+
+        // 📅 Fecha: 24 de enero de 2026
+        $dateFormatted = Carbon::createFromFormat('d/m/Y', $payload['date'])
+            ->locale('es')
+            ->translatedFormat('d \d\e F \d\e Y');
+
+        // ⏰ Horas: 2:00 PM / 7:00 PM
+        $hourStartFormatted = Carbon::createFromFormat('H:i:s', $payload['hourStart'])
+            ->format('g:i A');
+
+        $hourEndFormatted = Carbon::createFromFormat('H:i:s', $payload['hourEnd'])
+            ->format('g:i A');
+
+        // ✉️ Envío con mailer seteado
+        Mail::mailer($mailer)
+            ->to($payload['email'])
+            ->send(new EventMujerProduceMail([
+                'title'     => $payload['title'],
+                'link'      => $payload['link'],
+                'date'      => $dateFormatted,
+                'hourStart' => $hourStartFormatted,
+                'hourEnd'   => $hourEndFormatted,
+                'email'     => $payload['email'],
+            ]));
+
+        return response()->json([
+            'message' => 'Correo enviado correctamente',
+            'mailer'  => $mailer
+        ]);
+    }
+
+
+    public function mpIndexAdvice(Request $request)
+    {
+        $query = MPAdvice::query();
+
+        $today = Carbon::today()->toDateString();
+
+        $now = Carbon::now();
+
+        $query->with([
+            'capacitador:id,name',
+            'image:id,url,name',
+            'dates' => function ($q) use ($now) {
+
+                $q->whereNull('mype_id') // 🔹 No reservados
+                    ->where(function ($sub) use ($now) {
+
+                        $sub->whereDate('date', '>', $now->toDateString()) // fechas futuras
+                            ->orWhere(function ($today) use ($now) {
+                                $today->whereDate('date', '=', $now->toDateString())
+                                    ->whereTime('startTime', '>=', $now->format('H:i:s')); // hoy pero hora futura
+                            });
+                    })
+                    ->orderBy('date', 'ASC')
+                    ->orderBy('startTime', 'ASC');
+            }
+        ])
+            ->orderByDesc('id');
+
+        $items = $query->paginate(100)->through(function ($item) {
+            return $this->mapAdviceItems($item);
+        });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
+    private function mapAdviceItems($item)
+    {
+        return [
+            'id'           => $item->id,
+            'title'        => $item->title,
+            'description'  => $item->description,
+            'requirements' => $item->requirements,
+            'link'         => $item->link,
+
+            // 🔹 Horarios ordenados (ya vienen ordenados desde SQL)
+            'schedules' => $item->dates->map(function ($date) {
+
+                return [
+                    'id'          => $date->id,
+                    'date'        => $date->date,
+                    'date_format' => Carbon::parse($date->date)->format('d/m/Y'),
+                    'startTime'   => Carbon::parse($date->startTime)->format('g:i A'),
+                    'endTime'     => Carbon::parse($date->endTime)->format('g:i A'),
+                    'is_past'     => Carbon::parse($date->date)->isPast(),
+                ];
+            }),
+
+            // 🔹 Indica si algún horario está reservado
+            'has_reservation' => $item->dates->contains(function ($d) {
+                return !is_null($d->mype_id);
+            }),
+
+            'capacitador_name' => $item->capacitador->name ?? null,
+            'image_url'        => $item->image?->url ? url($item->image->url) : null,
+
+            'created_at' => $item->created_at,
+            'updated_at' => $item->updated_at,
+        ];
+    }
+
+
+
+
+    public function mpAdviceParticipant($dni)
+    {
+        $participant = MPParticipant::where('doc_number', $dni)->first();
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'Participante no encontrado.',
+                'status'  => 404
+            ]);
+        }
+
+        return response()->json([
+            'names'       => $participant->names,
+            'ruc'         => $participant->ruc,
+            'doc_number'  => $participant->doc_number,
+            'phone'       => $participant->phone ? 'si' : 'no',
+            'status'      => 200
+        ], 200);
+    }
+
+
+    public function reserveAdvice(Request $request)
+    {
+        $data = $request->validate([
+            'ruc'       => 'nullable|string',
+            'dni'       => 'required|string',
+            'names'     => 'required|string',
+            'advice_id' => 'required|integer|exists:mp_advice_dates,id',
+            'phone'     => ['required', 'regex:/^9\d{8}$/'] // ✅ 9 dígitos y empieza con 9
+        ]);
+
+        // 1️⃣ Buscar participante
+        $participant = MPParticipant::where('doc_number', $data['dni'])
+            ->where('ruc', $data['ruc'])
+            ->where('names', $data['names'])
+            ->first();
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'Participante no encontrado.'
+            ], 404);
+        }
+
+        // 2️⃣ Actualizar teléfono
+        if ($participant->phone !== $data['phone']) {
+            $participant->update([
+                'phone' => $data['phone']
+            ]);
+        }
+
+        // 3️⃣ Buscar horario
+        $schedule = MPAdviceDate::find($data['advice_id']);
+
+        if (!$schedule) {
+            return response()->json([
+                'message' => 'Horario no encontrado.'
+            ], 404);
+        }
+
+        // 4️⃣ Validar si ya fue reservado
+        if (!is_null($schedule->mype_id)) {
+            return response()->json([
+                'message' => 'Este horario ya fue reservado.',
+                'status'  => 409
+            ], 409);
+        }
+
+        // 5️⃣ Validar que la fecha no sea pasada
+        if ($schedule->start_date_time->isPast()) {
+            return response()->json([
+                'message' => 'No se puede reservar un horario pasado.',
+                'status'  => 422
+            ], 422);
+        }
+
+        // 6️⃣ Reservar
+        $schedule->update([
+            'mype_id' => $participant->id
+        ]);
+
+        return response()->json([
+            'message'       => 'Horario reservado correctamente.',
+            'schedule_id'   => $schedule->id,
+            'advice_id'     => $schedule->mp_personalized_advice_id,
+            'mype_id'       => $participant->id,
+            'phone_updated' => $participant->phone,
+            'status'        => 200
+        ], 200);
+    }
+
+
+    public function mpMyAdvice($dni)
+    {
+        $participant = MPParticipant::where('doc_number', $dni)->first();
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'Participante no encontrado.'
+            ], 404);
+        }
+
+        $query = MPAdvice::query()
+            ->whereHas('dates', function ($q) use ($participant) {
+                $q->where('mype_id', $participant->id);
+            })
+            ->with([
+                'capacitador:id,name',
+                'image:id,url,name',
+                'dates' => function ($q) use ($participant) {
+                    $q->where('mype_id', $participant->id)
+                        ->orderBy('date', 'ASC')
+                        ->orderBy('startTime', 'ASC');
+                }
+            ])
+            ->orderByDesc('id');
+
+        $items = $query->paginate(100)->through(function ($item) {
+            return $this->mapMyAdviceItems($item);
+        });
+
+        return response()->json([
+            'data'   => $items,
+            'status' => 200
+        ]);
+    }
+
+    private function mapMyAdviceItems($item)
+    {
+        return [
+            'id'           => $item->id,
+            'title'        => $item->title,
+            'description'  => Str::limit(strip_tags($item->description), 150, '...'),
+            'requirements' => $item->requirements,
+            'link'         => $item->link,
+
+            'schedules' => $item->dates->map(function ($date) {
+                return [
+                    'id'          => $date->id,
+                    'date'        => $date->date,
+                    'date_format' => $date->date?->format('d/m/Y'),
+                    'startTime' => \Carbon\Carbon::createFromFormat('H:i:s', $date->startTime)
+                        ->format('g:i A'),
+
+                    'endTime'   => \Carbon\Carbon::createFromFormat('H:i:s', $date->endTime)
+                        ->format('g:i A'),
+
+                    'mype_id'     => $date->mype_id,
+                ];
+            }),
+
+            'capacitador_name' => $item->capacitador->name ?? null,
+            'image_url'        => $item->image?->url ? url($item->image->url) : null,
+
+            'created_at' => $item->created_at,
+            'updated_at' => $item->updated_at,
+        ];
+    }
+
+    public function cancelMyAdvice(Request $request)
+    {
+        $data = $request->validate([
+            'advice_date_id' => [
+                'required',
+                'integer',
+                'exists:mp_advice_dates,id,deleted_at,NULL'
+            ],
+            'dni' => ['required', 'string'],
+        ]);
+
+        $participant = MPParticipant::where('doc_number', $data['dni'])->first();
+
+        if (!$participant) {
+            return response()->json([
+                'message' => 'Participante no encontrado.'
+            ], 404);
+        }
+
+        $schedule = MPAdviceDate::where('id', $data['advice_date_id'])
+            ->where('mype_id', $participant->id)
+            ->first();
+
+        if (!$schedule) {
+            return response()->json([
+                'message' => 'Reserva no encontrada para este participante.'
+            ], 404);
+        }
+
+        if ($schedule->start_date_time->isPast()) {
+            return response()->json([
+                'message' => 'No se puede cancelar un horario pasado.'
+            ], 422);
+        }
+
+        $schedule->update([
+            'mype_id' => null
+        ]);
+
+        return response()->json([
+            'message' => 'Reserva cancelada correctamente.',
+            'status'  => 200
+        ], 200);
     }
 }

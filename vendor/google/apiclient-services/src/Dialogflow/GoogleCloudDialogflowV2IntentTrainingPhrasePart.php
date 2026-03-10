@@ -20,42 +20,24 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2IntentTrainingPhrasePart extends \Google\Model
 {
   /**
-   * Optional. The parameter name for the value extracted from the annotated
-   * part of the example. This field is required for annotated parts of the
-   * training phrase.
-   *
    * @var string
    */
   public $alias;
   /**
-   * Optional. The entity type name prefixed with `@`. This field is required
-   * for annotated parts of the training phrase.
-   *
    * @var string
    */
   public $entityType;
   /**
-   * Required. The text for this part.
-   *
    * @var string
    */
   public $text;
   /**
-   * Optional. Indicates whether the text was manually annotated. This field is
-   * set to true when the Dialogflow Console is used to manually annotate the
-   * part. When creating an annotated part with the API, you must set this to
-   * true.
-   *
    * @var bool
    */
   public $userDefined;
 
   /**
-   * Optional. The parameter name for the value extracted from the annotated
-   * part of the example. This field is required for annotated parts of the
-   * training phrase.
-   *
-   * @param string $alias
+   * @param string
    */
   public function setAlias($alias)
   {
@@ -69,10 +51,7 @@ class GoogleCloudDialogflowV2IntentTrainingPhrasePart extends \Google\Model
     return $this->alias;
   }
   /**
-   * Optional. The entity type name prefixed with `@`. This field is required
-   * for annotated parts of the training phrase.
-   *
-   * @param string $entityType
+   * @param string
    */
   public function setEntityType($entityType)
   {
@@ -86,9 +65,7 @@ class GoogleCloudDialogflowV2IntentTrainingPhrasePart extends \Google\Model
     return $this->entityType;
   }
   /**
-   * Required. The text for this part.
-   *
-   * @param string $text
+   * @param string
    */
   public function setText($text)
   {
@@ -102,12 +79,7 @@ class GoogleCloudDialogflowV2IntentTrainingPhrasePart extends \Google\Model
     return $this->text;
   }
   /**
-   * Optional. Indicates whether the text was manually annotated. This field is
-   * set to true when the Dialogflow Console is used to manually annotate the
-   * part. When creating an annotated part with the API, you must set this to
-   * true.
-   *
-   * @param bool $userDefined
+   * @param bool
    */
   public function setUserDefined($userDefined)
   {

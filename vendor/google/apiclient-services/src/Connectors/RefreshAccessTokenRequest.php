@@ -20,18 +20,12 @@ namespace Google\Service\Connectors;
 class RefreshAccessTokenRequest extends \Google\Model
 {
   /**
-   * Optional. Refresh Token String. If the Refresh Token is not provided, the
-   * runtime will read the data from the secret manager.
-   *
    * @var string
    */
   public $refreshToken;
 
   /**
-   * Optional. Refresh Token String. If the Refresh Token is not provided, the
-   * runtime will read the data from the secret manager.
-   *
-   * @param string $refreshToken
+   * @param string
    */
   public function setRefreshToken($refreshToken)
   {

@@ -20,22 +20,16 @@ namespace Google\Service\Dataform;
 class DirectoryEntry extends \Google\Model
 {
   /**
-   * A child directory in the directory.
-   *
    * @var string
    */
   public $directory;
   /**
-   * A file in the directory.
-   *
    * @var string
    */
   public $file;
 
   /**
-   * A child directory in the directory.
-   *
-   * @param string $directory
+   * @param string
    */
   public function setDirectory($directory)
   {
@@ -49,9 +43,7 @@ class DirectoryEntry extends \Google\Model
     return $this->directory;
   }
   /**
-   * A file in the directory.
-   *
-   * @param string $file
+   * @param string
    */
   public function setFile($file)
   {

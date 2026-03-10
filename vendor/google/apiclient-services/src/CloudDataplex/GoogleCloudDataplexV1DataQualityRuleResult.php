@@ -20,53 +20,27 @@ namespace Google\Service\CloudDataplex;
 class GoogleCloudDataplexV1DataQualityRuleResult extends \Google\Model
 {
   /**
-   * Output only. The number of rows returned by the SQL statement in a SQL
-   * assertion rule.This field is only valid for SQL assertion rules.
-   *
    * @var string
    */
   public $assertionRowCount;
   /**
-   * Output only. The number of rows a rule was evaluated against.This field is
-   * only valid for row-level type rules.Evaluated count can be configured to
-   * either include all rows (default) - with null rows automatically failing
-   * rule evaluation, or exclude null rows from the evaluated_count, by setting
-   * ignore_nulls = true.This field is not set for rule SqlAssertion.
-   *
    * @var string
    */
   public $evaluatedCount;
   /**
-   * Output only. The query to find rows that did not pass this rule.This field
-   * is only valid for row-level type rules.
-   *
    * @var string
    */
   public $failingRowsQuery;
   /**
-   * Output only. The number of rows with null values in the specified column.
-   *
    * @var string
    */
   public $nullCount;
-  /**
-   * Output only. The ratio of passed_count / evaluated_count.This field is only
-   * valid for row-level type rules.
-   *
-   * @var 
-   */
   public $passRatio;
   /**
-   * Output only. Whether the rule passed or failed.
-   *
    * @var bool
    */
   public $passed;
   /**
-   * Output only. The number of rows which passed a rule evaluation.This field
-   * is only valid for row-level type rules.This field is not set for rule
-   * SqlAssertion.
-   *
    * @var string
    */
   public $passedCount;
@@ -74,10 +48,7 @@ class GoogleCloudDataplexV1DataQualityRuleResult extends \Google\Model
   protected $ruleDataType = '';
 
   /**
-   * Output only. The number of rows returned by the SQL statement in a SQL
-   * assertion rule.This field is only valid for SQL assertion rules.
-   *
-   * @param string $assertionRowCount
+   * @param string
    */
   public function setAssertionRowCount($assertionRowCount)
   {
@@ -91,13 +62,7 @@ class GoogleCloudDataplexV1DataQualityRuleResult extends \Google\Model
     return $this->assertionRowCount;
   }
   /**
-   * Output only. The number of rows a rule was evaluated against.This field is
-   * only valid for row-level type rules.Evaluated count can be configured to
-   * either include all rows (default) - with null rows automatically failing
-   * rule evaluation, or exclude null rows from the evaluated_count, by setting
-   * ignore_nulls = true.This field is not set for rule SqlAssertion.
-   *
-   * @param string $evaluatedCount
+   * @param string
    */
   public function setEvaluatedCount($evaluatedCount)
   {
@@ -111,10 +76,7 @@ class GoogleCloudDataplexV1DataQualityRuleResult extends \Google\Model
     return $this->evaluatedCount;
   }
   /**
-   * Output only. The query to find rows that did not pass this rule.This field
-   * is only valid for row-level type rules.
-   *
-   * @param string $failingRowsQuery
+   * @param string
    */
   public function setFailingRowsQuery($failingRowsQuery)
   {
@@ -128,9 +90,7 @@ class GoogleCloudDataplexV1DataQualityRuleResult extends \Google\Model
     return $this->failingRowsQuery;
   }
   /**
-   * Output only. The number of rows with null values in the specified column.
-   *
-   * @param string $nullCount
+   * @param string
    */
   public function setNullCount($nullCount)
   {
@@ -152,9 +112,7 @@ class GoogleCloudDataplexV1DataQualityRuleResult extends \Google\Model
     return $this->passRatio;
   }
   /**
-   * Output only. Whether the rule passed or failed.
-   *
-   * @param bool $passed
+   * @param bool
    */
   public function setPassed($passed)
   {
@@ -168,11 +126,7 @@ class GoogleCloudDataplexV1DataQualityRuleResult extends \Google\Model
     return $this->passed;
   }
   /**
-   * Output only. The number of rows which passed a rule evaluation.This field
-   * is only valid for row-level type rules.This field is not set for rule
-   * SqlAssertion.
-   *
-   * @param string $passedCount
+   * @param string
    */
   public function setPassedCount($passedCount)
   {
@@ -186,9 +140,7 @@ class GoogleCloudDataplexV1DataQualityRuleResult extends \Google\Model
     return $this->passedCount;
   }
   /**
-   * Output only. The rule specified in the DataQualitySpec, as is.
-   *
-   * @param GoogleCloudDataplexV1DataQualityRule $rule
+   * @param GoogleCloudDataplexV1DataQualityRule
    */
   public function setRule(GoogleCloudDataplexV1DataQualityRule $rule)
   {

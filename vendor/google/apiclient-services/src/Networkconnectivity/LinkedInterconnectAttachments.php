@@ -21,39 +21,24 @@ class LinkedInterconnectAttachments extends \Google\Collection
 {
   protected $collection_key = 'uris';
   /**
-   * Optional. Hub routes fully encompassed by include import ranges are
-   * included during import from hub.
-   *
    * @var string[]
    */
   public $includeImportRanges;
   /**
-   * A value that controls whether site-to-site data transfer is enabled for
-   * these resources. Data transfer is available only in [supported
-   * locations](https://cloud.google.com/network-connectivity/docs/network-
-   * connectivity-center/concepts/locations).
-   *
    * @var bool
    */
   public $siteToSiteDataTransfer;
   /**
-   * The URIs of linked interconnect attachment resources
-   *
    * @var string[]
    */
   public $uris;
   /**
-   * Output only. The VPC network where these VLAN attachments are located.
-   *
    * @var string
    */
   public $vpcNetwork;
 
   /**
-   * Optional. Hub routes fully encompassed by include import ranges are
-   * included during import from hub.
-   *
-   * @param string[] $includeImportRanges
+   * @param string[]
    */
   public function setIncludeImportRanges($includeImportRanges)
   {
@@ -67,12 +52,7 @@ class LinkedInterconnectAttachments extends \Google\Collection
     return $this->includeImportRanges;
   }
   /**
-   * A value that controls whether site-to-site data transfer is enabled for
-   * these resources. Data transfer is available only in [supported
-   * locations](https://cloud.google.com/network-connectivity/docs/network-
-   * connectivity-center/concepts/locations).
-   *
-   * @param bool $siteToSiteDataTransfer
+   * @param bool
    */
   public function setSiteToSiteDataTransfer($siteToSiteDataTransfer)
   {
@@ -86,9 +66,7 @@ class LinkedInterconnectAttachments extends \Google\Collection
     return $this->siteToSiteDataTransfer;
   }
   /**
-   * The URIs of linked interconnect attachment resources
-   *
-   * @param string[] $uris
+   * @param string[]
    */
   public function setUris($uris)
   {
@@ -102,9 +80,7 @@ class LinkedInterconnectAttachments extends \Google\Collection
     return $this->uris;
   }
   /**
-   * Output only. The VPC network where these VLAN attachments are located.
-   *
-   * @param string $vpcNetwork
+   * @param string
    */
   public function setVpcNetwork($vpcNetwork)
   {

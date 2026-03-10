@@ -23,17 +23,12 @@ class PostgresqlTable extends \Google\Collection
   protected $postgresqlColumnsType = PostgresqlColumn::class;
   protected $postgresqlColumnsDataType = 'array';
   /**
-   * Table name.
-   *
    * @var string
    */
   public $table;
 
   /**
-   * PostgreSQL columns in the schema. When unspecified as part of
-   * include/exclude objects, includes/excludes everything.
-   *
-   * @param PostgresqlColumn[] $postgresqlColumns
+   * @param PostgresqlColumn[]
    */
   public function setPostgresqlColumns($postgresqlColumns)
   {
@@ -47,9 +42,7 @@ class PostgresqlTable extends \Google\Collection
     return $this->postgresqlColumns;
   }
   /**
-   * Table name.
-   *
-   * @param string $table
+   * @param string
    */
   public function setTable($table)
   {

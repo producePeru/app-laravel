@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MPEvent extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'mp_eventos';
 
@@ -22,10 +23,15 @@ class MPEvent extends Model
         'modality_id',
         'place',
         'date',
-        'hours',
+        // 'hours',
         'training_time',
         'startDate',
-        'endDate'
+        'endDate',
+
+        'link',
+        'aliado',
+        'hourStart',
+        'hourEnd'
     ];
 
 

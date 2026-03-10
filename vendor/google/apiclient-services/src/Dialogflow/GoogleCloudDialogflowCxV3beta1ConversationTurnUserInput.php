@@ -20,32 +20,22 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3beta1ConversationTurnUserInput extends \Google\Model
 {
   /**
-   * Whether sentiment analysis is enabled.
-   *
    * @var bool
    */
   public $enableSentimentAnalysis;
   /**
-   * Parameters that need to be injected into the conversation during intent
-   * detection.
-   *
    * @var array[]
    */
   public $injectedParameters;
   protected $inputType = GoogleCloudDialogflowCxV3beta1QueryInput::class;
   protected $inputDataType = '';
   /**
-   * If webhooks should be allowed to trigger in response to the user utterance.
-   * Often if parameters are injected, webhooks should not be enabled.
-   *
    * @var bool
    */
   public $isWebhookEnabled;
 
   /**
-   * Whether sentiment analysis is enabled.
-   *
-   * @param bool $enableSentimentAnalysis
+   * @param bool
    */
   public function setEnableSentimentAnalysis($enableSentimentAnalysis)
   {
@@ -59,10 +49,7 @@ class GoogleCloudDialogflowCxV3beta1ConversationTurnUserInput extends \Google\Mo
     return $this->enableSentimentAnalysis;
   }
   /**
-   * Parameters that need to be injected into the conversation during intent
-   * detection.
-   *
-   * @param array[] $injectedParameters
+   * @param array[]
    */
   public function setInjectedParameters($injectedParameters)
   {
@@ -76,9 +63,7 @@ class GoogleCloudDialogflowCxV3beta1ConversationTurnUserInput extends \Google\Mo
     return $this->injectedParameters;
   }
   /**
-   * Supports text input, event input, dtmf input in the test case.
-   *
-   * @param GoogleCloudDialogflowCxV3beta1QueryInput $input
+   * @param GoogleCloudDialogflowCxV3beta1QueryInput
    */
   public function setInput(GoogleCloudDialogflowCxV3beta1QueryInput $input)
   {
@@ -92,10 +77,7 @@ class GoogleCloudDialogflowCxV3beta1ConversationTurnUserInput extends \Google\Mo
     return $this->input;
   }
   /**
-   * If webhooks should be allowed to trigger in response to the user utterance.
-   * Often if parameters are injected, webhooks should not be enabled.
-   *
-   * @param bool $isWebhookEnabled
+   * @param bool
    */
   public function setIsWebhookEnabled($isWebhookEnabled)
   {

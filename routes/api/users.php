@@ -17,6 +17,10 @@ Route::controller(UserController::class)->group(function () {
     Route::delete('delete-user-pnte/{idUser}', 'deleteUserPnte');
 
     Route::put('update-cde', 'updateCde');
+
+    Route::put('updated-personal-info/{id}/{dni}', 'updatedPersonalInfo');
+
+    Route::get('get-personal-info', 'getPersonalInfo');
 });
 
 Route::controller(AuthController::class)->group(function () {

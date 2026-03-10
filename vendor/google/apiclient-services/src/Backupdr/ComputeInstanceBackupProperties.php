@@ -19,35 +19,12 @@ namespace Google\Service\Backupdr;
 
 class ComputeInstanceBackupProperties extends \Google\Collection
 {
-  /**
-   * Default value. This value is unused.
-   */
-  public const KEY_REVOCATION_ACTION_TYPE_KEY_REVOCATION_ACTION_TYPE_UNSPECIFIED = 'KEY_REVOCATION_ACTION_TYPE_UNSPECIFIED';
-  /**
-   * Indicates user chose no operation.
-   */
-  public const KEY_REVOCATION_ACTION_TYPE_NONE = 'NONE';
-  /**
-   * Indicates user chose to opt for VM shutdown on key revocation.
-   */
-  public const KEY_REVOCATION_ACTION_TYPE_STOP = 'STOP';
   protected $collection_key = 'serviceAccount';
   /**
-   * Enables instances created based on these properties to send packets with
-   * source IP addresses other than their own and receive packets with
-   * destination IP addresses other than their own. If these instances will be
-   * used as an IP gateway or it will be set as the next-hop in a Route
-   * resource, specify `true`. If unsure, leave this set to `false`. See the
-   * https://cloud.google.com/vpc/docs/using-routes#canipforward documentation
-   * for more information.
-   *
    * @var bool
    */
   public $canIpForward;
   /**
-   * An optional text description for the instances that are created from these
-   * properties.
-   *
    * @var string
    */
   public $description;
@@ -56,34 +33,20 @@ class ComputeInstanceBackupProperties extends \Google\Collection
   protected $guestAcceleratorType = AcceleratorConfig::class;
   protected $guestAcceleratorDataType = 'array';
   /**
-   * KeyRevocationActionType of the instance. Supported options are "STOP" and
-   * "NONE". The default value is "NONE" if it is not specified.
-   *
    * @var string
    */
   public $keyRevocationActionType;
   /**
-   * Labels to apply to instances that are created from these properties.
-   *
    * @var string[]
    */
   public $labels;
   /**
-   * The machine type to use for instances that are created from these
-   * properties.
-   *
    * @var string
    */
   public $machineType;
   protected $metadataType = Metadata::class;
   protected $metadataDataType = '';
   /**
-   * Minimum cpu/platform to be used by instances. The instance may be scheduled
-   * on the specified or newer cpu/platform. Applicable values are the friendly
-   * names of CPU platforms, such as `minCpuPlatform: Intel Haswell` or
-   * `minCpuPlatform: Intel Sandy Bridge`. For more information, read
-   * https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform.
-   *
    * @var string
    */
   public $minCpuPlatform;
@@ -94,11 +57,6 @@ class ComputeInstanceBackupProperties extends \Google\Collection
   protected $serviceAccountType = ServiceAccount::class;
   protected $serviceAccountDataType = 'array';
   /**
-   * The source instance used to create this backup. This can be a partial or
-   * full URL to the resource. For example, the following are valid values: -htt
-   * ps://www.googleapis.com/compute/v1/projects/project/zones/zone/instances/in
-   * stance -projects/project/zones/zone/instances/instance
-   *
    * @var string
    */
   public $sourceInstance;
@@ -106,15 +64,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
   protected $tagsDataType = '';
 
   /**
-   * Enables instances created based on these properties to send packets with
-   * source IP addresses other than their own and receive packets with
-   * destination IP addresses other than their own. If these instances will be
-   * used as an IP gateway or it will be set as the next-hop in a Route
-   * resource, specify `true`. If unsure, leave this set to `false`. See the
-   * https://cloud.google.com/vpc/docs/using-routes#canipforward documentation
-   * for more information.
-   *
-   * @param bool $canIpForward
+   * @param bool
    */
   public function setCanIpForward($canIpForward)
   {
@@ -128,10 +78,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->canIpForward;
   }
   /**
-   * An optional text description for the instances that are created from these
-   * properties.
-   *
-   * @param string $description
+   * @param string
    */
   public function setDescription($description)
   {
@@ -145,10 +92,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->description;
   }
   /**
-   * An array of disks that are associated with the instances that are created
-   * from these properties.
-   *
-   * @param AttachedDisk[] $disk
+   * @param AttachedDisk[]
    */
   public function setDisk($disk)
   {
@@ -162,10 +106,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->disk;
   }
   /**
-   * A list of guest accelerator cards' type and count to use for instances
-   * created from these properties.
-   *
-   * @param AcceleratorConfig[] $guestAccelerator
+   * @param AcceleratorConfig[]
    */
   public function setGuestAccelerator($guestAccelerator)
   {
@@ -179,28 +120,21 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->guestAccelerator;
   }
   /**
-   * KeyRevocationActionType of the instance. Supported options are "STOP" and
-   * "NONE". The default value is "NONE" if it is not specified.
-   *
-   * Accepted values: KEY_REVOCATION_ACTION_TYPE_UNSPECIFIED, NONE, STOP
-   *
-   * @param self::KEY_REVOCATION_ACTION_TYPE_* $keyRevocationActionType
+   * @param string
    */
   public function setKeyRevocationActionType($keyRevocationActionType)
   {
     $this->keyRevocationActionType = $keyRevocationActionType;
   }
   /**
-   * @return self::KEY_REVOCATION_ACTION_TYPE_*
+   * @return string
    */
   public function getKeyRevocationActionType()
   {
     return $this->keyRevocationActionType;
   }
   /**
-   * Labels to apply to instances that are created from these properties.
-   *
-   * @param string[] $labels
+   * @param string[]
    */
   public function setLabels($labels)
   {
@@ -214,10 +148,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->labels;
   }
   /**
-   * The machine type to use for instances that are created from these
-   * properties.
-   *
-   * @param string $machineType
+   * @param string
    */
   public function setMachineType($machineType)
   {
@@ -231,12 +162,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->machineType;
   }
   /**
-   * The metadata key/value pairs to assign to instances that are created from
-   * these properties. These pairs can consist of custom metadata or predefined
-   * keys. See https://cloud.google.com/compute/docs/metadata/overview for more
-   * information.
-   *
-   * @param Metadata $metadata
+   * @param Metadata
    */
   public function setMetadata(Metadata $metadata)
   {
@@ -250,13 +176,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->metadata;
   }
   /**
-   * Minimum cpu/platform to be used by instances. The instance may be scheduled
-   * on the specified or newer cpu/platform. Applicable values are the friendly
-   * names of CPU platforms, such as `minCpuPlatform: Intel Haswell` or
-   * `minCpuPlatform: Intel Sandy Bridge`. For more information, read
-   * https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform.
-   *
-   * @param string $minCpuPlatform
+   * @param string
    */
   public function setMinCpuPlatform($minCpuPlatform)
   {
@@ -270,9 +190,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->minCpuPlatform;
   }
   /**
-   * An array of network access configurations for this interface.
-   *
-   * @param NetworkInterface[] $networkInterface
+   * @param NetworkInterface[]
    */
   public function setNetworkInterface($networkInterface)
   {
@@ -286,10 +204,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->networkInterface;
   }
   /**
-   * Specifies the scheduling options for the instances that are created from
-   * these properties.
-   *
-   * @param Scheduling $scheduling
+   * @param Scheduling
    */
   public function setScheduling(Scheduling $scheduling)
   {
@@ -303,12 +218,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->scheduling;
   }
   /**
-   * A list of service accounts with specified scopes. Access tokens for these
-   * service accounts are available to the instances that are created from these
-   * properties. Use metadata queries to obtain the access tokens for these
-   * instances.
-   *
-   * @param ServiceAccount[] $serviceAccount
+   * @param ServiceAccount[]
    */
   public function setServiceAccount($serviceAccount)
   {
@@ -322,12 +232,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->serviceAccount;
   }
   /**
-   * The source instance used to create this backup. This can be a partial or
-   * full URL to the resource. For example, the following are valid values: -htt
-   * ps://www.googleapis.com/compute/v1/projects/project/zones/zone/instances/in
-   * stance -projects/project/zones/zone/instances/instance
-   *
-   * @param string $sourceInstance
+   * @param string
    */
   public function setSourceInstance($sourceInstance)
   {
@@ -341,12 +246,7 @@ class ComputeInstanceBackupProperties extends \Google\Collection
     return $this->sourceInstance;
   }
   /**
-   * A list of tags to apply to the instances that are created from these
-   * properties. The tags identify valid sources or targets for network
-   * firewalls. The setTags method can modify this list of tags. Each tag within
-   * the list must comply with RFC1035 (https://www.ietf.org/rfc/rfc1035.txt).
-   *
-   * @param Tags $tags
+   * @param Tags
    */
   public function setTags(Tags $tags)
   {

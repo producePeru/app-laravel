@@ -23,20 +23,12 @@ class GoogleCloudDialogflowCxV3ListEnvironmentsResponse extends \Google\Collecti
   protected $environmentsType = GoogleCloudDialogflowCxV3Environment::class;
   protected $environmentsDataType = 'array';
   /**
-   * Token to retrieve the next page of results, or empty if there are no more
-   * results in the list.
-   *
    * @var string
    */
   public $nextPageToken;
 
   /**
-   * The list of environments. There will be a maximum number of items returned
-   * based on the page_size field in the request. The list may in some cases be
-   * empty or contain fewer entries than page_size even if this isn't the last
-   * page.
-   *
-   * @param GoogleCloudDialogflowCxV3Environment[] $environments
+   * @param GoogleCloudDialogflowCxV3Environment[]
    */
   public function setEnvironments($environments)
   {
@@ -50,10 +42,7 @@ class GoogleCloudDialogflowCxV3ListEnvironmentsResponse extends \Google\Collecti
     return $this->environments;
   }
   /**
-   * Token to retrieve the next page of results, or empty if there are no more
-   * results in the list.
-   *
-   * @param string $nextPageToken
+   * @param string
    */
   public function setNextPageToken($nextPageToken)
   {

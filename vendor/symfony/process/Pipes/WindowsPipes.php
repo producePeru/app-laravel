@@ -53,7 +53,7 @@ class WindowsPipes extends AbstractPipes
             set_error_handler(function ($type, $msg) use (&$lastError) { $lastError = $msg; });
             for ($i = 0;; ++$i) {
                 foreach ($pipes as $pipe => $name) {
-                    $file = \sprintf('%s\\sf_proc_%02X.%s', $tmpDir, $i, $name);
+                    $file = sprintf('%s\\sf_proc_%02X.%s', $tmpDir, $i, $name);
 
                     if (!$h = fopen($file.'.lock', 'w')) {
                         if (file_exists($file.'.lock')) {
@@ -88,12 +88,12 @@ class WindowsPipes extends AbstractPipes
         parent::__construct($input);
     }
 
-    public function __serialize(): array
+    public function __sleep(): array
     {
         throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
     }
 
-    public function __unserialize(array $data): void
+    public function __wakeup(): void
     {
         throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
     }

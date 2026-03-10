@@ -20,8 +20,6 @@ namespace Google\Service\DeveloperConnect;
 class Connection extends \Google\Model
 {
   /**
-   * Optional. Allows clients to store small amounts of arbitrary data.
-   *
    * @var string[]
    */
   public $annotations;
@@ -30,32 +28,20 @@ class Connection extends \Google\Model
   protected $bitbucketDataCenterConfigType = BitbucketDataCenterConfig::class;
   protected $bitbucketDataCenterConfigDataType = '';
   /**
-   * Output only. [Output only] Create timestamp
-   *
    * @var string
    */
   public $createTime;
   protected $cryptoKeyConfigType = CryptoKeyConfig::class;
   protected $cryptoKeyConfigDataType = '';
   /**
-   * Output only. [Output only] Delete timestamp
-   *
    * @var string
    */
   public $deleteTime;
   /**
-   * Optional. If disabled is set to true, functionality is disabled for this
-   * connection. Repository based API methods and webhooks processing for
-   * repositories in this connection will be disabled.
-   *
    * @var bool
    */
   public $disabled;
   /**
-   * Optional. This checksum is computed by the server based on the value of
-   * other fields, and may be sent on update and delete requests to ensure the
-   * client has an up-to-date value before proceeding.
-   *
    * @var string
    */
   public $etag;
@@ -72,42 +58,28 @@ class Connection extends \Google\Model
   protected $installationStateType = InstallationState::class;
   protected $installationStateDataType = '';
   /**
-   * Optional. Labels as key value pairs
-   *
    * @var string[]
    */
   public $labels;
   /**
-   * Identifier. The resource name of the connection, in the format
-   * `projects/{project}/locations/{location}/connections/{connection_id}`.
-   *
    * @var string
    */
   public $name;
   /**
-   * Output only. Set to true when the connection is being set up or updated in
-   * the background.
-   *
    * @var bool
    */
   public $reconciling;
   /**
-   * Output only. A system-assigned unique identifier for the Connection.
-   *
    * @var string
    */
   public $uid;
   /**
-   * Output only. [Output only] Update timestamp
-   *
    * @var string
    */
   public $updateTime;
 
   /**
-   * Optional. Allows clients to store small amounts of arbitrary data.
-   *
-   * @param string[] $annotations
+   * @param string[]
    */
   public function setAnnotations($annotations)
   {
@@ -121,9 +93,7 @@ class Connection extends \Google\Model
     return $this->annotations;
   }
   /**
-   * Configuration for connections to an instance of Bitbucket Clouds.
-   *
-   * @param BitbucketCloudConfig $bitbucketCloudConfig
+   * @param BitbucketCloudConfig
    */
   public function setBitbucketCloudConfig(BitbucketCloudConfig $bitbucketCloudConfig)
   {
@@ -137,9 +107,7 @@ class Connection extends \Google\Model
     return $this->bitbucketCloudConfig;
   }
   /**
-   * Configuration for connections to an instance of Bitbucket Data Center.
-   *
-   * @param BitbucketDataCenterConfig $bitbucketDataCenterConfig
+   * @param BitbucketDataCenterConfig
    */
   public function setBitbucketDataCenterConfig(BitbucketDataCenterConfig $bitbucketDataCenterConfig)
   {
@@ -153,9 +121,7 @@ class Connection extends \Google\Model
     return $this->bitbucketDataCenterConfig;
   }
   /**
-   * Output only. [Output only] Create timestamp
-   *
-   * @param string $createTime
+   * @param string
    */
   public function setCreateTime($createTime)
   {
@@ -169,10 +135,7 @@ class Connection extends \Google\Model
     return $this->createTime;
   }
   /**
-   * Optional. The crypto key configuration. This field is used by the Customer-
-   * Managed Encryption Keys (CMEK) feature.
-   *
-   * @param CryptoKeyConfig $cryptoKeyConfig
+   * @param CryptoKeyConfig
    */
   public function setCryptoKeyConfig(CryptoKeyConfig $cryptoKeyConfig)
   {
@@ -186,9 +149,7 @@ class Connection extends \Google\Model
     return $this->cryptoKeyConfig;
   }
   /**
-   * Output only. [Output only] Delete timestamp
-   *
-   * @param string $deleteTime
+   * @param string
    */
   public function setDeleteTime($deleteTime)
   {
@@ -202,11 +163,7 @@ class Connection extends \Google\Model
     return $this->deleteTime;
   }
   /**
-   * Optional. If disabled is set to true, functionality is disabled for this
-   * connection. Repository based API methods and webhooks processing for
-   * repositories in this connection will be disabled.
-   *
-   * @param bool $disabled
+   * @param bool
    */
   public function setDisabled($disabled)
   {
@@ -220,11 +177,7 @@ class Connection extends \Google\Model
     return $this->disabled;
   }
   /**
-   * Optional. This checksum is computed by the server based on the value of
-   * other fields, and may be sent on update and delete requests to ensure the
-   * client has an up-to-date value before proceeding.
-   *
-   * @param string $etag
+   * @param string
    */
   public function setEtag($etag)
   {
@@ -238,11 +191,7 @@ class Connection extends \Google\Model
     return $this->etag;
   }
   /**
-   * Optional. Configuration for the git proxy feature. Enabling the git proxy
-   * allows clients to perform git operations on the repositories linked in the
-   * connection.
-   *
-   * @param GitProxyConfig $gitProxyConfig
+   * @param GitProxyConfig
    */
   public function setGitProxyConfig(GitProxyConfig $gitProxyConfig)
   {
@@ -256,9 +205,7 @@ class Connection extends \Google\Model
     return $this->gitProxyConfig;
   }
   /**
-   * Configuration for connections to github.com.
-   *
-   * @param GitHubConfig $githubConfig
+   * @param GitHubConfig
    */
   public function setGithubConfig(GitHubConfig $githubConfig)
   {
@@ -272,9 +219,7 @@ class Connection extends \Google\Model
     return $this->githubConfig;
   }
   /**
-   * Configuration for connections to an instance of GitHub Enterprise.
-   *
-   * @param GitHubEnterpriseConfig $githubEnterpriseConfig
+   * @param GitHubEnterpriseConfig
    */
   public function setGithubEnterpriseConfig(GitHubEnterpriseConfig $githubEnterpriseConfig)
   {
@@ -288,9 +233,7 @@ class Connection extends \Google\Model
     return $this->githubEnterpriseConfig;
   }
   /**
-   * Configuration for connections to gitlab.com.
-   *
-   * @param GitLabConfig $gitlabConfig
+   * @param GitLabConfig
    */
   public function setGitlabConfig(GitLabConfig $gitlabConfig)
   {
@@ -304,9 +247,7 @@ class Connection extends \Google\Model
     return $this->gitlabConfig;
   }
   /**
-   * Configuration for connections to an instance of GitLab Enterprise.
-   *
-   * @param GitLabEnterpriseConfig $gitlabEnterpriseConfig
+   * @param GitLabEnterpriseConfig
    */
   public function setGitlabEnterpriseConfig(GitLabEnterpriseConfig $gitlabEnterpriseConfig)
   {
@@ -320,9 +261,7 @@ class Connection extends \Google\Model
     return $this->gitlabEnterpriseConfig;
   }
   /**
-   * Output only. Installation state of the Connection.
-   *
-   * @param InstallationState $installationState
+   * @param InstallationState
    */
   public function setInstallationState(InstallationState $installationState)
   {
@@ -336,9 +275,7 @@ class Connection extends \Google\Model
     return $this->installationState;
   }
   /**
-   * Optional. Labels as key value pairs
-   *
-   * @param string[] $labels
+   * @param string[]
    */
   public function setLabels($labels)
   {
@@ -352,10 +289,7 @@ class Connection extends \Google\Model
     return $this->labels;
   }
   /**
-   * Identifier. The resource name of the connection, in the format
-   * `projects/{project}/locations/{location}/connections/{connection_id}`.
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -369,10 +303,7 @@ class Connection extends \Google\Model
     return $this->name;
   }
   /**
-   * Output only. Set to true when the connection is being set up or updated in
-   * the background.
-   *
-   * @param bool $reconciling
+   * @param bool
    */
   public function setReconciling($reconciling)
   {
@@ -386,9 +317,7 @@ class Connection extends \Google\Model
     return $this->reconciling;
   }
   /**
-   * Output only. A system-assigned unique identifier for the Connection.
-   *
-   * @param string $uid
+   * @param string
    */
   public function setUid($uid)
   {
@@ -402,9 +331,7 @@ class Connection extends \Google\Model
     return $this->uid;
   }
   /**
-   * Output only. [Output only] Update timestamp
-   *
-   * @param string $updateTime
+   * @param string
    */
   public function setUpdateTime($updateTime)
   {

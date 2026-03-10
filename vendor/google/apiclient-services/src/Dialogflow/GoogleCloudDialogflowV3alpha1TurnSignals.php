@@ -21,81 +21,52 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
 {
   protected $collection_key = 'webhookStatuses';
   /**
-   * Whether agent responded with LiveAgentHandoff fulfillment.
-   *
    * @var bool
    */
   public $agentEscalated;
   /**
-   * Whether user was using DTMF input.
-   *
    * @var bool
    */
   public $dtmfUsed;
   /**
-   * Failure reasons of the turn.
-   *
    * @var string[]
    */
   public $failureReasons;
   /**
-   * Whether NLU predicted NO_MATCH.
-   *
    * @var bool
    */
   public $noMatch;
   /**
-   * Whether user provided no input.
-   *
    * @var bool
    */
   public $noUserInput;
   /**
-   * Whether turn resulted in End Session page.
-   *
    * @var bool
    */
   public $reachedEndPage;
   /**
-   * Sentiment magnitude of the user utterance if
-   * [sentiment](https://cloud.google.com/dialogflow/cx/docs/concept/sentiment)
-   * was enabled.
-   *
    * @var float
    */
   public $sentimentMagnitude;
   /**
-   * Sentiment score of the user utterance if
-   * [sentiment](https://cloud.google.com/dialogflow/cx/docs/concept/sentiment)
-   * was enabled.
-   *
    * @var float
    */
   public $sentimentScore;
   /**
-   * Whether agent has triggered the event corresponding to user abandoning the
-   * conversation.
-   *
    * @var bool
    */
   public $triggeredAbandonmentEvent;
   /**
-   * Whether user was specifically asking for a live agent.
-   *
    * @var bool
    */
   public $userEscalated;
   /**
-   * Human-readable statuses of the webhooks triggered during this turn.
-   *
    * @var string[]
    */
   public $webhookStatuses;
 
   /**
-   * Whether agent responded with LiveAgentHandoff fulfillment.
-   *
-   * @param bool $agentEscalated
+   * @param bool
    */
   public function setAgentEscalated($agentEscalated)
   {
@@ -109,9 +80,7 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
     return $this->agentEscalated;
   }
   /**
-   * Whether user was using DTMF input.
-   *
-   * @param bool $dtmfUsed
+   * @param bool
    */
   public function setDtmfUsed($dtmfUsed)
   {
@@ -125,9 +94,7 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
     return $this->dtmfUsed;
   }
   /**
-   * Failure reasons of the turn.
-   *
-   * @param string[] $failureReasons
+   * @param string[]
    */
   public function setFailureReasons($failureReasons)
   {
@@ -141,9 +108,7 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
     return $this->failureReasons;
   }
   /**
-   * Whether NLU predicted NO_MATCH.
-   *
-   * @param bool $noMatch
+   * @param bool
    */
   public function setNoMatch($noMatch)
   {
@@ -157,9 +122,7 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
     return $this->noMatch;
   }
   /**
-   * Whether user provided no input.
-   *
-   * @param bool $noUserInput
+   * @param bool
    */
   public function setNoUserInput($noUserInput)
   {
@@ -173,9 +136,7 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
     return $this->noUserInput;
   }
   /**
-   * Whether turn resulted in End Session page.
-   *
-   * @param bool $reachedEndPage
+   * @param bool
    */
   public function setReachedEndPage($reachedEndPage)
   {
@@ -189,11 +150,7 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
     return $this->reachedEndPage;
   }
   /**
-   * Sentiment magnitude of the user utterance if
-   * [sentiment](https://cloud.google.com/dialogflow/cx/docs/concept/sentiment)
-   * was enabled.
-   *
-   * @param float $sentimentMagnitude
+   * @param float
    */
   public function setSentimentMagnitude($sentimentMagnitude)
   {
@@ -207,11 +164,7 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
     return $this->sentimentMagnitude;
   }
   /**
-   * Sentiment score of the user utterance if
-   * [sentiment](https://cloud.google.com/dialogflow/cx/docs/concept/sentiment)
-   * was enabled.
-   *
-   * @param float $sentimentScore
+   * @param float
    */
   public function setSentimentScore($sentimentScore)
   {
@@ -225,10 +178,7 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
     return $this->sentimentScore;
   }
   /**
-   * Whether agent has triggered the event corresponding to user abandoning the
-   * conversation.
-   *
-   * @param bool $triggeredAbandonmentEvent
+   * @param bool
    */
   public function setTriggeredAbandonmentEvent($triggeredAbandonmentEvent)
   {
@@ -242,9 +192,7 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
     return $this->triggeredAbandonmentEvent;
   }
   /**
-   * Whether user was specifically asking for a live agent.
-   *
-   * @param bool $userEscalated
+   * @param bool
    */
   public function setUserEscalated($userEscalated)
   {
@@ -258,9 +206,7 @@ class GoogleCloudDialogflowV3alpha1TurnSignals extends \Google\Collection
     return $this->userEscalated;
   }
   /**
-   * Human-readable statuses of the webhooks triggered during this turn.
-   *
-   * @param string[] $webhookStatuses
+   * @param string[]
    */
   public function setWebhookStatuses($webhookStatuses)
   {

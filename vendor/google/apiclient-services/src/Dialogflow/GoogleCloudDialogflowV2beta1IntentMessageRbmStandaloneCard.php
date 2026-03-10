@@ -19,50 +19,19 @@ namespace Google\Service\Dialogflow;
 
 class GoogleCloudDialogflowV2beta1IntentMessageRbmStandaloneCard extends \Google\Model
 {
-  /**
-   * Not specified.
-   */
-  public const CARD_ORIENTATION_CARD_ORIENTATION_UNSPECIFIED = 'CARD_ORIENTATION_UNSPECIFIED';
-  /**
-   * Horizontal layout.
-   */
-  public const CARD_ORIENTATION_HORIZONTAL = 'HORIZONTAL';
-  /**
-   * Vertical layout.
-   */
-  public const CARD_ORIENTATION_VERTICAL = 'VERTICAL';
-  /**
-   * Not specified.
-   */
-  public const THUMBNAIL_IMAGE_ALIGNMENT_THUMBNAIL_IMAGE_ALIGNMENT_UNSPECIFIED = 'THUMBNAIL_IMAGE_ALIGNMENT_UNSPECIFIED';
-  /**
-   * Thumbnail preview is left-aligned.
-   */
-  public const THUMBNAIL_IMAGE_ALIGNMENT_LEFT = 'LEFT';
-  /**
-   * Thumbnail preview is right-aligned.
-   */
-  public const THUMBNAIL_IMAGE_ALIGNMENT_RIGHT = 'RIGHT';
   protected $cardContentType = GoogleCloudDialogflowV2beta1IntentMessageRbmCardContent::class;
   protected $cardContentDataType = '';
   /**
-   * Required. Orientation of the card.
-   *
    * @var string
    */
   public $cardOrientation;
   /**
-   * Required if orientation is horizontal. Image preview alignment for
-   * standalone cards with horizontal layout.
-   *
    * @var string
    */
   public $thumbnailImageAlignment;
 
   /**
-   * Required. Card content.
-   *
-   * @param GoogleCloudDialogflowV2beta1IntentMessageRbmCardContent $cardContent
+   * @param GoogleCloudDialogflowV2beta1IntentMessageRbmCardContent
    */
   public function setCardContent(GoogleCloudDialogflowV2beta1IntentMessageRbmCardContent $cardContent)
   {
@@ -76,37 +45,28 @@ class GoogleCloudDialogflowV2beta1IntentMessageRbmStandaloneCard extends \Google
     return $this->cardContent;
   }
   /**
-   * Required. Orientation of the card.
-   *
-   * Accepted values: CARD_ORIENTATION_UNSPECIFIED, HORIZONTAL, VERTICAL
-   *
-   * @param self::CARD_ORIENTATION_* $cardOrientation
+   * @param string
    */
   public function setCardOrientation($cardOrientation)
   {
     $this->cardOrientation = $cardOrientation;
   }
   /**
-   * @return self::CARD_ORIENTATION_*
+   * @return string
    */
   public function getCardOrientation()
   {
     return $this->cardOrientation;
   }
   /**
-   * Required if orientation is horizontal. Image preview alignment for
-   * standalone cards with horizontal layout.
-   *
-   * Accepted values: THUMBNAIL_IMAGE_ALIGNMENT_UNSPECIFIED, LEFT, RIGHT
-   *
-   * @param self::THUMBNAIL_IMAGE_ALIGNMENT_* $thumbnailImageAlignment
+   * @param string
    */
   public function setThumbnailImageAlignment($thumbnailImageAlignment)
   {
     $this->thumbnailImageAlignment = $thumbnailImageAlignment;
   }
   /**
-   * @return self::THUMBNAIL_IMAGE_ALIGNMENT_*
+   * @return string
    */
   public function getThumbnailImageAlignment()
   {

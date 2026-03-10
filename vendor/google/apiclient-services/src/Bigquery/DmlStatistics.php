@@ -20,32 +20,20 @@ namespace Google\Service\Bigquery;
 class DmlStatistics extends \Google\Model
 {
   /**
-   * Output only. Number of deleted Rows. populated by DML DELETE, MERGE and
-   * TRUNCATE statements.
-   *
    * @var string
    */
   public $deletedRowCount;
   /**
-   * Output only. Number of inserted Rows. Populated by DML INSERT and MERGE
-   * statements
-   *
    * @var string
    */
   public $insertedRowCount;
   /**
-   * Output only. Number of updated Rows. Populated by DML UPDATE and MERGE
-   * statements.
-   *
    * @var string
    */
   public $updatedRowCount;
 
   /**
-   * Output only. Number of deleted Rows. populated by DML DELETE, MERGE and
-   * TRUNCATE statements.
-   *
-   * @param string $deletedRowCount
+   * @param string
    */
   public function setDeletedRowCount($deletedRowCount)
   {
@@ -59,10 +47,7 @@ class DmlStatistics extends \Google\Model
     return $this->deletedRowCount;
   }
   /**
-   * Output only. Number of inserted Rows. Populated by DML INSERT and MERGE
-   * statements
-   *
-   * @param string $insertedRowCount
+   * @param string
    */
   public function setInsertedRowCount($insertedRowCount)
   {
@@ -76,10 +61,7 @@ class DmlStatistics extends \Google\Model
     return $this->insertedRowCount;
   }
   /**
-   * Output only. Number of updated Rows. Populated by DML UPDATE and MERGE
-   * statements.
-   *
-   * @param string $updatedRowCount
+   * @param string
    */
   public function setUpdatedRowCount($updatedRowCount)
   {

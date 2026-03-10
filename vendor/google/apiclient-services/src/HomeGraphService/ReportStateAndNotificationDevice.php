@@ -20,28 +20,16 @@ namespace Google\Service\HomeGraphService;
 class ReportStateAndNotificationDevice extends \Google\Model
 {
   /**
-   * Notifications metadata for devices. See the **Device NOTIFICATIONS**
-   * section of the individual trait [reference
-   * guides](https://developers.home.google.com/cloud-to-cloud/traits).
-   *
    * @var array[]
    */
   public $notifications;
   /**
-   * States of devices to update. See the **Device STATES** section of the
-   * individual trait [reference
-   * guides](https://developers.home.google.com/cloud-to-cloud/traits).
-   *
    * @var array[]
    */
   public $states;
 
   /**
-   * Notifications metadata for devices. See the **Device NOTIFICATIONS**
-   * section of the individual trait [reference
-   * guides](https://developers.home.google.com/cloud-to-cloud/traits).
-   *
-   * @param array[] $notifications
+   * @param array[]
    */
   public function setNotifications($notifications)
   {
@@ -55,11 +43,7 @@ class ReportStateAndNotificationDevice extends \Google\Model
     return $this->notifications;
   }
   /**
-   * States of devices to update. See the **Device STATES** section of the
-   * individual trait [reference
-   * guides](https://developers.home.google.com/cloud-to-cloud/traits).
-   *
-   * @param array[] $states
+   * @param array[]
    */
   public function setStates($states)
   {

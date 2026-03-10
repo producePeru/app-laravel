@@ -3,7 +3,7 @@
 /*
  * This file is part of Psy Shell.
  *
- * (c) 2012-2025 Justin Hileman
+ * (c) 2012-2023 Justin Hileman
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -30,7 +30,6 @@ class ProcOutputPager extends StreamOutput implements OutputPager
     /** @var resource */
     private $stream;
     private string $cmd;
-    private bool $closedEarly = false;
 
     /**
      * Constructor.
@@ -54,23 +53,12 @@ class ProcOutputPager extends StreamOutput implements OutputPager
      */
     public function doWrite($message, $newline): void
     {
-        // If the pager was closed early (user quit), don't reopen it.
-        if ($this->closedEarly) {
-            return;
-        }
-
         $pipe = $this->getPipe();
         if (false === @\fwrite($pipe, $message.($newline ? \PHP_EOL : ''))) {
             // @codeCoverageIgnoreStart
-            // When the message is sufficiently long, writing to the pipe fails
-            // if the pager process is closed before the entire message is read.
-            //
-            // This is a normal condition, so we close the pipe and ignore any
-            // further writes until the next paging session.
+            // should never happen
             $this->close();
-            $this->closedEarly = true;
-
-            return;
+            throw new \RuntimeException('Unable to write output');
             // @codeCoverageIgnoreEnd
         }
 
@@ -95,7 +83,6 @@ class ProcOutputPager extends StreamOutput implements OutputPager
 
         $this->pipe = null;
         $this->proc = null;
-        $this->closedEarly = false;
     }
 
     /**

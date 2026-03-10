@@ -25,9 +25,7 @@ class RenderMetadata extends \Google\Model
   protected $customDataType = '';
 
   /**
-   * Output only. Metadata associated with rendering for Cloud Run.
-   *
-   * @param CloudRunRenderMetadata $cloudRun
+   * @param CloudRunRenderMetadata
    */
   public function setCloudRun(CloudRunRenderMetadata $cloudRun)
   {
@@ -41,9 +39,7 @@ class RenderMetadata extends \Google\Model
     return $this->cloudRun;
   }
   /**
-   * Output only. Custom metadata provided by user-defined render operation.
-   *
-   * @param CustomMetadata $custom
+   * @param CustomMetadata
    */
   public function setCustom(CustomMetadata $custom)
   {

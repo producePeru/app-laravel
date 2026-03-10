@@ -20,72 +20,36 @@ namespace Google\Service\SQLAdmin;
 class PointInTimeRestoreContext extends \Google\Model
 {
   /**
-   * Optional. The name of the allocated IP range for the internal IP Cloud SQL
-   * instance. For example: "google-managed-services-default". If you set this,
-   * then Cloud SQL creates the IP address for the cloned instance in the
-   * allocated range. This range must comply with [RFC
-   * 1035](https://tools.ietf.org/html/rfc1035) standards. Specifically, the
-   * name must be 1-63 characters long and match the regular expression
-   * [a-z]([-a-z0-9]*[a-z0-9])?. Reserved for future use.
-   *
    * @var string
    */
   public $allocatedIpRange;
   /**
-   * The Backup and Disaster Recovery (DR) Service Datasource URI. Format: proje
-   * cts/{project}/locations/{region}/backupVaults/{backupvault}/dataSources/{da
-   * tasource}.
-   *
    * @var string
    */
   public $datasource;
   /**
-   * Required. The date and time to which you want to restore the instance.
-   *
    * @var string
    */
   public $pointInTime;
   /**
-   * Optional. Point-in-time recovery of a regional instance in the specified
-   * zones. If not specified, clone to the same secondary zone as the source
-   * instance. This value cannot be the same as the preferred_zone field.
-   *
    * @var string
    */
   public $preferredSecondaryZone;
   /**
-   * Optional. Point-in-time recovery of an instance to the specified zone. If
-   * no zone is specified, then clone to the same primary zone as the source
-   * instance.
-   *
    * @var string
    */
   public $preferredZone;
   /**
-   * Optional. The resource link for the VPC network from which the Cloud SQL
-   * instance is accessible for private IP. For example,
-   * `/projects/myProject/global/networks/default`.
-   *
    * @var string
    */
   public $privateNetwork;
   /**
-   * Target instance name.
-   *
    * @var string
    */
   public $targetInstance;
 
   /**
-   * Optional. The name of the allocated IP range for the internal IP Cloud SQL
-   * instance. For example: "google-managed-services-default". If you set this,
-   * then Cloud SQL creates the IP address for the cloned instance in the
-   * allocated range. This range must comply with [RFC
-   * 1035](https://tools.ietf.org/html/rfc1035) standards. Specifically, the
-   * name must be 1-63 characters long and match the regular expression
-   * [a-z]([-a-z0-9]*[a-z0-9])?. Reserved for future use.
-   *
-   * @param string $allocatedIpRange
+   * @param string
    */
   public function setAllocatedIpRange($allocatedIpRange)
   {
@@ -99,11 +63,7 @@ class PointInTimeRestoreContext extends \Google\Model
     return $this->allocatedIpRange;
   }
   /**
-   * The Backup and Disaster Recovery (DR) Service Datasource URI. Format: proje
-   * cts/{project}/locations/{region}/backupVaults/{backupvault}/dataSources/{da
-   * tasource}.
-   *
-   * @param string $datasource
+   * @param string
    */
   public function setDatasource($datasource)
   {
@@ -117,9 +77,7 @@ class PointInTimeRestoreContext extends \Google\Model
     return $this->datasource;
   }
   /**
-   * Required. The date and time to which you want to restore the instance.
-   *
-   * @param string $pointInTime
+   * @param string
    */
   public function setPointInTime($pointInTime)
   {
@@ -133,11 +91,7 @@ class PointInTimeRestoreContext extends \Google\Model
     return $this->pointInTime;
   }
   /**
-   * Optional. Point-in-time recovery of a regional instance in the specified
-   * zones. If not specified, clone to the same secondary zone as the source
-   * instance. This value cannot be the same as the preferred_zone field.
-   *
-   * @param string $preferredSecondaryZone
+   * @param string
    */
   public function setPreferredSecondaryZone($preferredSecondaryZone)
   {
@@ -151,11 +105,7 @@ class PointInTimeRestoreContext extends \Google\Model
     return $this->preferredSecondaryZone;
   }
   /**
-   * Optional. Point-in-time recovery of an instance to the specified zone. If
-   * no zone is specified, then clone to the same primary zone as the source
-   * instance.
-   *
-   * @param string $preferredZone
+   * @param string
    */
   public function setPreferredZone($preferredZone)
   {
@@ -169,11 +119,7 @@ class PointInTimeRestoreContext extends \Google\Model
     return $this->preferredZone;
   }
   /**
-   * Optional. The resource link for the VPC network from which the Cloud SQL
-   * instance is accessible for private IP. For example,
-   * `/projects/myProject/global/networks/default`.
-   *
-   * @param string $privateNetwork
+   * @param string
    */
   public function setPrivateNetwork($privateNetwork)
   {
@@ -187,9 +133,7 @@ class PointInTimeRestoreContext extends \Google\Model
     return $this->privateNetwork;
   }
   /**
-   * Target instance name.
-   *
-   * @param string $targetInstance
+   * @param string
    */
   public function setTargetInstance($targetInstance)
   {

@@ -23,28 +23,20 @@ class ResourceFilter extends \Google\Collection
   protected $gceInstanceFilterType = GceInstanceFilter::class;
   protected $gceInstanceFilterDataType = '';
   /**
-   * The label used for filter resource
-   *
    * @var string[]
    */
   public $inclusionLabels;
   /**
-   * The id pattern for filter resource
-   *
    * @var string[]
    */
   public $resourceIdPatterns;
   /**
-   * The scopes of evaluation resource
-   *
    * @var string[]
    */
   public $scopes;
 
   /**
-   * Filter compute engine resource
-   *
-   * @param GceInstanceFilter $gceInstanceFilter
+   * @param GceInstanceFilter
    */
   public function setGceInstanceFilter(GceInstanceFilter $gceInstanceFilter)
   {
@@ -58,9 +50,7 @@ class ResourceFilter extends \Google\Collection
     return $this->gceInstanceFilter;
   }
   /**
-   * The label used for filter resource
-   *
-   * @param string[] $inclusionLabels
+   * @param string[]
    */
   public function setInclusionLabels($inclusionLabels)
   {
@@ -74,9 +64,7 @@ class ResourceFilter extends \Google\Collection
     return $this->inclusionLabels;
   }
   /**
-   * The id pattern for filter resource
-   *
-   * @param string[] $resourceIdPatterns
+   * @param string[]
    */
   public function setResourceIdPatterns($resourceIdPatterns)
   {
@@ -90,9 +78,7 @@ class ResourceFilter extends \Google\Collection
     return $this->resourceIdPatterns;
   }
   /**
-   * The scopes of evaluation resource
-   *
-   * @param string[] $scopes
+   * @param string[]
    */
   public function setScopes($scopes)
   {
