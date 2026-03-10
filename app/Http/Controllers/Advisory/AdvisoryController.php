@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAdvisoryRequest;
 use Illuminate\Http\Request;
 use App\Models\Advisory;
+use App\Models\Formalization20;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class AdvisoryController extends Controller
 {
@@ -136,5 +138,41 @@ class AdvisoryController extends Controller
                 'status'  => 500,
             ], 500);
         }
+    }
+
+    public function updateRucF20(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'rowId' => 'required|integer|exists:formalizations20,id',
+            'ruc' => [
+                'required',
+                'digits:11',
+                'regex:/^20\d{9}$/',
+                'unique:formalizations20,ruc,' . $request->rowId
+            ]
+        ], [
+            'ruc.required' => 'El RUC es obligatorio.',
+            'ruc.digits' => 'El RUC debe tener exactamente 11 dígitos.',
+            'ruc.regex' => 'El RUC debe empezar con 20.',
+            'ruc.unique' => 'Este RUC ya se encuentra registrado en el sistema.'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 422,
+                'message' => $validator->errors()->first()
+            ]);
+        }
+
+        $formalization = Formalization20::findOrFail($request->rowId);
+
+        $formalization->ruc = $request->ruc;
+        $formalization->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'RUC actualizado correctamente.',
+            'data' => $formalization
+        ]);
     }
 }

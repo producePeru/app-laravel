@@ -8,6 +8,8 @@ Route::controller(AdvisoryController::class)->group(function () {
     Route::post('create', 'store');
 
     Route::put('update-values-advisory/{id}', 'updateValuesAdvisory');
+
+    Route::put('update-ruc-f20', 'updateRucF20');
 });
 
 
