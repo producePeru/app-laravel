@@ -7,6 +7,7 @@ use App\Http\Controllers\Event\CyberwowParticipantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Event\PublicEventsController;
 use App\Http\Controllers\Fair\FairController;
+use App\Http\Controllers\Page\InvitadoController;
 use App\Http\Controllers\Training\TrainingController;
 
 Route::controller(PublicEventsController::class)->group(function () {
@@ -75,6 +76,21 @@ Route::controller(CyberWowController::class)->group(function () {
     Route::GET('cyber-pnte/{idWow}', 'offertsCyberWow');
 
     Route::GET('categories-cyber-wow/{idWow}', 'categoriesCyberWow');
+});
+
+Route::controller(InvitadoController::class)->group(function () {
+
+    Route::GET('invitados', 'index');
+
+    Route::POST('invitados', 'store');
+
+    Route::PUT('invitados/{invitado}', 'update');
+
+    Route::DELETE('invitados/{invitado}', 'destroy');
+
+    Route::GET('invitado/{slug}', 'show');
+
+    Route::PATCH('invitado/{invitado:slug}/confirmar', 'confirmar');
 });
 
 // public
