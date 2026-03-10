@@ -28,11 +28,6 @@ class GoogleCloudDialogflowCxV3QueryInput extends \Google\Model
   protected $intentType = GoogleCloudDialogflowCxV3IntentInput::class;
   protected $intentDataType = '';
   /**
-   * Required. The language of the input. See [Language
-   * Support](https://cloud.google.com/dialogflow/cx/docs/reference/language)
-   * for a list of the currently supported language codes. Note that queries in
-   * the same session do not necessarily need to specify the same language.
-   *
    * @var string
    */
   public $languageCode;
@@ -42,9 +37,7 @@ class GoogleCloudDialogflowCxV3QueryInput extends \Google\Model
   protected $toolCallResultDataType = '';
 
   /**
-   * The natural language speech audio to be processed.
-   *
-   * @param GoogleCloudDialogflowCxV3AudioInput $audio
+   * @param GoogleCloudDialogflowCxV3AudioInput
    */
   public function setAudio(GoogleCloudDialogflowCxV3AudioInput $audio)
   {
@@ -58,9 +51,7 @@ class GoogleCloudDialogflowCxV3QueryInput extends \Google\Model
     return $this->audio;
   }
   /**
-   * The DTMF event to be handled.
-   *
-   * @param GoogleCloudDialogflowCxV3DtmfInput $dtmf
+   * @param GoogleCloudDialogflowCxV3DtmfInput
    */
   public function setDtmf(GoogleCloudDialogflowCxV3DtmfInput $dtmf)
   {
@@ -74,9 +65,7 @@ class GoogleCloudDialogflowCxV3QueryInput extends \Google\Model
     return $this->dtmf;
   }
   /**
-   * The event to be triggered.
-   *
-   * @param GoogleCloudDialogflowCxV3EventInput $event
+   * @param GoogleCloudDialogflowCxV3EventInput
    */
   public function setEvent(GoogleCloudDialogflowCxV3EventInput $event)
   {
@@ -90,9 +79,7 @@ class GoogleCloudDialogflowCxV3QueryInput extends \Google\Model
     return $this->event;
   }
   /**
-   * The intent to be triggered.
-   *
-   * @param GoogleCloudDialogflowCxV3IntentInput $intent
+   * @param GoogleCloudDialogflowCxV3IntentInput
    */
   public function setIntent(GoogleCloudDialogflowCxV3IntentInput $intent)
   {
@@ -106,12 +93,7 @@ class GoogleCloudDialogflowCxV3QueryInput extends \Google\Model
     return $this->intent;
   }
   /**
-   * Required. The language of the input. See [Language
-   * Support](https://cloud.google.com/dialogflow/cx/docs/reference/language)
-   * for a list of the currently supported language codes. Note that queries in
-   * the same session do not necessarily need to specify the same language.
-   *
-   * @param string $languageCode
+   * @param string
    */
   public function setLanguageCode($languageCode)
   {
@@ -125,9 +107,7 @@ class GoogleCloudDialogflowCxV3QueryInput extends \Google\Model
     return $this->languageCode;
   }
   /**
-   * The natural language text to be processed.
-   *
-   * @param GoogleCloudDialogflowCxV3TextInput $text
+   * @param GoogleCloudDialogflowCxV3TextInput
    */
   public function setText(GoogleCloudDialogflowCxV3TextInput $text)
   {
@@ -141,9 +121,7 @@ class GoogleCloudDialogflowCxV3QueryInput extends \Google\Model
     return $this->text;
   }
   /**
-   * The results of a tool executed by the client.
-   *
-   * @param GoogleCloudDialogflowCxV3ToolCallResult $toolCallResult
+   * @param GoogleCloudDialogflowCxV3ToolCallResult
    */
   public function setToolCallResult(GoogleCloudDialogflowCxV3ToolCallResult $toolCallResult)
   {

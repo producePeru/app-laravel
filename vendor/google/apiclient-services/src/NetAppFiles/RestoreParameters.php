@@ -20,25 +20,16 @@ namespace Google\Service\NetAppFiles;
 class RestoreParameters extends \Google\Model
 {
   /**
-   * Full name of the backup resource. Format: projects/{project}/locations/{loc
-   * ation}/backupVaults/{backup_vault_id}/backups/{backup_id}
-   *
    * @var string
    */
   public $sourceBackup;
   /**
-   * Full name of the snapshot resource. Format: projects/{project}/locations/{l
-   * ocation}/volumes/{volume}/snapshots/{snapshot}
-   *
    * @var string
    */
   public $sourceSnapshot;
 
   /**
-   * Full name of the backup resource. Format: projects/{project}/locations/{loc
-   * ation}/backupVaults/{backup_vault_id}/backups/{backup_id}
-   *
-   * @param string $sourceBackup
+   * @param string
    */
   public function setSourceBackup($sourceBackup)
   {
@@ -52,10 +43,7 @@ class RestoreParameters extends \Google\Model
     return $this->sourceBackup;
   }
   /**
-   * Full name of the snapshot resource. Format: projects/{project}/locations/{l
-   * ocation}/volumes/{volume}/snapshots/{snapshot}
-   *
-   * @param string $sourceSnapshot
+   * @param string
    */
   public function setSourceSnapshot($sourceSnapshot)
   {

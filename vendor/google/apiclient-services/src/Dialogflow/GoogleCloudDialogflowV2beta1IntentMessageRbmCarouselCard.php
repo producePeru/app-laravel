@@ -19,33 +19,16 @@ namespace Google\Service\Dialogflow;
 
 class GoogleCloudDialogflowV2beta1IntentMessageRbmCarouselCard extends \Google\Collection
 {
-  /**
-   * Not specified.
-   */
-  public const CARD_WIDTH_CARD_WIDTH_UNSPECIFIED = 'CARD_WIDTH_UNSPECIFIED';
-  /**
-   * 120 DP. Note that tall media cannot be used.
-   */
-  public const CARD_WIDTH_SMALL = 'SMALL';
-  /**
-   * 232 DP.
-   */
-  public const CARD_WIDTH_MEDIUM = 'MEDIUM';
   protected $collection_key = 'cardContents';
   protected $cardContentsType = GoogleCloudDialogflowV2beta1IntentMessageRbmCardContent::class;
   protected $cardContentsDataType = 'array';
   /**
-   * Required. The width of the cards in the carousel.
-   *
    * @var string
    */
   public $cardWidth;
 
   /**
-   * Required. The cards in the carousel. A carousel must have at least 2 cards
-   * and at most 10.
-   *
-   * @param GoogleCloudDialogflowV2beta1IntentMessageRbmCardContent[] $cardContents
+   * @param GoogleCloudDialogflowV2beta1IntentMessageRbmCardContent[]
    */
   public function setCardContents($cardContents)
   {
@@ -59,18 +42,14 @@ class GoogleCloudDialogflowV2beta1IntentMessageRbmCarouselCard extends \Google\C
     return $this->cardContents;
   }
   /**
-   * Required. The width of the cards in the carousel.
-   *
-   * Accepted values: CARD_WIDTH_UNSPECIFIED, SMALL, MEDIUM
-   *
-   * @param self::CARD_WIDTH_* $cardWidth
+   * @param string
    */
   public function setCardWidth($cardWidth)
   {
     $this->cardWidth = $cardWidth;
   }
   /**
-   * @return self::CARD_WIDTH_*
+   * @return string
    */
   public function getCardWidth()
   {

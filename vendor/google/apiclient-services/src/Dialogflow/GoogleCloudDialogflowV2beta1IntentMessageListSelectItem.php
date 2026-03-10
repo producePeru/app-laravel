@@ -20,8 +20,6 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2beta1IntentMessageListSelectItem extends \Google\Model
 {
   /**
-   * Optional. The main text describing the item.
-   *
    * @var string
    */
   public $description;
@@ -30,16 +28,12 @@ class GoogleCloudDialogflowV2beta1IntentMessageListSelectItem extends \Google\Mo
   protected $infoType = GoogleCloudDialogflowV2beta1IntentMessageSelectItemInfo::class;
   protected $infoDataType = '';
   /**
-   * Required. The title of the list item.
-   *
    * @var string
    */
   public $title;
 
   /**
-   * Optional. The main text describing the item.
-   *
-   * @param string $description
+   * @param string
    */
   public function setDescription($description)
   {
@@ -53,9 +47,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageListSelectItem extends \Google\Mo
     return $this->description;
   }
   /**
-   * Optional. The image to display.
-   *
-   * @param GoogleCloudDialogflowV2beta1IntentMessageImage $image
+   * @param GoogleCloudDialogflowV2beta1IntentMessageImage
    */
   public function setImage(GoogleCloudDialogflowV2beta1IntentMessageImage $image)
   {
@@ -69,9 +61,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageListSelectItem extends \Google\Mo
     return $this->image;
   }
   /**
-   * Required. Additional information about this option.
-   *
-   * @param GoogleCloudDialogflowV2beta1IntentMessageSelectItemInfo $info
+   * @param GoogleCloudDialogflowV2beta1IntentMessageSelectItemInfo
    */
   public function setInfo(GoogleCloudDialogflowV2beta1IntentMessageSelectItemInfo $info)
   {
@@ -85,9 +75,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageListSelectItem extends \Google\Mo
     return $this->info;
   }
   /**
-   * Required. The title of the list item.
-   *
-   * @param string $title
+   * @param string
    */
   public function setTitle($title)
   {

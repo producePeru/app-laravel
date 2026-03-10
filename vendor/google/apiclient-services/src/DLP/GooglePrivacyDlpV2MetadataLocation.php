@@ -19,27 +19,15 @@ namespace Google\Service\DLP;
 
 class GooglePrivacyDlpV2MetadataLocation extends \Google\Model
 {
-  /**
-   * Unused
-   */
-  public const TYPE_METADATATYPE_UNSPECIFIED = 'METADATATYPE_UNSPECIFIED';
-  /**
-   * General file metadata provided by Cloud Storage.
-   */
-  public const TYPE_STORAGE_METADATA = 'STORAGE_METADATA';
   protected $storageLabelType = GooglePrivacyDlpV2StorageMetadataLabel::class;
   protected $storageLabelDataType = '';
   /**
-   * Type of metadata containing the finding.
-   *
    * @var string
    */
   public $type;
 
   /**
-   * Storage metadata.
-   *
-   * @param GooglePrivacyDlpV2StorageMetadataLabel $storageLabel
+   * @param GooglePrivacyDlpV2StorageMetadataLabel
    */
   public function setStorageLabel(GooglePrivacyDlpV2StorageMetadataLabel $storageLabel)
   {
@@ -53,18 +41,14 @@ class GooglePrivacyDlpV2MetadataLocation extends \Google\Model
     return $this->storageLabel;
   }
   /**
-   * Type of metadata containing the finding.
-   *
-   * Accepted values: METADATATYPE_UNSPECIFIED, STORAGE_METADATA
-   *
-   * @param self::TYPE_* $type
+   * @param string
    */
   public function setType($type)
   {
     $this->type = $type;
   }
   /**
-   * @return self::TYPE_*
+   * @return string
    */
   public function getType()
   {

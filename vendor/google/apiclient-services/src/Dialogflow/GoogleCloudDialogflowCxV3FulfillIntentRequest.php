@@ -27,9 +27,7 @@ class GoogleCloudDialogflowCxV3FulfillIntentRequest extends \Google\Model
   protected $outputAudioConfigDataType = '';
 
   /**
-   * The matched intent/event to fulfill.
-   *
-   * @param GoogleCloudDialogflowCxV3Match $match
+   * @param GoogleCloudDialogflowCxV3Match
    */
   public function setMatch(GoogleCloudDialogflowCxV3Match $match)
   {
@@ -43,10 +41,7 @@ class GoogleCloudDialogflowCxV3FulfillIntentRequest extends \Google\Model
     return $this->match;
   }
   /**
-   * Must be same as the corresponding MatchIntent request, otherwise the
-   * behavior is undefined.
-   *
-   * @param GoogleCloudDialogflowCxV3MatchIntentRequest $matchIntentRequest
+   * @param GoogleCloudDialogflowCxV3MatchIntentRequest
    */
   public function setMatchIntentRequest(GoogleCloudDialogflowCxV3MatchIntentRequest $matchIntentRequest)
   {
@@ -60,9 +55,7 @@ class GoogleCloudDialogflowCxV3FulfillIntentRequest extends \Google\Model
     return $this->matchIntentRequest;
   }
   /**
-   * Instructs the speech synthesizer how to generate output audio.
-   *
-   * @param GoogleCloudDialogflowCxV3OutputAudioConfig $outputAudioConfig
+   * @param GoogleCloudDialogflowCxV3OutputAudioConfig
    */
   public function setOutputAudioConfig(GoogleCloudDialogflowCxV3OutputAudioConfig $outputAudioConfig)
   {

@@ -20,48 +20,24 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2SpeechWordInfo extends \Google\Model
 {
   /**
-   * The Speech confidence between 0.0 and 1.0 for this word. A higher number
-   * indicates an estimated greater likelihood that the recognized word is
-   * correct. The default of 0.0 is a sentinel value indicating that confidence
-   * was not set. This field is not guaranteed to be fully stable over time for
-   * the same audio input. Users should also not rely on it to always be
-   * provided.
-   *
    * @var float
    */
   public $confidence;
   /**
-   * Time offset relative to the beginning of the audio that corresponds to the
-   * end of the spoken word. This is an experimental feature and the accuracy of
-   * the time offset can vary.
-   *
    * @var string
    */
   public $endOffset;
   /**
-   * Time offset relative to the beginning of the audio that corresponds to the
-   * start of the spoken word. This is an experimental feature and the accuracy
-   * of the time offset can vary.
-   *
    * @var string
    */
   public $startOffset;
   /**
-   * The word this info is for.
-   *
    * @var string
    */
   public $word;
 
   /**
-   * The Speech confidence between 0.0 and 1.0 for this word. A higher number
-   * indicates an estimated greater likelihood that the recognized word is
-   * correct. The default of 0.0 is a sentinel value indicating that confidence
-   * was not set. This field is not guaranteed to be fully stable over time for
-   * the same audio input. Users should also not rely on it to always be
-   * provided.
-   *
-   * @param float $confidence
+   * @param float
    */
   public function setConfidence($confidence)
   {
@@ -75,11 +51,7 @@ class GoogleCloudDialogflowV2SpeechWordInfo extends \Google\Model
     return $this->confidence;
   }
   /**
-   * Time offset relative to the beginning of the audio that corresponds to the
-   * end of the spoken word. This is an experimental feature and the accuracy of
-   * the time offset can vary.
-   *
-   * @param string $endOffset
+   * @param string
    */
   public function setEndOffset($endOffset)
   {
@@ -93,11 +65,7 @@ class GoogleCloudDialogflowV2SpeechWordInfo extends \Google\Model
     return $this->endOffset;
   }
   /**
-   * Time offset relative to the beginning of the audio that corresponds to the
-   * start of the spoken word. This is an experimental feature and the accuracy
-   * of the time offset can vary.
-   *
-   * @param string $startOffset
+   * @param string
    */
   public function setStartOffset($startOffset)
   {
@@ -111,9 +79,7 @@ class GoogleCloudDialogflowV2SpeechWordInfo extends \Google\Model
     return $this->startOffset;
   }
   /**
-   * The word this info is for.
-   *
-   * @param string $word
+   * @param string
    */
   public function setWord($word)
   {

@@ -103,4 +103,9 @@ class MPParticipant extends Model
     {
         return $this->hasMany(MPDiagnosticoResponse::class, 'participant_id');
     }
+
+    public function attendances()
+    {
+        return $this->hasMany(MPAttendance::class, 'participant_id');
+    }
 }

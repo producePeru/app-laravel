@@ -24,10 +24,7 @@ class GoogleCloudDialogflowCxV3BatchRunTestCasesResponse extends \Google\Collect
   protected $resultsDataType = 'array';
 
   /**
-   * The test case results. The detailed conversation turns are empty in this
-   * response.
-   *
-   * @param GoogleCloudDialogflowCxV3TestCaseResult[] $results
+   * @param GoogleCloudDialogflowCxV3TestCaseResult[]
    */
   public function setResults($results)
   {

@@ -68,9 +68,9 @@ final class TypeMap
     }
 
     /**
-     * @throws MapError
-     *
      * @psalm-return class-string
+     *
+     * @throws MapError
      */
     public function map(Subscriber $subscriber): string
     {

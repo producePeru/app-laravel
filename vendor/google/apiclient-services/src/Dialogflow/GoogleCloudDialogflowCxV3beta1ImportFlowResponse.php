@@ -20,18 +20,12 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3beta1ImportFlowResponse extends \Google\Model
 {
   /**
-   * The unique identifier of the new flow. Format:
-   * `projects//locations//agents//flows/`.
-   *
    * @var string
    */
   public $flow;
 
   /**
-   * The unique identifier of the new flow. Format:
-   * `projects//locations//agents//flows/`.
-   *
-   * @param string $flow
+   * @param string
    */
   public function setFlow($flow)
   {

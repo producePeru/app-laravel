@@ -20,22 +20,16 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3GeneratorPlaceholder extends \Google\Model
 {
   /**
-   * Unique ID used to map custom placeholder to parameters in fulfillment.
-   *
    * @var string
    */
   public $id;
   /**
-   * Custom placeholder value in the prompt text.
-   *
    * @var string
    */
   public $name;
 
   /**
-   * Unique ID used to map custom placeholder to parameters in fulfillment.
-   *
-   * @param string $id
+   * @param string
    */
   public function setId($id)
   {
@@ -49,9 +43,7 @@ class GoogleCloudDialogflowCxV3GeneratorPlaceholder extends \Google\Model
     return $this->id;
   }
   /**
-   * Custom placeholder value in the prompt text.
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {

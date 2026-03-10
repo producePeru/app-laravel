@@ -21,9 +21,6 @@ class GoogleCloudDialogflowCxV3ListWebhooksResponse extends \Google\Collection
 {
   protected $collection_key = 'webhooks';
   /**
-   * Token to retrieve the next page of results, or empty if there are no more
-   * results in the list.
-   *
    * @var string
    */
   public $nextPageToken;
@@ -31,10 +28,7 @@ class GoogleCloudDialogflowCxV3ListWebhooksResponse extends \Google\Collection
   protected $webhooksDataType = 'array';
 
   /**
-   * Token to retrieve the next page of results, or empty if there are no more
-   * results in the list.
-   *
-   * @param string $nextPageToken
+   * @param string
    */
   public function setNextPageToken($nextPageToken)
   {
@@ -48,10 +42,7 @@ class GoogleCloudDialogflowCxV3ListWebhooksResponse extends \Google\Collection
     return $this->nextPageToken;
   }
   /**
-   * The list of webhooks. There will be a maximum number of items returned
-   * based on the page_size field in the request.
-   *
-   * @param GoogleCloudDialogflowCxV3Webhook[] $webhooks
+   * @param GoogleCloudDialogflowCxV3Webhook[]
    */
   public function setWebhooks($webhooks)
   {

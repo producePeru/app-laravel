@@ -20,45 +20,28 @@ namespace Google\Service\SQLAdmin;
 class InsightsConfig extends \Google\Model
 {
   /**
-   * Whether Query Insights feature is enabled.
-   *
    * @var bool
    */
   public $queryInsightsEnabled;
   /**
-   * Number of query execution plans captured by Insights per minute for all
-   * queries combined. Default is 5.
-   *
    * @var int
    */
   public $queryPlansPerMinute;
   /**
-   * Maximum query length stored in bytes. Default value: 1024 bytes. Range:
-   * 256-4500 bytes. Query lengths greater than this field value will be
-   * truncated to this value. When unset, query length will be the default
-   * value. Changing query length will restart the database.
-   *
    * @var int
    */
   public $queryStringLength;
   /**
-   * Whether Query Insights will record application tags from query when
-   * enabled.
-   *
    * @var bool
    */
   public $recordApplicationTags;
   /**
-   * Whether Query Insights will record client address when enabled.
-   *
    * @var bool
    */
   public $recordClientAddress;
 
   /**
-   * Whether Query Insights feature is enabled.
-   *
-   * @param bool $queryInsightsEnabled
+   * @param bool
    */
   public function setQueryInsightsEnabled($queryInsightsEnabled)
   {
@@ -72,10 +55,7 @@ class InsightsConfig extends \Google\Model
     return $this->queryInsightsEnabled;
   }
   /**
-   * Number of query execution plans captured by Insights per minute for all
-   * queries combined. Default is 5.
-   *
-   * @param int $queryPlansPerMinute
+   * @param int
    */
   public function setQueryPlansPerMinute($queryPlansPerMinute)
   {
@@ -89,12 +69,7 @@ class InsightsConfig extends \Google\Model
     return $this->queryPlansPerMinute;
   }
   /**
-   * Maximum query length stored in bytes. Default value: 1024 bytes. Range:
-   * 256-4500 bytes. Query lengths greater than this field value will be
-   * truncated to this value. When unset, query length will be the default
-   * value. Changing query length will restart the database.
-   *
-   * @param int $queryStringLength
+   * @param int
    */
   public function setQueryStringLength($queryStringLength)
   {
@@ -108,10 +83,7 @@ class InsightsConfig extends \Google\Model
     return $this->queryStringLength;
   }
   /**
-   * Whether Query Insights will record application tags from query when
-   * enabled.
-   *
-   * @param bool $recordApplicationTags
+   * @param bool
    */
   public function setRecordApplicationTags($recordApplicationTags)
   {
@@ -125,9 +97,7 @@ class InsightsConfig extends \Google\Model
     return $this->recordApplicationTags;
   }
   /**
-   * Whether Query Insights will record client address when enabled.
-   *
-   * @param bool $recordClientAddress
+   * @param bool
    */
   public function setRecordClientAddress($recordClientAddress)
   {

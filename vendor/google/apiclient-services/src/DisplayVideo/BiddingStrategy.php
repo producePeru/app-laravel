@@ -29,9 +29,7 @@ class BiddingStrategy extends \Google\Model
   protected $youtubeAndPartnersBidDataType = '';
 
   /**
-   * A strategy that uses a fixed bid price.
-   *
-   * @param FixedBidStrategy $fixedBid
+   * @param FixedBidStrategy
    */
   public function setFixedBid(FixedBidStrategy $fixedBid)
   {
@@ -45,17 +43,7 @@ class BiddingStrategy extends \Google\Model
     return $this->fixedBid;
   }
   /**
-   * * `BIDDING_STRATEGY_PERFORMANCE_GOAL_TYPE_CPA`,
-   * `BIDDING_STRATEGY_PERFORMANCE_GOAL_TYPE_CPC`, and
-   * `BIDDING_STRATEGY_PERFORMANCE_GOAL_TYPE_AV_VIEWED` only allow for
-   * `LINE_ITEM_TYPE_DISPLAY_DEFAULT` or `LINE_ITEM_TYPE_VIDEO_DEFAULT` line
-   * items. * `BIDDING_STRATEGY_PERFORMANCE_GOAL_TYPE_CIVA` and
-   * `BIDDING_STRATEGY_PERFORMANCE_GOAL_TYPE_IVO_TEN` only allow for
-   * `LINE_ITEM_TYPE_VIDEO_DEFAULT` line items. *
-   * `BIDDING_STRATEGY_PERFORMANCE_GOAL_TYPE_REACH` only allows for
-   * `LINE_ITEM_TYPE_VIDEO_OVER_THE_TOP` line items.
-   *
-   * @param MaximizeSpendBidStrategy $maximizeSpendAutoBid
+   * @param MaximizeSpendBidStrategy
    */
   public function setMaximizeSpendAutoBid(MaximizeSpendBidStrategy $maximizeSpendAutoBid)
   {
@@ -69,10 +57,7 @@ class BiddingStrategy extends \Google\Model
     return $this->maximizeSpendAutoBid;
   }
   /**
-   * A strategy that automatically adjusts the bid to meet or beat a specified
-   * performance goal. It is to be used only for a line item entity.
-   *
-   * @param PerformanceGoalBidStrategy $performanceGoalAutoBid
+   * @param PerformanceGoalBidStrategy
    */
   public function setPerformanceGoalAutoBid(PerformanceGoalBidStrategy $performanceGoalAutoBid)
   {
@@ -86,10 +71,7 @@ class BiddingStrategy extends \Google\Model
     return $this->performanceGoalAutoBid;
   }
   /**
-   * A bid strategy used by YouTube and Partners resources. It can only be used
-   * for a YouTube and Partners line item or ad group entity.
-   *
-   * @param YoutubeAndPartnersBiddingStrategy $youtubeAndPartnersBid
+   * @param YoutubeAndPartnersBiddingStrategy
    */
   public function setYoutubeAndPartnersBid(YoutubeAndPartnersBiddingStrategy $youtubeAndPartnersBid)
   {

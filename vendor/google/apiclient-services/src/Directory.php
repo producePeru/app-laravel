@@ -1978,11 +1978,7 @@ class Directory extends \Google\Service
         'users',
         [
           'methods' => [
-            'createGuest' => [
-              'path' => 'admin/directory/v1/users:createGuest',
-              'httpMethod' => 'POST',
-              'parameters' => [],
-            ],'delete' => [
+            'delete' => [
               'path' => 'admin/directory/v1/users/{userKey}',
               'httpMethod' => 'DELETE',
               'parameters' => [

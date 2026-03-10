@@ -20,26 +20,16 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2beta1IntentMessageRbmSuggestedReply extends \Google\Model
 {
   /**
-   * Opaque payload that the Dialogflow receives in a user event when the user
-   * taps the suggested reply. This data will be also forwarded to webhook to
-   * allow performing custom business logic.
-   *
    * @var string
    */
   public $postbackData;
   /**
-   * Suggested reply text.
-   *
    * @var string
    */
   public $text;
 
   /**
-   * Opaque payload that the Dialogflow receives in a user event when the user
-   * taps the suggested reply. This data will be also forwarded to webhook to
-   * allow performing custom business logic.
-   *
-   * @param string $postbackData
+   * @param string
    */
   public function setPostbackData($postbackData)
   {
@@ -53,9 +43,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageRbmSuggestedReply extends \Google
     return $this->postbackData;
   }
   /**
-   * Suggested reply text.
-   *
-   * @param string $text
+   * @param string
    */
   public function setText($text)
   {

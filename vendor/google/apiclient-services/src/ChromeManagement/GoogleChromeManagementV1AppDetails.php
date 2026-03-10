@@ -19,138 +19,79 @@ namespace Google\Service\ChromeManagement;
 
 class GoogleChromeManagementV1AppDetails extends \Google\Model
 {
-  /**
-   * App type unspecified.
-   */
-  public const TYPE_APP_ITEM_TYPE_UNSPECIFIED = 'APP_ITEM_TYPE_UNSPECIFIED';
-  /**
-   * Chrome app.
-   */
-  public const TYPE_CHROME = 'CHROME';
-  /**
-   * ARC++ app.
-   */
-  public const TYPE_ANDROID = 'ANDROID';
-  /**
-   * Web app.
-   */
-  public const TYPE_WEB = 'WEB';
   protected $androidAppInfoType = GoogleChromeManagementV1AndroidAppInfo::class;
   protected $androidAppInfoDataType = '';
   /**
-   * Output only. Unique store identifier for the item. Examples:
-   * "gmbmikajjgmnabiglmofipeabaddhgne" for the Save to Google Drive Chrome
-   * extension, "com.google.android.apps.docs" for the Google Drive Android app.
-   *
    * @var string
    */
   public $appId;
   protected $chromeAppInfoType = GoogleChromeManagementV1ChromeAppInfo::class;
   protected $chromeAppInfoDataType = '';
   /**
-   * Output only. App's description.
-   *
    * @var string
    */
   public $description;
   /**
-   * Output only. The uri for the detail page of the item.
-   *
    * @var string
    */
   public $detailUri;
   /**
-   * Output only. App's display name.
-   *
    * @var string
    */
   public $displayName;
   /**
-   * Output only. First published time.
-   *
    * @var string
    */
   public $firstPublishTime;
   /**
-   * Output only. Home page or Website uri.
-   *
    * @var string
    */
   public $homepageUri;
   /**
-   * Output only. A link to an image that can be used as an icon for the
-   * product.
-   *
    * @var string
    */
   public $iconUri;
   /**
-   * Output only. Indicates if the app has to be paid for OR has paid content.
-   *
    * @var bool
    */
   public $isPaidApp;
   /**
-   * Output only. Latest published time.
-   *
    * @var string
    */
   public $latestPublishTime;
   /**
-   * Output only. Format:
-   * name=customers/{customer_id}/apps/{chrome|android|web}/{app_id}@{version}
-   *
    * @var string
    */
   public $name;
   /**
-   * Output only. The URI pointing to the privacy policy of the app, if it was
-   * provided by the developer. Version-specific field that will only be set
-   * when the requested app version is found.
-   *
    * @var string
    */
   public $privacyPolicyUri;
   /**
-   * Output only. The publisher of the item.
-   *
    * @var string
    */
   public $publisher;
   /**
-   * Output only. Number of reviews received. Chrome Web Store review
-   * information will always be for the latest version of an app.
-   *
    * @var string
    */
   public $reviewNumber;
   /**
-   * Output only. The rating of the app (on 5 stars). Chrome Web Store review
-   * information will always be for the latest version of an app.
-   *
    * @var float
    */
   public $reviewRating;
   /**
-   * Output only. App version. A new revision is committed whenever a new
-   * version of the app is published.
-   *
    * @var string
    */
   public $revisionId;
   protected $serviceErrorType = GoogleRpcStatus::class;
   protected $serviceErrorDataType = '';
   /**
-   * Output only. App type.
-   *
    * @var string
    */
   public $type;
 
   /**
-   * Output only. Android app information.
-   *
-   * @param GoogleChromeManagementV1AndroidAppInfo $androidAppInfo
+   * @param GoogleChromeManagementV1AndroidAppInfo
    */
   public function setAndroidAppInfo(GoogleChromeManagementV1AndroidAppInfo $androidAppInfo)
   {
@@ -164,11 +105,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->androidAppInfo;
   }
   /**
-   * Output only. Unique store identifier for the item. Examples:
-   * "gmbmikajjgmnabiglmofipeabaddhgne" for the Save to Google Drive Chrome
-   * extension, "com.google.android.apps.docs" for the Google Drive Android app.
-   *
-   * @param string $appId
+   * @param string
    */
   public function setAppId($appId)
   {
@@ -182,9 +119,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->appId;
   }
   /**
-   * Output only. Chrome Web Store app information.
-   *
-   * @param GoogleChromeManagementV1ChromeAppInfo $chromeAppInfo
+   * @param GoogleChromeManagementV1ChromeAppInfo
    */
   public function setChromeAppInfo(GoogleChromeManagementV1ChromeAppInfo $chromeAppInfo)
   {
@@ -198,9 +133,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->chromeAppInfo;
   }
   /**
-   * Output only. App's description.
-   *
-   * @param string $description
+   * @param string
    */
   public function setDescription($description)
   {
@@ -214,9 +147,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->description;
   }
   /**
-   * Output only. The uri for the detail page of the item.
-   *
-   * @param string $detailUri
+   * @param string
    */
   public function setDetailUri($detailUri)
   {
@@ -230,9 +161,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->detailUri;
   }
   /**
-   * Output only. App's display name.
-   *
-   * @param string $displayName
+   * @param string
    */
   public function setDisplayName($displayName)
   {
@@ -246,9 +175,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->displayName;
   }
   /**
-   * Output only. First published time.
-   *
-   * @param string $firstPublishTime
+   * @param string
    */
   public function setFirstPublishTime($firstPublishTime)
   {
@@ -262,9 +189,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->firstPublishTime;
   }
   /**
-   * Output only. Home page or Website uri.
-   *
-   * @param string $homepageUri
+   * @param string
    */
   public function setHomepageUri($homepageUri)
   {
@@ -278,10 +203,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->homepageUri;
   }
   /**
-   * Output only. A link to an image that can be used as an icon for the
-   * product.
-   *
-   * @param string $iconUri
+   * @param string
    */
   public function setIconUri($iconUri)
   {
@@ -295,9 +217,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->iconUri;
   }
   /**
-   * Output only. Indicates if the app has to be paid for OR has paid content.
-   *
-   * @param bool $isPaidApp
+   * @param bool
    */
   public function setIsPaidApp($isPaidApp)
   {
@@ -311,9 +231,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->isPaidApp;
   }
   /**
-   * Output only. Latest published time.
-   *
-   * @param string $latestPublishTime
+   * @param string
    */
   public function setLatestPublishTime($latestPublishTime)
   {
@@ -327,10 +245,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->latestPublishTime;
   }
   /**
-   * Output only. Format:
-   * name=customers/{customer_id}/apps/{chrome|android|web}/{app_id}@{version}
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -344,11 +259,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->name;
   }
   /**
-   * Output only. The URI pointing to the privacy policy of the app, if it was
-   * provided by the developer. Version-specific field that will only be set
-   * when the requested app version is found.
-   *
-   * @param string $privacyPolicyUri
+   * @param string
    */
   public function setPrivacyPolicyUri($privacyPolicyUri)
   {
@@ -362,9 +273,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->privacyPolicyUri;
   }
   /**
-   * Output only. The publisher of the item.
-   *
-   * @param string $publisher
+   * @param string
    */
   public function setPublisher($publisher)
   {
@@ -378,10 +287,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->publisher;
   }
   /**
-   * Output only. Number of reviews received. Chrome Web Store review
-   * information will always be for the latest version of an app.
-   *
-   * @param string $reviewNumber
+   * @param string
    */
   public function setReviewNumber($reviewNumber)
   {
@@ -395,10 +301,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->reviewNumber;
   }
   /**
-   * Output only. The rating of the app (on 5 stars). Chrome Web Store review
-   * information will always be for the latest version of an app.
-   *
-   * @param float $reviewRating
+   * @param float
    */
   public function setReviewRating($reviewRating)
   {
@@ -412,10 +315,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->reviewRating;
   }
   /**
-   * Output only. App version. A new revision is committed whenever a new
-   * version of the app is published.
-   *
-   * @param string $revisionId
+   * @param string
    */
   public function setRevisionId($revisionId)
   {
@@ -429,9 +329,7 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->revisionId;
   }
   /**
-   * Output only. Information about a partial service error if applicable.
-   *
-   * @param GoogleRpcStatus $serviceError
+   * @param GoogleRpcStatus
    */
   public function setServiceError(GoogleRpcStatus $serviceError)
   {
@@ -445,18 +343,14 @@ class GoogleChromeManagementV1AppDetails extends \Google\Model
     return $this->serviceError;
   }
   /**
-   * Output only. App type.
-   *
-   * Accepted values: APP_ITEM_TYPE_UNSPECIFIED, CHROME, ANDROID, WEB
-   *
-   * @param self::TYPE_* $type
+   * @param string
    */
   public function setType($type)
   {
     $this->type = $type;
   }
   /**
-   * @return self::TYPE_*
+   * @return string
    */
   public function getType()
   {

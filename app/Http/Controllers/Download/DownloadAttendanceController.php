@@ -20,6 +20,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+Carbon::setLocale('es');
+
 class DownloadAttendanceController extends Controller
 {
 
@@ -28,151 +30,297 @@ class DownloadAttendanceController extends Controller
 
         try {
 
+            ini_set('memory_limit', '2G');
+            set_time_limit(300);
+
             $filters = [
                 'name'      => $request->input('name'),
                 'dateStart' => $request->input('dateStart'),
                 'dateEnd'   => $request->input('dateEnd'),
                 'year'      => $request->input('year'),
                 'orderby'   => $request->input('orderby'),
-                'asesor'    => $request->input('asesor')
+                'asesor'    => $request->input('asesor'),
             ];
 
-
-            // $userRole = getUserRole();
-            // $roleIds  = $userRole['role_id'];
-            // $userId   = $userRole['user_id'];
-
             $query = Attendance::query();
-
             $query->withItems($filters);
 
-            ini_set('memory_limit', '2G');
-            set_time_limit(300);
+            // 📄 Cargar plantilla Excel
+            $templatePath = storage_path('app/plantillas/attendance_template.xlsx');
+            $spreadsheet  = IOFactory::load($templatePath);
+            $sheet        = $spreadsheet->getActiveSheet();
 
-            $items = [];
+            $startRow   = 2;
+            $rowIndex   = 0;
             $globalIndex = 1;
 
-            $query->chunk(1000, function ($rows) use (&$items, &$globalIndex) {
+            // 🚀 Procesar por bloques
+            $query->chunk(500, function ($rows) use (
+                &$sheet,
+                &$rowIndex,
+                &$globalIndex,
+                $startRow
+            ) {
                 foreach ($rows as $item) {
-                    $items[] = [
-                        'index'             => $globalIndex++,
-                        'title' => $item->title,
-                        'attendance_list_count' => $item->attendanceList?->count() ?? 0,
-                        'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
-                        'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
-                        // 'modality' => $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
-                        'city' => $item->region->name ?? null,
-                        'province' => $item->provincia->name ??  null,
-                        'district' => $item->distrito->name ?? null,
-                        'address' => $item->address ??  null,
-                        'asesor' => $item['asesor'],
-                        'asesor' => $item->asesor
-                            ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
-                            : null,
-                        'profile_creater' => $item->profile
-                            ? strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename)
-                            : null,
-                        'description' => $item->description ?? null,
-                        'created_at' => Carbon::parse($item->created_at)->format('d/m/Y'),
 
-                        'link_participantes' => ' https://programa.soporte-pnte.com/admin/ugo/eventos-inscritos/' . $item->slug,
+                    $estado = $item->getEstado();
 
-                        'link_registro_participantes' => $item->eventsoffice_id == 3 ?
-                            'https://inscripcion.soporte-pnte.com/fortalece-tu-mercado/' . $item->slug :
-                            'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
+                    $row = [
+                        $globalIndex++,
+                        'UGO',
+                        strtoupper(Carbon::now()->translatedFormat('F')),
+                        Carbon::parse($item->startDate)->format('d/m/Y'),
+                        Carbon::parse($item->endDate)->format('d/m/Y'),
+                        Carbon::parse($item->startDate)->diffInDays(Carbon::parse($item->endDate)) + 1,
+                        $item->pnte->name ?? '-',
+                        strtoupper($item->title) ?? '-',
+                        strtoupper($item->theme ?? null) ?? '-',
+                        $item->region->name ?? null,
+                        $item->provincia->name ?? null,
+                        $item->distrito->name ?? null,
+                        $item->address ?? null,
+                        strtoupper($item->entidad ?? null) ?? '-',
+                        strtoupper($item->entidad_aliada ?? null) ?? '-',
+                        $item->asesor ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename) : null,
+                        $item->pasaje == 'n' ? 'NO' : ($item->pasaje == 's' ? 'SI' : '-'),
+                        $item->monto ?? 0,
+                        $item->beneficiarios ?? null,
+                        $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
+
+                        $item->attendance_list_count > 0 ? 'CON LISTA' : 'SIN LISTA',
+                        $item->attendance_list_count ?? 0,
+                        $item->total_asesorias ?? 0,
+                        $item->total_formalizaciones ?? 0,
+
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+
+                        $estado, // ✅ 
+
+                        Carbon::parse($item->created_at)->format('d/m/Y'),
+
+
+                        'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/' . $item->slug,
+
+
+                        'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $item->slug
 
 
                     ];
+
+                    $col = 'A';
+                    foreach ($row as $value) {
+                        $sheet->setCellValue($col . ($startRow + $rowIndex), $value);
+                        $col++;
+                    }
+
+                    $rowIndex++;
                 }
             });
 
-            return Excel::download(new AttendanceExport($items), 'eventos-pnte.xlsx');
+            // 📥 Descargar archivo
+            return new StreamedResponse(function () use ($spreadsheet) {
+                $writer = new Xlsx($spreadsheet);
+                $writer->save('php://output');
+            }, 200, [
+                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="attendance_template.xlsx"',
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Ocurrio un error al generar el reporte.',
-                'error'   => $e->getMessage()
+                'message' => 'Ocurrió un error al generar el reporte',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
 
+    // Carbon::parse($item->startDate)->format('d/m/Y'),
+    // Carbon::parse($item->endDate)->format('d/m/Y'),
+    // Carbon::parse($item->startDate)
+    //     ->diffInDays(Carbon::parse($item->endDate)) + 1,
+    // $item->region->name ?? '-',
+    // $item->provincia->name ?? '-',
+    // $item->distrito->name ?? '-',
+    // $item->address ?? '-',
+    // $item->asesor
+    //     ? strtoupper(
+    //         $item->asesor->name . ' ' .
+    //             $item->asesor->lastname . ' ' .
+    //             $item->asesor->middlename
+    //     )
+    //     : '-',
+    // $item->profile
+    //     ? strtoupper(
+    //         $item->profile->name . ' ' .
+    //             $item->profile->lastname . ' ' .
+    //             $item->profile->middlename
+    //     )
+    //     : '-',
+    // $item->description ?? '-',
+    // Carbon::parse($item->created_at)->format('d/m/Y'),
+    // 'https://programa.soporte-pnte.com/admin/ugo/eventos-inscritos/' . $item->slug,
+    // $item->eventsoffice_id == 3
+    //     ? 'https://inscripcion.soporte-pnte.com/fortalece-tu-mercado/' . $item->slug
+    //     : 'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
+
 
     public function exportRegistrantsUgoEvents($slug)
     {
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
 
-        $attendance = Attendance::where('slug', $slug)->first();
+        // ===== Buscar evento =====
+        $attendance = Attendance::with([
+            'asesor:id,name,lastname,middlename',
+            'region:id,name',
+            'provincia:id,name',
+            'distrito:id,name',
+            'pnte:id,name'
+        ])->where('slug', $slug)->first();
 
         if (!$attendance) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
-        $asesor = User::find($attendance->asesorId);
-        $region = City::find($attendance->city_id);
-        $province = Province::find($attendance->province_id);
-        $district = District::find($attendance->district_id);
-
-
-
+        // ===== Query participantes =====
         $query = AttendanceList::with([
-            'typedocument:id,name',
-            'gender:id,name,avr',
+            'typedocument:id,avr',
+            'gender:id,avr',
             'economicsector:id,name',
-            // 'comercialactivity:id,name',
-            'list'
-        ])->where('attendancelist_id', $attendance->id)
+            'country:id,name',
+            'city:id,name',
+            'province:id,name',
+            'dictrict:id,name',
+            'rubro:id,name'
+        ])
+            ->where('attendancelist_id', $attendance->id)
             ->orderBy('created_at', 'desc');
 
-        $data = $query->get();
-
-        $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
-            return [
-                'index' => $index + 1,
-                'nameActividad'         => $attendance->title,
-
-                'asesor'                => strtoupper($asesor->name . ' ' . $asesor->lastname . ' ' . $asesor->middlename),
-                'dateActividad'         => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
-
-                'region'                => $region->name,
-                'provincia'             => $province->name,
-                'distrito'              => $district->name,
-
-                'place'                 => $attendance->address ?? '-',
-                'lastname'              => strtoupper($item->lastname . ' ' . $item->middlename),
-                'name'                  => strtoupper($item->name),
-                'typedocument'          => $item->typedocument->name,
-                'documentnumber'        => $item->documentnumber,
-                'email'                 => $item->email ?? '-',
-                'phone'                 => $item->phone ?? '-',
-                'gender'                => $item->gender->avr,
-                'sick'                  => strtoupper($item->sick) ?? '-',
-                'ruc'                   => $item->ruc ?? '-',
-                'economicsector'        => $item->economicsector ? $item->economicsector->name : '-',
-                'comercialActivity'     => strtoupper($item->comercialActivity ?? '-'),
-            ];
-        });
-
-        // return Excel::download(new AttendanceListSlugExport($result), 'attendance.xlsx');
-
+        // ===== Cargar plantilla =====
         $templatePath = storage_path('app/plantillas/ugo_eventos_lista_registrados_template.xlsx');
+
+        if (!file_exists($templatePath)) {
+            return response()->json(['message' => 'Template not found'], 404);
+        }
+
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        $startRow = 2;
-        foreach ($result as $i => $resultRow) {
-            $col = 'A';
-            foreach ($resultRow as $value) {
-                $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
-                $col++;
-            }
-        }
+        // ===== Fila inicial D3 =====
+        $row = 3;
+        $index = 1;
 
+        $query->chunk(1000, function ($items) use (&$row, &$index, $sheet, $attendance) {
+
+            foreach ($items as $item) {
+
+                $col = 'D';
+
+                $sheet->setCellValue("{$col}{$row}", $index++);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->startDate ? Carbon::parse($attendance->startDate)->format('d/m/Y') : null);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->endDate ? Carbon::parse($attendance->endDate)->format('d/m/Y') : null);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->pnte->name);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->title);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($attendance->theme));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->region?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->provincia?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $attendance->distrito?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($attendance->address ?? '', 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($attendance->asesor->lastname . ' ' . $attendance->asesor->middlename . ' ' . $attendance->asesor->name) ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->typedocument?->avr ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->documentnumber ?? null);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($item->country->name ?? null));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim("{$item->lastname} {$item->middlename}"), 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim("{$item->name}"), 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->gender?->avr);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim("{$item->sick}"), 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->ruc ?? '-');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->city?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->province?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->dictrict?->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->economicsector?->name);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->rubro->name ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->phone);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->email);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->is_asesoria);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $item->was_formalizado);
+
+                $row++;
+            }
+        });
+
+        // ===== Descargar =====
         return new StreamedResponse(function () use ($spreadsheet) {
+
             $writer = new Xlsx($spreadsheet);
+            $writer->setPreCalculateFormulas(false); // mejora rendimiento
             $writer->save('php://output');
         }, 200, [
             'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => 'attachment; filename="lista-registrados.xlsx"',
+            'Cache-Control'       => 'max-age=0',
         ]);
     }
+
 
 
 

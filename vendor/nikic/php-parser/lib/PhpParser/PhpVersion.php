@@ -43,7 +43,7 @@ class PhpVersion {
      * if it is still under development.
      */
     public static function getNewestSupported(): self {
-        return self::fromComponents(8, 5);
+        return self::fromComponents(8, 4);
     }
 
     /**
@@ -167,9 +167,5 @@ class PhpVersion {
      */
     public function supportsAttributes(): bool {
         return $this->id >= 80000;
-    }
-
-    public function supportsNewDereferenceWithoutParentheses(): bool {
-        return $this->id >= 80400;
     }
 }

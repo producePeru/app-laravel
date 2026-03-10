@@ -20,89 +20,48 @@ namespace Google\Service\SQLAdmin;
 class DnsNameMapping extends \Google\Model
 {
   /**
-   * Unknown connection type.
-   */
-  public const CONNECTION_TYPE_CONNECTION_TYPE_UNSPECIFIED = 'CONNECTION_TYPE_UNSPECIFIED';
-  /**
-   * Public IP.
-   */
-  public const CONNECTION_TYPE_PUBLIC = 'PUBLIC';
-  /**
-   * Private services access (private IP).
-   */
-  public const CONNECTION_TYPE_PRIVATE_SERVICES_ACCESS = 'PRIVATE_SERVICES_ACCESS';
-  /**
-   * Private Service Connect.
-   */
-  public const CONNECTION_TYPE_PRIVATE_SERVICE_CONNECT = 'PRIVATE_SERVICE_CONNECT';
-  /**
-   * Unknown DNS scope.
-   */
-  public const DNS_SCOPE_DNS_SCOPE_UNSPECIFIED = 'DNS_SCOPE_UNSPECIFIED';
-  /**
-   * Indicates a instance-level DNS name.
-   */
-  public const DNS_SCOPE_INSTANCE = 'INSTANCE';
-  /**
-   * Output only. The connection type of the DNS name.
-   *
    * @var string
    */
   public $connectionType;
   /**
-   * Output only. The scope that the DNS name applies to.
-   *
    * @var string
    */
   public $dnsScope;
   /**
-   * The DNS name.
-   *
    * @var string
    */
   public $name;
 
   /**
-   * Output only. The connection type of the DNS name.
-   *
-   * Accepted values: CONNECTION_TYPE_UNSPECIFIED, PUBLIC,
-   * PRIVATE_SERVICES_ACCESS, PRIVATE_SERVICE_CONNECT
-   *
-   * @param self::CONNECTION_TYPE_* $connectionType
+   * @param string
    */
   public function setConnectionType($connectionType)
   {
     $this->connectionType = $connectionType;
   }
   /**
-   * @return self::CONNECTION_TYPE_*
+   * @return string
    */
   public function getConnectionType()
   {
     return $this->connectionType;
   }
   /**
-   * Output only. The scope that the DNS name applies to.
-   *
-   * Accepted values: DNS_SCOPE_UNSPECIFIED, INSTANCE
-   *
-   * @param self::DNS_SCOPE_* $dnsScope
+   * @param string
    */
   public function setDnsScope($dnsScope)
   {
     $this->dnsScope = $dnsScope;
   }
   /**
-   * @return self::DNS_SCOPE_*
+   * @return string
    */
   public function getDnsScope()
   {
     return $this->dnsScope;
   }
   /**
-   * The DNS name.
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {

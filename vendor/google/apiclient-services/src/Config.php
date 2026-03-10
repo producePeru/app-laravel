@@ -44,8 +44,6 @@ class Config extends \Google\Service
   public $projects_locations_deployments_revisions_resources;
   public $projects_locations_operations;
   public $projects_locations_previews;
-  public $projects_locations_previews_resourceChanges;
-  public $projects_locations_previews_resourceDrifts;
   public $projects_locations_terraformVersions;
   public $rootUrlTemplate;
 
@@ -82,16 +80,6 @@ class Config extends \Google\Service
                   'required' => true,
                 ],
               ],
-            ],'getAutoMigrationConfig' => [
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
             ],'list' => [
               'path' => 'v1/{+name}/locations',
               'httpMethod' => 'GET',
@@ -115,20 +103,6 @@ class Config extends \Google\Service
                   'type' => 'integer',
                 ],
                 'pageToken' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-              ],
-            ],'updateAutoMigrationConfig' => [
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'PATCH',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-                'updateMask' => [
                   'location' => 'query',
                   'type' => 'string',
                 ],
@@ -494,10 +468,6 @@ class Config extends \Google\Service
                   'location' => 'query',
                   'type' => 'string',
                 ],
-                'returnPartialSuccess' => [
-                  'location' => 'query',
-                  'type' => 'boolean',
-                ],
               ],
             ],
           ]
@@ -563,98 +533,6 @@ class Config extends \Google\Service
               ],
             ],'list' => [
               'path' => 'v1/{+parent}/previews',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'parent' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-                'filter' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-                'orderBy' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-                'pageSize' => [
-                  'location' => 'query',
-                  'type' => 'integer',
-                ],
-                'pageToken' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-              ],
-            ],
-          ]
-        ]
-    );
-    $this->projects_locations_previews_resourceChanges = new Config\Resource\ProjectsLocationsPreviewsResourceChanges(
-        $this,
-        $this->serviceName,
-        'resourceChanges',
-        [
-          'methods' => [
-            'get' => [
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
-            ],'list' => [
-              'path' => 'v1/{+parent}/resourceChanges',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'parent' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-                'filter' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-                'orderBy' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-                'pageSize' => [
-                  'location' => 'query',
-                  'type' => 'integer',
-                ],
-                'pageToken' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-              ],
-            ],
-          ]
-        ]
-    );
-    $this->projects_locations_previews_resourceDrifts = new Config\Resource\ProjectsLocationsPreviewsResourceDrifts(
-        $this,
-        $this->serviceName,
-        'resourceDrifts',
-        [
-          'methods' => [
-            'get' => [
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
-            ],'list' => [
-              'path' => 'v1/{+parent}/resourceDrifts',
               'httpMethod' => 'GET',
               'parameters' => [
                 'parent' => [

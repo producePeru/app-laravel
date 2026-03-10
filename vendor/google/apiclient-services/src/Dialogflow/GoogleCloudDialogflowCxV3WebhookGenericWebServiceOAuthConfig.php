@@ -21,43 +21,28 @@ class GoogleCloudDialogflowCxV3WebhookGenericWebServiceOAuthConfig extends \Goog
 {
   protected $collection_key = 'scopes';
   /**
-   * Required. The client ID provided by the 3rd party platform.
-   *
    * @var string
    */
   public $clientId;
   /**
-   * Optional. The client secret provided by the 3rd party platform.
-   *
    * @var string
    */
   public $clientSecret;
   /**
-   * Optional. The OAuth scopes to grant.
-   *
    * @var string[]
    */
   public $scopes;
   /**
-   * Optional. The name of the SecretManager secret version resource storing the
-   * client secret. If this field is set, the `client_secret` field will be
-   * ignored. Format: `projects/{project}/secrets/{secret}/versions/{version}`
-   *
    * @var string
    */
   public $secretVersionForClientSecret;
   /**
-   * Required. The token endpoint provided by the 3rd party platform to exchange
-   * an access token.
-   *
    * @var string
    */
   public $tokenEndpoint;
 
   /**
-   * Required. The client ID provided by the 3rd party platform.
-   *
-   * @param string $clientId
+   * @param string
    */
   public function setClientId($clientId)
   {
@@ -71,9 +56,7 @@ class GoogleCloudDialogflowCxV3WebhookGenericWebServiceOAuthConfig extends \Goog
     return $this->clientId;
   }
   /**
-   * Optional. The client secret provided by the 3rd party platform.
-   *
-   * @param string $clientSecret
+   * @param string
    */
   public function setClientSecret($clientSecret)
   {
@@ -87,9 +70,7 @@ class GoogleCloudDialogflowCxV3WebhookGenericWebServiceOAuthConfig extends \Goog
     return $this->clientSecret;
   }
   /**
-   * Optional. The OAuth scopes to grant.
-   *
-   * @param string[] $scopes
+   * @param string[]
    */
   public function setScopes($scopes)
   {
@@ -103,11 +84,7 @@ class GoogleCloudDialogflowCxV3WebhookGenericWebServiceOAuthConfig extends \Goog
     return $this->scopes;
   }
   /**
-   * Optional. The name of the SecretManager secret version resource storing the
-   * client secret. If this field is set, the `client_secret` field will be
-   * ignored. Format: `projects/{project}/secrets/{secret}/versions/{version}`
-   *
-   * @param string $secretVersionForClientSecret
+   * @param string
    */
   public function setSecretVersionForClientSecret($secretVersionForClientSecret)
   {
@@ -121,10 +98,7 @@ class GoogleCloudDialogflowCxV3WebhookGenericWebServiceOAuthConfig extends \Goog
     return $this->secretVersionForClientSecret;
   }
   /**
-   * Required. The token endpoint provided by the 3rd party platform to exchange
-   * an access token.
-   *
-   * @param string $tokenEndpoint
+   * @param string
    */
   public function setTokenEndpoint($tokenEndpoint)
   {

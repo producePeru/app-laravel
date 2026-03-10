@@ -21,18 +21,12 @@ class GoogleCloudDialogflowCxV3BatchDeleteTestCasesRequest extends \Google\Colle
 {
   protected $collection_key = 'names';
   /**
-   * Required. Format of test case names:
-   * `projects//locations//agents//testCases/`.
-   *
    * @var string[]
    */
   public $names;
 
   /**
-   * Required. Format of test case names:
-   * `projects//locations//agents//testCases/`.
-   *
-   * @param string[] $names
+   * @param string[]
    */
   public function setNames($names)
   {

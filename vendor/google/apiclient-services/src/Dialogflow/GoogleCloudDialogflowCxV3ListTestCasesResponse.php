@@ -21,9 +21,6 @@ class GoogleCloudDialogflowCxV3ListTestCasesResponse extends \Google\Collection
 {
   protected $collection_key = 'testCases';
   /**
-   * Token to retrieve the next page of results, or empty if there are no more
-   * results in the list.
-   *
    * @var string
    */
   public $nextPageToken;
@@ -31,10 +28,7 @@ class GoogleCloudDialogflowCxV3ListTestCasesResponse extends \Google\Collection
   protected $testCasesDataType = 'array';
 
   /**
-   * Token to retrieve the next page of results, or empty if there are no more
-   * results in the list.
-   *
-   * @param string $nextPageToken
+   * @param string
    */
   public function setNextPageToken($nextPageToken)
   {
@@ -48,10 +42,7 @@ class GoogleCloudDialogflowCxV3ListTestCasesResponse extends \Google\Collection
     return $this->nextPageToken;
   }
   /**
-   * The list of test cases. There will be a maximum number of items returned
-   * based on the page_size field in the request.
-   *
-   * @param GoogleCloudDialogflowCxV3TestCase[] $testCases
+   * @param GoogleCloudDialogflowCxV3TestCase[]
    */
   public function setTestCases($testCases)
   {

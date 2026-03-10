@@ -19,51 +19,26 @@ namespace Google\Service\Dialogflow;
 
 class GoogleCloudDialogflowCxV3beta1ContinuousTestResult extends \Google\Collection
 {
-  /**
-   * Not specified. Should never be used.
-   */
-  public const RESULT_AGGREGATED_TEST_RESULT_UNSPECIFIED = 'AGGREGATED_TEST_RESULT_UNSPECIFIED';
-  /**
-   * All the tests passed.
-   */
-  public const RESULT_PASSED = 'PASSED';
-  /**
-   * At least one test did not pass.
-   */
-  public const RESULT_FAILED = 'FAILED';
   protected $collection_key = 'testCaseResults';
   /**
-   * The resource name for the continuous test result. Format:
-   * `projects//locations//agents//environments//continuousTestResults/`.
-   *
    * @var string
    */
   public $name;
   /**
-   * The result of this continuous test run, i.e. whether all the tests in this
-   * continuous test run pass or not.
-   *
    * @var string
    */
   public $result;
   /**
-   * Time when the continuous testing run starts.
-   *
    * @var string
    */
   public $runTime;
   /**
-   * A list of individual test case results names in this continuous test run.
-   *
    * @var string[]
    */
   public $testCaseResults;
 
   /**
-   * The resource name for the continuous test result. Format:
-   * `projects//locations//agents//environments//continuousTestResults/`.
-   *
-   * @param string $name
+   * @param string
    */
   public function setName($name)
   {
@@ -77,28 +52,21 @@ class GoogleCloudDialogflowCxV3beta1ContinuousTestResult extends \Google\Collect
     return $this->name;
   }
   /**
-   * The result of this continuous test run, i.e. whether all the tests in this
-   * continuous test run pass or not.
-   *
-   * Accepted values: AGGREGATED_TEST_RESULT_UNSPECIFIED, PASSED, FAILED
-   *
-   * @param self::RESULT_* $result
+   * @param string
    */
   public function setResult($result)
   {
     $this->result = $result;
   }
   /**
-   * @return self::RESULT_*
+   * @return string
    */
   public function getResult()
   {
     return $this->result;
   }
   /**
-   * Time when the continuous testing run starts.
-   *
-   * @param string $runTime
+   * @param string
    */
   public function setRunTime($runTime)
   {
@@ -112,9 +80,7 @@ class GoogleCloudDialogflowCxV3beta1ContinuousTestResult extends \Google\Collect
     return $this->runTime;
   }
   /**
-   * A list of individual test case results names in this continuous test run.
-   *
-   * @param string[] $testCaseResults
+   * @param string[]
    */
   public function setTestCaseResults($testCaseResults)
   {

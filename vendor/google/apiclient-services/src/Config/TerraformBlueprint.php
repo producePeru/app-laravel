@@ -20,10 +20,6 @@ namespace Google\Service\Config;
 class TerraformBlueprint extends \Google\Model
 {
   /**
-   * URI of an object in Google Cloud Storage. Format: `gs://{bucket}/{object}`
-   * URI may also specify an object version for zipped objects. Format:
-   * `gs://{bucket}/{object}#{version}`
-   *
    * @var string
    */
   public $gcsSource;
@@ -33,11 +29,7 @@ class TerraformBlueprint extends \Google\Model
   protected $inputValuesDataType = 'map';
 
   /**
-   * URI of an object in Google Cloud Storage. Format: `gs://{bucket}/{object}`
-   * URI may also specify an object version for zipped objects. Format:
-   * `gs://{bucket}/{object}#{version}`
-   *
-   * @param string $gcsSource
+   * @param string
    */
   public function setGcsSource($gcsSource)
   {
@@ -51,9 +43,7 @@ class TerraformBlueprint extends \Google\Model
     return $this->gcsSource;
   }
   /**
-   * URI of a public Git repo.
-   *
-   * @param GitSource $gitSource
+   * @param GitSource
    */
   public function setGitSource(GitSource $gitSource)
   {
@@ -67,9 +57,7 @@ class TerraformBlueprint extends \Google\Model
     return $this->gitSource;
   }
   /**
-   * Optional. Input variable values for the Terraform blueprint.
-   *
-   * @param TerraformVariable[] $inputValues
+   * @param TerraformVariable[]
    */
   public function setInputValues($inputValues)
   {

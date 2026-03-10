@@ -20,25 +20,16 @@ namespace Google\Service\BigtableAdmin;
 class AutomatedBackupPolicy extends \Google\Model
 {
   /**
-   * How frequently automated backups should occur. The only supported value at
-   * this time is 24 hours. An undefined frequency is treated as 24 hours.
-   *
    * @var string
    */
   public $frequency;
   /**
-   * Required. How long the automated backups should be retained. Values must be
-   * at least 3 days and at most 90 days.
-   *
    * @var string
    */
   public $retentionPeriod;
 
   /**
-   * How frequently automated backups should occur. The only supported value at
-   * this time is 24 hours. An undefined frequency is treated as 24 hours.
-   *
-   * @param string $frequency
+   * @param string
    */
   public function setFrequency($frequency)
   {
@@ -52,10 +43,7 @@ class AutomatedBackupPolicy extends \Google\Model
     return $this->frequency;
   }
   /**
-   * Required. How long the automated backups should be retained. Values must be
-   * at least 3 days and at most 90 days.
-   *
-   * @param string $retentionPeriod
+   * @param string
    */
   public function setRetentionPeriod($retentionPeriod)
   {

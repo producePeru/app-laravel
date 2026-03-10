@@ -22,24 +22,16 @@ class GoogleCloudDialogflowCxV3SubmitAnswerFeedbackRequest extends \Google\Model
   protected $answerFeedbackType = GoogleCloudDialogflowCxV3AnswerFeedback::class;
   protected $answerFeedbackDataType = '';
   /**
-   * Required. ID of the response to update its feedback. This is the same as
-   * DetectIntentResponse.response_id.
-   *
    * @var string
    */
   public $responseId;
   /**
-   * Optional. The mask to control which fields to update. If the mask is not
-   * present, all fields will be updated.
-   *
    * @var string
    */
   public $updateMask;
 
   /**
-   * Required. Feedback provided for a bot answer.
-   *
-   * @param GoogleCloudDialogflowCxV3AnswerFeedback $answerFeedback
+   * @param GoogleCloudDialogflowCxV3AnswerFeedback
    */
   public function setAnswerFeedback(GoogleCloudDialogflowCxV3AnswerFeedback $answerFeedback)
   {
@@ -53,10 +45,7 @@ class GoogleCloudDialogflowCxV3SubmitAnswerFeedbackRequest extends \Google\Model
     return $this->answerFeedback;
   }
   /**
-   * Required. ID of the response to update its feedback. This is the same as
-   * DetectIntentResponse.response_id.
-   *
-   * @param string $responseId
+   * @param string
    */
   public function setResponseId($responseId)
   {
@@ -70,10 +59,7 @@ class GoogleCloudDialogflowCxV3SubmitAnswerFeedbackRequest extends \Google\Model
     return $this->responseId;
   }
   /**
-   * Optional. The mask to control which fields to update. If the mask is not
-   * present, all fields will be updated.
-   *
-   * @param string $updateMask
+   * @param string
    */
   public function setUpdateMask($updateMask)
   {

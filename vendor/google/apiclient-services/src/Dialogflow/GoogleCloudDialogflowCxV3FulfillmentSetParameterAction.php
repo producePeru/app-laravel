@@ -20,22 +20,16 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3FulfillmentSetParameterAction extends \Google\Model
 {
   /**
-   * Display name of the parameter.
-   *
    * @var string
    */
   public $parameter;
   /**
-   * The new value of the parameter. A null value clears the parameter.
-   *
    * @var array
    */
   public $value;
 
   /**
-   * Display name of the parameter.
-   *
-   * @param string $parameter
+   * @param string
    */
   public function setParameter($parameter)
   {
@@ -49,9 +43,7 @@ class GoogleCloudDialogflowCxV3FulfillmentSetParameterAction extends \Google\Mod
     return $this->parameter;
   }
   /**
-   * The new value of the parameter. A null value clears the parameter.
-   *
-   * @param array $value
+   * @param array
    */
   public function setValue($value)
   {

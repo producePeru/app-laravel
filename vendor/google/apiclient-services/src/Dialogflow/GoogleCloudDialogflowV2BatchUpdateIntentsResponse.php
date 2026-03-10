@@ -24,9 +24,7 @@ class GoogleCloudDialogflowV2BatchUpdateIntentsResponse extends \Google\Collecti
   protected $intentsDataType = 'array';
 
   /**
-   * The collection of updated or created intents.
-   *
-   * @param GoogleCloudDialogflowV2Intent[] $intents
+   * @param GoogleCloudDialogflowV2Intent[]
    */
   public function setIntents($intents)
   {

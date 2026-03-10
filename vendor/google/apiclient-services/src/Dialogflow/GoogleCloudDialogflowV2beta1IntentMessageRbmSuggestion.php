@@ -25,9 +25,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageRbmSuggestion extends \Google\Mod
   protected $replyDataType = '';
 
   /**
-   * Predefined client side actions that user can choose
-   *
-   * @param GoogleCloudDialogflowV2beta1IntentMessageRbmSuggestedAction $action
+   * @param GoogleCloudDialogflowV2beta1IntentMessageRbmSuggestedAction
    */
   public function setAction(GoogleCloudDialogflowV2beta1IntentMessageRbmSuggestedAction $action)
   {
@@ -41,9 +39,7 @@ class GoogleCloudDialogflowV2beta1IntentMessageRbmSuggestion extends \Google\Mod
     return $this->action;
   }
   /**
-   * Predefined replies for user to select instead of typing
-   *
-   * @param GoogleCloudDialogflowV2beta1IntentMessageRbmSuggestedReply $reply
+   * @param GoogleCloudDialogflowV2beta1IntentMessageRbmSuggestedReply
    */
   public function setReply(GoogleCloudDialogflowV2beta1IntentMessageRbmSuggestedReply $reply)
   {

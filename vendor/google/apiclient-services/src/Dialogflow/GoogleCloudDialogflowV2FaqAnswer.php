@@ -20,51 +20,32 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowV2FaqAnswer extends \Google\Model
 {
   /**
-   * The piece of text from the `source` knowledge base document.
-   *
    * @var string
    */
   public $answer;
   /**
-   * The name of answer record, in the format of
-   * "projects//locations//answerRecords/"
-   *
    * @var string
    */
   public $answerRecord;
   /**
-   * The system's confidence score that this Knowledge answer is a good match
-   * for this conversational query, range from 0.0 (completely uncertain) to 1.0
-   * (completely certain).
-   *
    * @var float
    */
   public $confidence;
   /**
-   * A map that contains metadata about the answer and the document from which
-   * it originates.
-   *
    * @var string[]
    */
   public $metadata;
   /**
-   * The corresponding FAQ question.
-   *
    * @var string
    */
   public $question;
   /**
-   * Indicates which Knowledge Document this answer was extracted from. Format:
-   * `projects//locations//agent/knowledgeBases//documents/`.
-   *
    * @var string
    */
   public $source;
 
   /**
-   * The piece of text from the `source` knowledge base document.
-   *
-   * @param string $answer
+   * @param string
    */
   public function setAnswer($answer)
   {
@@ -78,10 +59,7 @@ class GoogleCloudDialogflowV2FaqAnswer extends \Google\Model
     return $this->answer;
   }
   /**
-   * The name of answer record, in the format of
-   * "projects//locations//answerRecords/"
-   *
-   * @param string $answerRecord
+   * @param string
    */
   public function setAnswerRecord($answerRecord)
   {
@@ -95,11 +73,7 @@ class GoogleCloudDialogflowV2FaqAnswer extends \Google\Model
     return $this->answerRecord;
   }
   /**
-   * The system's confidence score that this Knowledge answer is a good match
-   * for this conversational query, range from 0.0 (completely uncertain) to 1.0
-   * (completely certain).
-   *
-   * @param float $confidence
+   * @param float
    */
   public function setConfidence($confidence)
   {
@@ -113,10 +87,7 @@ class GoogleCloudDialogflowV2FaqAnswer extends \Google\Model
     return $this->confidence;
   }
   /**
-   * A map that contains metadata about the answer and the document from which
-   * it originates.
-   *
-   * @param string[] $metadata
+   * @param string[]
    */
   public function setMetadata($metadata)
   {
@@ -130,9 +101,7 @@ class GoogleCloudDialogflowV2FaqAnswer extends \Google\Model
     return $this->metadata;
   }
   /**
-   * The corresponding FAQ question.
-   *
-   * @param string $question
+   * @param string
    */
   public function setQuestion($question)
   {
@@ -146,10 +115,7 @@ class GoogleCloudDialogflowV2FaqAnswer extends \Google\Model
     return $this->question;
   }
   /**
-   * Indicates which Knowledge Document this answer was extracted from. Format:
-   * `projects//locations//agent/knowledgeBases//documents/`.
-   *
-   * @param string $source
+   * @param string
    */
   public function setSource($source)
   {

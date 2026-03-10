@@ -20,32 +20,20 @@ namespace Google\Service\Dialogflow;
 class GoogleCloudDialogflowCxV3ExportAgentResponse extends \Google\Model
 {
   /**
-   * Uncompressed raw byte content for agent. This field is populated if none of
-   * `agent_uri` and `git_destination` are specified in ExportAgentRequest.
-   *
    * @var string
    */
   public $agentContent;
   /**
-   * The URI to a file containing the exported agent. This field is populated if
-   * `agent_uri` is specified in ExportAgentRequest.
-   *
    * @var string
    */
   public $agentUri;
   /**
-   * Commit SHA of the git push. This field is populated if `git_destination` is
-   * specified in ExportAgentRequest.
-   *
    * @var string
    */
   public $commitSha;
 
   /**
-   * Uncompressed raw byte content for agent. This field is populated if none of
-   * `agent_uri` and `git_destination` are specified in ExportAgentRequest.
-   *
-   * @param string $agentContent
+   * @param string
    */
   public function setAgentContent($agentContent)
   {
@@ -59,10 +47,7 @@ class GoogleCloudDialogflowCxV3ExportAgentResponse extends \Google\Model
     return $this->agentContent;
   }
   /**
-   * The URI to a file containing the exported agent. This field is populated if
-   * `agent_uri` is specified in ExportAgentRequest.
-   *
-   * @param string $agentUri
+   * @param string
    */
   public function setAgentUri($agentUri)
   {
@@ -76,10 +61,7 @@ class GoogleCloudDialogflowCxV3ExportAgentResponse extends \Google\Model
     return $this->agentUri;
   }
   /**
-   * Commit SHA of the git push. This field is populated if `git_destination` is
-   * specified in ExportAgentRequest.
-   *
-   * @param string $commitSha
+   * @param string
    */
   public function setCommitSha($commitSha)
   {
