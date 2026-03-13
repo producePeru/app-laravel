@@ -9,6 +9,7 @@ use App\Models\Advisory;
 use App\Models\Formalization20;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class AdvisoryController extends Controller
 {
@@ -165,6 +166,17 @@ class AdvisoryController extends Controller
         }
 
         $formalization = Formalization20::findOrFail($request->rowId);
+
+        // Fecha límite
+        $limitDate = Carbon::create(2026, 1, 1);
+
+        // Validar si el registro es anterior al 2026
+        if (Carbon::parse($formalization->created_at)->lt($limitDate)) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'No se puede editar el RUC de registros anteriores al 01/01/2026.'
+            ]);
+        }
 
         $formalization->ruc = $request->ruc;
         $formalization->save();

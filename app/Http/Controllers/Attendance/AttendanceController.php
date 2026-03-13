@@ -43,11 +43,16 @@ class AttendanceController extends Controller
             'asesor'    => $request->input('asesor')
         ];
 
+        $user = Auth::user();
+
+        // filtro automático para asesores
+        if ($user->rol == 2) {
+            $filters['asesor'] = $user->id;
+        }
+
         $query = Attendance::query();
 
         $query->withItems($filters);
-
-        // $query->withItems($filters);
 
         $items = $query->paginate(100)->through(function ($item) {
             return $this->mapAdvisory($item);
@@ -65,7 +70,6 @@ class AttendanceController extends Controller
             $baseQuery->where('asesorId', $filters['asesor']);
         }
 
-
         $statistic = [
 
             'diaria' => (clone $baseQuery)
@@ -73,24 +77,20 @@ class AttendanceController extends Controller
                 ->whereDate('endDate', '>=', $today)
                 ->count(),
 
-
             'consolidada' => (clone $baseQuery)
                 ->whereDate('startDate', '>=', $today)
                 ->count(),
-
 
             'pendiente' => (clone $baseQuery)
                 ->whereDate('endDate', '<', $today)
                 ->having('attendance_list_count', 0)
                 ->count(),
 
-
             'finalizadas' => (clone $baseQuery)
                 ->whereDate('endDate', '<', $today)
                 ->having('attendance_list_count', '>=', 1)
                 ->count(),
         ];
-
 
         return response()->json([
             'data'   => $items,
@@ -655,7 +655,7 @@ class AttendanceController extends Controller
 
 
 
-    // LISTA DE LOS ASESORES - EVENTOS ASIGNADOS A ELLOS 
+    // LISTA DE LOS ASESORES - EVENTOS ASIGNADOS A ELLOS
     public function eventsAssignedAdvisor()
     {
         $userId = Auth::id();
@@ -686,6 +686,7 @@ class AttendanceController extends Controller
             'eventsoffice_id' => $item->eventsoffice_id,
             'slug' => $item->slug,
             'title' => strtoupper($item->title),
+            'theme' => $item->theme ?? null,
             'finally' => $item->finally,
             'pnte' => $item->pnte->name,
             'id_pnte' => $item->pnte->id,
@@ -706,6 +707,7 @@ class AttendanceController extends Controller
             'district_id' => $item->distrito->id ?? null,
             // 'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
             'people_id' => $item->asesor->id ?? null,
+            'team' => $item->team ?? null,
             'asesor' => $item->asesor
                 ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
                 : null,

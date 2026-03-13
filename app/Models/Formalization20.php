@@ -255,7 +255,12 @@ class Formalization20 extends Model
                         ->orWhere('middlename', 'like', "%{$name}%")
                         ->orWhereRaw("CONCAT_WS(' ', name, lastname, middlename) LIKE ?", ["%{$name}%"]);
                 });
-            });
+            })
+                // búsqueda por RUC
+                ->orWhere('ruc', 'like', "%{$name}%")
+
+                // búsqueda por nombre de MYPE
+                ->orWhere('nameMype', 'like', "%{$name}%");
         }
 
         if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {

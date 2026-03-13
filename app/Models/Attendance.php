@@ -41,6 +41,7 @@ class Attendance extends Model
         'pasaje',
         'monto',
         'beneficiarios',
+        'team',
 
         'totalAsesorias',
         'totalFormalizaciones'
