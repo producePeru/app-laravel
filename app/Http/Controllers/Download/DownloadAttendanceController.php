@@ -19,15 +19,14 @@ use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Illuminate\Support\Facades\Auth;
 
 Carbon::setLocale('es');
 
 class DownloadAttendanceController extends Controller
 {
-
     public function exportAttendance(Request $request)
     {
-
         try {
 
             ini_set('memory_limit', '2G');
@@ -42,16 +41,25 @@ class DownloadAttendanceController extends Controller
                 'asesor'    => $request->input('asesor'),
             ];
 
+            $user = Auth::user();
+
+            // 🔒 si es asesor solo exporta sus eventos
+            if ($user->rol == 2) {
+                $filters['asesor'] = $user->id;
+            }
+
             $query = Attendance::query();
-            $query->withItems($filters);
+
+            $query->withItems($filters)
+                ->withCount('attendanceList'); // ⚡ evita consultas extra
 
             // 📄 Cargar plantilla Excel
             $templatePath = storage_path('app/plantillas/attendance_template.xlsx');
             $spreadsheet  = IOFactory::load($templatePath);
             $sheet        = $spreadsheet->getActiveSheet();
 
-            $startRow   = 2;
-            $rowIndex   = 0;
+            $startRow    = 2;
+            $rowIndex    = 0;
             $globalIndex = 1;
 
             // 🚀 Procesar por bloques
@@ -61,35 +69,67 @@ class DownloadAttendanceController extends Controller
                 &$globalIndex,
                 $startRow
             ) {
+
                 foreach ($rows as $item) {
 
                     $estado = $item->getEstado();
 
                     $row = [
+
                         $globalIndex++,
                         'UGO',
                         strtoupper(Carbon::now()->translatedFormat('F')),
+
                         Carbon::parse($item->startDate)->format('d/m/Y'),
                         Carbon::parse($item->endDate)->format('d/m/Y'),
-                        Carbon::parse($item->startDate)->diffInDays(Carbon::parse($item->endDate)) + 1,
+
+                        Carbon::parse($item->startDate)
+                            ->diffInDays(Carbon::parse($item->endDate)) + 1,
+
                         $item->pnte->name ?? '-',
+
                         strtoupper($item->title) ?? '-',
-                        strtoupper($item->theme ?? null) ?? '-',
+
+                        strtoupper($item->theme ?? '-') ?? '-',
+
                         $item->region->name ?? null,
                         $item->provincia->name ?? null,
                         $item->distrito->name ?? null,
-                        $item->address ?? null,
-                        strtoupper($item->entidad ?? null) ?? '-',
-                        strtoupper($item->entidad_aliada ?? null) ?? '-',
-                        $item->asesor ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename) : null,
-                        $item->pasaje == 'n' ? 'NO' : ($item->pasaje == 's' ? 'SI' : '-'),
-                        $item->monto ?? 0,
-                        $item->beneficiarios ?? null,
-                        $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
 
-                        $item->attendance_list_count > 0 ? 'CON LISTA' : 'SIN LISTA',
+                        $item->address ?? null,
+
+                        strtoupper($item->entidad ?? '-') ?? '-',
+
+                        strtoupper($item->entidad_aliada ?? '-') ?? '-',
+
+                        $item->asesor
+                            ? strtoupper(
+                                $item->asesor->name . ' ' .
+                                    $item->asesor->lastname . ' ' .
+                                    $item->asesor->middlename
+                            )
+                            : null,
+
+                        $item->pasaje == 'n'
+                            ? 'NO'
+                            : ($item->pasaje == 's' ? 'SI' : '-'),
+
+                        $item->monto ?? 0,
+
+                        $item->beneficiarios ?? null,
+
+                        $item->modality == 'v'
+                            ? 'VIRTUAL'
+                            : 'PRESENCIAL',
+
+                        $item->attendance_list_count > 0
+                            ? 'CON LISTA'
+                            : 'SIN LISTA',
+
                         $item->attendance_list_count ?? 0,
+
                         $item->total_asesorias ?? 0,
+
                         $item->total_formalizaciones ?? 0,
 
                         null,
@@ -100,20 +140,18 @@ class DownloadAttendanceController extends Controller
                         null,
                         null,
 
-                        $estado, // ✅ 
+                        $estado,
 
                         Carbon::parse($item->created_at)->format('d/m/Y'),
 
-
                         'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/' . $item->slug,
 
-
                         'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $item->slug
-
 
                     ];
 
                     $col = 'A';
+
                     foreach ($row as $value) {
                         $sheet->setCellValue($col . ($startRow + $rowIndex), $value);
                         $col++;
@@ -125,13 +163,20 @@ class DownloadAttendanceController extends Controller
 
             // 📥 Descargar archivo
             return new StreamedResponse(function () use ($spreadsheet) {
+
                 $writer = new Xlsx($spreadsheet);
                 $writer->save('php://output');
             }, 200, [
-                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="attendance_template.xlsx"',
+
+                'Content-Type' =>
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+
+                'Content-Disposition' =>
+                'attachment; filename="attendance_template.xlsx"',
+
             ]);
         } catch (\Exception $e) {
+
             return response()->json([
                 'message' => 'Ocurrió un error al generar el reporte',
                 'error'   => $e->getMessage(),

@@ -917,7 +917,7 @@ ADD CONSTRAINT tokens_user_id_foreign
 -- );
 
 
--- ALTER TABLE mp_eventos 
+-- ALTER TABLE mp_eventos
 -- ADD slug VARCHAR(255) UNIQUE AFTER title;
 
 -- ALTER TABLE mp_eventos
@@ -1029,11 +1029,11 @@ ADD CONSTRAINT tokens_user_id_foreign
 
 --     civil_status_id BIGINT UNSIGNED NOT NULL,
 
---     num_soons VARCHAR(3),   
+--     num_soons VARCHAR(3),
 
 --     gender_id BIGINT UNSIGNED NOT NULL,
 
---     sick VARCHAR(10) NULL,  
+--     sick VARCHAR(10) NULL,
 
 --     academicdegree_id BIGINT UNSIGNED NOT NULL,
 
@@ -1045,7 +1045,7 @@ ADD CONSTRAINT tokens_user_id_foreign
 --     created_at TIMESTAMP NULL,
 --     updated_at TIMESTAMP NULL,
 
- 
+
 --     FOREIGN KEY (economic_sector_id) REFERENCES economicsectors(id),
 --     -- FOREIGN KEY (rubro_id) REFERENCES categories(id),
 --     FOREIGN KEY (comercial_activity_id) REFERENCES activities(id),
@@ -1573,8 +1573,8 @@ CREATE TABLE mp_personalized_advice (
 --         REFERENCES email_templates(id)
 --         ON DELETE CASCADE
 
--- ) ENGINE=InnoDB 
--- DEFAULT CHARSET=utf8mb4 
+-- ) ENGINE=InnoDB
+-- DEFAULT CHARSET=utf8mb4
 -- COLLATE=utf8mb4_unicode_ci;
 
 
@@ -1584,44 +1584,65 @@ CREATE TABLE mp_personalized_advice (
 
 
 
-CREATE TABLE surveys (
+CREATE TABLE questions (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    nameTable VARCHAR(100) NOT NULL,
+    tableName VARCHAR(100) NOT NULL,
     label TEXT NOT NULL,
     type ENUM('text','select','radio','checkbox-multiple','search') NOT NULL,
     model VARCHAR(100),
     required BOOLEAN DEFAULT FALSE,
     position INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL
 );
 
 
 
 
-CREATE TABLE surveys_options (
+CREATE TABLE questions_options (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    survey_id BIGINT UNSIGNED NOT NULL,
+    question_id BIGINT UNSIGNED NOT NULL,
     label TEXT NOT NULL,
     value VARCHAR(250),
     status CHAR(1) DEFAULT '1',
     position INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (survey_id) REFERENCES surveys(id)
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    FOREIGN KEY (question_id) REFERENCES questions(id)
 );
 
 
 
 
+CREATE TABLE sedsurvey (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    sed_id BIGINT UNSIGNED NOT NULL,
+    question_id BIGINT UNSIGNED NOT NULL,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
 
+    CONSTRAINT fk_sedsurvey_fair
+        FOREIGN KEY (sed_id)
+        REFERENCES fairs(id)
+        ON DELETE CASCADE,
 
+    CONSTRAINT fk_sedsurvey_question
+        FOREIGN KEY (question_id)
+        REFERENCES questions(id)
+        ON DELETE CASCADE
+);
 
-
-
+-- ALTER TABLE attendancelist
+-- ADD COLUMN team VARCHAR(255) NULL
+-- AFTER totalFormalizaciones;
 
 
 
 laravel
 Str::limit(strip_tags($item->description), 150, '...'),
+
+

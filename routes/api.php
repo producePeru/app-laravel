@@ -250,6 +250,13 @@ Route::prefix('purchases-my-peru')->middleware('auth:sanctum')->group(function (
     require __DIR__ . '/api/purchasesmyperu.php';
 });
 
+Route::prefix('sed')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/sed.php';
+});
+
+Route::prefix('sed')->group(function () {
+    require __DIR__ . '/api/sed.php';
+});
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
