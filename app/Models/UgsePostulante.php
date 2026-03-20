@@ -15,11 +15,11 @@ class UgsePostulante extends Model
 
     protected $fillable = [
         'ruc',
-        'comercialName',
+        'comercialName',            // marca
         'socialReason',
         'economicsector_id',
         'comercialactivity_id',
-        'category_id',
+        'category_id',              // rubro
         'city_id',
         'typeAsistente',
         'typedocument_id',
@@ -47,8 +47,6 @@ class UgsePostulante extends Model
     ];
 
     // Relaciones
-
-
 
     public function economicsector()
     {
@@ -113,7 +111,6 @@ class UgsePostulante extends Model
         return $this->hasOne(SedQuestion::class, 'documentnumber', 'documentnumber')
             ->whereColumn('event_id', 'event_id');
     }
-
 
     public function scopeWithBasicFilters($query, $filters)
     {

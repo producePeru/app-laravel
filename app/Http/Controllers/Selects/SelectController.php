@@ -393,24 +393,28 @@ class SelectController extends Controller
     // Lista de asesores para el reporte
     public function getAsesoresReporte()
     {
-        // Obtener los perfiles donde el rol_id sea 2
-        $profiles = Profile::where('rol_id', 2)->get();
+        $users = User::where('rol', 2)->get();
 
-        $data = collect();
+        $data = $users->map(function ($user) {
 
-        foreach ($profiles as $profile) {
-            $label = strtoupper($profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename);
+            $label = strtoupper(
+                $user->name . ' ' .
+                    $user->lastname . ' ' .
+                    $user->middlename
+            );
 
-            $data->push([
+            return [
                 'label' => $label,
-                'value' => $profile->user_id,
-            ]);
-        }
+                'value' => $user->id,
+            ];
+        })
+            ->sortBy('label')
+            ->values();
 
-        // Ordenar por el campo label
-        $sortedData = $data->sortBy('label')->values();
-
-        return response()->json(['data' => $sortedData, 'status' => 200]);
+        return response()->json([
+            'data' => $data,
+            'status' => 200
+        ]);
     }
 
 

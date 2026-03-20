@@ -119,6 +119,9 @@ class Attendance extends Model
             $query->where('asesorId', $filters['asesor']);
         }
 
+        if (!empty($filters['tipo'])) {
+            $query->where('eventsoffice_id', $filters['tipo']);
+        }
 
         if (!empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {

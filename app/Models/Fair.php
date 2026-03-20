@@ -75,14 +75,24 @@ class Fair extends Model
         return $this->belongsTo(Image::class, 'image_id');
     }
 
+    // public function postulantes()
+    // {
+    //     return $this->hasMany(UgsePostulante::class, 'event_id');
+    // }
+
     public function postulantes()
     {
-        return $this->hasMany(UgsePostulante::class, 'event_id');
+        return $this->hasMany(SedAsistente::class, 'sed_id');
     }
 
     public function postulantesWow()
     {
         return $this->hasMany(CyberwowParticipant::class, 'event_id');
+    }
+
+    public function sedSurvey()
+    {
+        return $this->hasMany(SedSurvey::class, 'sed_id');
     }
 
 
@@ -113,7 +123,7 @@ class Fair extends Model
             'region',
             'fairType',
             'image',
-        ])->withCount(['postulantes', 'postulantesWow']);
+        ])->withCount(['postulantes', 'postulantesWow', 'sedSurvey']);
 
 
         if (!empty($filters['name'])) {
@@ -122,7 +132,6 @@ class Fair extends Model
                     ->orWhere('description', 'like', '%' . $filters['name'] . '%');
             });
         }
-
 
         if (!empty($filters['startDate']) && !empty($filters['endDate'])) {
             $query->where(function ($q) use ($filters) {

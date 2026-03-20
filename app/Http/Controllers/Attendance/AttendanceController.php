@@ -24,7 +24,6 @@ class AttendanceController extends Controller
 {
     public function listEventsUgo(Request $request)
     {
-
         $permission = getPermission('eventos-ugo');
 
         if (!$permission['hasPermission']) {
@@ -40,7 +39,8 @@ class AttendanceController extends Controller
             'dateEnd'   => $request->input('dateEnd'),
             'year'      => $request->input('year'),
             'orderby'   => $request->input('orderby'),
-            'asesor'    => $request->input('asesor')
+            'asesor'    => $request->input('asesor'),
+            'tipo'      => $request->input('tipo')
         ];
 
         $user = Auth::user();
