@@ -156,6 +156,7 @@ class FairController extends Controller
                 'name' => null,
                 'url'  => null,
             ],
+            'encuesta' => $item->sed_survey_count,
         ];
     }
 

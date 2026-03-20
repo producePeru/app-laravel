@@ -19,6 +19,18 @@ Route::controller(SedController::class)->group(function () {
 Route::controller(SedPublicController::class)->group(function () {
 
     Route::get('get-sed-survey/{slug}', 'getSedSurvey');
+
+    Route::get('is-register-this-user', 'isRegisterThisUser');
+
+    Route::get('ruc-company/{ruc}', 'rucCompany');
+
+    Route::get('dni-busimess-man/{dni}', 'dniBusimessMan');
+
+    Route::post('sed-register-mype', 'sedRegisterMype');
+
+    Route::post('qr-send-email-invitation', 'qrSendEmailInvitation');
+
+    Route::post('save-survey', 'saveSurvey');
 });
 
 
