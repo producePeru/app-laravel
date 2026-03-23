@@ -1584,57 +1584,57 @@ CREATE TABLE mp_personalized_advice (
 
 
 
-CREATE TABLE questions (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    tableName VARCHAR(100) NOT NULL,
-    label TEXT NOT NULL,
-    type ENUM('text','select','radio','checkbox-multiple','search') NOT NULL,
-    model VARCHAR(100),
-    required BOOLEAN DEFAULT FALSE,
-    position INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL
-);
+-- CREATE TABLE questions (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     tableName VARCHAR(100) NOT NULL,
+--     label TEXT NOT NULL,
+--     type ENUM('text','select','radio','checkbox-multiple','search') NOT NULL,
+--     model VARCHAR(100),
+--     required BOOLEAN DEFAULT FALSE,
+--     position INT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL DEFAULT NULL
+-- );
 
 
 
 
-CREATE TABLE questions_options (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    question_id BIGINT UNSIGNED NOT NULL,
-    label TEXT NOT NULL,
-    value VARCHAR(250),
-    status CHAR(1) DEFAULT '1',
-    position INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL,
+-- CREATE TABLE questions_options (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     question_id BIGINT UNSIGNED NOT NULL,
+--     label TEXT NOT NULL,
+--     value VARCHAR(250),
+--     status CHAR(1) DEFAULT '1',
+--     position INT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL DEFAULT NULL,
 
-    FOREIGN KEY (question_id) REFERENCES questions(id)
-);
-
-
+--     FOREIGN KEY (question_id) REFERENCES questions(id)
+-- );
 
 
-CREATE TABLE sedsurvey (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    sed_id BIGINT UNSIGNED NOT NULL,
-    question_id BIGINT UNSIGNED NOT NULL,
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL,
 
-    CONSTRAINT fk_sedsurvey_fair
-        FOREIGN KEY (sed_id)
-        REFERENCES fairs(id)
-        ON DELETE CASCADE,
 
-    CONSTRAINT fk_sedsurvey_question
-        FOREIGN KEY (question_id)
-        REFERENCES questions(id)
-        ON DELETE CASCADE
-);
+-- CREATE TABLE sedsurvey (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     sed_id BIGINT UNSIGNED NOT NULL,
+--     question_id BIGINT UNSIGNED NOT NULL,
+--     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+--     CONSTRAINT fk_sedsurvey_fair
+--         FOREIGN KEY (sed_id)
+--         REFERENCES fairs(id)
+--         ON DELETE CASCADE,
+
+--     CONSTRAINT fk_sedsurvey_question
+--         FOREIGN KEY (question_id)
+--         REFERENCES questions(id)
+--         ON DELETE CASCADE
+-- );
 
 -- ALTER TABLE attendancelist
 -- ADD COLUMN team VARCHAR(255) NULL
@@ -1645,56 +1645,56 @@ CREATE TABLE sedsurvey (
 
 
 
-CREATE TABLE sed_asistencias (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+-- CREATE TABLE sed_asistencias (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
-    sed_id BIGINT UNSIGNED NOT NULL,
-    mype_id BIGINT UNSIGNED NOT NULL,
+--     sed_id BIGINT UNSIGNED NOT NULL,
+--     mype_id BIGINT UNSIGNED NOT NULL,
 
-    attendance VARCHAR(20) NULL,
+--     attendance VARCHAR(20) NULL,
 
-    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL,
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL DEFAULT NULL,
 
-    CONSTRAINT fk_sed FOREIGN KEY (sed_id) REFERENCES fairs(id) ON DELETE CASCADE,
-    CONSTRAINT fk_mype FOREIGN KEY (mype_id) REFERENCES ugse_postulantes(id) ON DELETE CASCADE
-);
-
-
-INSERT INTO sed_asistencias (sed_id, mype_id, attendance, created_at, updated_at)
-SELECT 
-    event_id,
-    id,
-    attended,
-    NOW(),
-    NOW()
-FROM ugse_postulantes
-WHERE event_id IS NOT NULL;
+--     CONSTRAINT fk_sed FOREIGN KEY (sed_id) REFERENCES fairs(id) ON DELETE CASCADE,
+--     CONSTRAINT fk_mype FOREIGN KEY (mype_id) REFERENCES ugse_postulantes(id) ON DELETE CASCADE
+-- );
 
 
+-- INSERT INTO sed_asistencias (sed_id, mype_id, attendance, created_at, updated_at)
+-- SELECT 
+--     event_id,
+--     id,
+--     attended,
+--     NOW(),
+--     NOW()
+-- FROM ugse_postulantes
+-- WHERE event_id IS NOT NULL;
 
 
-CREATE TABLE sed_questions_answers (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+
+-- CREATE TABLE sed_questions_answers (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     
-    dni VARCHAR(12) NOT NULL,
-    ruc VARCHAR(11) NULL,
+--     dni VARCHAR(12) NOT NULL,
+--     ruc VARCHAR(11) NULL,
     
-    sed_id BIGINT UNSIGNED NOT NULL,
+--     sed_id BIGINT UNSIGNED NOT NULL,
     
-    question TEXT NOT NULL,
-    answer TEXT NULL,
+--     question TEXT NOT NULL,
+--     answer TEXT NULL,
     
-    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL,
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     deleted_at TIMESTAMP NULL DEFAULT NULL,
 
-    -- 🔥 Relación con fairs
-    CONSTRAINT fk_sed_questions_answers_fair
-        FOREIGN KEY (sed_id) REFERENCES fairs(id)
-        ON DELETE CASCADE
-);
+--     -- 🔥 Relación con fairs
+--     CONSTRAINT fk_sed_questions_answers_fair
+--         FOREIGN KEY (sed_id) REFERENCES fairs(id)
+--         ON DELETE CASCADE
+-- );
 
 
 

@@ -80,6 +80,7 @@ class SedPublicController extends Controller
     {
         try {
 
+            // 1️⃣ Validación
             if (empty($request->slug) || empty($request->documentNumber)) {
                 return response()->json([
                     'message' => 'slug y documentNumber son requeridos',
@@ -87,35 +88,35 @@ class SedPublicController extends Controller
                 ], 422);
             }
 
-
+            // 2️⃣ Buscar evento
             $fair = Fair::where('slug', $request->slug)->firstOrFail();
-            $postulante = UgsePostulante::where('documentnumber', $request->documentNumber)->first();
 
+            // 3️⃣ 🔥 Buscar TODOS los postulantes con ese documento
+            $postulantes = UgsePostulante::where('documentnumber', $request->documentNumber)->get();
 
-
-
-            if (!$postulante) {
+            if ($postulantes->isEmpty()) {
                 return response()->json([
                     'message' => 'No existe este usuario',
                     'status' => 409
                 ], 409);
             }
 
-
-
-            // 4️⃣ Buscar en sed_asistencias
+            // 4️⃣ 🔥 Buscar cuál está en sed_asistencias
             $asistencia = SedAsistente::where('sed_id', $fair->id)
-                ->where('mype_id', $postulante->id)
+                ->whereIn('mype_id', $postulantes->pluck('id'))
                 ->first();
 
             if (!$asistencia) {
                 return response()->json([
                     'message' => 'No existe este registro en el evento',
                     'status' => 409
-                ]);
+                ], 409);
             }
 
-            // 5️⃣ Respuesta OK
+            // 5️⃣ 🔥 Obtener el postulante correcto
+            $postulante = $postulantes->firstWhere('id', $asistencia->mype_id);
+
+            // 6️⃣ Respuesta OK
             return response()->json([
                 'status' => 200,
                 'data' => [
