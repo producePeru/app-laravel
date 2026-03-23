@@ -200,7 +200,7 @@ class FormularioPublicoController extends Controller
 
             $apiUrl = "https://api.decolecta.com/v1/reniec/dni?numero={$dni}";
 
-            $tokens = Token::where('name', 'mp')->pluck('token')->toArray();
+            $tokens = Token::where('name', 'decolecta')->pluck('token')->toArray();
 
             $client = new Client();
             $responseData = null;
