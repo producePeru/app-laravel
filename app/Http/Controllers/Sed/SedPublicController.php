@@ -280,11 +280,12 @@ class SedPublicController extends Controller
             // 5️⃣ Asistencia (update si ya existe)
             SedAsistente::updateOrCreate(
                 [
-                    'sed_id' => $fair->id,
-                    'mype_id' => $postulante->id
+                    'sed_id'    => $fair->id,
+                    'mype_id'   => $postulante->id,
+                    'dni'       => $postulante->documentnumber
                 ],
                 [
-                    'attendance' => Carbon::now()->format('d/m/Y h:i a'),
+                    'attendance' => null,           // Carbon::now()->format('d/m/Y h:i a')
                     'typeAsistente' => $request->typeAsistente
                 ]
             );
@@ -463,6 +464,119 @@ class SedPublicController extends Controller
                 'status' => 500,
                 'message' => 'Error al guardar encuesta',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function participantConsultation(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'slug' => 'required|string',
+                'dni'  => 'required',
+            ]);
+
+            $fair = Fair::where('slug', $validatedData['slug'])->first();
+
+            if (!$fair) {
+                return response()->json([
+                    'message' => 'Evento no encontrado',
+                    'status'  => 404
+                ], 404);
+            }
+
+            $postulante = UgsePostulante::where('documentnumber', $validatedData['dni'])->first();
+
+            if (!$postulante) {
+                return response()->json([
+                    'message' => 'no-se-registro',
+                    'status'  => 404
+                ]);
+            }
+
+            $asistencia = SedAsistente::where('sed_id', $fair->id)
+                ->where('dni', $postulante->documentnumber)
+                ->first();
+
+            if (!$asistencia) {
+                return response()->json([
+                    'message' => 'no-se-registro',
+                    'status'  => 404
+                ], 404);
+            }
+
+            $nombreCompleto = strtoupper(trim(
+                $postulante->name . ' ' . $postulante->lastname . ' ' . $postulante->middlename
+            ));
+
+
+            $status = is_null($asistencia->attendance) ? 'asistio' : 'ya-estas-en-sala';
+
+            return response()->json([
+                'data' => [
+                    'participant' => $nombreCompleto,
+                    'status'      => $status,
+                ],
+                'status' => 200
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error interno',
+                'error'   => $e->getMessage(),
+                'status'  => 500
+            ], 500);
+        }
+    }
+
+    public function registerAttendance(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'slug'     => 'required|string',
+                'dni'      => 'required|string',
+                'attended' => 'required|string',
+            ]);
+
+            $fair = Fair::where('slug', $validatedData['slug'])->first();
+
+            if (!$fair) {
+                return response()->json([
+                    'message' => 'Evento no encontrado',
+                    'status'  => 404
+                ], 404);
+            }
+
+            $postulante = UgsePostulante::where('documentnumber', $validatedData['dni'])->first();
+
+            if (!$postulante) {
+                return response()->json([
+                    'message' => 'Postulante no encontrado',
+                    'status'  => 404
+                ], 404);
+            }
+
+            $updated = SedAsistente::where('sed_id', $fair->id)
+                ->where('dni', $postulante->documentnumber)
+                ->update([
+                    'attendance' => $validatedData['attended']
+                ]);
+
+            if (!$updated) {
+                return response()->json([
+                    'message' => 'No se encontró registro de asistencia',
+                    'status'  => 404
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Asistencia registrada correctamente',
+                'status'  => 200
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error interno',
+                'error'   => $e->getMessage(),
+                'status'  => 500
             ], 500);
         }
     }

@@ -14,6 +14,7 @@ class SedAsistente extends Model
     protected $fillable = [
         'sed_id',
         'mype_id',
+        'dni',
         'attendance',
         'typeAsistente'
     ];

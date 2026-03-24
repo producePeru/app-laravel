@@ -29,6 +29,7 @@ class Notary extends Model
         // 'tarifasocial',
 
         'name',
+        'ruc',
         'city_id',
         'province_id',
         'district_id',

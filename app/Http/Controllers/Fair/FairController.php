@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Mail\FeriasEmpresarialesMail;
 use App\Models\FairPostulate;
+use App\Models\SedAsistente;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -208,39 +209,43 @@ class FairController extends Controller
         try {
             $today = Carbon::now();
 
-            // $fair = Fair::where('slug', $slug)->where('fairtype_id', 1)->first();
-            $fair = Fair::where('slug', $slug)
-                ->whereIn('fairtype_id', [1, 5, 3])
-                ->firstOrFail();
+            $fair = Fair::where('slug', $slug)->first();
 
             if ($fair) {
-                if ($today->gt(Carbon::parse($fair->endDate)->endOfDay())) {
-                    return response()->json([
-                        'data' => [
-                            'title' => '¡Evento Finalizado!',
-                            'message' => '
+
+                // 🔥 VALIDAR HASTA EL FINAL DEL DÍA usando "fecha"
+                if (!empty($fair->fecha)) {
+
+                    $fechaEvento = Carbon::parse($fair->fecha)->endOfDay();
+
+                    if ($today->gt($fechaEvento)) {
+                        return response()->json([
+                            'data' => [
+                                'title' => '¡Evento Finalizado!',
+                                'message' => '
                             El evento que estabas buscando ya ha caducado o no se encuentra disponible en este momento. </br>
                             Pero no te detengas 🚀, </br>
                             nuevas oportunidades están en camino.</br>
                             Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos </br>
                             para seguir fortaleciendo tu emprendimiento.
                             ',
-                            'status' => 404
-                        ]
-                    ]);
+                                'status' => 404
+                            ]
+                        ]);
+                    }
                 }
 
                 return response()->json([
                     'data' => [
-                        'slug' => $fair->slug,
-                        'title' => $fair->title,
-                        'subTitle' => $fair->subTitle,
+                        'slug'        => $fair->slug,
+                        'title'       => $fair->title,
+                        'subTitle'    => $fair->subTitle,
                         'description' => $fair->description,
-                        'modality' => $fair->modality,
-                        'typeFair' => $fair->fairtype_id,
-                        'fecha' => $fair->fecha,
-                        'place' => $fair->place,
-                        'schedule' => $fair->hours
+                        'modality'    => $fair->modality,
+                        'typeFair'    => $fair->fairtype_id,
+                        'fecha'       => $fair->fecha,
+                        'place'       => $fair->place,
+                        'schedule'    => $fair->hours
                     ],
                     'status' => 200
                 ]);
@@ -266,19 +271,27 @@ class FairController extends Controller
     public function showEventCount($slug)
     {
         try {
+
             $fair = Fair::where('slug', $slug)->first();
 
             if (!$fair) {
                 return response()->json([
                     'message' => 'Feria no encontrada.',
                     'status' => 404
-                ]);
+                ], 404);
             }
+
+            // 🔥 Conteo desde sed_asistencias
+            $total = SedAsistente::where('sed_id', $fair->id)->count();
+
+            $amountNow = SedAsistente::where('sed_id', $fair->id)
+                ->whereNotNull('attendance')
+                ->count();
 
             return response()->json([
                 'data' => [
-                    'total'      => $fair->postulantes()->count(),
-                    'amountNow' => $fair->postulantes()->whereNotNull('attended')->count(),
+                    'total'     => $total,
+                    'amountNow' => $amountNow,
                 ],
                 'status' => 200
             ]);
@@ -287,7 +300,7 @@ class FairController extends Controller
                 'message' => 'Error al obtener los datos.',
                 'error'   => $e->getMessage(),
                 'status'  => 500
-            ]);
+            ], 500);
         }
     }
 

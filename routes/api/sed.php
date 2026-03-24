@@ -14,6 +14,8 @@ Route::controller(SedController::class)->group(function () {
     Route::put('update-sed-survey/{id}', 'updateSedQuestion');
 
     Route::delete('delete-sed-survey/{id}', 'deleteSedQuestion');
+
+    Route::post('store-question', 'storeSedQuestion');
 });
 
 Route::controller(SedPublicController::class)->group(function () {
@@ -31,6 +33,10 @@ Route::controller(SedPublicController::class)->group(function () {
     Route::post('qr-send-email-invitation', 'qrSendEmailInvitation');
 
     Route::post('save-survey', 'saveSurvey');
+
+    Route::post('participant-consultation', 'participantConsultation');
+
+    Route::put('register-attendance', 'registerAttendance');
 });
 
 

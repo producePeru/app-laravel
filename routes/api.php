@@ -125,8 +125,8 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
     //SED
     // Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // VUETIFY FORM UGSE EventsUgseController sed
-    Route::post('participant-info',                 [UgsePostulanteController::class, 'isRegistered']);             // VUETIFY FORM UGSE EventsUgseController sed
-    Route::put('register-attendance',               [UgsePostulanteController::class, 'registerAttendance']);       // registra la fecha y hora de asistencia
+    // Route::post('participant-info',                 [UgsePostulanteController::class, 'isRegistered']);             // VUETIFY FORM UGSE EventsUgseController sed
+    // Route::put('register-attendance',               [UgsePostulanteController::class, 'registerAttendance']);       // registra la fecha y hora de asistencia
 
 });
 
