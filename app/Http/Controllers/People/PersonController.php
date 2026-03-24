@@ -436,7 +436,7 @@ class PersonController extends Controller
             'typedocument_id',
             'documentnumber',
             'lastname',
-            'middlename',
+            'middlename',   // opcional, no requerido
             'name',
             'country_id',
             'city_id',

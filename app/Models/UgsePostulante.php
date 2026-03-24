@@ -112,6 +112,11 @@ class UgsePostulante extends Model
             ->whereColumn('event_id', 'event_id');
     }
 
+    public function sedAsistencias()
+    {
+        return $this->hasMany(SedAsistente::class, 'mype_id');
+    }
+
     public function scopeWithBasicFilters($query, $filters)
     {
         if (!empty($filters['year'])) {
