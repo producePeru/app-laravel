@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Storage;
 use App\Mail\FairSedInfoMail;
 use App\Models\Question;
 use App\Models\sedQuestionAnswer;
-use FontLib\Table\Type\name;
 use Illuminate\Support\Facades\Mail;
 
 class SedPublicController extends Controller
@@ -27,14 +26,25 @@ class SedPublicController extends Controller
     public function getSedSurvey($slug)
     {
         try {
-
+            // 1. Buscar el evento
             $fair = Fair::where('slug', $slug)->firstOrFail();
 
+            $fechaExpiracion = Carbon::parse($fair->fecha)->endOfDay();
+
+            // 2. VALIDACIÓN DE FECHA
+            // Comparamos si la fecha actual (now()) es mayor a la fecha del evento
+            if (now()->greaterThan($fechaExpiracion)) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'La encuesta finalizó el día ' . $fechaExpiracion->format('d/m/Y') . ' a las 23:59.'
+                ]);
+            }
+
+            // 3. Traer preguntas si la validación pasa
             $questions = SedSurvey::where('sed_id', $fair->id)
                 ->with(['question.options'])
                 ->get()
                 ->map(function ($item) {
-
                     $q = $item->question;
 
                     if (!$q || $q->tableName !== 'sed') {
@@ -58,12 +68,13 @@ class SedPublicController extends Controller
                 ->filter()
                 ->values();
 
+            // 4. Retornar respuesta exitosa
             return response()->json([
                 'status' => 200,
-                'questions' => $questions
+                'questions' => $questions,
+                'sed_title' => $fair->title
             ]);
         } catch (\Throwable $e) {
-
             Log::error('Error obteniendo encuesta SED', [
                 'error' => $e->getMessage()
             ]);
@@ -123,7 +134,7 @@ class SedPublicController extends Controller
                     'ruc'        => $postulante->ruc,
                     'name'       => strtoupper($postulante->name),
                     'lastname'   => strtoupper($postulante->lastname),
-                    'middlename' => strtoupper($postulante->middlename),
+                    'middlename' => strtoupper($postulante->middlename)
                 ]
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {

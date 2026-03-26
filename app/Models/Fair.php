@@ -33,6 +33,11 @@ class Fair extends Model
     ];
 
 
+    protected $casts = [
+        'fecha' => 'datetime',
+    ];
+
+
     protected $dates = ['startDate', 'endDate', 'deleted_at'];
 
     public function region()

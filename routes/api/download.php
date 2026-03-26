@@ -27,6 +27,8 @@ Route::controller(DownloadFormalizationsController::class)->group(function () {
 Route::controller(SedAsistentesController::class)->group(function () {
 
     Route::post('sed-asistentes/{slug}', 'exportList');
+
+    Route::post('get-sed-answers', 'exportSedAnswers');
 });
 
 Route::controller(CyberWowParticipantesController::class)->group(function () {

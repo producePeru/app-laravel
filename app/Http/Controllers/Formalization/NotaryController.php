@@ -32,53 +32,54 @@ class NotaryController extends Controller
         $query->withItems($filters);
 
         $items = $query->paginate(150)->through(function ($item) {
-			return $this->mapItems($item);
-		});
+            return $this->mapItems($item);
+        });
 
         return response()->json([
-			'data'   => $items,
-			'status' => 200
-		]);
+            'data'   => $items,
+            'status' => 200
+        ]);
     }
 
     private function mapItems($item)
-	{
-		return [
-				'id' => $item->id,
-                'name' => $item->name,
-                'city_id' => $item->city->id,
-                'province_id' => $item->province->id,
-                'district_id' => $item->district->id,
-                'addressNotary' => $item->addressNotary,
-                'city_name' => $item->city->name,
-                'province_name' => $item->province->name,
-                'district_name' => $item->district->name,
-                'gasto1' => $item->gasto1,
-                'gasto1Detail' => $item->gasto1Detail,
-                'gasto2' => $item->gasto2,
-                'gasto2Detail' => $item->gasto2Detail,
-                'gasto3' => $item->gasto3,
-                'gasto3Detail' => $item->gasto3Detail,
-                'gasto4' => $item->gasto4,
-                'gasto4Detail' => $item->gasto4Detail,
-                'gasto5' => $item->gasto5,
-                'gasto5Detail' => $item->gasto5Detail,
-                'gasto6' => $item->gasto6,
-                'gasto6Detail' => $item->gasto6Detail,
-                'testimonio' => $item->testimonio,
-                'legalization' => $item->legalization,
-                'biometric' => $item->biometric,
-                'aclaratory' => $item->aclaratory,
-                'socio' => $item->socio,
-                'conditions' => $item->conditions,
-                'contactName' => $item->contactName,
-                'contactEmail' => $item->contactEmail,
-                'contactPhone' => $item->contactPhone,
-                'normalTarifa' => $item->normalTarifa,
-                'status' => $item->status == 1 ? true : false,
-				'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
-		];
-	}
+    {
+        return [
+            'id' => $item->id,
+            'name' => $item->name,
+            'ruc' => $item->ruc ?? null,
+            'city_id' => $item->city->id,
+            'province_id' => $item->province->id,
+            'district_id' => $item->district->id,
+            'addressNotary' => $item->addressNotary,
+            'city_name' => $item->city->name,
+            'province_name' => $item->province->name,
+            'district_name' => $item->district->name,
+            'gasto1' => $item->gasto1,
+            'gasto1Detail' => $item->gasto1Detail,
+            'gasto2' => $item->gasto2,
+            'gasto2Detail' => $item->gasto2Detail,
+            'gasto3' => $item->gasto3,
+            'gasto3Detail' => $item->gasto3Detail,
+            'gasto4' => $item->gasto4,
+            'gasto4Detail' => $item->gasto4Detail,
+            'gasto5' => $item->gasto5,
+            'gasto5Detail' => $item->gasto5Detail,
+            'gasto6' => $item->gasto6,
+            'gasto6Detail' => $item->gasto6Detail,
+            'testimonio' => $item->testimonio,
+            'legalization' => $item->legalization,
+            'biometric' => $item->biometric,
+            'aclaratory' => $item->aclaratory,
+            'socio' => $item->socio,
+            'conditions' => $item->conditions,
+            'contactName' => $item->contactName,
+            'contactEmail' => $item->contactEmail,
+            'contactPhone' => $item->contactPhone,
+            'normalTarifa' => $item->normalTarifa,
+            'status' => $item->status == 1 ? true : false,
+            'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
+        ];
+    }
 
 
     public function storeNotary(Request $request)
@@ -161,7 +162,7 @@ class NotaryController extends Controller
     }
 
 
-    public function updateStatusNotary ($id)
+    public function updateStatusNotary($id)
     {
         try {
             $notary = Notary::findOrFail($id);
