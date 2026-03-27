@@ -102,6 +102,18 @@ class SedPublicController extends Controller
             // 2️⃣ Buscar evento
             $fair = Fair::where('slug', $request->slug)->firstOrFail();
 
+            $alreadyCompleted = sedQuestionAnswer::where('dni', $request->documentNumber)
+                ->where('sed_id', $fair->id)
+                ->exists();
+
+            if ($alreadyCompleted) {
+                return response()->json([
+                    'message' => '¡Gracias! Ya hemos recibido tus respuestas para este evento anteriormente.',
+                    'status' => 403
+                ]);
+            }
+
+
             // 3️⃣ 🔥 Buscar TODOS los postulantes con ese documento
             $postulantes = UgsePostulante::where('documentnumber', $request->documentNumber)->get();
 
@@ -305,10 +317,12 @@ class SedPublicController extends Controller
                 'status' => 200,
                 'message' => 'Registro guardado correctamente',
                 'data' => [
-                    'postulante_id' => $postulante->id
+                    'postulante_id' => $postulante->id,
                 ]
             ]);
         } catch (\Exception $e) {
+
+
 
             Log::error('Error obteniendo encuesta SED', [
                 'error' => $e->getMessage()
@@ -588,6 +602,59 @@ class SedPublicController extends Controller
                 'message' => 'Error interno',
                 'error'   => $e->getMessage(),
                 'status'  => 500
+            ], 500);
+        }
+    }
+
+    public function markAttendance(Request $request)
+    {
+        try {
+            // 1. Validar que el payload traiga lo necesario
+            $request->validate([
+                'slug' => 'required|string',
+                'dni'  => 'required'
+            ]);
+
+            // 2. Buscar el evento por slug para obtener el ID
+            $fair = Fair::where('slug', $request->slug)->firstOrFail();
+
+            // 3. Buscar al asistente por sed_id y dni
+            $asistente = SedAsistente::where('sed_id', $fair->id)
+                ->where('dni', $request->dni)
+                ->first();
+
+            // Si no existe el asistente en ese evento
+            if (!$asistente) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'El DNI ingresado no está registrado como asistente de este evento.'
+                ], 404);
+            }
+
+            // 4. Actualizar el campo attendance con el formato "27/03/2026 12:23"
+            // Usamos now() de Carbon con el formato específico
+            $asistente->attendance = Carbon::now()->format('d/m/Y H:i');
+            $asistente->save();
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Asistencia marcada correctamente.',
+                'data'    => [
+                    'hora_asistencia' => $asistente->attendance,
+                    'dni' => $asistente->dni
+                ]
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Evento (slug) no encontrado.'
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('Error al marcar asistencia: ' . $e->getMessage());
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Error interno al procesar la asistencia.',
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
