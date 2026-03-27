@@ -37,6 +37,8 @@ Route::controller(SedPublicController::class)->group(function () {
     Route::post('participant-consultation', 'participantConsultation');
 
     Route::put('register-attendance', 'registerAttendance');
+
+    Route::put('mark-attendance', 'markAttendance');
 });
 
 
