@@ -1701,6 +1701,10 @@ CREATE TABLE mp_personalized_advice (
 laravel
 Str::limit(strip_tags($item->description), 150, '...'),
 
-
+***************************************************
+UPDATE sed_asistencias sa
+JOIN ugse_postulantes up ON sa.mype_id = up.id
+SET sa.dni = up.documentnumber;
+***************************************************
 
 

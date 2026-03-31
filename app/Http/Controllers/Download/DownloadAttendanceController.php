@@ -33,12 +33,17 @@ class DownloadAttendanceController extends Controller
             set_time_limit(300);
 
             $filters = [
-                'name'      => $request->input('name'),
-                'dateStart' => $request->input('dateStart'),
-                'dateEnd'   => $request->input('dateEnd'),
-                'year'      => $request->input('year'),
-                'orderby'   => $request->input('orderby'),
-                'asesor'    => $request->input('asesor'),
+                'name'       => $request->input('name'),
+                'asesor'     => $request->input('asesor'),
+                'modalidad'  => $request->input('modalidad'),
+                'year'       => $request->input('year'),
+                'date'       => $request->input('date'),
+                'rangeDate'  => $request->input('rangeDate') ?? [],
+                'city'       => $request->input('city'),
+                'province'   => $request->input('province'),
+                'district'   => $request->input('district'),
+                'status'     => $request->input('status'),
+                'orderby'    => $request->input('orderby'),
             ];
 
             $user = Auth::user();
@@ -77,8 +82,10 @@ class DownloadAttendanceController extends Controller
                     $row = [
 
                         $globalIndex++,
+
                         'UGO',
-                        strtoupper(Carbon::now()->translatedFormat('F')),
+
+                        strtoupper(Carbon::parse($item->startDate)->translatedFormat('F')),
 
                         Carbon::parse($item->startDate)->format('d/m/Y'),
                         Carbon::parse($item->endDate)->format('d/m/Y'),
@@ -132,13 +139,13 @@ class DownloadAttendanceController extends Controller
 
                         $item->total_formalizaciones ?? 0,
 
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
+                        // null,
+                        // null,
+                        // null,
+                        // null,
+                        // null,
+                        // null,
+                        // null,
 
                         $estado,
 
