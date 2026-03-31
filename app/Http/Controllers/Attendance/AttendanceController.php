@@ -34,13 +34,17 @@ class AttendanceController extends Controller
         }
 
         $filters = [
-            'name'      => $request->input('name'),
-            'dateStart' => $request->input('dateStart'),
-            'dateEnd'   => $request->input('dateEnd'),
-            'year'      => $request->input('year'),
-            'orderby'   => $request->input('orderby'),
-            'asesor'    => $request->input('asesor'),
-            'tipo'      => $request->input('tipo')
+            'name'       => $request->input('name'),
+            'asesor'     => $request->input('asesor'),
+            'modalidad'  => $request->input('modalidad'),
+            'year'       => $request->input('year'),
+            'date'       => $request->input('date'),
+            'rangeDate'  => $request->input('rangeDate'),
+            'city'       => $request->input('city'),
+            'province'   => $request->input('province'),
+            'district'   => $request->input('district'),
+            'status'     => $request->input('status'),
+            'orderby'    => $request->input('orderby'),
         ];
 
         $user = Auth::user();
@@ -54,7 +58,9 @@ class AttendanceController extends Controller
 
         $query->withItems($filters);
 
-        $items = $query->paginate(100)->through(function ($item) {
+        $perPage = $request->input('pageSize', 10);
+
+        $items = $query->paginate($perPage)->through(function ($item) {
             return $this->mapAdvisory($item);
         });
 

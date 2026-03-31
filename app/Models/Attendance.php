@@ -90,9 +90,76 @@ class Attendance extends Model
         return $query;
     }
 
+    // public function scopeWithItems($query, $filters)
+    // {
+    //     $query = $query->with([
+    //         'attendanceList',
+    //         'region',
+    //         'provincia',
+    //         'distrito',
+    //         'profile:id,user_id,name,lastname,middlename',
+    //         'asesor',
+    //         'pnte'
+    //     ])
+    //         ->withCount('attendanceList')
+    //         ->withCount([
+    //             'attendanceList as total_asesorias' => function ($q) {
+    //                 $q->where('is_asesoria', 's');
+    //             },
+    //             'attendanceList as total_formalizaciones' => function ($q) {
+    //                 $q->where('was_formalizado', 's');
+    //             }
+    //         ]);
+
+    //     if (!empty($filters['asesor'])) {
+    //         $query->where('asesorId', $filters['asesor']);
+    //     }
+
+    //     if (!empty($filters['tipo'])) {
+    //         $query->where('eventsoffice_id', $filters['tipo']);
+    //     }
+
+    //     if (!empty($filters['name'])) {
+    //         $query->where(function ($q) use ($filters) {
+    //             $q->where('title', 'like', '%' . $filters['name'] . '%')
+    //                 ->orWhere('description', 'like', '%' . $filters['name'] . '%')
+    //                 ->orWhere('slug', 'like', '%' . $filters['name'] . '%');
+    //         });
+    //     }
+
+
+    //     if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+    //         $query->where(function ($q) use ($filters) {
+    //             $q->whereBetween('startDate', [$filters['dateStart'], $filters['dateEnd']])
+    //                 ->orWhereBetween('endDate', [$filters['dateStart'], $filters['dateEnd']]);
+    //         });
+    //     }
+
+    //     if (!empty($filters['year'])) {
+
+    //         $query->whereYear('created_at', $filters['year']);
+    //     }
+
+    //     if (!empty($filters['orderby']) && $filters['orderby'] == 1) {
+
+    //         $query->orderBy('attendance_list_count', 'desc');
+    //     } else if (!empty($filters['orderby']) && $filters['orderby'] == 2) {
+
+    //         $query->orderBy('attendance_list_count', 'asc');
+    //     } else if (!empty($filters['orderby']) && $filters['orderby'] == 3) {
+
+    //         $query->orderBy('finally', 'desc');
+    //     } else {
+
+    //         $query->orderBy('created_at', 'desc');
+    //     }
+    // }
+
+
+
     public function scopeWithItems($query, $filters)
     {
-        $query = $query->with([
+        $query->with([
             'attendanceList',
             'region',
             'provincia',
@@ -111,53 +178,99 @@ class Attendance extends Model
                 }
             ]);
 
-        // if (!empty($filters['asesor'])) {
-        //     $query->where('people_id', $filters['asesor']);
-        // }
+        // 🔍 NOMBRE (title)
+        if (!empty($filters['name'])) {
+            $query->where('title', 'like', '%' . $filters['name'] . '%');
+        }
 
+        // 👤 ASESOR
         if (!empty($filters['asesor'])) {
             $query->where('asesorId', $filters['asesor']);
         }
 
-        if (!empty($filters['tipo'])) {
-            $query->where('eventsoffice_id', $filters['tipo']);
+        // 🏢 MODALIDAD
+        if (!empty($filters['modalidad'])) {
+            $modalidad = $filters['modalidad'] === 'presencial' ? 'p' : 'v';
+            $query->where('modality', $modalidad);
         }
 
-        if (!empty($filters['name'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->where('title', 'like', '%' . $filters['name'] . '%')
-                    ->orWhere('description', 'like', '%' . $filters['name'] . '%')
-                    ->orWhere('slug', 'like', '%' . $filters['name'] . '%');
-            });
-        }
-
-
-        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->whereBetween('startDate', [$filters['dateStart'], $filters['dateEnd']])
-                    ->orWhereBetween('endDate', [$filters['dateStart'], $filters['dateEnd']]);
-            });
-        }
-
+        // 📅 AÑO (startDate)
         if (!empty($filters['year'])) {
-
-            $query->whereYear('created_at', $filters['year']);
+            $query->whereYear('startDate', $filters['year']);
         }
 
-        if (!empty($filters['orderby']) && $filters['orderby'] == 1) {
+        // 📅 FECHA EXACTA (created_at)
+        if (!empty($filters['date'])) {
+            $query->whereDate('created_at', $filters['date']);
+        }
 
-            $query->orderBy('attendance_list_count', 'desc');
-        } else if (!empty($filters['orderby']) && $filters['orderby'] == 2) {
+        // 📅 RANGO (startDate)
+        if (!empty($filters['rangeDate']) && count($filters['rangeDate']) === 2) {
+            $query->whereBetween('startDate', [
+                $filters['rangeDate'][0],
+                $filters['rangeDate'][1]
+            ]);
+        }
 
-            $query->orderBy('attendance_list_count', 'asc');
-        } else if (!empty($filters['orderby']) && $filters['orderby'] == 3) {
+        // 🌎 UBICACIÓN
+        if (!empty($filters['city'])) {
+            $query->where('city_id', $filters['city']);
+        }
 
-            $query->orderBy('finally', 'desc');
+        if (!empty($filters['province'])) {
+            $query->where('province_id', $filters['province']);
+        }
+
+        if (!empty($filters['district'])) {
+            $query->where('district_id', $filters['district']);
+        }
+
+        // 🚦 STATUS (LO MÁS IMPORTANTE 🔥)
+        if (!empty($filters['status'])) {
+
+            $today = Carbon::today();
+
+            switch ($filters['status']) {
+
+                case '1. PROGRAMACION DIARIA':
+                    $query->whereDate('created_at', $today);
+                    break;
+
+                case '2. PROGRAMACION CONSOLIDADA':
+                    $query->whereDate('created_at', '<', $today)
+                        ->whereDate('endDate', '>=', $today)
+                        ->having('attendance_list_count', 0);
+                    break;
+
+                case '3. PENDIENTE DE RESULTADOS':
+                    $query->whereDate('endDate', '<', $today)
+                        ->having('attendance_list_count', 0);
+                    break;
+
+                case '4. FINALIZADOS':
+                    $query->having('attendance_list_count', '>', 0);
+                    break;
+            }
+        }
+
+        // 🔽 ORDEN
+        if (!empty($filters['orderby'])) {
+            switch ($filters['orderby']) {
+                case 1:
+                    $query->orderBy('attendance_list_count', 'desc');
+                    break;
+                case 2:
+                    $query->orderBy('attendance_list_count', 'asc');
+                    break;
+                case 3:
+                    $query->orderBy('finally', 'desc');
+                    break;
+            }
         } else {
-
             $query->orderBy('created_at', 'desc');
         }
     }
+
 
     // eventos asignados a un asesor
 
