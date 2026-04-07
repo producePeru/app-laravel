@@ -37,6 +37,7 @@ class SedAsistentesController extends Controller
                     'postulante.company:id,ruc,socialReason',
                     'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
                     'postulante.businessman.typedocument:id,name',
+                    'postulante.typedocument:id,avr',
                     'postulante.businessman.gender:id,name',
                     'postulante.economicsector',
                     'postulante.category',
@@ -97,7 +98,7 @@ class SedAsistentesController extends Controller
                     // 🔥 typeAsistente DESDE sed_asistencias
                     $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
 
-                    $p->businessman->typedocument->name ?? '-',
+                    $p->typedocument->avr ?? null,
 
                     $p->businessman->documentnumber ?? $p->documentnumber,
                     $p->businessman->name ?? $p->name,

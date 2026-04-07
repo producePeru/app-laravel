@@ -18,7 +18,9 @@ class SedQuestion extends Model
         'question_4',
         'question_5',
         'documentnumber',
-        'event_id'
+        'event_id',
+        'cooperativa',
+        'rucCooperativa'
     ];
 
     public function ugsePostulante()

@@ -34,40 +34,52 @@ class EventExport implements FromCollection, WithHeadings, WithTitle, WithStyles
     {
         return [
             'A' => 6,
-            'B' => 10,
-            'C' => 22,
-            'D' => 20,
-            'E' => 17,
-            'F' => 34,
-            'G' => 13,
-            'H' => 12,
-            'I' => 28,
-            'J' => 40,
-            'K' => 22,
+            'B' => 12,
+            'C' => 25,
+            'D' => 30,
+            'E' => 20,
+            'F' => 20,
+            'G' => 20,
+            'H' => 35,
+            'I' => 18,
+            'J' => 18,
+            'K' => 40,
+            'L' => 40,
+            'M' => 25,
+            'N' => 15,
+            'O' => 25,
+            'P' => 25,
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
-        // Aplicar fondo azul a la primera fila
-        $sheet->getStyle('A1:K1')->getFill()
+        $highestRow = $sheet->getHighestRow();
+        $highestColumn = $sheet->getHighestColumn();
+
+        // 🎨 HEADER (igual que ya tenías)
+        $sheet->getStyle('A1:' . $highestColumn . '1')->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('002060');
 
-        // Poner en negrita y cambiar color de fuente a blanco en la primera fila
-        $sheet->getStyle('A1:K1')->getFont()->setBold(true)
+        $sheet->getStyle('A1:' . $highestColumn . '1')->getFont()
+            ->setBold(true)
             ->getColor()->setARGB('FFFFFF');
 
-        // Ajustar texto en las columnas que necesiten mostrar varias líneas
-        $columnasAjustadas = ['C', 'D', 'F', 'G', 'K']; // Puedes ajustar más columnas si es necesario
-        foreach ($columnasAjustadas as $columna) {
-            $sheet->getStyle("{$columna}1:{$columna}1000") // Ajusta hasta la fila 1000 (o más si lo necesitas)
-                ->getAlignment()->setWrapText(true);
-        }
+        // 📏 WRAP TEXT EN TODAS LAS CELDAS
+        $sheet->getStyle('A1:' . $highestColumn . $highestRow)
+            ->getAlignment()
+            ->setWrapText(true);
 
-        // Alineación vertical al centro
-        $sheet->getStyle('A1:K1')->getAlignment()
+        // 📐 ALINEACIÓN
+        $sheet->getStyle('A1:' . $highestColumn . $highestRow)
+            ->getAlignment()
             ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+
+        // 🔥 AUTO HEIGHT (CLAVE)
+        for ($row = 1; $row <= $highestRow; $row++) {
+            $sheet->getRowDimension($row)->setRowHeight(-1);
+        }
     }
 
     public function headings(): array
@@ -78,12 +90,17 @@ class EventExport implements FromCollection, WithHeadings, WithTitle, WithStyles
             'TIPO DE ACTIVIDAD',
             'TÍTULO',
             'REGIÓN',
-            'LUGAR',
+            'PROVINCIA',
+            'DISTRITO',
+            'DIRECCIÓN',
             'FECHA',
             'HORARIO',
             'DESCRIPCIÓN',
             'RESULTADOS',
             'NOMBRE RESPONSABLE',
+            'MODALIDAD',
+            'CANCELADO',
+            'REPROGRAMADO',
         ];
     }
 }

@@ -222,28 +222,59 @@ class EventsController extends Controller
     }
 
 
+    // public function index(Request $request) v.1.0
+    // {
+
+    //     return "Hello world";
+
+    //     $filters = [
+    //         'name'      => $request->input('name'),
+    //         'year'      => $request->input('year'),
+    //         // 'asesor'    => $request->input('asesor'),
+    //         'dateStart' => $request->input('dateStart'),
+    //         'dateEnd'   => $request->input('dateEnd'),
+    //         'offices'   => $request->input('offices'),
+    //         'type'      => $request->input('type')
+    //     ];
+
+    //     $query = Event::query();
+
+    //     $query->withAdvisoryRangeDate($filters);
+
+    //     $advisories = $query->paginate(150)->through(function ($advisory) {
+    //         return $this->mapEvents($advisory);
+    //     });
+
+    //     return response()->json([
+    //         'data'   => $advisories,
+    //         'status' => 200
+    //     ]);
+    // }
+
     public function index(Request $request)
     {
         $filters = [
-            'name'      => $request->input('name'),
-            'year'      => $request->input('year'),
-            // 'asesor'    => $request->input('asesor'),
-            'dateStart' => $request->input('dateStart'),
-            'dateEnd'   => $request->input('dateEnd'),
-            'offices'   => $request->input('offices'),
-            'type'      => $request->input('type')
+            'name'       => $request->input('name'),
+            'year'       => $request->input('year'),
+            'pnte'       => $request->input('pnte'),
+            'modalidad'  => $request->input('modalidad'),
+            'date'       => $request->input('date'),
+            'rangeDate'  => $request->input('rangeDate'),
+            'city'       => $request->input('city'),
+            'province'   => $request->input('province'),
+            'district'   => $request->input('district'),
         ];
 
         $query = Event::query();
 
         $query->withAdvisoryRangeDate($filters);
 
-        $advisories = $query->paginate(150)->through(function ($advisory) {
-            return $this->mapEvents($advisory);
-        });
+        $events = $query
+            ->paginate($request->input('pageSize', 10))
+            ->through(fn($item) => $this->mapEvents($item));
 
         return response()->json([
-            'data'   => $advisories,
+            'data'   => $events,
             'status' => 200
         ]);
     }
@@ -257,6 +288,7 @@ class EventsController extends Controller
             'province'          => $item->province->name ?? null,
             'district'          => $item->district->name ?? null,
             'place'             => $item->place,
+            'modalidad'         => $item->link ? 'VIRTUAL' : 'PRESENCIAL',
             'office'            => $item->officePnte->office,
             'area'              => $item->officePnte->name,
             'title'             => $item->title,
@@ -268,6 +300,8 @@ class EventsController extends Controller
             'resultado'         => strip_tags($item->resultado),
             'nameUser'          => $item->nameUser,
             'link'              => $item->link,
+            'canceled'           => $item->canceled,
+            'rescheduled'        => $item->rescheduled,
             'all'               => $item
         ];
     }
@@ -366,39 +400,6 @@ class EventsController extends Controller
         ]);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public function getEventsByDate(Request $request)
     {
         // Obtener filtros desde la solicitud
@@ -495,25 +496,6 @@ class EventsController extends Controller
             'data'    => $formattedEvents
         ]);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public function deleteEventById($idEvent)
     {

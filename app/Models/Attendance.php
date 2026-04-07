@@ -180,7 +180,7 @@ class Attendance extends Model
 
         // 🔍 NOMBRE (title)
         if (!empty($filters['name'])) {
-            $query->where('title', 'like', '%' . $filters['name'] . '%');
+            $query->where('theme', 'like', '%' . $filters['name'] . '%');
         }
 
         // 👤 ASESOR

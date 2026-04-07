@@ -297,6 +297,8 @@ class SedPublicController extends Controller
                     'question_3' => $request->question_3,
                     'question_4' => $request->question_4,
                     'question_5' => $request->question_5,
+                    'cooperativa' => $request->cooperativa,
+                    'rucCooperativa' => $request->rucCooperativa
                 ]
             );
 
