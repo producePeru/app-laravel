@@ -158,6 +158,7 @@ class FairController extends Controller
                 'url'  => null,
             ],
             'encuesta' => $item->sed_survey_count,
+            'cooperativa' => $item->cooperativa ?? null
         ];
     }
 
@@ -245,7 +246,8 @@ class FairController extends Controller
                         'typeFair'    => $fair->fairtype_id,
                         'fecha'       => $fair->fecha,
                         'place'       => $fair->place,
-                        'schedule'    => $fair->hours
+                        'schedule'    => $fair->hours,
+                        'cooperativa'   => $fair->cooperativa == 1 ? true : false,
                     ],
                     'status' => 200
                 ]);

@@ -31,6 +31,7 @@ class CreateFairRequest extends FormRequest
             'msgEndForm' => 'nullable|string',
             'msgSendEmail' => 'nullable|string',
             'image_id' => 'nullable|integer|exists:images,id',
+            'cooperativa' => 'nullable',
         ];
     }
 }

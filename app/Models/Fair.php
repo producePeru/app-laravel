@@ -29,7 +29,8 @@ class Fair extends Model
         'msgSendEmail',
         'created_by',
         'updated_by',
-        'image_id'
+        'image_id',
+        'cooperativa'
     ];
 
 

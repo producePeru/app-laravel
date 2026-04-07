@@ -258,6 +258,10 @@ Route::prefix('sed')->group(function () {
     require __DIR__ . '/api/sed.php';
 });
 
+Route::prefix('ugger')->group(function () {
+    require __DIR__ . '/api/ugger.php';
+});
+
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
     // Route::get('list',                                  [UserController::class, 'index']);                  // v2.0
@@ -617,7 +621,7 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
 
     // Route::post('to-attendance/{id}',           [AttendanceController::class, 'createEventoToAttendance']);
     // Route::post('delete/{id}',                  [EventsController::class, 'destroy']);
-    // Route::put('update-obs/{id}',               [EventsController::class, 'updateObservation']);
+    Route::put('update-obs/{id}',               [EventsController::class, 'updateObservation']);
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {

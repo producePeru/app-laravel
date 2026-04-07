@@ -1697,6 +1697,22 @@ CREATE TABLE mp_personalized_advice (
 -- );
 
 
+-- ALTER TABLE events
+-- ADD COLUMN table_name VARCHAR(100) AFTER id,
+-- ADD COLUMN table_id INT AFTER table_name;
+
+ALTER TABLE fairs
+ADD COLUMN cooperativa CHAR(1) NULL DEFAULT NULL AFTER updated_by;
+
+
+ALTER TABLE sedquestions
+ADD COLUMN cooperativa CHAR(1) NULL DEFAULT NULL AFTER event_id,
+ADD COLUMN rucCooperativa VARCHAR(11) NULL AFTER cooperativa;
+
+
+
+
+
 
 laravel
 Str::limit(strip_tags($item->description), 150, '...'),

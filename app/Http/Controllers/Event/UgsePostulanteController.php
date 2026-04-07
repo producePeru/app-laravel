@@ -108,6 +108,7 @@ class UgsePostulanteController extends Controller
             'postulante.economicsector',
             'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
             'postulante.businessman.typedocument:id,name',
+            'postulante.typedocument:id,avr',
             'postulante.businessman.gender:id,name',
             'postulante.category:id,name',
             'postulante.comercialactivity:id,name',
@@ -162,8 +163,8 @@ class UgsePostulanteController extends Controller
 
             'address'                   => $p->address ?? null,
 
-            'typedocument_id'           => $p->businessman->typedocument_id ?? null,
-            'typedocument_name'         => $p->businessman->typedocument->name ?? null,
+            'typedocument_id'           => $p->typedocument->id ?? null,
+            'typedocument_name'         => $p->typedocument->avr ?? null,
 
             'documentnumber'            => $p->businessman->documentnumber ?? $p->documentnumber,
             'name'                      => $p->businessman->name ?? $p->name,
