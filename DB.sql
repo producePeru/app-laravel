@@ -1343,8 +1343,8 @@ CREATE TABLE mp_personalized_advice (
 
 
 
-ALTER TABLE cyberwowparticipants
-ADD COLUMN disclaimer TINYINT(1) NULL DEFAULT NULL AFTER paso3;
+ALTER TABLE sedquestions
+ADD COLUMN rolCooperativa TINYINT(1) NULL DEFAULT NULL AFTER rucCooperativa;
 
 
 laravel
