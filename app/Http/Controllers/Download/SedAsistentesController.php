@@ -166,38 +166,38 @@ class SedAsistentesController extends Controller
     {
         return [
             'question_1' => [
-                'sin_interes' => 'No tengo interés en la tecnología; mi negocio depende solo de mi presencia física y el boca a boca.',
-                'redes_sociales' => 'Uso Facebook o WhatsApp porque otros lo hacen, pero no tengo un plan ni metas de ventas digitales.',
-                'estrategia_digital' => 'Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir qué comprar o vender.',
-                'plan_transformacion' => 'Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
+                'sin_interes' => 'A. No tengo interés en la tecnología; mi negocio depende solo de mi presencia física y el boca a boca.',
+                'redes_sociales' => 'B. Uso Facebook o WhatsApp porque otros lo hacen, pero no tengo un plan ni metas de ventas digitales.',
+                'estrategia_digital' => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir qué comprar o vender.',
+                'plan_transformacion' => 'D. Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
             ],
 
             'question_2' => [
-                'sin_interes' => 'Solo yo tomo las decisiones y no usamos herramientas digitales para coordinar el trabajo.',
-                'redes_sociales' => 'Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitación.',
-                'capacitacion' => 'Capacito a mi equipo en herramientas digitales y usamos un sistema común.',
-                'lideres_digitales' => 'Contamos con líderes digitales y tomamos decisiones con datos en tiempo real.',
+                'sin_interes' => 'A. Solo yo tomo las decisiones y no usamos herramientas digitales para coordinar el trabajo.',
+                'redes_sociales' => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitación en herramientas de gestión.',
+                'capacitacion' => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema común para registrar pedidos y tareas.',
+                'lideres_digitales' => 'D. Contamos con líderes digitales en el equipo, todos tienen altas competencias digitales y tomamos decisiones basadas en reportes de datos en tiempo real.',
             ],
 
             'question_3' => [
-                'celular' => 'Solo tengo un celular básico y no confío en pagos digitales.',
-                'internet_basico' => 'Uso internet básico y herramientas simples sin seguridad.',
-                'internet_alta_velocidad' => 'Uso software con licencia y protejo mi información.',
-                'nube' => 'Uso cloud y sistemas de ciberseguridad.',
+                'celular' => 'A. Solo tengo un celular básico para llamadas y no confío en los pagos digitales ni en internet.',
+                'internet_basico' => 'B. Tengo internet básico y uso computadoras personales para tareas simples (Word/Excel básico) sin protocolos de seguridad.',
+                'internet_alta_velocidad' => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi información con contraseñas y respaldos frecuentes.',
+                'nube' => 'D. Uso servicios en la nube (Cloud), mi infraestructura está integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
             ],
 
             'question_4' => [
-                'anotado' => 'Todo lo anoto en cuadernos.',
-                'excel' => 'Uso Excel pero no está integrado.',
-                'software' => 'Uso software para controlar stock y ventas.',
-                'integrado' => 'Sistema totalmente integrado y automatizado.',
+                'anotado' => 'A. Todo lo anoto en cuadernos o lo tengo en la memoria; a veces pierdo el control de lo que falta.',
+                'excel' => 'B. Registro mis ventas en Excel al final del día, pero mi inventario y contabilidad los llevo por separado o en físico.',
+                'software' => 'C. Uso un software o App específica para controlar mi stock, mis ventas y emitir comprobantes electrónicos de forma automática.',
+                'integrado' => 'D. Mi sistema está totalmente integrado: me avisa automáticamente cuando queda poco stock y genera reportes contables y de producción sin errores.',
             ],
 
             'question_5' => [
-                'local' => 'Solo vendo en local físico.',
-                'excel' => 'Uso redes pero sin análisis.',
-                'software' => 'Tengo presencia digital y mido satisfacción.',
-                'integrado' => 'Uso CRM y personalizo ofertas.',
+                'local' => 'A. Solo me encuentran si pasan por mi local; no guardo datos de contacto de quienes me compran.',
+                'excel' => 'B. Respondo consultas por Facebook o WhatsApp, pero no tengo un catálogo digital ni analizo si los clientes están satisfechos.',
+                'software' => 'C. Tengo presencia en Google Maps, uso catálogos digitales y acepto múltiples pagos (Yape, Plin, POS). Mido la satisfacción de mis clientes.',
+                'integrado' => 'D. Tengo una tienda online o CRM donde el cliente compra directamente y utilizo sus datos para enviarles ofertas personalizadas.',
             ],
         ];
     }
@@ -234,7 +234,10 @@ class SedAsistentesController extends Controller
                     'postulante.gender',
                     'postulante.howKnowEvent',
                     'postulante.event',
-                    'postulante.sedQuestion'
+                    // 'postulante.sedQuestion',
+                    'postulante.sedQuestion' => function ($q) use ($fair) {
+                        $q->where('event_id', $fair->id);
+                    }
                 ])
                 // 🔥 MÁS RECIENTE PRIMERO
                 ->orderBy('id', 'desc');
@@ -258,38 +261,42 @@ class SedAsistentesController extends Controller
 
             $rows = $asistencias->map(function ($item, $index) use ($fair) {
 
-                $p = $item->postulante; // 🔥 shortcut
+                $roles = [
+                    'd' => 'DIRIGENTE',
+                    's' => 'SOCIO',
+                    'm' => 'MIEMBRO',
+                ];
+
+                $p = $item->postulante;
+
+                $rol = $p->sedQuestion->rolCooperativa ?? null;
 
                 return [
                     $index + 1,
                     $fair->title,
+
+                    $item->attendance ?? '-',
+                    $p->sedQuestion->rucCooperativa,
+                    $p->sedQuestion->cooperativa,
+                    // $p->sedQuestion->rolCooperativa,
+                    $roles[$rol] ?? '-',
+
                     $p->ruc,
-
-                    // 🔥 AHORA attendance REAL
-                    $item->attendance,
-
-                    $p->comercialName,
                     $p->company->socialReason ?? $p->socialReason,
-
+                    $p->comercialName,
                     $p->economicsector?->name,
                     $p->category?->name,
                     $p->comercialactivity?->name,
-
                     $p->city?->name ?? null,
                     $p->province->name ?? null,
                     $p->district->name ?? null,
                     $p->address,
-
-                    // 🔥 typeAsistente DESDE sed_asistencias
                     $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
-
                     $p->typedocument->avr ?? null,
-
                     $p->businessman->documentnumber ?? $p->documentnumber,
                     $p->businessman->name ?? $p->name,
                     $p->businessman->lastname ?? $p->lastname,
                     $p->businessman->middlename ?? $p->middlename,
-
                     $p->businessman
                         ? ($p->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
                         : ($p->gender_id == 1 ? 'M' : 'F'),
@@ -297,14 +304,13 @@ class SedAsistentesController extends Controller
                     $p->sick == 'no' ? 'No' : 'Si',
                     $p->phone,
                     $p->email,
-
                     $p->businessman->birthday ?? $p->birthday,
                     $p->age ?? null,
                     $p->positionCompany,
                     $p->howKnowEvent?->name,
-                    $p->instagram,
-                    $p->facebook,
-                    $p->web,
+                    // $p->instagram,
+                    // $p->facebook,
+                    // $p->web,
 
                     $item->created_at
                         ? Carbon::parse($item->created_at)->format('d/m/Y h:i A')

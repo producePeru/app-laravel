@@ -3,13 +3,17 @@
 namespace App\Exports;
 
 use App\Models\MPDiagnostico;
+use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Concerns\{
     FromCollection,
     WithHeadings,
-    WithMapping
+    WithMapping,
+    ShouldAutoSize,
+    WithStyles,
 };
 
-class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithMapping
+class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
 {
 
     protected $questions;
@@ -23,7 +27,6 @@ class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithM
             ->where('type', '!=', 'l')    // excluir tipo 'l'
             ->orderBy('position', 'ASC')  // ordenar por position
             ->get();
-
     }
 
     public function collection()
@@ -34,18 +37,19 @@ class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithM
     public function headings(): array
     {
         $baseHeaders = [
-            'ID',
-            'Nombres',
-            'Apellidos',
-            'Fecha Nacimiento',
-            'Celular',
-            'Tipo Documento',
-            'N° Documento',
-            'Email',
+            'N°',
+            'NOMBRES',
+            'APELLIDOS',
+            'FECHA NACIMIENTO',
+            'CELULAR',
+            'TIPO DOCUMENTO',
+            'N° DOCUMENTO',
+            'EMAIL',
             'RUC',
-            'Actividad',
-            'Rubro',
-            'Sector Económico',
+            'ACTIVIDAD',
+            'RUBRO',
+            'SECTOR ECONÓMICO',
+            'FECHA DEL DIAGNÓSTICO'
         ];
 
         $dynamicHeaders = $this->questions->pluck('label')->toArray();
@@ -53,16 +57,38 @@ class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithM
         return array_merge($baseHeaders, $dynamicHeaders);
     }
 
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1 => ['font' => ['bold' => true]],
+            'A' => ['alignment' => ['horizontal' => 'center']],
+            'D' => ['alignment' => ['horizontal' => 'center']],
+            'E' => ['alignment' => ['horizontal' => 'center']],
+            'F' => ['alignment' => ['horizontal' => 'center']],
+            'G' => ['alignment' => ['horizontal' => 'center']],
+            'I' => ['alignment' => ['horizontal' => 'center']],
+            'M' => ['alignment' => ['horizontal' => 'center']]
+        ];
+    }
+
+    protected $counter = 0;
+
     public function map($participant): array
     {
+        $this->counter++; // 👈 incrementa
+
+        $lastDiagnosticoAt = $participant->diagnosticoResponses
+            ->max('created_at');
+
         $responses = $participant->diagnosticoResponses
             ->keyBy('question_id');
 
         $row = [
-            $participant->id,
+            $this->counter, // 👈 en vez del ID
+
             $participant->names,
             $participant->last_name . ' ' . $participant->middle_name,
-            optional($participant->birth_date)->format('d/m/Y'),
+            Carbon::parse($participant->date_of_birth)->format('d/m/Y'),
             $participant->phone,
             optional($participant->typeDocument)->avr,
             $participant->doc_number,
@@ -71,6 +97,7 @@ class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithM
             optional($participant->comercialActivity)->name,
             optional($participant->rubro)->name,
             optional($participant->economicSector)->name,
+            $lastDiagnosticoAt ? Carbon::parse($lastDiagnosticoAt)->format('d/m/Y H:i') : null,
         ];
 
         foreach ($this->questions as $question) {

@@ -719,25 +719,17 @@ class MujerProduceController extends Controller
 
     public function mpIndexParticipantDiagnostic(Request $request)
     {
-        $search = trim($request->input('name'));
-        $startDate  = $request->input('startDate');
-        $endDate    = $request->input('endDate');
-        $capas      = $request->input('capas'); // up | down
-
-        // =========================
-        // PREGUNTAS ACTIVAS (1 sola vez)
-        // =========================
+        $filters = [
+            'name' => trim($request->input('name')),
+        ];
 
         $questions = MPDiagnostico::with('options')
             ->where('status', 1)
-            ->where('type', '!=', 'l')   // NO mostrar tipo 'l'
-            ->orderBy('position', 'ASC') // Ordenar por position
+            ->where('type', '!=', 'l')
+            ->orderBy('position', 'ASC')
             ->get();
 
-        // =========================
-        // PARTICIPANTES PAGINADOS
-        // =========================
-        $participants = MPParticipant::with([
+        $query = MPParticipant::with([
             'diagnosticoResponses.option',
             'comercialActivity:id,name',
             'rubro:id,name',
@@ -747,42 +739,39 @@ class MujerProduceController extends Controller
                 'attendances as shares' => function ($q) {
                     $q->where('attendance', 1);
                 }
-            ])
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('ruc', 'like', "%{$search}%")
-                        ->orWhere('doc_number', 'like', "%{$search}%")
-                        ->orWhere('names', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                });
-            })
-            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
-                $query->whereHas('diagnosticoResponses', function ($q) use ($startDate, $endDate) {
-                    $q->whereBetween('created_at', [
-                        $startDate . ' 00:00:00',
-                        $endDate . ' 23:59:59'
-                    ]);
-                });
-            })
-            ->when($capas === 'up', function ($query) {
-                $query->orderBy('shares', 'DESC'); // mayor a menor
-            })
-            ->when($capas === 'down', function ($query) {
-                $query->orderBy('shares', 'ASC'); // menor a mayor
-            })
-            ->orderByRaw('EXISTS ( SELECT 1 FROM mp_diag_respuestas r WHERE r.participant_id = mp_participantes.id) DESC')
-            ->orderBy('id', 'DESC')
-            ->paginate(100);
+            ]);
 
+        if (!empty($filters['name'])) {
+            $search = $filters['name'];
 
-        // Transformar SOLO el data
+            $query->where(function ($q) use ($search) {
+                $q->where('ruc', 'like', "%{$search}%")
+                    ->orWhere('doc_number', 'like', "%{$search}%")
+                    ->orWhereRaw(
+                        "CONCAT(names, ' ', last_name, ' ', middle_name) LIKE ?",
+                        ["%{$search}%"]
+                    );
+            });
+        }
+
+        $query->orderByRaw('
+        EXISTS (
+            SELECT 1 
+            FROM mp_diag_respuestas r 
+            WHERE r.participant_id = mp_participantes.id
+        ) DESC
+    ');
+
+        $query->orderBy('id', 'DESC');
+
+        $perPage = $request->input('pageSize', 100);
+
+        $participants = $query->paginate($perPage);
+
         $participants->getCollection()->transform(function ($participant) use ($questions) {
             return $this->mapParticipantResponses($participant, $questions);
         });
 
-        // =========================
-        // RESPONSE FINAL
-        // =========================
         return response()->json(
             array_merge(
                 $participants->toArray(),
@@ -838,7 +827,7 @@ class MujerProduceController extends Controller
 
             'nombre_completo'   => $participant->names,
             'apellidos'         => $participant->last_name . ' ' . $participant->middle_name,
-            'fecha_nacimiento'  => Carbon::parse($participant->birth_date)->format('d/m/Y'),
+            'fecha_nacimiento'  => Carbon::parse($participant->date_of_birth)->format('d/m/Y'),
             'celular'           => $participant->phone,
             'tipo_documento'    => optional($participant->typeDocument)->avr,
             'doc_number'        => $participant->doc_number,
