@@ -1343,8 +1343,8 @@ CREATE TABLE mp_personalized_advice (
 
 
 
-ALTER TABLE sedquestions
-ADD COLUMN rolCooperativa TINYINT(1) NULL DEFAULT NULL AFTER rucCooperativa;
+-- ALTER TABLE sedquestions
+-- ADD COLUMN rolCooperativa ENUM('d','s','m') NULL DEFAULT NULL AFTER rucCooperativa;
 
 
 laravel
