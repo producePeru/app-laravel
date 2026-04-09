@@ -28,6 +28,8 @@ Route::controller(SedAsistentesController::class)->group(function () {
 
     Route::post('sed-asistentes/{slug}', 'exportList');
 
+    Route::post('sed-asistentes-cooperativas/{slug}', 'exportListCooperativas');
+
     Route::post('get-sed-answers', 'exportSedAnswers');
 });
 

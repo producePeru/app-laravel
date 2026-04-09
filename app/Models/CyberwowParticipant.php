@@ -53,7 +53,9 @@ class CyberwowParticipant extends Model
 
         'paso1',
         'poso2',
-        'paso3'
+        'paso3',
+
+        'disclaimer'
     ];
 
 
