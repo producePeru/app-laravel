@@ -292,13 +292,14 @@ class SedPublicController extends Controller
                     'event_id' => $fair->id
                 ],
                 [
-                    'question_1' => $request->question_1,
-                    'question_2' => $request->question_2,
-                    'question_3' => $request->question_3,
-                    'question_4' => $request->question_4,
-                    'question_5' => $request->question_5,
-                    'cooperativa' => $request->cooperativa,
-                    'rucCooperativa' => $request->rucCooperativa
+                    'question_1'        => $request->question_1,
+                    'question_2'        => $request->question_2,
+                    'question_3'        => $request->question_3,
+                    'question_4'        => $request->question_4,
+                    'question_5'        => $request->question_5,
+                    'cooperativa'       => $request->cooperativa,
+                    'rucCooperativa'    => $request->rucCooperativa,
+                    'rolCooperativa'    => $request->rolCooperativa
                 ]
             );
 
@@ -332,6 +333,7 @@ class SedPublicController extends Controller
 
             return response()->json([
                 'status' => 500,
+                'error' => $e,
                 'message' => 'Error interno del servidor'
             ], 500);
         }
