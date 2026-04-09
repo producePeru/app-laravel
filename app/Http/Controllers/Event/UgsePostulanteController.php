@@ -127,8 +127,9 @@ class UgsePostulanteController extends Controller
         return response()->json([
             'data' => $postulantes,
             'event' => [
-                'id'   => $fair->id,
-                'name' => $fair->title,
+                'id'            => $fair->id,
+                'name'          => $fair->title,
+                'cooperativa'   => $fair->cooperativa
             ],
             'status' => 200
         ]);

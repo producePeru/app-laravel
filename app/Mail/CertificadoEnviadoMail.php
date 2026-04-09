@@ -28,6 +28,6 @@ class CertificadoEnviadoMail extends Mailable
             ->subject('Constancia de participación de curso del Ministerio de la Producción')
             ->with(['email' => $this->email])
             ->attach($filePath)
-            ->cc('tuempresa_temp265@produce.gob.pe');        // capacitaciones_tuempresa@produce.gob.pe || tuempresa_temp265@produce.gob.pe
+            ->cc(['tuempresa_temp265@produce.gob.pe', 'capacitaciones_tuempresa@produce.gob.pe']);        // capacitaciones_tuempresa@produce.gob.pe || tuempresa_temp265@produce.gob.pe
     }
 }

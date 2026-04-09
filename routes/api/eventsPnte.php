@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Disclaimer\DisclaimerController;
 use App\Http\Controllers\Event\PublicEventsController;
 use App\Http\Controllers\EventsPNTE\CoffeEventController;
 use App\Http\Controllers\EventsPNTE\InfoController;
@@ -40,5 +41,9 @@ Route::controller(ForoController::class)->group(function () {
 });
 
 
+Route::controller(DisclaimerController::class)->group(function () {
+
+    Route::post('save-disclaimer-cw', 'saveDisclaimer');
+});
 
 // events-pnte 🌎

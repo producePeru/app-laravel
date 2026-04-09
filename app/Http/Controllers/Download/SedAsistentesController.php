@@ -162,7 +162,189 @@ class SedAsistentesController extends Controller
     }
 
 
+    private function getQuestionOptions()
+    {
+        return [
+            'question_1' => [
+                'sin_interes' => 'No tengo interés en la tecnología; mi negocio depende solo de mi presencia física y el boca a boca.',
+                'redes_sociales' => 'Uso Facebook o WhatsApp porque otros lo hacen, pero no tengo un plan ni metas de ventas digitales.',
+                'estrategia_digital' => 'Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir qué comprar o vender.',
+                'plan_transformacion' => 'Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
+            ],
 
+            'question_2' => [
+                'sin_interes' => 'Solo yo tomo las decisiones y no usamos herramientas digitales para coordinar el trabajo.',
+                'redes_sociales' => 'Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitación.',
+                'capacitacion' => 'Capacito a mi equipo en herramientas digitales y usamos un sistema común.',
+                'lideres_digitales' => 'Contamos con líderes digitales y tomamos decisiones con datos en tiempo real.',
+            ],
+
+            'question_3' => [
+                'celular' => 'Solo tengo un celular básico y no confío en pagos digitales.',
+                'internet_basico' => 'Uso internet básico y herramientas simples sin seguridad.',
+                'internet_alta_velocidad' => 'Uso software con licencia y protejo mi información.',
+                'nube' => 'Uso cloud y sistemas de ciberseguridad.',
+            ],
+
+            'question_4' => [
+                'anotado' => 'Todo lo anoto en cuadernos.',
+                'excel' => 'Uso Excel pero no está integrado.',
+                'software' => 'Uso software para controlar stock y ventas.',
+                'integrado' => 'Sistema totalmente integrado y automatizado.',
+            ],
+
+            'question_5' => [
+                'local' => 'Solo vendo en local físico.',
+                'excel' => 'Uso redes pero sin análisis.',
+                'software' => 'Tengo presencia digital y mido satisfacción.',
+                'integrado' => 'Uso CRM y personalizo ofertas.',
+            ],
+        ];
+    }
+
+    private function getAnswerLabel($question, $value)
+    {
+        $options = $this->getQuestionOptions();
+
+        return $options[$question][$value] ?? '-';
+    }
+
+    public function exportListCooperativas(Request $request, $slug)
+    {
+        try {
+            $fair = Fair::where('slug', $slug)->firstOrFail();
+
+            $filters = $request->query();
+
+            // 🔥 AHORA DESDE sed_asistencias
+            $query = SedAsistente::where('sed_id', $fair->id)
+                ->with([
+                    'postulante.company:id,ruc,socialReason',
+                    'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
+                    'postulante.businessman.typedocument:id,name',
+                    'postulante.typedocument:id,avr',
+                    'postulante.businessman.gender:id,name',
+                    'postulante.economicsector',
+                    'postulante.category',
+                    'postulante.comercialactivity',
+                    'postulante.city',
+                    'postulante.province',
+                    'postulante.district',
+                    'postulante.typedocument',
+                    'postulante.gender',
+                    'postulante.howKnowEvent',
+                    'postulante.event',
+                    'postulante.sedQuestion'
+                ])
+                // 🔥 MÁS RECIENTE PRIMERO
+                ->orderBy('id', 'desc');
+
+            // 🔎 Filtros
+            if (!empty($filters['name'])) {
+                $query->whereHas('postulante', function ($q) use ($filters) {
+                    $q->where('ruc', 'like', '%' . $filters['name'] . '%')
+                        ->orWhere('documentnumber', 'like', '%' . $filters['name'] . '%');
+                });
+            }
+
+            if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+                $query->whereBetween('created_at', [
+                    Carbon::parse($filters['dateStart'])->startOfDay(),
+                    Carbon::parse($filters['dateEnd'])->endOfDay()
+                ]);
+            }
+
+            $asistencias = $query->get();
+
+            $rows = $asistencias->map(function ($item, $index) use ($fair) {
+
+                $p = $item->postulante; // 🔥 shortcut
+
+                return [
+                    $index + 1,
+                    $fair->title,
+                    $p->ruc,
+
+                    // 🔥 AHORA attendance REAL
+                    $item->attendance,
+
+                    $p->comercialName,
+                    $p->company->socialReason ?? $p->socialReason,
+
+                    $p->economicsector?->name,
+                    $p->category?->name,
+                    $p->comercialactivity?->name,
+
+                    $p->city?->name ?? null,
+                    $p->province->name ?? null,
+                    $p->district->name ?? null,
+                    $p->address,
+
+                    // 🔥 typeAsistente DESDE sed_asistencias
+                    $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
+
+                    $p->typedocument->avr ?? null,
+
+                    $p->businessman->documentnumber ?? $p->documentnumber,
+                    $p->businessman->name ?? $p->name,
+                    $p->businessman->lastname ?? $p->lastname,
+                    $p->businessman->middlename ?? $p->middlename,
+
+                    $p->businessman
+                        ? ($p->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
+                        : ($p->gender_id == 1 ? 'M' : 'F'),
+
+                    $p->sick == 'no' ? 'No' : 'Si',
+                    $p->phone,
+                    $p->email,
+
+                    $p->businessman->birthday ?? $p->birthday,
+                    $p->age ?? null,
+                    $p->positionCompany,
+                    $p->howKnowEvent?->name,
+                    $p->instagram,
+                    $p->facebook,
+                    $p->web,
+
+                    $item->created_at
+                        ? Carbon::parse($item->created_at)->format('d/m/Y h:i A')
+                        : '',
+
+                    $this->getAnswerLabel('question_1', $p->sedQuestion->question_1 ?? null),
+                    $this->getAnswerLabel('question_2', $p->sedQuestion->question_2 ?? null),
+                    $this->getAnswerLabel('question_3', $p->sedQuestion->question_3 ?? null),
+                    $this->getAnswerLabel('question_4', $p->sedQuestion->question_4 ?? null),
+                    $this->getAnswerLabel('question_5', $p->sedQuestion->question_5 ?? null),
+                ];
+            });
+
+            $templatePath = storage_path('app/plantillas/sed_template_cooperativa.xlsx');
+            $spreadsheet = IOFactory::load($templatePath);
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $startRow = 2;
+
+            foreach ($rows as $i => $row) {
+                $col = 'A';
+                foreach ($row as $value) {
+                    $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
+                    $col++;
+                }
+            }
+
+            return new StreamedResponse(function () use ($spreadsheet) {
+                $writer = new Xlsx($spreadsheet);
+                $writer->save('php://output');
+            }, 200, [
+                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="postulantes-feria.xlsx"',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al exportar: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
 
     // ESTE ES PARA LA PRUEBAS DEL TESTEO
@@ -212,12 +394,6 @@ class SedAsistentesController extends Controller
                         ->where('documentnumber', $asistente->dni)
                         ->first();
                 }
-
-
-
-
-
-
 
                 $sedQuestion = SedQuestion::where('event_id', $fair->id)
                     ->where('documentnumber', $asistente->dni)
