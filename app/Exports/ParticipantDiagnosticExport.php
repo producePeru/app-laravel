@@ -11,9 +11,10 @@ use Maatwebsite\Excel\Concerns\{
     WithMapping,
     ShouldAutoSize,
     WithStyles,
+    WithColumnWidths
 };
 
-class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithMapping, WithColumnWidths, WithStyles
 {
 
     protected $questions;
@@ -32,6 +33,25 @@ class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithM
     public function collection()
     {
         return $this->participants;
+    }
+
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 6,
+            'B' => 25,
+            'C' => 25,
+            'D' => 15,
+            'E' => 15,
+            'F' => 18,
+            'G' => 18,
+            'H' => 30,
+            'I' => 18,
+            'J' => 25,
+            'K' => 25,
+            'L' => 25,
+            'M' => 20,
+        ];
     }
 
     public function headings(): array
