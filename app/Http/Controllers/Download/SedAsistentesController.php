@@ -31,105 +31,72 @@ class SedAsistentesController extends Controller
 
             $filters = $request->query();
 
-            // 🔥 AHORA DESDE sed_asistencias
-            $query = SedAsistente::where('sed_id', $fair->id)
+            $query = UgsePostulante::where('event_id', $fair->id)
+                ->withBasicFilters($filters)
                 ->with([
-                    'postulante.company:id,ruc,socialReason',
-                    'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
-                    'postulante.businessman.typedocument:id,name',
-                    'postulante.typedocument:id,avr',
-                    'postulante.businessman.gender:id,name',
-                    'postulante.economicsector',
-                    'postulante.category',
-                    'postulante.comercialactivity',
-                    'postulante.city',
-                    'postulante.province',
-                    'postulante.district',
-                    'postulante.typedocument',
-                    'postulante.gender',
-                    'postulante.howKnowEvent',
-                    'postulante.event',
-                    'postulante.sedQuestion'
-                ])
-                // 🔥 MÁS RECIENTE PRIMERO
-                ->orderBy('id', 'desc');
+                    'company:id,ruc,socialReason',
+                    'businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
+                    'businessman.typedocument:id,name',
+                    'businessman.gender:id,name',
+                    'economicsector',
+                    'category',
+                    'city',
+                    'typedocument',
+                    'gender',
+                    'howKnowEvent',
+                    'event',
+                    'sedQuestion'
+                ])->orderBy('created_at', 'desc');
 
-            // 🔎 Filtros
-            if (!empty($filters['name'])) {
-                $query->whereHas('postulante', function ($q) use ($filters) {
-                    $q->where('ruc', 'like', '%' . $filters['name'] . '%')
-                        ->orWhere('documentnumber', 'like', '%' . $filters['name'] . '%');
-                });
-            }
+            $postulantes = $query->get();
 
-            if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
-                $query->whereBetween('created_at', [
-                    Carbon::parse($filters['dateStart'])->startOfDay(),
-                    Carbon::parse($filters['dateEnd'])->endOfDay()
-                ]);
-            }
-
-            $asistencias = $query->get();
-
-            $rows = $asistencias->map(function ($item, $index) use ($fair) {
-
-                $p = $item->postulante; // 🔥 shortcut
-
+            $rows = $postulantes->map(function ($item, $index) {
                 return [
                     $index + 1,
-                    $fair->title,
-                    $p->ruc,
+                    $item->event->title,
+                    $item->ruc,
+                    $item->attended,
+                    $item->comercialName,
+                    $item->company->socialReason ?? $item->socialReason,
 
-                    // 🔥 AHORA attendance REAL
-                    $item->attendance,
+                    $item->economicsector?->name,           // sector economico
+                    $item->category?->name,                 // rubro
+                    $item->comercialactivity?->name,        // actividad comercial
 
-                    $p->comercialName,
-                    $p->company->socialReason ?? $p->socialReason,
-
-                    $p->economicsector?->name,
-                    $p->category?->name,
-                    $p->comercialactivity?->name,
-
-                    $p->city?->name ?? null,
-                    $p->province->name ?? null,
-                    $p->district->name ?? null,
-                    $p->address,
-
-                    // 🔥 typeAsistente DESDE sed_asistencias
+                    $item->city?->name ?? null,
+                    $item->province->name ?? null,
+                    $item->district->name ?? null,
+                    $item->address,
                     $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
+                    $item->businessman->typedocument->name ?? '-',
 
-                    $p->typedocument->avr ?? null,
+                    $item->businessman->documentnumber ?? $item->documentnumber,
+                    $item->businessman->name ?? $item->name,
+                    $item->businessman->lastname ?? $item->lastname,
+                    $item->businessman->middlename ?? $item->middlename,
 
-                    $p->businessman->documentnumber ?? $p->documentnumber,
-                    $p->businessman->name ?? $p->name,
-                    $p->businessman->lastname ?? $p->lastname,
-                    $p->businessman->middlename ?? $p->middlename,
+                    $item->businessman
+                        ? ($item->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
+                        : ($item->gender_id == 1 ? 'M' : 'F'),
+                    $item->sick == 'no' ? 'No' : 'Si',
+                    $item->phone,
+                    $item->email,
 
-                    $p->businessman
-                        ? ($p->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
-                        : ($p->gender_id == 1 ? 'M' : 'F'),
+                    $item->businessman->birthday ?? $item->birthday,
 
-                    $p->sick == 'no' ? 'No' : 'Si',
-                    $p->phone,
-                    $p->email,
+                    $item->age ?? null,
+                    $item->positionCompany,
+                    $item->howKnowEvent?->name,
+                    $item->instagram,
+                    $item->facebook,
+                    $item->web,
+                    $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : '',
 
-                    $p->businessman->birthday ?? $p->birthday,
-                    $p->age ?? null,
-                    $p->positionCompany,
-                    $p->howKnowEvent?->name,
-                    $p->instagram,
-                    $p->facebook,
-                    $p->web,
-
-                    $item->created_at
-                        ? Carbon::parse($item->created_at)->format('d/m/Y h:i A')
-                        : '',
-
-                    $p->sedQuestion->question_1 ?? '-',
-                    $p->sedQuestion->question_2 ?? '-',
-                    $p->sedQuestion->question_3 ?? '-',
-                    $p->sedQuestion->question_4 ?? '-',
-                    $p->sedQuestion->question_5 ?? '-'
+                    $item->sedQuestion->question_1 ?? '-',
+                    $item->sedQuestion->question_2 ?? '-',
+                    $item->sedQuestion->question_3 ?? '-',
+                    $item->sedQuestion->question_4 ?? '-',
+                    $item->sedQuestion->question_5 ?? '-'
                 ];
             });
 
@@ -147,6 +114,7 @@ class SedAsistentesController extends Controller
                 }
             }
 
+            // ✅ CORRECTO: solo este return
             return new StreamedResponse(function () use ($spreadsheet) {
                 $writer = new Xlsx($spreadsheet);
                 $writer->save('php://output');
