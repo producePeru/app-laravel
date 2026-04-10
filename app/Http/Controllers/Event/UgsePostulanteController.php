@@ -74,62 +74,189 @@ class UgsePostulanteController extends Controller
     //     ]);
     // }
 
+    // public function usersRegisteredList(Request $request, $slug)
+    // {
+    //     $fair = Fair::where('slug', $slug)->firstOrFail();
+
+    //     $filters = [
+    //         'name'      => $request->input('name'),
+    //         'dateStart' => $request->input('dateStart'),
+    //         'dateEnd'   => $request->input('dateEnd')
+    //     ];
+
+    //     // 🔥 Base: sed_asistencias
+    //     $query = SedAsistente::where('sed_id', $fair->id);
+
+    //     // 🔎 Filtro por búsqueda
+    //     if (!empty($filters['name'])) {
+    //         $query->whereHas('postulante', function ($q) use ($filters) {
+    //             $q->where('ruc', 'like', '%' . $filters['name'] . '%')
+    //                 ->orWhere('documentnumber', 'like', '%' . $filters['name'] . '%');
+    //         });
+    //     }
+
+    //     // 🔎 Filtro por fechas
+    //     if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+    //         $query->whereBetween('created_at', [
+    //             Carbon::parse($filters['dateStart'])->startOfDay(),
+    //             Carbon::parse($filters['dateEnd'])->endOfDay()
+    //         ]);
+    //     }
+
+    //     // 🔥 Relaciones + orden
+    //     $query->with([
+    //         'postulante.economicsector',
+    //         'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
+    //         'postulante.businessman.typedocument:id,name',
+    //         'postulante.typedocument:id,avr',
+    //         'postulante.businessman.gender:id,name',
+    //         'postulante.category:id,name',
+    //         'postulante.comercialactivity:id,name',
+    //         'postulante.city:id,name',
+    //         'postulante.province:id,name',
+    //         'postulante.district:id,name',
+    //         'postulante.howKnowEvent:id,name',
+    //         'postulante.event'
+    //     ])
+    //         ->orderBy('id', 'desc'); // 🔥 más reciente primero
+
+    //     $postulantes = $query->paginate(100)->through(function ($item) {
+    //         return $this->mapPostulantes($item); // 👈 ahora sí completo
+    //     });
+
+    //     return response()->json([
+    //         'data' => $postulantes,
+    //         'event' => [
+    //             'id'            => $fair->id,
+    //             'name'          => $fair->title,
+    //             'cooperativa'   => $fair->cooperativa
+    //         ],
+    //         'status' => 200
+    //     ]);
+    // }
+
+    // private function mapPostulantes($item)
+    // {
+    //     $p = $item->postulante;
+
+    //     return [
+    //         'id'                        => $p->id,
+    //         'ruc'                       => $p->ruc ?? null,
+    //         'comercialName'             => $p->comercialName ?? null,
+
+    //         'economicsector_id'         => $p->economicsector->id ?? null,
+    //         'economicsector_name'       => $p->economicsector->name ?? null,
+
+    //         'rubro_id'                  => $p->category->id ?? null,
+    //         'rubro_name'                => $p->category->name ?? null,
+
+    //         'comercialactivity_id'      => $p->comercialactivity->id ?? null,
+    //         'comercialactivity_name'    => $p->comercialactivity->name ?? null,
+
+    //         'city_id'                   => $p->city->id ?? null,
+    //         'city_name'                 => $p->city->name ?? null,
+
+    //         'province_id'               => $p->province->id ?? null,
+    //         'province_name'             => $p->province->name ?? null,
+
+    //         'district_id'               => $p->district->id ?? null,
+    //         'district_name'             => $p->district->name ?? null,
+
+    //         'address'                   => $p->address ?? null,
+
+    //         'typedocument_id'           => $p->typedocument->id ?? null,
+    //         'typedocument_name'         => $p->typedocument->avr ?? null,
+
+    //         'documentnumber'            => $p->businessman->documentnumber ?? $p->documentnumber,
+    //         'name'                      => $p->businessman->name ?? $p->name,
+    //         'lastname'                  => $p->businessman->lastname ?? $p->lastname,
+    //         'middlename'                => $p->businessman->middlename ?? $p->middlename,
+
+    //         'email'                     => $p->email,
+    //         'phone'                     => $p->phone,
+
+    //         'event_id'                  => $p->event_id,
+    //         'positionCompany'           => $p->positionCompany,
+
+    //         'instagram'                 => $p->instagram,
+    //         'facebook'                  => $p->facebook,
+    //         'web'                       => $p->web,
+
+    //         // 🔥 DESDE sed_asistencias
+    //         'attended'                  => $item->attendance,
+    //         'typeAsistente'             => $item->typeAsistente,
+
+    //         'socialReason'              => $p->socialReason,
+
+    //         'sick'                      => $p->sick == 'si' ? 'SI' : 'NO',
+
+    //         'birthday'                  => $p->businessman->birthday ?? $p->birthday,
+
+    //         // 🔥 fecha real del registro en sed_asistencias
+    //         'created_at'                => $item->created_at
+    //             ? Carbon::parse($item->created_at)->format('d/m/Y h:i A')
+    //             : null,
+
+    //         // 🔥 boolean para checkbox
+    //         'asistio'                   => $item->attendance ? true : false,
+
+    //         'howKnowEvent_id'           => $p->howKnowEvent->id ?? null,
+    //         'howKnowEvent_name'         => $p->howKnowEvent->name ?? null,
+
+    //         'gender_id'                 => $p->businessman->gender->id ?? '-',
+
+    //         'gender_name' => $p->businessman
+    //             ? ($p->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
+    //             : ($p->gender_id == 1 ? 'M' : 'F'),
+
+    //         'event' => $p->event ? [
+    //             'id'   => $p->event->id ?? null,
+    //             'name' => $p->event->title
+    //         ] : null,
+    //     ];
+    // }
+
+
     public function usersRegisteredList(Request $request, $slug)
     {
+        // Buscar la feria por su slug
         $fair = Fair::where('slug', $slug)->firstOrFail();
 
         $filters = [
-            'name'      => $request->input('name'),
-            'dateStart' => $request->input('dateStart'),
-            'dateEnd'   => $request->input('dateEnd')
+            'name'          => $request->input('name'),
+            'dateStart'     => $request->input('dateStart'),
+            'dateEnd'       => $request->input('dateEnd'),
+
         ];
 
-        // 🔥 Base: sed_asistencias
-        $query = SedAsistente::where('sed_id', $fair->id);
+        // Crear la consulta base y filtrar por el ID del evento
+        $query = UgsePostulante::where('event_id', $fair->id);
 
-        // 🔎 Filtro por búsqueda
-        if (!empty($filters['name'])) {
-            $query->whereHas('postulante', function ($q) use ($filters) {
-                $q->where('ruc', 'like', '%' . $filters['name'] . '%')
-                    ->orWhere('documentnumber', 'like', '%' . $filters['name'] . '%');
-            });
-        }
+        $query->withBasicFilters($filters);
 
-        // 🔎 Filtro por fechas
-        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($filters['dateStart'])->startOfDay(),
-                Carbon::parse($filters['dateEnd'])->endOfDay()
-            ]);
-        }
-
-        // 🔥 Relaciones + orden
+        // Eager Loading de relaciones
         $query->with([
-            'postulante.economicsector',
-            'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
-            'postulante.businessman.typedocument:id,name',
-            'postulante.typedocument:id,avr',
-            'postulante.businessman.gender:id,name',
-            'postulante.category:id,name',
-            'postulante.comercialactivity:id,name',
-            'postulante.city:id,name',
-            'postulante.province:id,name',
-            'postulante.district:id,name',
-            'postulante.howKnowEvent:id,name',
-            'postulante.event'
-        ])
-            ->orderBy('id', 'desc'); // 🔥 más reciente primero
+            'economicsector',
+            'businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
+            'businessman.gender:id,name',
+            'category:id,name',
+            'comercialactivity:id,name',
+            'city:id,name',
+            'province:id,name',
+            'district:id,name',
+            'howKnowEvent:id,name',
+            'event',
+        ]);
 
-        $postulantes = $query->paginate(100)->through(function ($item) {
-            return $this->mapPostulantes($item); // 👈 ahora sí completo
+        $postulantes = $query->paginate(150)->through(function ($item) {
+            return $this->mapPostulantes($item);
         });
 
         return response()->json([
-            'data' => $postulantes,
+            'data'   => $postulantes,
             'event' => [
-                'id'            => $fair->id,
-                'name'          => $fair->title,
-                'cooperativa'   => $fair->cooperativa
+                'id'   => $fair->id,
+                'name' => $fair->title,
             ],
             'status' => 200
         ]);
@@ -137,82 +264,64 @@ class UgsePostulanteController extends Controller
 
     private function mapPostulantes($item)
     {
-        $p = $item->postulante;
-
         return [
-            'id'                        => $p->id,
-            'ruc'                       => $p->ruc ?? null,
-            'comercialName'             => $p->comercialName ?? null,
-
-            'economicsector_id'         => $p->economicsector->id ?? null,
-            'economicsector_name'       => $p->economicsector->name ?? null,
-
-            'rubro_id'                  => $p->category->id ?? null,
-            'rubro_name'                => $p->category->name ?? null,
-
-            'comercialactivity_id'      => $p->comercialactivity->id ?? null,
-            'comercialactivity_name'    => $p->comercialactivity->name ?? null,
-
-            'city_id'                   => $p->city->id ?? null,
-            'city_name'                 => $p->city->name ?? null,
-
-            'province_id'               => $p->province->id ?? null,
-            'province_name'             => $p->province->name ?? null,
-
-            'district_id'               => $p->district->id ?? null,
-            'district_name'             => $p->district->name ?? null,
-
-            'address'                   => $p->address ?? null,
-
-            'typedocument_id'           => $p->typedocument->id ?? null,
-            'typedocument_name'         => $p->typedocument->avr ?? null,
-
-            'documentnumber'            => $p->businessman->documentnumber ?? $p->documentnumber,
-            'name'                      => $p->businessman->name ?? $p->name,
-            'lastname'                  => $p->businessman->lastname ?? $p->lastname,
-            'middlename'                => $p->businessman->middlename ?? $p->middlename,
-
-            'email'                     => $p->email,
-            'phone'                     => $p->phone,
-
-            'event_id'                  => $p->event_id,
-            'positionCompany'           => $p->positionCompany,
-
-            'instagram'                 => $p->instagram,
-            'facebook'                  => $p->facebook,
-            'web'                       => $p->web,
-
-            // 🔥 DESDE sed_asistencias
-            'attended'                  => $item->attendance,
+            'id'                        => $item->id,
+            'ruc'                       => $item->ruc ?? null,
+            'comercialName'             => $item->comercialName ?? null,
+            'economicsector_id'         => $item->economicsector->id ?? null,
+            'economicsector_name'       => $item->economicsector->name ?? null,
+            'rubro_id'                  => $item->category->id ?? null,
+            'rubro_name'                => $item->category->name ?? null,
+            'comercialactivity_id'      => $item->comercialactivity->id ?? null,
+            'comercialactivity_name'    => $item->comercialactivity->name ?? null,
+            'city_id'                   => $item->city->id ?? null,
+            'city_name'                 => $item->city->name ?? null,
+            'province_id'               => $item->province->id ?? null,
+            'province_name'             => $item->province->name ?? null,
+            'district_id'               => $item->district->id ?? null,
+            'district_name'             => $item->district->name ?? null,
+            'address'                   => $item->address ?? null,
+            'typedocument_id'           => $item->businessman->typedocument_id ?? null,
+            'typedocument_name'         => $item->businessman->typedocument->name ?? null,
+            'documentnumber'            => $item->businessman->documentnumber ?? $item->documentnumber,
+            'name'                      => $item->businessman->name ?? $item->name,
+            'lastname'                  => $item->businessman->lastname ?? $item->lastname,
+            'middlename'                => $item->businessman->middlename ?? $item->middlename,
+            'email'                     => $item->email,
+            'phone'                     => $item->phone,
+            'event_id'                  => $item->event_id,
+            'positionCompany'           => $item->positionCompany,
+            'instagram'                 => $item->instagram,
+            'facebook'                  => $item->facebook,
+            'web'                       => $item->web,
+            'attended'                  => $item->attended ?? null,
+            'socialReason'              => $item->socialReason,
             'typeAsistente'             => $item->typeAsistente,
+            'sick'                      => $item->sick == 'si' ? 'SI' : 'NO',
+            'birthday'                  => $item->businessman->birthday ?? $item->birthday,
+            'created_at'                => $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : null,
+            'asistio'                   => $item->attended ? true : false,
+            'howKnowEvent_id'           => $item->howKnowEvent->id ?? null,
+            'howKnowEvent_name'         => $item->howKnowEvent->name ?? null,
+            'gender_id'                 => $item->businessman->gender->id ?? '-',
+            'gender_name' => $item->businessman
+                ? ($item->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
+                : ($item->gender_id == 1 ? 'M' : 'F'),
+            'economicsector_id'         => $item->economicsector->id ?? null,
+            'economicsector_name'       => $item->economicsector->name ?? null,
+            'comercialactivity_id'      => $item->comercialactivity->id ?? null,
+            'comercialactivity_name'    => $item->comercialactivity->name ?? null,
+            'category_id'               => $item->category->id ?? null,
+            'category_name'             => $item->category->name ?? null,
+            'city_id'                   => $item->city->id ?? null,
+            'city_name'                 => $item->city->name ?? null,
 
-            'socialReason'              => $p->socialReason,
 
-            'sick'                      => $p->sick == 'si' ? 'SI' : 'NO',
-
-            'birthday'                  => $p->businessman->birthday ?? $p->birthday,
-
-            // 🔥 fecha real del registro en sed_asistencias
-            'created_at'                => $item->created_at
-                ? Carbon::parse($item->created_at)->format('d/m/Y h:i A')
-                : null,
-
-            // 🔥 boolean para checkbox
-            'asistio'                   => $item->attendance ? true : false,
-
-            'howKnowEvent_id'           => $p->howKnowEvent->id ?? null,
-            'howKnowEvent_name'         => $p->howKnowEvent->name ?? null,
-
-            'gender_id'                 => $p->businessman->gender->id ?? '-',
-
-            'gender_name' => $p->businessman
-                ? ($p->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
-                : ($p->gender_id == 1 ? 'M' : 'F'),
-
-            'event' => $p->event ? [
-                'id'   => $p->event->id ?? null,
-                'name' => $p->event->title
+            'event' => $item->event ? [
+                'id'   => $item->event->id ?? null,
+                'name' => $item->event->title  // suponiendo que el evento tiene "title"
             ] : null,
+
         ];
     }
 
