@@ -343,20 +343,23 @@ class SedPublicController extends Controller
     {
         try {
 
-            // 1️⃣ Validación mínima manual
-            if (empty($request->slug) || empty($request->documentnumber)) {
-                return response()->json([
-                    'message' => 'slug y documentnumber son requeridos',
-                    'status' => 422
-                ], 422);
-            }
+            // ✅ VALIDACIÓN COMPLETA
+            $validated = $request->validate([
+                'slug'            => 'required|string',
+                'documentnumber'  => 'required|string',
+                'email'           => 'required|email',
+                'name'            => 'required|string',
+                'lastname'        => 'required|string',
+            ]);
 
-            // 2️⃣ Buscar evento
-            $fair = Fair::where('slug', $request->slug)->firstOrFail();
+            $mailer = $request->mailer ?? 'digitalizacion';
 
-            // 3️⃣ Buscar participante
+            // 🔍 EVENTO
+            $fair = Fair::where('slug', $validated['slug'])->firstOrFail();
+
+            // 🔍 (OPCIONAL) VALIDAR QUE EXISTA PARTICIPANTE
             $ugsePostulante = UgsePostulante::where('event_id', $fair->id)
-                ->where('documentnumber', $request->documentnumber)
+                ->where('documentnumber', $validated['documentnumber'])
                 ->first();
 
             if (!$ugsePostulante) {
@@ -366,43 +369,45 @@ class SedPublicController extends Controller
                 ], 404);
             }
 
-            $mailer = $request->mailer ?? 'hostinger';
+            // 📛 NOMBRE DESDE PAYLOAD
+            $participantName = "{$validated['name']} {$validated['lastname']}";
 
-            // 4️⃣ Logo base64
+            // 🖼 LOGO BASE64
             $logoPath = public_path('images/logo/sed.png');
             $logoBase64 = base64_encode(file_get_contents($logoPath));
             $logoMime = mime_content_type($logoPath);
             $logoDataUri = "data:$logoMime;base64,$logoBase64";
 
-            // 5️⃣ QR
+            // 🔳 QR
             $qrResult = Builder::create()
                 ->writer(new PngWriter())
-                ->data($ugsePostulante->documentnumber)
+                ->data($validated['documentnumber'])
                 ->size(200)
                 ->margin(10)
                 ->build();
 
             $qrBase64 = base64_encode($qrResult->getString());
 
-            // 6️⃣ PDF
+            // 📄 PDF
             $pdf = PDF::loadView('pdf.ticket_entry', [
                 'fair' => $fair,
-                'participantName' => "{$ugsePostulante->name} {$ugsePostulante->lastname}",
+                'participantName' => $participantName,
                 'qrBase64' => $qrBase64,
                 'logoDataUri' => $logoDataUri,
             ]);
 
             $filename = 'entrada_' . Str::random(10) . '.pdf';
             $filepath = storage_path("app/public/entradas/{$filename}");
+
             Storage::makeDirectory('public/entradas');
             $pdf->save($filepath);
 
-            // 7️⃣ Enviar correo
-            $participantName = "{$ugsePostulante->name} {$ugsePostulante->lastname}";
+            // 📧 CONTENIDO MENSAJE
             $messageContent = strip_tags($fair->msgSendEmail);
 
+            // 📧 ENVÍO
             Mail::mailer($mailer)
-                ->to($ugsePostulante->email)
+                ->to($validated['email']) // 🔥 correo del payload
                 ->send(new FairSedInfoMail(
                     $messageContent,
                     $filepath,
@@ -412,8 +417,7 @@ class SedPublicController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Correo reenviado correctamente',
-                'data' => $ugsePostulante,
+                'message' => 'Correo enviado correctamente',
                 'status' => 200
             ], 200);
         } catch (\Exception $e) {

@@ -720,7 +720,8 @@ class MujerProduceController extends Controller
     public function mpIndexParticipantDiagnostic(Request $request)
     {
         $filters = [
-            'name' => trim($request->input('name')),
+            'name'   => trim($request->input('name')),
+            'status' => $request->input('status'),
         ];
 
         $questions = MPDiagnostico::with('options')
@@ -741,6 +742,7 @@ class MujerProduceController extends Controller
                 }
             ]);
 
+        // 🔍 BUSCADOR
         if (!empty($filters['name'])) {
             $search = $filters['name'];
 
@@ -754,13 +756,27 @@ class MujerProduceController extends Controller
             });
         }
 
+        // 🔥 STATUS (CLAVE)
+        if (!empty($filters['status'])) {
+
+            if ($filters['status'] === 'DIAGNÓSTICO COMPLETADOS') {
+
+                // ✔ Tiene al menos una respuesta
+                $query->whereHas('diagnosticoResponses');
+            } elseif ($filters['status'] === 'DIAGNÓSTICO NO COMPLETADOS') {
+
+                // ❌ No tiene respuestas
+                $query->whereDoesntHave('diagnosticoResponses');
+            }
+        }
+
+        // 🔥 ORDEN (los que tienen respuestas arriba)
         $query->orderByRaw('
         EXISTS (
             SELECT 1 
             FROM mp_diag_respuestas r 
             WHERE r.participant_id = mp_participantes.id
-        ) DESC
-    ');
+        ) DESC');
 
         $query->orderBy('id', 'DESC');
 

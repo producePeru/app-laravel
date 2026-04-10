@@ -14,21 +14,16 @@ class DownloadExportDiagnosticMP extends Controller
     public function exportParticipantsExcel(Request $request)
     {
         $filters = [
-            'name' => trim($request->input('name')),
+            'name'   => trim($request->input('name')),
+            'status' => $request->input('status'), // 👈 agregado
         ];
 
-        // =========================
-        // PREGUNTAS (igual que index)
-        // =========================
         $questions = MPDiagnostico::with('options')
             ->where('status', 1)
             ->where('type', '!=', 'l')
             ->orderBy('position', 'ASC')
             ->get();
 
-        // =========================
-        // QUERY BASE (igual)
-        // =========================
         $query = MPParticipant::with([
             'diagnosticoResponses.option',
             'comercialActivity:id,name',
@@ -42,9 +37,6 @@ class DownloadExportDiagnosticMP extends Controller
                 }
             ]);
 
-        // =========================
-        // 🔍 MISMO FILTRO (CLONADO)
-        // =========================
         if (!empty($filters['name'])) {
             $search = $filters['name'];
 
@@ -58,21 +50,28 @@ class DownloadExportDiagnosticMP extends Controller
             });
         }
 
-        // =========================
-        // 🔥 MISMO ORDEN
-        // =========================
+        if (!empty($filters['status'])) {
+
+            if ($filters['status'] === 'DIAGNÓSTICO COMPLETADOS') {
+
+                $query->whereHas('diagnosticoResponses');
+            } elseif ($filters['status'] === 'DIAGNÓSTICO NO COMPLETADOS') {
+
+                $query->whereDoesntHave('diagnosticoResponses');
+            }
+        }
+
         $query->orderByRaw('
         EXISTS (
             SELECT 1 
             FROM mp_diag_respuestas r 
             WHERE r.participant_id = mp_participantes.id
-        ) DESC
-    ');
+        ) DESC');
 
         $query->orderBy('id', 'DESC');
 
         // =========================
-        // 🚀 SIN PAGINACIÓN (CLAVE)
+        // 🚀 SIN PAGINACIÓN
         // =========================
         $participants = $query->get();
 
