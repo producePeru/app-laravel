@@ -131,7 +131,7 @@ class Fair extends Model
             'image',
         ])->withCount(['postulantes', 'postulantesWow', 'sedSurvey']);
 
-
+        // 🔍 NOMBRE
         if (!empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('nameEvent', 'like', '%' . $filters['name'] . '%')
@@ -139,6 +139,7 @@ class Fair extends Model
             });
         }
 
+        // 📅 RANGO DE FECHAS
         if (!empty($filters['startDate']) && !empty($filters['endDate'])) {
             $query->where(function ($q) use ($filters) {
                 $q->whereBetween('startDate', [$filters['startDate'], $filters['endDate']])
@@ -146,39 +147,50 @@ class Fair extends Model
             });
         }
 
+        // 📅 AÑO
         if (!empty($filters['year'])) {
-
             $query->whereYear('created_at', $filters['year']);
         }
 
+        // 📅 FECHA EXACTA
+        if (!empty($filters['date'])) {
+            $query->whereDate('fecha', $filters['date']);
+        }
+
+        // 🌎 UBICACIÓN
+        if (!empty($filters['city'])) {
+            $query->where('city_id', $filters['city']);
+        }
+
+        if (!empty($filters['province'])) {
+            $query->where('province_id', $filters['province']);
+        }
+
+        if (!empty($filters['district'])) {
+            $query->where('district_id', $filters['district']);
+        }
+
+        // 🔃 ORDEN
         $today = Carbon::today();
 
         if (!empty($filters['orderby'])) {
             switch ($filters['orderby']) {
                 case 1:
-                    // Más recientes (por creación)
-                    // $query->orderBy('created_at', 'desc');
-                    $query->whereDate('endDate', '>=', $today)
-                        ->orderBy('endDate', 'asc');
+                    $query->whereDate('endDate', '>=', $today)->orderBy('endDate', 'asc');
                     break;
                 case 2:
-                    // Vigentes (endDate >= hoy)
-                    $query->whereDate('endDate', '<', $today)
-                        ->orderBy('endDate', 'desc');
+                    $query->whereDate('endDate', '<', $today)->orderBy('endDate', 'desc');
                     break;
                 case 3:
-                    // Finalizados (ya terminaron)
                     $query->orderBy('created_at', 'desc');
                     break;
                 case 4:
-                    // Orden por fecha de finalización, descendente
                     $query->orderBy('endDate', 'desc');
                     break;
                 default:
                     $query->orderBy('created_at', 'desc');
             }
         } else {
-            // Por defecto: más recientes
             $query->orderBy('created_at', 'desc');
         }
     }

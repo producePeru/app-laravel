@@ -810,55 +810,62 @@ class MujerProduceController extends Controller
         );
     }
 
-    private function mapParticipantResponses(
-        MPParticipant $participant,
-        $questions
-    ) {
+    private function mapParticipantResponses(MPParticipant $participant, $questions)
+    {
+        // 🔑 Agrupar por question_id (puede haber VARIAS filas por pregunta)
         $responses = $participant->diagnosticoResponses
-            ->keyBy('question_id');
+            ->groupBy('question_id');
 
         $mappedResponses = $questions->map(function ($question) use ($responses) {
 
-            $response = $responses->get($question->id);
+            $questionResponses = $responses->get($question->id);
+
+            if (!$questionResponses || $questionResponses->isEmpty()) {
+                return [
+                    'question_model' => $question->model,
+                    'answer'         => null,
+                ];
+            }
+
+            // TEXTO LIBRE
+            if ($question->type === 't') {
+                return [
+                    'question_model' => $question->model,
+                    'answer'         => $questionResponses->first()->answer_text,
+                ];
+            }
+
+            // OPCIÓN ÚNICA o MÚLTIPLE → unir labels con " - "
+            $labels = $questionResponses
+                ->map(fn($r) => $r->option?->name)
+                ->filter()
+                ->values();
 
             return [
                 'question_model' => $question->model,
-
-                // SI es select → name
-                // SI es text → answer_text
-                'answer' => $response
-                    ? ($response->answer_text
-                        ?? $response->option?->name)
-                    : null,
+                'answer'         => $labels->implode(' * '),
             ];
         });
 
-        // ✅ Última fecha real por participant_id
-        $lastDiagnosticoAt = $participant->diagnosticoResponses
-            ->max('created_at');
-
+        // ✅ Última fecha real
+        $lastDiagnosticoAt = $participant->diagnosticoResponses->max('created_at');
 
         return [
-            'participant_id'    => $participant->id,
-
-            'nombre_completo'   => $participant->names,
-            'apellidos'         => $participant->last_name . ' ' . $participant->middle_name,
-            'fecha_nacimiento'  => Carbon::parse($participant->date_of_birth)->format('d/m/Y'),
-            'celular'           => $participant->phone,
-            'tipo_documento'    => optional($participant->typeDocument)->avr,
-            'doc_number'        => $participant->doc_number,
-            'email'             => $participant->email,
-
-            'ruc'               => $participant->ruc ?? null,
-            'actividad'         => $participant->comercialActivity->name ?? null,
-            'rubro'             => $participant->rubro->name ?? null,
-            'economicSector'    => $participant->economicSector->name ?? null,
-
-            'shares'            => $participant->shares,
-
-            'responses'         => $mappedResponses,
-
-            'registrado'        => $lastDiagnosticoAt
+            'participant_id'   => $participant->id,
+            'nombre_completo'  => $participant->names,
+            'apellidos'        => $participant->last_name . ' ' . $participant->middle_name,
+            'fecha_nacimiento' => Carbon::parse($participant->date_of_birth)->format('d/m/Y'),
+            'celular'          => $participant->phone,
+            'tipo_documento'   => optional($participant->typeDocument)->avr,
+            'doc_number'       => $participant->doc_number,
+            'email'            => $participant->email,
+            'ruc'              => $participant->ruc ?? null,
+            'actividad'        => $participant->comercialActivity->name ?? null,
+            'rubro'            => $participant->rubro->name ?? null,
+            'economicSector'   => $participant->economicSector->name ?? null,
+            'shares'           => $participant->shares,
+            'responses'        => $mappedResponses,
+            'registrado'       => $lastDiagnosticoAt
                 ? Carbon::parse($lastDiagnosticoAt)->format('d/m/Y H:i')
                 : null,
         ];
