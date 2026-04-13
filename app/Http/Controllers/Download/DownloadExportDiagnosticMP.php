@@ -25,7 +25,7 @@ class DownloadExportDiagnosticMP extends Controller
             ->get();
 
         $query = MPParticipant::with([
-            'diagnosticoResponses.option',
+            'diagnosticoResponses' => fn($q) => $q->with('option'), // 👈
             'comercialActivity:id,name',
             'rubro:id,name',
             'economicSector:id,name',

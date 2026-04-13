@@ -78,22 +78,20 @@ class FairController extends Controller
     public function sedList(Request $request)
     {
         $filters = [
-            'year'      =>  $request->input('year'),
-            'startDate' =>  $request->input('dateStart'),
-            'endDate'   =>  $request->input('dateEnd'),
-            'name'      =>  $request->input('name'),
-            'orderby'   =>  $request->input('orderby'),
+            'year'      => $request->input('year'),
+            'startDate' => $request->input('dateStart'),
+            'endDate'   => $request->input('dateEnd'),
+            'name'      => $request->input('name'),
+            'orderby'   => $request->input('orderby'),
+            'date'      => $request->input('date'),      // 👈 fecha exacta
+            'city'      => $request->input('city'),      // 👈 departamento
+            'province'  => $request->input('province'),  // 👈 provincia
+            'district'  => $request->input('district'),  // 👈 distrito
         ];
 
-        $query = Fair::query();
-
-        // $query->where('fairtype_id', 1);
-
         $query = Fair::query()
-            ->whereIn('fairtype_id', [1, 5]) // ✅ Incluye ambos tipos
+            ->whereIn('fairtype_id', [1, 5])
             ->withItems($filters);
-
-        // $query->withItems($filters);
 
         $items = $query->paginate(150)->through(function ($item) {
             return $this->mapItems($item);

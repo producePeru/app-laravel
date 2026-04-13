@@ -24,9 +24,10 @@ class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithM
     {
         $this->participants = $participants;
 
-        $this->questions = MPDiagnostico::where('status', 1)
-            ->where('type', '!=', 'l')    // excluir tipo 'l'
-            ->orderBy('position', 'ASC')  // ordenar por position
+        $this->questions = MPDiagnostico::with('options') // 👈
+            ->where('status', 1)
+            ->where('type', '!=', 'l')
+            ->orderBy('position', 'ASC')
             ->get();
     }
 
@@ -95,17 +96,17 @@ class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithM
 
     public function map($participant): array
     {
-        $this->counter++; // 👈 incrementa
+        $this->counter++;
 
         $lastDiagnosticoAt = $participant->diagnosticoResponses
             ->max('created_at');
 
+        // 👇 groupBy para soportar respuestas múltiples
         $responses = $participant->diagnosticoResponses
-            ->keyBy('question_id');
+            ->groupBy('question_id');
 
         $row = [
-            $this->counter, // 👈 en vez del ID
-
+            $this->counter,
             $participant->names,
             $participant->last_name . ' ' . $participant->middle_name,
             Carbon::parse($participant->date_of_birth)->format('d/m/Y'),
@@ -121,11 +122,28 @@ class ParticipantDiagnosticExport implements FromCollection, WithHeadings, WithM
         ];
 
         foreach ($this->questions as $question) {
-            $response = $responses->get($question->id);
+            $questionResponses = $responses->get($question->id);
 
-            $row[] = $response
-                ? ($response->answer_text ?? $response->option?->name)
-                : null;
+            if (!$questionResponses || $questionResponses->isEmpty()) {
+                $row[] = null;
+                continue;
+            }
+
+            // TEXTO LIBRE
+            if ($question->type === 't') {
+                $row[] = $questionResponses->first()->answer_text;
+                continue;
+            }
+
+            // OPCIÓN ÚNICA o MÚLTIPLE
+            $labels = $questionResponses
+                ->map(fn($r) => $r->option?->name)
+                ->filter()
+                ->values();
+
+            $row[] = $labels->count() > 1
+                ? $labels->map(fn($label) => "- {$label}")->implode("\n")
+                : $labels->first();
         }
 
         return $row;

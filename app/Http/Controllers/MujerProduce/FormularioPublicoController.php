@@ -623,6 +623,7 @@ class FormularioPublicoController extends Controller
                             't' => 'text',
                             'o' => 'select',
                             'l' => 'title',
+                            'm' => 'multiple',
                             default => 'text'
                         },
 
@@ -633,12 +634,14 @@ class FormularioPublicoController extends Controller
                         'status' => true,
 
                         // 👇 regla fija
-                        'md' => $q->type === 'l'
-                            ? 12
-                            : (mb_strlen($q->label) > 60 ? 12 : 6),
+                        // 'md' => $q->type === 'l'
+                        //     ? 12
+                        //     : (mb_strlen($q->label) > 60 ? 12 : 6),
+
+                        'md' => 12,
 
                         // opciones solo select
-                        'options' => $q->type === 'o'
+                        'options' => $q->type === 'o' || $q->type === 'm'
                             ? $q->options->map(fn($opt) => [
                                 'value' => $opt->id,
                                 'label' => $opt->name
@@ -766,13 +769,14 @@ class FormularioPublicoController extends Controller
             $request->validate([
                 'ruc'            => 'nullable|string',
                 'documentnumber' => 'required|string',
+                'autorization'   => 'required|accepted',
             ]);
 
             // ===============================
             // 2. BUSCAR PARTICIPANTE
             // ===============================
-            $participant = MPParticipant::where('ruc', $request->ruc)
-                ->where('doc_number', $request->documentnumber)
+            $participant = MPParticipant::where('doc_number', $request->documentnumber)
+                ->when($request->ruc, fn($q) => $q->where('ruc', $request->ruc))
                 ->first();
 
             if (!$participant) {
@@ -785,72 +789,91 @@ class FormularioPublicoController extends Controller
             // ===============================
             // 3. FILTRAR RESPUESTAS DINÁMICAS
             // ===============================
-            $fixedKeys = ['ruc', 'documentnumber', 'typedocument_id'];
+            $fixedKeys = ['ruc', 'documentnumber', 'typedocument_id', 'autorization'];
             $answers   = collect($request->all())->except($fixedKeys);
 
             DB::beginTransaction();
 
             foreach ($answers as $questionId => $value) {
 
-                // Validar que la key sea numérica
-                if (!is_numeric($questionId)) {
-                    continue;
-                }
+                // Solo keys numéricas
+                if (!is_numeric($questionId)) continue;
 
-                // Buscar pregunta
+                // Ignorar respuestas vacías/nulas
+                if (is_null($value) || $value === '' || $value === []) continue;
+
+                // Buscar pregunta activa
                 $question = MPDiagnostico::where('id', $questionId)
                     ->where('status', 1)
                     ->first();
 
-                if (!$question) {
-                    continue;
-                }
+                if (!$question) continue;
 
                 // ===============================
-                // 4. DATA BASE
+                // 4. ELIMINAR RESPUESTAS PREVIAS
+                // (para poder re-insertar limpio)
                 // ===============================
-                $data = [
-                    'answer_text'       => null,
-                    'answer_option_id'  => null,
-                ];
+                MPDiagnosticoResponse::where('participant_id', $participant->id)
+                    ->where('question_id', $question->id)
+                    ->delete();
 
+                // ===============================
+                // 5. INSERTAR SEGÚN TIPO
+                // ===============================
+
+                // TEXTO LIBRE
                 if ($question->type === 't') {
-                    $data['answer_text'] = (string) $value;
+                    MPDiagnosticoResponse::create([
+                        'participant_id'    => $participant->id,
+                        'question_id'       => $question->id,
+                        'answer_text'       => (string) $value,
+                        'answer_option_id'  => null,
+                    ]);
                 }
 
-                if ($question->type === 'o') {
-                    $data['answer_option_id'] = is_numeric($value) ? (int) $value : null;
+                // OPCIÓN ÚNICA
+                if ($question->type === 'o' && is_numeric($value)) {
+                    MPDiagnosticoResponse::create([
+                        'participant_id'    => $participant->id,
+                        'question_id'       => $question->id,
+                        'answer_text'       => null,
+                        'answer_option_id'  => (int) $value,
+                    ]);
                 }
 
-                // ===============================
-                // 5. CREAR O ACTUALIZAR
-                // ===============================
-                MPDiagnosticoResponse::updateOrCreate(
-                    [
-                        'participant_id' => $participant->id,
-                        'question_id'    => $question->id,
-                    ],
-                    $data
-                );
+                // OPCIÓN MÚLTIPLE (array)
+                if ($question->type === 'm' && is_array($value)) {
+                    $rows = collect($value)
+                        ->filter(fn($v) => is_numeric($v))
+                        ->map(fn($optionId) => [
+                            'participant_id'   => $participant->id,
+                            'question_id'      => $question->id,
+                            'answer_text'      => null,
+                            'answer_option_id' => (int) $optionId,
+                        ])
+                        ->values()
+                        ->toArray();
+
+                    if (!empty($rows)) {
+                        MPDiagnosticoResponse::insert($rows);
+                    }
+                }
             }
 
             DB::commit();
 
             return response()->json([
                 'status'  => 200,
-                'message' => 'Respuestas registradas / actualizadas correctamente'
-            ], 200);
+                'message' => 'Respuestas registradas correctamente'
+            ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-
             return response()->json([
                 'status'  => 422,
                 'message' => 'Error de validación',
                 'errors'  => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-
             DB::rollBack();
-
             return response()->json([
                 'status'  => 500,
                 'message' => 'Error interno al registrar respuestas',
