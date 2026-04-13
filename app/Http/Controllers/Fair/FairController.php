@@ -124,7 +124,9 @@ class FairController extends Controller
             'endDate' => $item->endDate ?? null,
             'dateStartFormat' => $item->startDate ? Carbon::parse($item->startDate)->format('d/m/Y') : null,
             'dateEndFormat' => $item->endDate ? Carbon::parse($item->endDate)->format('d/m/Y') : null,
+
             'registered' => $item->postulantes_count,
+
             'registered_wow' => $item->postulantes_wow_count,
 
             'metaMypes' => $item->metaMypes ?? null,
