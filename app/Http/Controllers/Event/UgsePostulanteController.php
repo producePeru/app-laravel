@@ -257,6 +257,7 @@ class UgsePostulanteController extends Controller
             'event' => [
                 'id'   => $fair->id,
                 'name' => $fair->title,
+                'fecha' => $fair->fecha
             ],
             'status' => 200
         ]);

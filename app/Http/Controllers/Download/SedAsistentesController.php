@@ -53,50 +53,44 @@ class SedAsistentesController extends Controller
             $rows = $postulantes->map(function ($item, $index) {
                 return [
                     $index + 1,
-                    $item->event->title,
+                    strtoupper($item->event->title),
+                    $item->attended ?? '-',
                     $item->ruc,
-                    $item->attended,
-                    $item->comercialName,
-                    $item->company->socialReason ?? $item->socialReason,
-
-                    $item->economicsector?->name,           // sector economico
-                    $item->category?->name,                 // rubro
+                    strtoupper($item->comercialName),
+                    mb_strtoupper($item->company?->socialReason ?? $item->socialReason ?? '', 'UTF-8'),
+                    mb_strtoupper($item->economicsector?->name ?? '', 'UTF-8'),          // sector economico
+                    mb_strtoupper($item->category?->name ?? '', 'UTF-8'),                // rubro
                     $item->comercialactivity?->name,        // actividad comercial
-
                     $item->city?->name ?? null,
                     $item->province->name ?? null,
                     $item->district->name ?? null,
-                    $item->address,
-                    $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
+                    mb_strtoupper($item->address ?? '', 'UTF-8'),
+                    $item->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
                     $item->businessman->typedocument->name ?? '-',
-
                     $item->businessman->documentnumber ?? $item->documentnumber,
-                    $item->businessman->name ?? $item->name,
-                    $item->businessman->lastname ?? $item->lastname,
-                    $item->businessman->middlename ?? $item->middlename,
-
+                    mb_strtoupper($item->businessman?->name ?? $item->name ?? '', 'UTF-8'),
+                    mb_strtoupper($item->businessman?->lastname ?? $item->lastname ?? '', 'UTF-8'),
+                    mb_strtoupper($item->businessman?->middlename ?? $item->middlename ?? '', 'UTF-8'),
                     $item->businessman
                         ? ($item->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
                         : ($item->gender_id == 1 ? 'M' : 'F'),
                     $item->sick == 'no' ? 'No' : 'Si',
                     $item->phone,
                     $item->email,
-
                     $item->businessman->birthday ?? $item->birthday,
-
                     $item->age ?? null,
-                    $item->positionCompany,
-                    $item->howKnowEvent?->name,
-                    $item->instagram,
-                    $item->facebook,
-                    $item->web,
+                    mb_strtoupper($item->positionCompany ?? '', 'UTF-8'),
+                    mb_strtoupper($item->howKnowEvent?->name ?? '', 'UTF-8'),
+                    // $item->instagram,
+                    // $item->facebook,
+                    // $item->web,
                     $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : '',
 
-                    $item->sedQuestion->question_1 ?? '-',
-                    $item->sedQuestion->question_2 ?? '-',
-                    $item->sedQuestion->question_3 ?? '-',
-                    $item->sedQuestion->question_4 ?? '-',
-                    $item->sedQuestion->question_5 ?? '-'
+                    mb_strtoupper($item->sedQuestion?->question_1 ?? '-', 'UTF-8'),
+                    mb_strtoupper($item->sedQuestion?->question_2 ?? '-', 'UTF-8'),
+                    mb_strtoupper($item->sedQuestion?->question_3 ?? '-', 'UTF-8'),
+                    mb_strtoupper($item->sedQuestion?->question_4 ?? '-', 'UTF-8'),
+                    mb_strtoupper($item->sedQuestion?->question_5 ?? '-', 'UTF-8'),
                 ];
             });
 
@@ -177,40 +171,36 @@ class SedAsistentesController extends Controller
         return $options[$question][$value] ?? '-';
     }
 
+
     public function exportListCooperativas(Request $request, $slug)
     {
         try {
             $fair = Fair::where('slug', $slug)->firstOrFail();
 
             $filters = $request->query();
+            $includeSurvey = $request->boolean('encuesta');
 
-            // 🔥 AHORA DESDE sed_asistencias
+            // 🔹 QUERY PRINCIPAL
             $query = SedAsistente::where('sed_id', $fair->id)
                 ->with([
                     'postulante.company:id,ruc,socialReason',
                     'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
-                    'postulante.businessman.typedocument:id,name',
-                    'postulante.typedocument:id,avr',
                     'postulante.businessman.gender:id,name',
+                    'postulante.typedocument:id,avr',
                     'postulante.economicsector',
                     'postulante.category',
                     'postulante.comercialactivity',
                     'postulante.city',
                     'postulante.province',
                     'postulante.district',
-                    'postulante.typedocument',
-                    'postulante.gender',
                     'postulante.howKnowEvent',
-                    'postulante.event',
-                    // 'postulante.sedQuestion',
                     'postulante.sedQuestion' => function ($q) use ($fair) {
                         $q->where('event_id', $fair->id);
                     }
                 ])
-                // 🔥 MÁS RECIENTE PRIMERO
                 ->orderBy('id', 'desc');
 
-            // 🔎 Filtros
+            // 🔍 FILTROS
             if (!empty($filters['name'])) {
                 $query->whereHas('postulante', function ($q) use ($filters) {
                     $q->where('ruc', 'like', '%' . $filters['name'] . '%')
@@ -227,7 +217,21 @@ class SedAsistentesController extends Controller
 
             $asistencias = $query->get();
 
-            $rows = $asistencias->map(function ($item, $index) use ($fair) {
+            // 🔥 TRAER TODAS LAS RESPUESTAS UNA SOLA VEZ (SIN N+1)
+            $questions = collect();
+            $answersGrouped = collect();
+
+            if ($includeSurvey) {
+                $answers = sedQuestionAnswer::where('sed_id', $fair->id)->get();
+
+                $questions = $answers->pluck('question')->unique()->values();
+
+                // agrupar por dni
+                $answersGrouped = $answers->groupBy('dni');
+            }
+
+            // 🔥 MAPEO
+            $rows = $asistencias->map(function ($item, $index) use ($fair, $includeSurvey, $questions, $answersGrouped) {
 
                 $roles = [
                     'd' => 'DIRIGENTE',
@@ -236,73 +240,101 @@ class SedAsistentesController extends Controller
                 ];
 
                 $p = $item->postulante;
+                if (!$p) return null;
 
-                $rol = $p->sedQuestion->rolCooperativa ?? null;
+                $rol = $p->sedQuestion?->rolCooperativa;
 
-                return [
+                // 🔹 BASE
+                $row = [
                     $index + 1,
-                    $fair->title,
-
+                    mb_strtoupper($fair->title ?? '', 'UTF-8'),
                     $item->attendance ?? '-',
-                    $p->sedQuestion->rucCooperativa,
-                    $p->sedQuestion->cooperativa,
-                    // $p->sedQuestion->rolCooperativa,
+                    $p->sedQuestion?->rucCooperativa ?? '-',
+                    mb_strtoupper($p->sedQuestion?->cooperativa ?? '', 'UTF-8') ?? '-',
                     $roles[$rol] ?? '-',
 
                     $p->ruc,
-                    $p->company->socialReason ?? $p->socialReason,
-                    $p->comercialName,
-                    $p->economicsector?->name,
-                    $p->category?->name,
-                    $p->comercialactivity?->name,
-                    $p->city?->name ?? null,
-                    $p->province->name ?? null,
-                    $p->district->name ?? null,
-                    $p->address,
-                    $item->typeAsistente == 1 ? 'Representante' : 'Invitado',
-                    $p->typedocument->avr ?? null,
-                    $p->businessman->documentnumber ?? $p->documentnumber,
-                    $p->businessman->name ?? $p->name,
-                    $p->businessman->lastname ?? $p->lastname,
-                    $p->businessman->middlename ?? $p->middlename,
+                    mb_strtoupper($p->company?->socialReason ?? $p->socialReason ?? '', 'UTF-8'),
+                    mb_strtoupper($p->comercialName ?? '', 'UTF-8'),
+                    mb_strtoupper($p->economicsector?->name ?? '', 'UTF-8'),
+                    mb_strtoupper($p->category?->name ?? '', 'UTF-8'),
+                    mb_strtoupper($p->comercialactivity?->name ?? '', 'UTF-8'),
+                    mb_strtoupper($p->city?->name ?? '', 'UTF-8'),
+                    mb_strtoupper($p->province?->name ?? '', 'UTF-8'),
+                    mb_strtoupper($p->district?->name ?? '', 'UTF-8'),
+                    mb_strtoupper($p->address ?? '', 'UTF-8'),
+                    $item->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
+                    mb_strtoupper($p->typedocument?->avr ?? '', 'UTF-8'),
+                    $p->businessman?->documentnumber ?? $p->documentnumber ?? '',
+                    mb_strtoupper($p->businessman?->name ?? $p->name ?? '', 'UTF-8'),
+                    mb_strtoupper($p->businessman?->lastname ?? $p->lastname ?? '', 'UTF-8'),
+                    mb_strtoupper($p->businessman?->middlename ?? $p->middlename ?? '', 'UTF-8'),
+
                     $p->businessman
-                        ? ($p->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
+                        ? ($p->businessman->gender?->name === 'FEMENINO' ? 'F' : 'M')
                         : ($p->gender_id == 1 ? 'M' : 'F'),
 
-                    $p->sick == 'no' ? 'No' : 'Si',
+                    $p->sick == 'no' ? 'NO' : 'SI',
                     $p->phone,
                     $p->email,
-                    $p->businessman->birthday ?? $p->birthday,
+                    $p->businessman?->birthday ?? $p->birthday,
                     $p->age ?? null,
-                    $p->positionCompany,
-                    $p->howKnowEvent?->name,
-                    // $p->instagram,
-                    // $p->facebook,
-                    // $p->web,
+                    mb_strtoupper($p->positionCompany ?? '', 'UTF-8'),
+                    mb_strtoupper($p->howKnowEvent?->name ?? '', 'UTF-8'),
 
                     $item->created_at
                         ? Carbon::parse($item->created_at)->format('d/m/Y h:i A')
                         : '',
 
-                    $this->getAnswerLabel('question_1', $p->sedQuestion->question_1 ?? null),
-                    $this->getAnswerLabel('question_2', $p->sedQuestion->question_2 ?? null),
-                    $this->getAnswerLabel('question_3', $p->sedQuestion->question_3 ?? null),
-                    $this->getAnswerLabel('question_4', $p->sedQuestion->question_4 ?? null),
-                    $this->getAnswerLabel('question_5', $p->sedQuestion->question_5 ?? null),
+                    mb_strtoupper($this->getAnswerLabel('question_1', $p->sedQuestion?->question_1) ?? '-', 'UTF-8'),
+                    mb_strtoupper($this->getAnswerLabel('question_2', $p->sedQuestion?->question_2) ?? '-', 'UTF-8'),
+                    mb_strtoupper($this->getAnswerLabel('question_3', $p->sedQuestion?->question_3) ?? '-', 'UTF-8'),
+                    mb_strtoupper($this->getAnswerLabel('question_4', $p->sedQuestion?->question_4) ?? '-', 'UTF-8'),
+                    mb_strtoupper($this->getAnswerLabel('question_5', $p->sedQuestion?->question_5) ?? '-', 'UTF-8'),
                 ];
-            });
 
+                // 🔥 DINÁMICAS
+                if ($includeSurvey) {
+                    $dni = $p->businessman?->documentnumber ?? $p->documentnumber;
+
+                    $participantAnswers = $answersGrouped->get($dni, collect());
+                    $answerMap = $participantAnswers->pluck('answer', 'question');
+
+                    foreach ($questions as $q) {
+                        $row[] = $answerMap[$q] ?? '';
+                    }
+                }
+
+                return $row;
+            })->filter()->values();
+
+            // 📄 TEMPLATE
             $templatePath = storage_path('app/plantillas/sed_template_cooperativa.xlsx');
             $spreadsheet = IOFactory::load($templatePath);
             $sheet = $spreadsheet->getActiveSheet();
 
             $startRow = 2;
 
+            // 🔥 HEADERS DINÁMICOS (solo si encuesta)
+            if ($includeSurvey && $questions->count()) {
+                $baseCols = count($rows[0]) - $questions->count();
+                $colIndex = $baseCols + 1;
+
+                foreach ($questions as $q) {
+                    $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
+                    $sheet->setCellValue("{$col}1", $q);
+                    $colIndex++;
+                }
+            }
+
+            // 🔥 DATA
             foreach ($rows as $i => $row) {
-                $col = 'A';
+                $colIndex = 1;
+
                 foreach ($row as $value) {
+                    $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
                     $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
-                    $col++;
+                    $colIndex++;
                 }
             }
 
