@@ -15,11 +15,8 @@ use ZipArchive;
 
 class CyberWowCarpetaLiderController extends Controller
 {
-    public function downloadUserFolders($slug)
+    public function downloadUserFolders()
     {
-
-        return $slug;
-
         try {
             $user = Auth::user();
 
