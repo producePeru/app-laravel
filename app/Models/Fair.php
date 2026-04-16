@@ -30,7 +30,8 @@ class Fair extends Model
         'created_by',
         'updated_by',
         'image_id',
-        'cooperativa'
+        'cooperativa',
+        'textFooter'
     ];
 
 
@@ -101,6 +102,13 @@ class Fair extends Model
         return $this->hasMany(SedSurvey::class, 'sed_id');
     }
 
+    public function sedSurveyMonth()
+    {
+        return $this->hasMany(SedSurvey::class, 'sed_id')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year);
+    }
+
 
     // SCOPE SEARCH
     public function scopeSearch($query, $search)
@@ -129,7 +137,7 @@ class Fair extends Model
             'region',
             'fairType',
             'image',
-        ])->withCount(['postulantes', 'postulantesWow', 'sedSurvey']);
+        ])->withCount(['postulantes', 'postulantesWow', 'sedSurvey', 'sedSurveyMonth']);
 
         // 🔍 NOMBRE
         if (!empty($filters['name'])) {
@@ -191,7 +199,7 @@ class Fair extends Model
                     $query->orderBy('created_at', 'desc');
             }
         } else {
-            $query->orderBy('created_at', 'desc');
+            $query->orderBy('fecha', 'desc');
         }
     }
 }

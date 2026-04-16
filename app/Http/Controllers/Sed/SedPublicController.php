@@ -23,16 +23,18 @@ use Illuminate\Support\Facades\Mail;
 
 class SedPublicController extends Controller
 {
-    public function getSedSurvey($slug)
+    public function getSedSurvey(Request $request, $slug)
     {
         try {
+            // 👇 default 'sed'
+            $table = $request->input('table', 'sed');
+
             // 1. Buscar el evento
             $fair = Fair::where('slug', $slug)->firstOrFail();
 
             $fechaExpiracion = Carbon::parse($fair->fecha)->endOfDay();
 
             // 2. VALIDACIÓN DE FECHA
-            // Comparamos si la fecha actual (now()) es mayor a la fecha del evento
             if (now()->greaterThan($fechaExpiracion)) {
                 return response()->json([
                     'status' => 403,
@@ -40,23 +42,28 @@ class SedPublicController extends Controller
                 ]);
             }
 
-            // 3. Traer preguntas si la validación pasa
+            // 3. Traer preguntas
             $questions = SedSurvey::where('sed_id', $fair->id)
                 ->with(['question.options'])
                 ->get()
-                ->map(function ($item) {
+                ->map(function ($item) use ($table) {
+
                     $q = $item->question;
 
-                    if (!$q || $q->tableName !== 'sed') {
+                    // 👇 aquí aplicas dinámico
+                    if (!$q || $q->tableName !== $table) {
                         return null;
                     }
 
                     return [
+                        'id' => $q->id,
                         'type' => $q->type,
                         'label' => $q->label,
                         'model' => $q->model,
+                        'model' => $q->model,
                         'required' => (bool) $q->required,
                         'md' => 12,
+                        'visible' => $q->visible == 1 ? true : false,
                         'options' => $q->options->map(function ($opt) {
                             return [
                                 'label' => $opt->label,
@@ -68,13 +75,14 @@ class SedPublicController extends Controller
                 ->filter()
                 ->values();
 
-            // 4. Retornar respuesta exitosa
+            // 4. Respuesta
             return response()->json([
                 'status' => 200,
                 'questions' => $questions,
                 'sed_title' => $fair->title
             ]);
         } catch (\Throwable $e) {
+
             Log::error('Error obteniendo encuesta SED', [
                 'error' => $e->getMessage()
             ]);

@@ -21,6 +21,8 @@ class SedController extends Controller
 
             $payload = $request->all();
 
+            $tableName = $payload['table'] ?? 'sed';
+
             // 1. Obtener SED
             $fair = Fair::where('slug', $payload['slug'])->firstOrFail();
             $sedId = $fair->id;
@@ -37,7 +39,8 @@ class SedController extends Controller
                     $model = "question_" . $nextId;
 
                     $question = Question::create([
-                        'tableName' => 'sed',
+                        // 'tableName' => 'sed',
+                        'tableName' => $tableName,
                         'label' => $q['label'],
                         'type' => $q['type'],
                         'model' => $model,
@@ -97,36 +100,37 @@ class SedController extends Controller
         }
     }
 
-    public function getSedSurvey($slug)
+    public function getSedSurvey(Request $request, $slug)
     {
         try {
+
+            // 👇 default seguro
+            $table = $request->input('table', 'sed');
 
             $fair = Fair::where('slug', $slug)->firstOrFail();
 
             $questions = SedSurvey::where('sed_id', $fair->id)
                 ->with(['question.options'])
                 ->get()
-                ->map(function ($item) {
+                ->map(function ($item) use ($table) {
 
                     $q = $item->question;
 
-                    if (!$q || $q->tableName !== 'sed') {
+                    if (!$q || $q->tableName !== $table) {
                         return null;
                     }
 
                     return [
-                        'id' => $q->id, // agregado
+                        'id' => $q->id,
                         'type' => $q->type,
                         'label' => $q->label,
                         'model' => $q->model,
                         'required' => (bool) $q->required,
                         'md' => 12,
-                        'options' => $q->options->map(function ($opt) {
-                            return [
-                                'label' => $opt->label,
-                                'value' => $opt->value
-                            ];
-                        })->values()
+                        'options' => $q->options->map(fn($opt) => [
+                            'label' => $opt->label,
+                            'value' => $opt->value
+                        ])->values()
                     ];
                 })
                 ->filter()
