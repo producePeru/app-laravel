@@ -29,12 +29,15 @@ class DownloadCyberWowMarcaController extends Controller
             // 👤 Usuario autenticado
             $userId = Auth::id();
 
+            $fair = Fair::where('slug', $slug)->firstOrFail();
+
             // 🔗 LEFT JOIN: Trae todos los participantes (aunque no tengan marca)
             $data = DB::table('cyberwowparticipants as p')
                 ->leftJoin('cyberwowbrand as b', 'p.id', '=', 'b.company_id')
                 ->leftJoin('images as i256', 'b.logo256_id', '=', 'i256.id')
                 ->leftJoin('images as i160', 'b.logo160_id', '=', 'i160.id')
                 ->where('p.user_id', $userId)
+                ->where('p.event_id', $fair->id)
                 ->select(
                     'p.id as participante_id',
                     'p.nombreComercial',
@@ -118,12 +121,15 @@ class DownloadCyberWowMarcaController extends Controller
             // 👤 Usuario autenticado
             $userId = Auth::id();
 
+            $fair = Fair::where('slug', $slug)->firstOrFail();
+
             // 🔗 LEFT JOIN PARTICIPANTE + OFERTAS
             $data = DB::table('cyberwowparticipants as p')
                 ->leftJoin('cyberwowoffers as o', 'p.id', '=', 'o.company_id')
                 ->leftJoin('images as img', 'o.img', '=', 'img.id')
                 ->leftJoin('images as imgfull', 'o.imgFull', '=', 'imgfull.id')
                 ->where('p.user_id', $userId)
+                ->where('p.event_id', $fair->id)
                 ->select(
                     'p.id as participante_id',
                     'p.nombreComercial',

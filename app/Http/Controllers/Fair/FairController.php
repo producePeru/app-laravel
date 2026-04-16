@@ -83,17 +83,19 @@ class FairController extends Controller
             'endDate'   => $request->input('dateEnd'),
             'name'      => $request->input('name'),
             'orderby'   => $request->input('orderby'),
-            'date'      => $request->input('date'),      // 👈 fecha exacta
-            'city'      => $request->input('city'),      // 👈 departamento
-            'province'  => $request->input('province'),  // 👈 provincia
-            'district'  => $request->input('district'),  // 👈 distrito
+            'date'      => $request->input('date'),
+            'city'      => $request->input('city'),
+            'province'  => $request->input('province'),
+            'district'  => $request->input('district'),
         ];
 
         $query = Fair::query()
             ->whereIn('fairtype_id', [1, 5])
             ->withItems($filters);
 
-        $items = $query->paginate(150)->through(function ($item) {
+        $pageSize = $request->input('pageSize', 10);
+
+        $items = $query->paginate($pageSize)->through(function ($item) {
             return $this->mapItems($item);
         });
 
@@ -158,7 +160,8 @@ class FairController extends Controller
                 'url'  => null,
             ],
             'encuesta' => $item->sed_survey_count,
-            'cooperativa' => $item->cooperativa ?? null
+            'cooperativa' => $item->cooperativa ?? null,
+            'encuestames' => $item->sed_survey_month_count,
         ];
     }
 
@@ -248,6 +251,7 @@ class FairController extends Controller
                         'place'       => $fair->place,
                         'schedule'    => $fair->hours,
                         'cooperativa'   => $fair->cooperativa == 1 ? true : false,
+                        'textFooter' => $fair->textFooter ?? null
                     ],
                     'status' => 200
                 ]);

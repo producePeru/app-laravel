@@ -61,7 +61,7 @@ Route::controller(ActividadesUgoController::class)->group(function () {
 
 Route::controller(CyberWowCarpetaLiderController::class)->group(function () {
 
-    Route::get('cyber-wow-folder-leader', 'downloadUserFolders');
+    Route::get('cyber-wow-folder-leader/{slug}', 'downloadUserFolders');
 
     Route::get('cyber-wow-folder-all-brands/{slug}', 'cyberWowFolderAllBrands');
 });
