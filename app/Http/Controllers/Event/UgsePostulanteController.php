@@ -246,6 +246,7 @@ class UgsePostulanteController extends Controller
             'district:id,name',
             'howKnowEvent:id,name',
             'event',
+            'sedAsistencias'
         ]);
 
         $postulantes = $query->paginate(150)->through(function ($item) {
@@ -295,13 +296,26 @@ class UgsePostulanteController extends Controller
             'instagram'                 => $item->instagram,
             'facebook'                  => $item->facebook,
             'web'                       => $item->web,
-            'attended'                  => $item->attended ?? null,
+
+            'attended' => optional(
+                $item->sedAsistencias
+                    ->where('dni', $item->documentnumber)
+                    ->whereNotNull('attendance')
+                    ->sortByDesc('id') // 🔥 CLAVE
+                    ->first()
+            )->attendance,
+
             'socialReason'              => $item->socialReason,
             'typeAsistente'             => $item->typeAsistente,
             'sick'                      => $item->sick == 'si' ? 'SI' : 'NO',
             'birthday'                  => $item->businessman->birthday ?? $item->birthday,
             'created_at'                => $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : null,
-            'asistio'                   => $item->attended ? true : false,
+
+            'asistio' => $item->sedAsistencias
+                ->where('dni', $item->documentnumber)
+                ->whereNotNull('attendance')
+                ->isNotEmpty(),
+
             'howKnowEvent_id'           => $item->howKnowEvent->id ?? null,
             'howKnowEvent_name'         => $item->howKnowEvent->name ?? null,
             'gender_id'                 => $item->businessman->gender->id ?? '-',
