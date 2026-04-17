@@ -69,7 +69,9 @@ class SedPublicController extends Controller
             return response()->json([
                 'status' => 200,
                 'questions' => $questions,
-                'sed_title' => $fair->title
+                'sed_title' => $fair->title,
+                'sed_place' => $fair->place
+
             ]);
         } catch (\Throwable $e) {
 
