@@ -23,68 +23,80 @@ class BodaController extends Controller
         return response()->json($media);
     }
 
-    public function upload(Request $request)
-    {
-        $request->validate([
-            'files' => 'required|array',
-            'files.*' => 'file|mimes:jpg,jpeg,png,webp,gif,mp4,mov,avi|max:51200'
-        ]);
+   public function upload(Request $request)
+{
+    $request->validate([
+        'files' => 'required|array',
+        'files.*' => 'file|mimes:jpg,jpeg,png,webp,gif,mp4,mov,avi|max:51200'
+    ]);
 
-        if (!$request->hasFile('files')) {
-            return response()->json(['error' => 'No files'], 400);
-        }
+    if (!$request->hasFile('files')) {
+        return response()->json(['error' => 'No files'], 400);
+    }
 
-        $saved = [];
+    $saved = [];
 
-        DB::beginTransaction();
+    DB::beginTransaction();
 
-        try {
+    try {
 
-            foreach ($request->file('files') as $file) {
+        foreach ($request->file('files') as $file) {
 
-                if (!$file->isValid()) continue;
+            if (!$file->isValid()) continue;
 
-                $uuid = (string) Str::uuid();
-                $ext  = strtolower($file->getClientOriginalExtension());
-                $name = $uuid . '.' . $ext;
+            $uuid = (string) Str::uuid();
+            $ext  = strtolower($file->getClientOriginalExtension());
+            $name = $uuid . '.' . $ext;
 
-                // 🔥 USAR STORAGE (SOLUCIÓN AL ERROR TMP)
-                $path = $file->storeAs('boda', $name, 'public');
+            // 🔥 RUTA REAL EN HOSTINGER
+            $destination = public_path('storage/boda');
 
-                $type = str_starts_with($file->getMimeType(), 'video')
-                    ? 'video'
-                    : 'image';
-
-                $media = Media::create([
-                    'name' => $file->getClientOriginalName(),
-                    'path' => 'storage/' . $path,
-                    'mime_type' => $file->getMimeType(),
-                    'size' => $file->getSize(),
-                    'type' => $type
-                ]);
-
-                // 🔥 devolver URL lista
-                $media->url = asset($media->path);
-
-                $saved[] = $media;
+            // Crear carpeta si no existe
+            if (!file_exists($destination)) {
+                mkdir($destination, 0755, true);
             }
 
-            DB::commit();
+            // 🔥 GUARDAR DIRECTO EN PUBLIC
+            $file->move($destination, $name);
 
-            return response()->json([
-                'status' => true,
-                'data' => $saved
+            // Ruta que se guarda en DB
+            $path = 'storage/boda/' . $name;
+
+            $type = str_starts_with($file->getMimeType(), 'video')
+                ? 'video'
+                : 'image';
+
+            $media = Media::create([
+                'name' => $file->getClientOriginalName(),
+                'path' => $path,
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+                'type' => $type
             ]);
-        } catch (\Exception $e) {
 
-            DB::rollBack();
+            // 🔥 URL FINAL LISTA PARA FRONT
+            $media->url = asset($path);
 
-            return response()->json([
-                'status' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            $saved[] = $media;
         }
+
+        DB::commit();
+
+        return response()->json([
+            'status' => true,
+            'data' => $saved
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            'status' => false,
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function download($id)
     {
