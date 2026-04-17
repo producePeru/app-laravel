@@ -32,16 +32,6 @@ class SedPublicController extends Controller
             // 1. Buscar el evento
             $fair = Fair::where('slug', $slug)->firstOrFail();
 
-            $fechaExpiracion = Carbon::parse($fair->fecha)->endOfDay();
-
-            // 2. VALIDACIÓN DE FECHA
-            if (now()->greaterThan($fechaExpiracion)) {
-                return response()->json([
-                    'status' => 403,
-                    'message' => 'La encuesta finalizó el día ' . $fechaExpiracion->format('d/m/Y') . ' a las 23:59.'
-                ]);
-            }
-
             // 3. Traer preguntas
             $questions = SedSurvey::where('sed_id', $fair->id)
                 ->with(['question.options'])
