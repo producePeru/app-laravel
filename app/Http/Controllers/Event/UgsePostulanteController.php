@@ -979,6 +979,8 @@ class UgsePostulanteController extends Controller
             'paso2' => $item->paso2,
             'paso3' => $item->paso3,
 
+            'disclaimer' => $item->disclaimer,
+
             'created_at' => $item->created_at->format('d/m/Y H:i'),
         ];
     }
