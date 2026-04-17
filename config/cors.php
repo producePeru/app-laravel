@@ -26,7 +26,8 @@ return [
         'https://inscripcion.soporte-pnte.com',
         'https://fiesta-del-cafe.soporte-pnte.com',
         'https://seguimiento-capacitaciones.soporte-pnte.com',
-        'https://wedding.soporte-pnte.com'
+        'https://wedding.soporte-pnte.com',
+        'https://galeria-boda.soporte-pnte.com'
     ],
 
     'allowed_origins_patterns' => [],
