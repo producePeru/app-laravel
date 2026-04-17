@@ -7,6 +7,7 @@ use App\Http\Controllers\Event\CyberwowParticipantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Event\PublicEventsController;
 use App\Http\Controllers\Fair\FairController;
+use App\Http\Controllers\Page\BodaController;
 use App\Http\Controllers\Page\InvitadoController;
 use App\Http\Controllers\Training\TrainingController;
 
@@ -91,6 +92,18 @@ Route::controller(InvitadoController::class)->group(function () {
     Route::GET('invitado/{slug}', 'show');
 
     Route::PATCH('invitado/{invitado:slug}/confirmar', 'confirmar');
+});
+
+
+Route::controller(BodaController::class)->group(function () {
+
+    Route::POST('/wedding-upload-image',  'upload');
+
+    Route::GET('/wedding-gallery',  'index');
+
+    Route::DELETE('/wedding-delete-image/{id}',  'destroy');
+
+    Route::GET('/wedding-download-image/{id}',  'download');
 });
 
 // public
