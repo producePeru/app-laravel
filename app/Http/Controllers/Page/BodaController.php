@@ -23,14 +23,18 @@ class BodaController extends Controller
         return response()->json($media);
     }
 
-   public function upload(Request $request)
-{
-    $request->validate([
-        'files' => 'required|array',
-        'files.*' => 'file|mimes:jpg,jpeg,png,webp,gif,mp4,mov,avi|max:51200'
-    ]);
 
-    if (!$request->hasFile('files')) {
+    public function upload(Request $request)
+{
+    // 🔥 FORZAR TMP (Hostinger)
+    $tmp = storage_path('app/tmp');
+    if (!file_exists($tmp)) {
+        mkdir($tmp, 0777, true);
+    }
+    ini_set('upload_tmp_dir', $tmp);
+
+    // 🔥 TOMAR ARCHIVOS DESDE $_FILES (evita error tmp)
+    if (!isset($_FILES['files'])) {
         return response()->json(['error' => 'No files'], 400);
     }
 
@@ -40,41 +44,38 @@ class BodaController extends Controller
 
     try {
 
-        foreach ($request->file('files') as $file) {
+        foreach ($_FILES['files']['tmp_name'] as $i => $tmpName) {
 
-            if (!$file->isValid()) continue;
+            if (!file_exists($tmpName)) continue;
 
-            $uuid = (string) Str::uuid();
-            $ext  = strtolower($file->getClientOriginalExtension());
-            $name = $uuid . '.' . $ext;
+            $originalName = $_FILES['files']['name'][$i];
+            $size = $_FILES['files']['size'][$i];
+            $typeMime = mime_content_type($tmpName);
 
-            // 🔥 RUTA REAL EN HOSTINGER
+            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            $name = (string) Str::uuid() . '.' . $ext;
+
             $destination = public_path('storage/boda');
 
-            // Crear carpeta si no existe
             if (!file_exists($destination)) {
                 mkdir($destination, 0755, true);
             }
 
-            // 🔥 GUARDAR DIRECTO EN PUBLIC
-            $file->move($destination, $name);
+            // 🔥 MOVER DIRECTO DESDE TMP
+            move_uploaded_file($tmpName, $destination . '/' . $name);
 
-            // Ruta que se guarda en DB
             $path = 'storage/boda/' . $name;
 
-            $type = str_starts_with($file->getMimeType(), 'video')
-                ? 'video'
-                : 'image';
+            $type = str_starts_with($typeMime, 'video') ? 'video' : 'image';
 
             $media = Media::create([
-                'name' => $file->getClientOriginalName(),
+                'name' => $originalName,
                 'path' => $path,
-                'mime_type' => $file->getMimeType(),
-                'size' => $file->getSize(),
+                'mime_type' => $typeMime,
+                'size' => $size,
                 'type' => $type
             ]);
 
-            // 🔥 URL FINAL LISTA PARA FRONT
             $media->url = asset($path);
 
             $saved[] = $media;
