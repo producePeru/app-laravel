@@ -19,6 +19,7 @@ class Question extends Model
         'label',
         'type',
         'model',
+        'visible',
         'required',
         'position'
     ];

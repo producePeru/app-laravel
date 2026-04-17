@@ -30,6 +30,7 @@ class SedAsistentesController extends Controller
             $fair = Fair::where('slug', $slug)->firstOrFail();
 
             $filters = $request->query();
+            $includeSurvey = $request->boolean('encuesta');
 
             $query = UgsePostulante::where('event_id', $fair->id)
                 ->withBasicFilters($filters)
@@ -50,24 +51,51 @@ class SedAsistentesController extends Controller
 
             $postulantes = $query->get();
 
-            $rows = $postulantes->map(function ($item, $index) {
-                return [
+            // 🔥 DINÁMICAS (igual que cooperativas)
+            $questions = collect();
+            $answersGrouped = collect();
+
+            if ($includeSurvey) {
+                $answers = sedQuestionAnswer::where('sed_id', $fair->id)->get();
+
+                // ⚠️ evitar duplicar question_1…5
+                $questions = $answers->pluck('question')
+                    ->unique()
+                    ->reject(fn($q) => in_array($q, [
+                        'question_1',
+                        'question_2',
+                        'question_3',
+                        'question_4',
+                        'question_5'
+                    ]))
+                    ->values();
+
+                // agrupar por DNI
+                $answersGrouped = $answers->groupBy('dni');
+            }
+
+            // 🔥 MAPEO
+            $rows = $postulantes->map(function ($item, $index) use ($includeSurvey, $questions, $answersGrouped) {
+
+                $dni = $item->businessman?->documentnumber ?? $item->documentnumber;
+
+                $row = [
                     $index + 1,
                     strtoupper($item->event->title),
                     $item->attended ?? '-',
                     $item->ruc,
                     strtoupper($item->comercialName),
                     mb_strtoupper($item->company?->socialReason ?? $item->socialReason ?? '', 'UTF-8'),
-                    mb_strtoupper($item->economicsector?->name ?? '', 'UTF-8'),          // sector economico
-                    mb_strtoupper($item->category?->name ?? '', 'UTF-8'),                // rubro
-                    $item->comercialactivity?->name,        // actividad comercial
+                    mb_strtoupper($item->economicsector?->name ?? '', 'UTF-8'),
+                    mb_strtoupper($item->category?->name ?? '', 'UTF-8'),
+                    $item->comercialactivity?->name,
                     $item->city?->name ?? null,
                     $item->province->name ?? null,
                     $item->district->name ?? null,
                     mb_strtoupper($item->address ?? '', 'UTF-8'),
                     $item->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
                     $item->businessman->typedocument->name ?? '-',
-                    $item->businessman->documentnumber ?? $item->documentnumber,
+                    $dni,
                     mb_strtoupper($item->businessman?->name ?? $item->name ?? '', 'UTF-8'),
                     mb_strtoupper($item->businessman?->lastname ?? $item->lastname ?? '', 'UTF-8'),
                     mb_strtoupper($item->businessman?->middlename ?? $item->middlename ?? '', 'UTF-8'),
@@ -81,34 +109,60 @@ class SedAsistentesController extends Controller
                     $item->age ?? null,
                     mb_strtoupper($item->positionCompany ?? '', 'UTF-8'),
                     mb_strtoupper($item->howKnowEvent?->name ?? '', 'UTF-8'),
-                    // $item->instagram,
-                    // $item->facebook,
-                    // $item->web,
                     $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : '',
 
+                    // ✅ FIJAS (NO SE TOCAN)
                     mb_strtoupper($item->sedQuestion?->question_1 ?? '-', 'UTF-8'),
                     mb_strtoupper($item->sedQuestion?->question_2 ?? '-', 'UTF-8'),
                     mb_strtoupper($item->sedQuestion?->question_3 ?? '-', 'UTF-8'),
                     mb_strtoupper($item->sedQuestion?->question_4 ?? '-', 'UTF-8'),
                     mb_strtoupper($item->sedQuestion?->question_5 ?? '-', 'UTF-8'),
                 ];
+
+                // 🔥 DINÁMICAS
+                if ($includeSurvey) {
+                    $participantAnswers = $answersGrouped->get($dni, collect());
+                    $answerMap = $participantAnswers->pluck('answer', 'question');
+
+                    foreach ($questions as $q) {
+                        $row[] = $answerMap[$q] ?? '';
+                    }
+                }
+
+                return $row;
             });
 
+            // 📄 TEMPLATE
             $templatePath = storage_path('app/plantillas/sed_template.xlsx');
             $spreadsheet = IOFactory::load($templatePath);
             $sheet = $spreadsheet->getActiveSheet();
 
             $startRow = 2;
 
-            foreach ($rows as $i => $row) {
-                $col = 'A';
-                foreach ($row as $value) {
-                    $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
-                    $col++;
+            // 🔥 HEADERS DINÁMICOS
+            if ($includeSurvey && $questions->count() && isset($rows[0])) {
+
+                $baseCols = count($rows[0]) - $questions->count();
+                $colIndex = $baseCols + 1;
+
+                foreach ($questions as $q) {
+                    $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
+                    $sheet->setCellValue("{$col}1", $q);
+                    $colIndex++;
                 }
             }
 
-            // ✅ CORRECTO: solo este return
+            // 🔥 DATA
+            foreach ($rows as $i => $row) {
+                $colIndex = 1;
+
+                foreach ($row as $value) {
+                    $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
+                    $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
+                    $colIndex++;
+                }
+            }
+
             return new StreamedResponse(function () use ($spreadsheet) {
                 $writer = new Xlsx($spreadsheet);
                 $writer->save('php://output');
