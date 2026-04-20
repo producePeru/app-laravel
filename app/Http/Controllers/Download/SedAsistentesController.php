@@ -236,6 +236,8 @@ class SedAsistentesController extends Controller
 
             // 🔹 QUERY PRINCIPAL
             $query = SedAsistente::where('sed_id', $fair->id)
+                ->where('removed', 0) // ✅ CLAVE: excluir eliminados
+                ->whereHas('postulante') // ✅ evita nulls
                 ->with([
                     'postulante.company:id,ruc,socialReason',
                     'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
@@ -271,7 +273,7 @@ class SedAsistentesController extends Controller
 
             $asistencias = $query->get();
 
-            // 🔥 TRAER TODAS LAS RESPUESTAS UNA SOLA VEZ (SIN N+1)
+            // 🔥 RESPUESTAS (SIN N+1)
             $questions = collect();
             $answersGrouped = collect();
 
@@ -279,8 +281,6 @@ class SedAsistentesController extends Controller
                 $answers = sedQuestionAnswer::where('sed_id', $fair->id)->get();
 
                 $questions = $answers->pluck('question')->unique()->values();
-
-                // agrupar por dni
                 $answersGrouped = $answers->groupBy('dni');
             }
 
@@ -294,11 +294,11 @@ class SedAsistentesController extends Controller
                 ];
 
                 $p = $item->postulante;
-                if (!$p) return null;
+
+                if (!$p) return null; // doble protección
 
                 $rol = $p->sedQuestion?->rolCooperativa;
 
-                // 🔹 BASE
                 $row = [
                     $index + 1,
                     mb_strtoupper($fair->title ?? '', 'UTF-8'),
@@ -369,8 +369,8 @@ class SedAsistentesController extends Controller
 
             $startRow = 2;
 
-            // 🔥 HEADERS DINÁMICOS (solo si encuesta)
-            if ($includeSurvey && $questions->count()) {
+            // 🔥 HEADERS DINÁMICOS
+            if ($includeSurvey && $questions->count() && $rows->count()) {
                 $baseCols = count($rows[0]) - $questions->count();
                 $colIndex = $baseCols + 1;
 
@@ -384,7 +384,6 @@ class SedAsistentesController extends Controller
             // 🔥 DATA
             foreach ($rows as $i => $row) {
                 $colIndex = 1;
-
                 foreach ($row as $value) {
                     $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
                     $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
