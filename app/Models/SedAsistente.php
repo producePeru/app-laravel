@@ -15,8 +15,9 @@ class SedAsistente extends Model
         'sed_id',
         'mype_id',
         'dni',
+        'typeAsistente',
         'attendance',
-        'typeAsistente'
+        'removed'
     ];
 
     public function postulante()

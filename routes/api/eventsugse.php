@@ -9,7 +9,7 @@ use App\Http\Controllers\Foro\ForoController;
 
 Route::controller(FairController::class)->group(function () {
 
-    Route::get('sed', 'sedList');
+    Route::get('sed', 'sedList');                          // Listado Genereal de los sed
 
     Route::get('mujer-produce', 'mujerProduceList');
 
@@ -18,7 +18,7 @@ Route::controller(FairController::class)->group(function () {
 
 Route::controller(UgsePostulanteController::class)->group(function () {
 
-    Route::get('users-registered-list/{slug}', 'usersRegisteredList');
+    Route::get('users-registered-list/{slug}', 'usersRegisteredList');                                      // lista de los regostrados en SED
 
 
     // cyberwow

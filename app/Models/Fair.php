@@ -89,7 +89,8 @@ class Fair extends Model
 
     public function postulantes()
     {
-        return $this->hasMany(SedAsistente::class, 'sed_id');
+        return $this->hasMany(SedAsistente::class, 'sed_id')
+            ->where('removed', 0); // 🔥 solo válidos
     }
 
     public function postulantesWow()

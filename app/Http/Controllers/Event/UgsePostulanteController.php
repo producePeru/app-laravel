@@ -219,46 +219,87 @@ class UgsePostulanteController extends Controller
 
     public function usersRegisteredList(Request $request, $slug)
     {
-        // Buscar la feria por su slug
         $fair = Fair::where('slug', $slug)->firstOrFail();
 
         $filters = [
-            'name'          => $request->input('name'),
-            'dateStart'     => $request->input('dateStart'),
-            'dateEnd'       => $request->input('dateEnd'),
-
+            'name'      => $request->input('name'),
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd'   => $request->input('dateEnd'),
         ];
 
-        // Crear la consulta base y filtrar por el ID del evento
-        $query = UgsePostulante::where('event_id', $fair->id);
+        // 🔥 PAGINADOR SEGURO
+        $perPage = (int) $request->input('pageSize', 10);
+        if ($perPage <= 0) {
+            $perPage = 10;
+        }
 
-        $query->withBasicFilters($filters);
+        // 🔥 QUERY BASE (FILTRA REMOVED)
+        $query = SedAsistente::where('sed_id', $fair->id)
+            ->where('removed', 0) // ✅ CLAVE
+            ->whereHas('postulante')
+            ->with([
+                'postulante.economicsector',
+                'postulante.typedocument:id,avr',
+                'postulante.businessman.gender',
+                'postulante.category',
+                'postulante.comercialactivity',
+                'postulante.city',
+                'postulante.province',
+                'postulante.district',
+                'postulante.howKnowEvent',
+                'postulante.event',
+            ])
+            ->orderBy('id', 'desc');
 
-        // Eager Loading de relaciones
-        $query->with([
-            'economicsector',
-            'businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
-            'businessman.gender:id,name',
-            'category:id,name',
-            'comercialactivity:id,name',
-            'city:id,name',
-            'province:id,name',
-            'district:id,name',
-            'howKnowEvent:id,name',
-            'event',
-            'sedAsistencias'
-        ]);
+        // 🔍 FILTRO
+        if (!empty($filters['name'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('dni', 'like', '%' . $filters['name'] . '%')
+                    ->orWhereHas('postulante', function ($q2) use ($filters) {
+                        $q2->where('ruc', 'like', '%' . $filters['name'] . '%')
+                            ->orWhere('documentnumber', 'like', '%' . $filters['name'] . '%');
+                    });
+            });
+        }
 
-        $postulantes = $query->paginate(150)->through(function ($item) {
+        // 📅 FECHAS
+        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+            $query->whereBetween('created_at', [
+                \Carbon\Carbon::parse($filters['dateStart'])->startOfDay(),
+                \Carbon\Carbon::parse($filters['dateEnd'])->endOfDay()
+            ]);
+        }
+
+        // 🔥 PAGINADO
+        $items = $query->paginate($perPage)->through(function ($item) {
             return $this->mapPostulantes($item);
         });
 
+        // 📊 ESTADÍSTICAS (TAMBIÉN FILTRADAS)
+        $baseStats = SedAsistente::where('sed_id', $fair->id)
+            ->where('removed', 0); // ✅ IMPORTANTE
+
+        $total = (clone $baseStats)->count();
+
+        $conAsistencia = (clone $baseStats)
+            ->whereNotNull('attendance')
+            ->count();
+
+        $sinAsistencia = (clone $baseStats)
+            ->whereNull('attendance')
+            ->count();
+
         return response()->json([
-            'data'   => $postulantes,
+            'data' => $items,
             'event' => [
-                'id'   => $fair->id,
+                'id' => $fair->id,
                 'name' => $fair->title,
                 'fecha' => $fair->fecha
+            ],
+            'statistic' => [
+                'total' => $total,
+                'asistieron' => $conAsistencia,
+                'no_asistieron' => $sinAsistencia,
             ],
             'status' => 200
         ]);
@@ -266,77 +307,79 @@ class UgsePostulanteController extends Controller
 
     private function mapPostulantes($item)
     {
+        $p = $item->postulante;
+
         return [
-            'id'                        => $item->id,
-            'ruc'                       => $item->ruc ?? null,
-            'comercialName'             => $item->comercialName ?? null,
-            'economicsector_id'         => $item->economicsector->id ?? null,
-            'economicsector_name'       => $item->economicsector->name ?? null,
-            'rubro_id'                  => $item->category->id ?? null,
-            'rubro_name'                => $item->category->name ?? null,
-            'comercialactivity_id'      => $item->comercialactivity->id ?? null,
-            'comercialactivity_name'    => $item->comercialactivity->name ?? null,
-            'city_id'                   => $item->city->id ?? null,
-            'city_name'                 => $item->city->name ?? null,
-            'province_id'               => $item->province->id ?? null,
-            'province_name'             => $item->province->name ?? null,
-            'district_id'               => $item->district->id ?? null,
-            'district_name'             => $item->district->name ?? null,
-            'address'                   => $item->address ?? null,
-            'typedocument_id'           => $item->businessman->typedocument_id ?? null,
-            'typedocument_name'         => $item->businessman->typedocument->name ?? null,
-            'documentnumber'            => $item->businessman->documentnumber ?? $item->documentnumber,
-            'name'                      => $item->businessman->name ?? $item->name,
-            'lastname'                  => $item->businessman->lastname ?? $item->lastname,
-            'middlename'                => $item->businessman->middlename ?? $item->middlename,
-            'email'                     => $item->email,
-            'phone'                     => $item->phone,
-            'event_id'                  => $item->event_id,
-            'positionCompany'           => $item->positionCompany,
-            'instagram'                 => $item->instagram,
-            'facebook'                  => $item->facebook,
-            'web'                       => $item->web,
+            'id' => $item->id,
 
-            'attended' => optional(
-                $item->sedAsistencias
-                    ->where('dni', $item->documentnumber)
-                    ->whereNotNull('attendance')
-                    ->sortByDesc('id') // 🔥 CLAVE
-                    ->first()
-            )->attendance,
+            'ruc' => $p->ruc ?? '',
+            'comercialName' => $p->comercialName ?? '',
 
-            'socialReason'              => $item->socialReason,
-            'typeAsistente'             => $item->typeAsistente,
-            'sick'                      => $item->sick == 'si' ? 'SI' : 'NO',
-            'birthday'                  => $item->businessman->birthday ?? $item->birthday,
-            'created_at'                => $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : null,
+            'economicsector_id' => $p->economicsector->id ?? '',
+            'economicsector_name' => $p->economicsector->name ?? '',
 
-            'asistio' => $item->sedAsistencias
-                ->where('dni', $item->documentnumber)
-                ->whereNotNull('attendance')
-                ->isNotEmpty(),
+            'rubro_id' => $p->category->id ?? '',
+            'rubro_name' => $p->category->name ?? '',
 
-            'howKnowEvent_id'           => $item->howKnowEvent->id ?? null,
-            'howKnowEvent_name'         => $item->howKnowEvent->name ?? null,
-            'gender_id'                 => $item->businessman->gender->id ?? '-',
-            'gender_name' => $item->businessman
-                ? ($item->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
-                : ($item->gender_id == 1 ? 'M' : 'F'),
-            'economicsector_id'         => $item->economicsector->id ?? null,
-            'economicsector_name'       => $item->economicsector->name ?? null,
-            'comercialactivity_id'      => $item->comercialactivity->id ?? null,
-            'comercialactivity_name'    => $item->comercialactivity->name ?? null,
-            'category_id'               => $item->category->id ?? null,
-            'category_name'             => $item->category->name ?? null,
-            'city_id'                   => $item->city->id ?? null,
-            'city_name'                 => $item->city->name ?? null,
+            'comercialactivity_id' => $p->comercialactivity->id ?? '',
+            'comercialactivity_name' => $p->comercialactivity->name ?? '',
 
+            'city_id' => $p->city->id ?? '',
+            'city_name' => $p->city->name ?? '',
 
-            'event' => $item->event ? [
-                'id'   => $item->event->id ?? null,
-                'name' => $item->event->title  // suponiendo que el evento tiene "title"
+            'province_id' => $p->province->id ?? '',
+            'province_name' => $p->province->name ?? '',
+
+            'district_id' => $p->district->id ?? '',
+            'district_name' => $p->district->name ?? '',
+
+            'address' => $p->address ?? '',
+
+            'typedocument_id' => $p->businessman->typedocument_id ?? '',
+            'typedocument_name' => $p->typedocument?->avr,
+
+            'documentnumber' => $p->businessman->documentnumber ?? $p->documentnumber ?? '',
+
+            'name' => $p->businessman->name ?? $p->name ?? '',
+            'lastname' => $p->businessman->lastname ?? $p->lastname ?? '',
+            'middlename' => $p->businessman->middlename ?? $p->middlename ?? '',
+
+            'email' => $p->email ?? '',
+            'phone' => $p->phone ?? '',
+
+            'event_id' => $p->event_id ?? '',
+
+            'positionCompany' => $p->positionCompany ?? '',
+
+            // 🔥 NUNCA NULL
+            'attended' => $item->attendance ?? '',
+            'asistio' => !empty($item->attendance),
+
+            'socialReason' => $p->socialReason ?? '',
+
+            'typeAsistente' => $item->typeAsistente ?? '',
+
+            'sick' => $p->sick == 'si' ? 'SI' : 'NO',
+
+            'birthday' => $p->businessman->birthday ?? $p->birthday ?? '',
+
+            'created_at' => $item->created_at
+                ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y h:i A')
+                : '',
+
+            'howKnowEvent_id' => $p->howKnowEvent->id ?? '',
+            'howKnowEvent_name' => $p->howKnowEvent->name ?? '',
+
+            'gender_id' => $p->businessman->gender->id ?? '',
+
+            'gender_name' => $p->businessman
+                ? ($p->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
+                : ($p->gender_id == 1 ? 'M' : 'F'),
+
+            'event' => $p->event ? [
+                'id' => $p->event->id ?? '',
+                'name' => $p->event->title ?? ''
             ] : null,
-
         ];
     }
 

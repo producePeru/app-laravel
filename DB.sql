@@ -1357,3 +1357,8 @@ SET sa.dni = up.documentnumber;
 ***************************************************
 
 
+
+
+ALTER TABLE sed_asistencias
+ADD COLUMN removed TINYINT(1) NOT NULL DEFAULT 0
+AFTER attendance;
