@@ -32,22 +32,24 @@ class SedAsistentesController extends Controller
             $filters = $request->query();
             $includeSurvey = $request->boolean('encuesta');
 
-            $query = UgsePostulante::where('event_id', $fair->id)
-                ->withBasicFilters($filters)
+            $query = SedAsistente::where('sed_id', $fair->id)
+                ->where('removed', 0) // 🔥 CLAVE
+                ->whereHas('postulante')
                 ->with([
-                    'company:id,ruc,socialReason',
-                    'businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
-                    'businessman.typedocument:id,name',
-                    'businessman.gender:id,name',
-                    'economicsector',
-                    'category',
-                    'city',
-                    'typedocument',
-                    'gender',
-                    'howKnowEvent',
-                    'event',
-                    'sedQuestion'
-                ])->orderBy('created_at', 'desc');
+                    'postulante.company:id,ruc,socialReason',
+                    'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
+                    'postulante.businessman.typedocument:id,name,avr',
+                    'postulante.businessman.gender:id,name',
+                    'postulante.economicsector',
+                    'postulante.category',
+                    'postulante.city',
+                    'postulante.typedocument',
+                    'postulante.gender',
+                    'postulante.howKnowEvent',
+                    'postulante.event',
+                    'postulante.sedQuestion'
+                ])
+                ->orderBy('id', 'desc');
 
             $postulantes = $query->get();
 
@@ -94,7 +96,11 @@ class SedAsistentesController extends Controller
                     $item->district->name ?? null,
                     mb_strtoupper($item->address ?? '', 'UTF-8'),
                     $item->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
-                    $item->businessman->typedocument->name ?? '-',
+
+                    $p->typedocument?->avr
+                        ?? $p->businessman?->typedocument?->avr
+                        ?? '-',
+
                     $dni,
                     mb_strtoupper($item->businessman?->name ?? $item->name ?? '', 'UTF-8'),
                     mb_strtoupper($item->businessman?->lastname ?? $item->lastname ?? '', 'UTF-8'),
@@ -318,7 +324,11 @@ class SedAsistentesController extends Controller
                     mb_strtoupper($p->district?->name ?? '', 'UTF-8'),
                     mb_strtoupper($p->address ?? '', 'UTF-8'),
                     $item->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
-                    mb_strtoupper($p->typedocument?->avr ?? '', 'UTF-8'),
+                    // mb_strtoupper($p->typedocument?->avr ?? '', 'UTF-8'),
+                    $p->typedocument?->avr
+                        ?? $p->businessman?->typedocument?->avr
+                        ?? '-',
+
                     $p->businessman?->documentnumber ?? $p->documentnumber ?? '',
                     mb_strtoupper($p->businessman?->name ?? $p->name ?? '', 'UTF-8'),
                     mb_strtoupper($p->businessman?->lastname ?? $p->lastname ?? '', 'UTF-8'),
