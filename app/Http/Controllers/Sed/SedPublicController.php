@@ -439,12 +439,39 @@ class SedPublicController extends Controller
             $dni = $request->documentnumber;
             $ruc = $request->ruc;
 
-            // 3️⃣ Obtener TODAS las preguntas con opciones
+            // 🔥 3️⃣ VALIDAR ASISTENCIA
+            $asistencia = SedAsistente::where('sed_id', $fair->id)
+                ->where('dni', $dni)
+                ->where('removed', 0)
+                ->first();
+
+            if (!$asistencia || is_null($asistencia->attendance)) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => "No puedes completar la encuesta porque no registras asistencia al evento.\n\nSi consideras que es un error, comunícate con los organizadores para recibir asistencia."
+                ]);
+            }
+
+            // 🔥 4️⃣ EVITAR DOBLE REGISTRO DE ENCUESTA
+            $existsSurvey = sedQuestionAnswer::where('dni', $dni)
+                ->where('sed_id', $fair->id)
+                ->exists();
+
+            if ($existsSurvey) {
+                return response()->json([
+                    'status' => 409,
+                    'message' => 'Ya registraste esta encuesta anteriormente. No puedes enviarla nuevamente.'
+                ]);
+            }
+
+            // 5️⃣ Obtener preguntas con opciones
             $questions = Question::with('options')->get()->keyBy('model');
+
+            $orderCounter = 1;
 
             foreach ($request->all() as $key => $value) {
 
-                // 🔥 Solo procesar questions
+                // 🔹 Solo procesar questions
                 if (!str_starts_with($key, 'question_')) continue;
 
                 if (!isset($questions[$key])) continue;
@@ -453,7 +480,7 @@ class SedPublicController extends Controller
 
                 $answerText = null;
 
-                // 4️⃣ Checkbox múltiple
+                // 🔥 Checkbox múltiple
                 if (is_array($value)) {
 
                     $labels = collect($value)->map(function ($val) use ($question) {
@@ -461,31 +488,27 @@ class SedPublicController extends Controller
                         return $option ? $option->label : $val;
                     })->filter()->values();
 
-                    // 🔥 FORMATO CON VIÑETAS
-                    $answerText = $labels->map(function ($label) {
-                        return '- ' . $label;
-                    })->implode("\n");
+                    $answerText = $labels
+                        ->map(fn($label) => '- ' . $label)
+                        ->implode("\n");
                 } else {
 
-                    // 5️⃣ Single (radio/select/text)
+                    // 🔹 Radio / select / input
                     $option = $question->options->firstWhere('value', $value);
-
                     $answerText = $option ? $option->label : $value;
                 }
 
-                // 6️⃣ Guardar
-                sedQuestionAnswer::updateOrCreate(
-                    [
-                        'dni'      => $dni,
-                        'sed_id'   => $fair->id,
-                        'question' => $question->label
-                    ],
-                    [
-                        'ruc'    => $ruc,
-                        'answer' => $answerText,
-                        'order' => $request->order
-                    ]
-                );
+                // 🔥 Guardar
+                sedQuestionAnswer::create([
+                    'dni'      => $dni,
+                    'sed_id'   => $fair->id,
+                    'question' => $question->label,
+                    'ruc'      => $ruc,
+                    'answer'   => $answerText,
+                    'order'    => $orderCounter
+                ]);
+
+                $orderCounter++;
             }
 
             return response()->json([
