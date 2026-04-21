@@ -16,6 +16,7 @@ class sedQuestionAnswer extends Model
         'ruc',
         'sed_id',
         'question',
-        'answer'
+        'answer',
+        'order'
     ];
 }

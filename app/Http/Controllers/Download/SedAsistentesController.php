@@ -242,8 +242,8 @@ class SedAsistentesController extends Controller
 
             // 🔹 QUERY PRINCIPAL
             $query = SedAsistente::where('sed_id', $fair->id)
-                ->where('removed', 0) // ✅ CLAVE: excluir eliminados
-                ->whereHas('postulante') // ✅ evita nulls
+                ->where('removed', 0)
+                ->whereHas('postulante')
                 ->with([
                     'postulante.company:id,ruc,socialReason',
                     'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
@@ -279,15 +279,24 @@ class SedAsistentesController extends Controller
 
             $asistencias = $query->get();
 
-            // 🔥 RESPUESTAS (SIN N+1)
+            // 🔥 RESPUESTAS (FIX ORDEN)
             $questions = collect();
             $answersGrouped = collect();
 
             if ($includeSurvey) {
                 $answers = sedQuestionAnswer::where('sed_id', $fair->id)->get();
 
-                $questions = $answers->pluck('question')->unique()->values();
-                $answersGrouped = $answers->groupBy('dni');
+                // ✅ SOLO ESTO CAMBIA (orden correcto)
+                $questions = $answers
+                    ->sortBy('order')
+                    ->pluck('question')
+                    ->unique()
+                    ->values();
+
+                // (opcional pero recomendado)
+                $answersGrouped = $answers
+                    ->sortBy('order')
+                    ->groupBy('dni');
             }
 
             // 🔥 MAPEO
@@ -300,8 +309,7 @@ class SedAsistentesController extends Controller
                 ];
 
                 $p = $item->postulante;
-
-                if (!$p) return null; // doble protección
+                if (!$p) return null;
 
                 $rol = $p->sedQuestion?->rolCooperativa;
 
@@ -324,7 +332,8 @@ class SedAsistentesController extends Controller
                     mb_strtoupper($p->district?->name ?? '', 'UTF-8'),
                     mb_strtoupper($p->address ?? '', 'UTF-8'),
                     $item->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
-                    // mb_strtoupper($p->typedocument?->avr ?? '', 'UTF-8'),
+
+                    // FIX typedocument
                     $p->typedocument?->avr
                         ?? $p->businessman?->typedocument?->avr
                         ?? '-',
@@ -350,6 +359,7 @@ class SedAsistentesController extends Controller
                         ? Carbon::parse($item->created_at)->format('d/m/Y h:i A')
                         : '',
 
+                    // 🔹 FIJAS (NO SE TOCAN)
                     mb_strtoupper($this->getAnswerLabel('question_1', $p->sedQuestion?->question_1) ?? '-', 'UTF-8'),
                     mb_strtoupper($this->getAnswerLabel('question_2', $p->sedQuestion?->question_2) ?? '-', 'UTF-8'),
                     mb_strtoupper($this->getAnswerLabel('question_3', $p->sedQuestion?->question_3) ?? '-', 'UTF-8'),
@@ -357,7 +367,7 @@ class SedAsistentesController extends Controller
                     mb_strtoupper($this->getAnswerLabel('question_5', $p->sedQuestion?->question_5) ?? '-', 'UTF-8'),
                 ];
 
-                // 🔥 DINÁMICAS
+                // 🔥 DINÁMICAS (igual que ya tenías)
                 if ($includeSurvey) {
                     $dni = $p->businessman?->documentnumber ?? $p->documentnumber;
 
