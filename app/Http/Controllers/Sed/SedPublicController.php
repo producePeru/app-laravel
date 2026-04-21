@@ -482,7 +482,8 @@ class SedPublicController extends Controller
                     ],
                     [
                         'ruc'    => $ruc,
-                        'answer' => $answerText
+                        'answer' => $answerText,
+                        'order' => $request->order
                     ]
                 );
             }

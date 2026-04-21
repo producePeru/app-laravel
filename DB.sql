@@ -1359,6 +1359,11 @@ SET sa.dni = up.documentnumber;
 
 
 
-ALTER TABLE sed_asistencias
-ADD COLUMN removed TINYINT(1) NOT NULL DEFAULT 0
-AFTER attendance;
+-- ALTER TABLE sed_asistencias
+-- ADD COLUMN removed TINYINT(1) NOT NULL DEFAULT 0
+-- AFTER attendance;
+
+
+ALTER TABLE sed_questions_answers
+ADD COLUMN `order` INT NOT NULL DEFAULT 1 AFTER `answer`;
+
