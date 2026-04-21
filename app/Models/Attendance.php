@@ -77,6 +77,11 @@ class Attendance extends Model
         return $this->belongsTo(User::class, 'asesorId');
     }
 
+    public function registrador()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function pnte()
     {
         return $this->belongsTo(OfficePnte::class, 'eventsoffice_id');
@@ -166,7 +171,8 @@ class Attendance extends Model
             'distrito',
             'profile:id,user_id,name,lastname,middlename',
             'asesor',
-            'pnte'
+            'pnte',
+            'registrador'
         ])
             ->withCount('attendanceList')
             ->withCount([

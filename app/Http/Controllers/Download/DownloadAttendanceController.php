@@ -153,7 +153,9 @@ class DownloadAttendanceController extends Controller
 
                         'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/' . $item->slug,
 
-                        'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $item->slug
+                        'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $item->slug,
+
+                        $item->registrador ? strtoupper($item->registrador->name . ' ' . $item->registrador->lastname . ' ' . $item->registrador->middlename) : null,
 
                     ];
 
