@@ -1364,6 +1364,15 @@ SET sa.dni = up.documentnumber;
 -- AFTER attendance;
 
 
-ALTER TABLE sed_questions_answers
-ADD COLUMN `order` INT NOT NULL DEFAULT 1 AFTER `answer`;
+-- ALTER TABLE sed_questions_answers
+-- ADD COLUMN `order` INT NOT NULL DEFAULT 1 AFTER `answer`;
 
+
+
+ALTER TABLE attendancelist
+ADD COLUMN updated_by BIGINT UNSIGNED NULL AFTER user_id;
+
+ALTER TABLE attendancelist
+ADD CONSTRAINT fk_attendancelist_updated_by
+FOREIGN KEY (updated_by) REFERENCES users(id)
+ON DELETE SET NULL;

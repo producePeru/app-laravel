@@ -126,7 +126,7 @@ class AttendanceController extends Controller
             'city' => $item->region->name ?? null,
             'province' => $item->provincia->name ?? null,
             'district' => $item->distrito->name ?? null,
-            'address' => $item->address ?? null,
+            'address' => strtoupper($item->address) ?? null,
             'pasaje' => $item->pasaje,
             'monto' => $item->monto ?? null,
 
@@ -219,32 +219,44 @@ class AttendanceController extends Controller
 
     public function create(Request $request)
     {
+        // 🔥 VALIDACIÓN DE DUPLICIDAD (ANTES DE TODO)
+        $exists = Attendance::where('eventsoffice_id', $request->eventsoffice_id)
+            ->where('startDate', $request->startDate)
+            ->where('endDate', $request->endDate)
+            ->where('city_id', $request->city_id)
+            ->where('province_id', $request->province_id)
+            ->where('district_id', $request->district_id)
+            ->where('title', $request->title)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'status'  => 409,
+                'message' => "Ya existe una actividad registrada con los mismos datos:\n\n• Tipo de actividad\n• Nombre de la actividad\n• Fechas\n• Ubicación\n\nPor favor, verifica la información o comunícate con tu supervisor."
+            ],);
+        }
+
         DB::beginTransaction();
 
         try {
-            // Usuario autenticado
             $user = Auth::user();
             $user_id = $user->id;
 
             $data = $request->all();
 
-            /**
-             * ASIGNACIÓN DE user_id y asesorId
-             */
+            // 🔹 USER
             $data['user_id'] = $user_id;
 
+            // 🔹 ASESOR
             if ($user->rol == 2) {
-                // Si es asesor, se asigna a sí mismo
                 $data['asesorId'] = $user_id;
             }
 
             if ($user->rol == 1) {
-                // Si es admin, el asesorId viene en el payload
-                // (se asume que ya viene validado)
                 $data['asesorId'] = $data['asesorId'] ?? null;
             }
 
-            /* SLUG */
+            // 🔹 SLUG
             $slug = Str::slug($data['title']);
 
             if (Attendance::where('slug', $slug)->exists()) {
@@ -253,27 +265,7 @@ class AttendanceController extends Controller
 
             $data['slug'] = $slug;
 
-            /**
-             * NORMALIZACIÓN POR MODALIDAD
-             */
-            // if ($data['modality'] === 'v') {
-            //     $data['city_id']     = null;
-            //     $data['province_id'] = null;
-            //     $data['district_id'] = null;
-            //     $data['address']     = null;
-            //     $data['pasaje']      = null;
-            //     $data['monto']       = null;
-            // }
-
-            // if ($data['modality'] === 'p') {
-            //     if (($data['pasaje'] ?? 'n') === 'n') {
-            //         $data['monto'] = null;
-            //     }
-            // }
-
-            /**
-             * CREATE
-             */
+            // 🔥 CREATE
             $attendance = Attendance::create($data);
 
             DB::commit();
@@ -298,10 +290,29 @@ class AttendanceController extends Controller
     {
         try {
             $user = Auth::user();
+
+            // 🔥 VALIDACIÓN DE DUPLICIDAD (EXCLUYE EL MISMO ID)
+            $exists = Attendance::where('eventsoffice_id', $request->eventsoffice_id)
+                ->where('startDate', $request->startDate)
+                ->where('endDate', $request->endDate)
+                ->where('city_id', $request->city_id)
+                ->where('province_id', $request->province_id)
+                ->where('district_id', $request->district_id)
+                ->where('title', $request->title)
+                ->where('id', '!=', $id) // ✅ CLAVE
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'status'  => 409,
+                    'message' => "Ya existe una actividad registrada con los mismos datos:\n\n• Tipo de actividad\n• Nombre de la actividad\n• Fechas\n• Ubicación\n• Modalidad\n\nPor favor, verifica la información o comunícate con tu supervisor."
+                ]);
+            }
+
             $registro = Attendance::findOrFail($id);
             $data = $request->all();
 
-            /** VALIDACIONES POR ROL **/
+            /** 🔒 VALIDACIONES POR ROL **/
             if ($user->rol == 2) {
 
                 if ($registro->user_id != $user->id || $registro->asesorId != $user->id) {
@@ -317,7 +328,8 @@ class AttendanceController extends Controller
                         'status'  => 405
                     ]);
                 }
-                // No puede cambiar estos campos
+
+                // 🚫 No puede cambiar estos campos
                 unset($data['user_id'], $data['asesorId']);
             }
 
@@ -326,6 +338,10 @@ class AttendanceController extends Controller
              */
             unset($data['slug']);
 
+            // 🔥 AUDITORÍA
+            $data['updated_by'] = $user->id;
+
+            // 🔥 UPDATE
             $registro->update($data);
 
             return response()->json([

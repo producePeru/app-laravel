@@ -32,36 +32,41 @@ class SedAsistentesController extends Controller
             $filters = $request->query();
             $includeSurvey = $request->boolean('encuesta');
 
+            // 🔥 BASE: ahora desde SedAsistente
             $query = SedAsistente::where('sed_id', $fair->id)
-                ->where('removed', 0) // 🔥 CLAVE
+                ->where('removed', 0)
                 ->whereHas('postulante')
                 ->with([
                     'postulante.company:id,ruc,socialReason',
                     'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
-                    'postulante.businessman.typedocument:id,name,avr',
+                    'postulante.businessman.typedocument:id,avr',
                     'postulante.businessman.gender:id,name',
                     'postulante.economicsector',
                     'postulante.category',
+                    'postulante.comercialactivity',
                     'postulante.city',
-                    'postulante.typedocument',
-                    'postulante.gender',
+                    'postulante.province',
+                    'postulante.district',
                     'postulante.howKnowEvent',
-                    'postulante.event',
-                    'postulante.sedQuestion'
+                    'postulante.sedQuestion' => function ($q) use ($fair) {
+                        $q->where('event_id', $fair->id);
+                    }
                 ])
                 ->orderBy('id', 'desc');
 
-            $postulantes = $query->get();
+            $asistencias = $query->get();
 
-            // 🔥 DINÁMICAS (igual que cooperativas)
+            // 🔥 DINÁMICAS (CON ORDEN CORRECTO)
             $questions = collect();
             $answersGrouped = collect();
 
             if ($includeSurvey) {
                 $answers = sedQuestionAnswer::where('sed_id', $fair->id)->get();
 
-                // ⚠️ evitar duplicar question_1…5
-                $questions = $answers->pluck('question')
+                // ✅ ORDEN POR COLUMN "order"
+                $questions = $answers
+                    ->sortBy('order')
+                    ->pluck('question')
                     ->unique()
                     ->reject(fn($q) => in_array($q, [
                         'question_1',
@@ -72,71 +77,88 @@ class SedAsistentesController extends Controller
                     ]))
                     ->values();
 
-                // agrupar por DNI
-                $answersGrouped = $answers->groupBy('dni');
+                $answersGrouped = $answers
+                    ->sortBy('order')
+                    ->groupBy('dni');
             }
 
-            // 🔥 MAPEO
-            $rows = $postulantes->map(function ($item, $index) use ($includeSurvey, $questions, $answersGrouped) {
+            // 🔥 MAPEO CORRECTO
+            $rows = $asistencias->map(function ($item, $index) use ($fair, $includeSurvey, $questions, $answersGrouped) {
 
-                $dni = $item->businessman?->documentnumber ?? $item->documentnumber;
+                $p = $item->postulante;
+                if (!$p) return null;
+
+                $dni = $p->businessman?->documentnumber ?? $p->documentnumber;
 
                 $row = [
                     $index + 1,
-                    strtoupper($item->event->title),
-                    $item->attended ?? '-',
-                    $item->ruc,
-                    strtoupper($item->comercialName),
-                    mb_strtoupper($item->company?->socialReason ?? $item->socialReason ?? '', 'UTF-8'),
-                    mb_strtoupper($item->economicsector?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($item->category?->name ?? '', 'UTF-8'),
-                    $item->comercialactivity?->name,
-                    $item->city?->name ?? null,
-                    $item->province->name ?? null,
-                    $item->district->name ?? null,
-                    mb_strtoupper($item->address ?? '', 'UTF-8'),
+                    mb_strtoupper($fair->title ?? '', 'UTF-8'),
+                    $item->attendance ?? '-',
+
+                    $p->ruc,
+                    mb_strtoupper($p->comercialName ?? '', 'UTF-8'),
+                    mb_strtoupper($p->company?->socialReason ?? $p->socialReason ?? '', 'UTF-8'),
+                    mb_strtoupper($p->economicsector?->name ?? '', 'UTF-8'),
+                    mb_strtoupper($p->category?->name ?? '', 'UTF-8'),
+                    $p->comercialactivity?->name,
+                    $p->city?->name ?? null,
+                    $p->province?->name ?? null,
+                    $p->district?->name ?? null,
+                    mb_strtoupper($p->address ?? '', 'UTF-8'),
+
                     $item->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
 
+                    // ✅ FIX typedocument (doble fuente)
                     $p->typedocument?->avr
                         ?? $p->businessman?->typedocument?->avr
                         ?? '-',
 
                     $dni,
-                    mb_strtoupper($item->businessman?->name ?? $item->name ?? '', 'UTF-8'),
-                    mb_strtoupper($item->businessman?->lastname ?? $item->lastname ?? '', 'UTF-8'),
-                    mb_strtoupper($item->businessman?->middlename ?? $item->middlename ?? '', 'UTF-8'),
-                    $item->businessman
-                        ? ($item->businessman->gender->name === 'FEMENINO' ? 'F' : 'M')
-                        : ($item->gender_id == 1 ? 'M' : 'F'),
-                    $item->sick == 'no' ? 'No' : 'Si',
-                    $item->phone,
-                    $item->email,
-                    $item->businessman->birthday ?? $item->birthday,
-                    $item->age ?? null,
-                    mb_strtoupper($item->positionCompany ?? '', 'UTF-8'),
-                    mb_strtoupper($item->howKnowEvent?->name ?? '', 'UTF-8'),
-                    $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y h:i A') : '',
 
-                    // ✅ FIJAS (NO SE TOCAN)
-                    mb_strtoupper($item->sedQuestion?->question_1 ?? '-', 'UTF-8'),
-                    mb_strtoupper($item->sedQuestion?->question_2 ?? '-', 'UTF-8'),
-                    mb_strtoupper($item->sedQuestion?->question_3 ?? '-', 'UTF-8'),
-                    mb_strtoupper($item->sedQuestion?->question_4 ?? '-', 'UTF-8'),
-                    mb_strtoupper($item->sedQuestion?->question_5 ?? '-', 'UTF-8'),
+                    mb_strtoupper($p->businessman?->name ?? $p->name ?? '', 'UTF-8'),
+                    mb_strtoupper($p->businessman?->lastname ?? $p->lastname ?? '', 'UTF-8'),
+                    mb_strtoupper($p->businessman?->middlename ?? $p->middlename ?? '', 'UTF-8'),
+
+                    $p->businessman
+                        ? ($p->businessman->gender?->name === 'FEMENINO' ? 'F' : 'M')
+                        : ($p->gender_id == 1 ? 'M' : 'F'),
+
+                    $p->sick == 'no' ? 'No' : 'Si',
+                    $p->phone,
+                    $p->email,
+                    $p->businessman?->birthday ?? $p->birthday,
+                    $p->age ?? null,
+                    mb_strtoupper($p->positionCompany ?? '', 'UTF-8'),
+                    mb_strtoupper($p->howKnowEvent?->name ?? '', 'UTF-8'),
+
+                    $item->created_at
+                        ? Carbon::parse($item->created_at)->format('d/m/Y h:i A')
+                        : '',
+
+                    // 🔹 FIJAS
+                    mb_strtoupper($p->sedQuestion?->question_1 ?? '-', 'UTF-8'),
+                    mb_strtoupper($p->sedQuestion?->question_2 ?? '-', 'UTF-8'),
+                    mb_strtoupper($p->sedQuestion?->question_3 ?? '-', 'UTF-8'),
+                    mb_strtoupper($p->sedQuestion?->question_4 ?? '-', 'UTF-8'),
+                    mb_strtoupper($p->sedQuestion?->question_5 ?? '-', 'UTF-8'),
                 ];
 
-                // 🔥 DINÁMICAS
+                // 🔥 DINÁMICAS ORDENADAS Y CON "-"
                 if ($includeSurvey) {
                     $participantAnswers = $answersGrouped->get($dni, collect());
-                    $answerMap = $participantAnswers->pluck('answer', 'question');
+
+                    // clave: usamos question como key
+                    $answerMap = $participantAnswers
+                        ->sortBy('order')
+                        ->pluck('answer', 'question');
 
                     foreach ($questions as $q) {
-                        $row[] = $answerMap[$q] ?? '';
+                        $row[] = $answerMap[$q] ?? '-';
                     }
                 }
 
                 return $row;
-            });
+            })->filter()->values();
 
             // 📄 TEMPLATE
             $templatePath = storage_path('app/plantillas/sed_template.xlsx');
@@ -146,8 +168,7 @@ class SedAsistentesController extends Controller
             $startRow = 2;
 
             // 🔥 HEADERS DINÁMICOS
-            if ($includeSurvey && $questions->count() && isset($rows[0])) {
-
+            if ($includeSurvey && $questions->count() && $rows->count()) {
                 $baseCols = count($rows[0]) - $questions->count();
                 $colIndex = $baseCols + 1;
 
@@ -161,7 +182,6 @@ class SedAsistentesController extends Controller
             // 🔥 DATA
             foreach ($rows as $i => $row) {
                 $colIndex = 1;
-
                 foreach ($row as $value) {
                     $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
                     $sheet->setCellValue("{$col}" . ($startRow + $i), $value);

@@ -29,6 +29,7 @@ class Attendance extends Model
         'fecha',
         'hora',
         'user_id',
+        'updated_by',
         // 'people_id',
         'asesorId',
         'description',
