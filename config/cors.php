@@ -19,16 +19,16 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // 'allowed_origins' => ['*'],
 
-    // 'allowed_origins' => [
-    //     'https://programa.soporte-pnte.com',
-    //     'https://inscripcion.soporte-pnte.com',
-    //     'https://fiesta-del-cafe.soporte-pnte.com',
-    //     'https://seguimiento-capacitaciones.soporte-pnte.com',
-    //     'https://wedding.soporte-pnte.com',
-    //     'https://galeria-boda.soporte-pnte.com'
-    // ],
+    'allowed_origins' => [
+        'https://programa.soporte-pnte.com',
+        'https://inscripcion.soporte-pnte.com',
+        'https://fiesta-del-cafe.soporte-pnte.com',
+        'https://seguimiento-capacitaciones.soporte-pnte.com',
+        'https://wedding.soporte-pnte.com',
+        'https://galeria-boda.soporte-pnte.com'
+    ],
 
     'allowed_origins_patterns' => [],
 
