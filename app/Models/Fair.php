@@ -16,22 +16,29 @@ class Fair extends Model
         'title',
         'subTitle',
         'description',
-        'fairtype_id',
-        'modality_id',
         'startDate',
         'endDate',
-        'metaMypes',
+        'modality_id',
+        'fairtype_id',
         'city_id',
+        'province_id',
+        'district_id',
+        'user_id',
+        'visible',
+        'resultados',
+        'cancelado',
+        'reprogramado',
+        'unidad',
         'fecha',
         'place',
         'hours',
         'msgEndForm',
         'msgSendEmail',
+        'textFooter',
+        'image_id',
         'created_by',
         'updated_by',
-        'image_id',
-        'cooperativa',
-        'textFooter'
+        'cooperativa'
     ];
 
 
@@ -81,11 +88,6 @@ class Fair extends Model
     {
         return $this->belongsTo(Image::class, 'image_id');
     }
-
-    // public function postulantes()
-    // {
-    //     return $this->hasMany(UgsePostulante::class, 'event_id');
-    // }
 
     public function postulantes()
     {

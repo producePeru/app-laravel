@@ -22,11 +22,13 @@ class Attendance extends Model
         'startDate',
         'endDate',
         'modality',
+
         'city_id',
         'province_id',
         'district_id',
         'address',
-        'fecha',
+
+        'date',
         'hora',
         'user_id',
         'updated_by',
@@ -96,73 +98,6 @@ class Attendance extends Model
         return $query;
     }
 
-    // public function scopeWithItems($query, $filters)
-    // {
-    //     $query = $query->with([
-    //         'attendanceList',
-    //         'region',
-    //         'provincia',
-    //         'distrito',
-    //         'profile:id,user_id,name,lastname,middlename',
-    //         'asesor',
-    //         'pnte'
-    //     ])
-    //         ->withCount('attendanceList')
-    //         ->withCount([
-    //             'attendanceList as total_asesorias' => function ($q) {
-    //                 $q->where('is_asesoria', 's');
-    //             },
-    //             'attendanceList as total_formalizaciones' => function ($q) {
-    //                 $q->where('was_formalizado', 's');
-    //             }
-    //         ]);
-
-    //     if (!empty($filters['asesor'])) {
-    //         $query->where('asesorId', $filters['asesor']);
-    //     }
-
-    //     if (!empty($filters['tipo'])) {
-    //         $query->where('eventsoffice_id', $filters['tipo']);
-    //     }
-
-    //     if (!empty($filters['name'])) {
-    //         $query->where(function ($q) use ($filters) {
-    //             $q->where('title', 'like', '%' . $filters['name'] . '%')
-    //                 ->orWhere('description', 'like', '%' . $filters['name'] . '%')
-    //                 ->orWhere('slug', 'like', '%' . $filters['name'] . '%');
-    //         });
-    //     }
-
-
-    //     if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
-    //         $query->where(function ($q) use ($filters) {
-    //             $q->whereBetween('startDate', [$filters['dateStart'], $filters['dateEnd']])
-    //                 ->orWhereBetween('endDate', [$filters['dateStart'], $filters['dateEnd']]);
-    //         });
-    //     }
-
-    //     if (!empty($filters['year'])) {
-
-    //         $query->whereYear('created_at', $filters['year']);
-    //     }
-
-    //     if (!empty($filters['orderby']) && $filters['orderby'] == 1) {
-
-    //         $query->orderBy('attendance_list_count', 'desc');
-    //     } else if (!empty($filters['orderby']) && $filters['orderby'] == 2) {
-
-    //         $query->orderBy('attendance_list_count', 'asc');
-    //     } else if (!empty($filters['orderby']) && $filters['orderby'] == 3) {
-
-    //         $query->orderBy('finally', 'desc');
-    //     } else {
-
-    //         $query->orderBy('created_at', 'desc');
-    //     }
-    // }
-
-
-
     public function scopeWithItems($query, $filters)
     {
         $query->with([
@@ -217,6 +152,18 @@ class Attendance extends Model
                 $filters['rangeDate'][0],
                 $filters['rangeDate'][1]
             ]);
+        }
+
+        // 📅 RANGO (date)
+        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+
+            $start = Carbon::createFromFormat('Y/m/d', $filters['dateStart'])->format('Y-m-d');
+            $end   = Carbon::createFromFormat('Y/m/d', $filters['dateEnd'])->format('Y-m-d');
+
+            $query->where(function ($q) use ($start, $end) {
+                $q->whereDate('startDate', '<=', $end)
+                    ->whereDate('endDate', '>=', $start);
+            });
         }
 
         // 🌎 UBICACIÓN

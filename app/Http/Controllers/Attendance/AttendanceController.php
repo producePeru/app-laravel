@@ -45,6 +45,9 @@ class AttendanceController extends Controller
             'district'   => $request->input('district'),
             'status'     => $request->input('status'),
             'orderby'    => $request->input('orderby'),
+
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd'   => $request->input('dateEnd'),
         ];
 
         $user = Auth::user();

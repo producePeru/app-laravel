@@ -17,11 +17,6 @@ class MPEvent extends Model
         'slug',
         'component',
         'capacitador_id',
-        'city_id',
-        'province_id',
-        'district_id',
-        'modality_id',
-        'place',
         'date',
         // 'hours',
         'training_time',
@@ -31,7 +26,15 @@ class MPEvent extends Model
         'link',
         'aliado',
         'hourStart',
-        'hourEnd'
+        'hourEnd',
+
+        'city_id',
+        'province_id',
+        'district_id',
+        'modality_id',
+        'place',
+
+        'user_id'
     ];
 
 
@@ -93,5 +96,26 @@ class MPEvent extends Model
 
             $query->whereYear('created_at', $filters['year']);
         }
+    }
+
+    // BLOOPS
+    public function region()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function provincia()
+    {
+        return $this->belongsTo(Province::class, 'province_id');
+    }
+
+    public function distrito()
+    {
+        return $this->belongsTo(District::class, 'district_id');
+    }
+
+    public function registrador()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

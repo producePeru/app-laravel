@@ -597,6 +597,8 @@ Route::group(['prefix' => 'plans-action', 'namespace' => 'App\Http\Controllers',
 Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::post('create-category', [EventsController::class, 'createCategory']);
     Route::get('list-categories', [EventsController::class, 'listCategories']);
+
+
     Route::put('status-categories/{id}', [EventsController::class, 'statusCategories']);
 
     // Route::post('create-event',             [EventsController::class, 'createEvent']);
@@ -607,10 +609,10 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
 
     // eventos sr carlos
     Route::post('create',                       [EventsController::class, 'store']);
-    Route::get('list',                          [EventsController::class, 'index']);
+    Route::get('list',                          [EventsController::class, 'index']);                            // v2.0
     Route::delete('delete/{id}',                [EventsController::class, 'deleteEventById']);
-    Route::put('update/{id}',                   [EventsController::class, 'update']);
-    // Route::put('observations/{id}',             [EventsController::class, 'observations']);
+
+    Route::put('resultados',                   [EventsController::class, 'updateResultados']);
 
     // eventos sra dianita & Fernando Somocursio*** v2
     Route::post('reserve-room',                 [RoomController::class, 'store']);

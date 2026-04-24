@@ -1369,10 +1369,140 @@ SET sa.dni = up.documentnumber;
 
 
 
-ALTER TABLE attendancelist
-ADD COLUMN updated_by BIGINT UNSIGNED NULL AFTER user_id;
+-- ALTER TABLE attendancelist
+-- ADD COLUMN updated_by BIGINT UNSIGNED NULL AFTER user_id;
+
+-- ALTER TABLE attendancelist
+-- ADD CONSTRAINT fk_attendancelist_updated_by
+-- FOREIGN KEY (updated_by) REFERENCES users(id)
+-- ON DELETE SET NULL;
+
+
+
+
+
+
+
+
+
+-- CREATE TABLE events2 (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+--     tabla VARCHAR(100),
+--     row_id BIGINT,
+
+--     visible TINYINT(1) DEFAULT 0,
+
+--     resultados TEXT,
+--     cancelado TEXT,
+--     programado TEXT,
+
+--     unidad VARCHAR(100),
+
+--     estado TINYINT, 
+
+--     created_at TIMESTAMP NULL DEFAULT NULL,
+--     updated_at TIMESTAMP NULL DEFAULT NULL,
+--     deleted_at TIMESTAMP NULL DEFAULT NULL
+-- );
+
+
+-- INSERT INTO events2 (
+--     tabla,
+--     row_id,
+--     visible,
+--     resultados,
+--     cancelado,
+--     programado,
+--     unidad,
+--     estado,
+--     created_at,
+--     updated_at
+-- )
+-- SELECT
+--     'attendancelist',
+--     a.id,
+--     0,
+--     NULL,
+--     NULL,
+--     NULL,
+--     'UGO',
+--     NULL,
+--     a.created_at,
+--     a.updated_at
+-- FROM attendancelist a
+-- LEFT JOIN events2 e
+--     ON e.row_id = a.id AND e.tabla = 'attendancelist'
+-- WHERE a.deleted_at IS NULL
+--   AND e.id IS NULL;
+
+
+--   INSERT INTO events2 (
+--     tabla,
+--     row_id,
+--     visible,
+--     resultados,
+--     cancelado,
+--     programado,
+--     unidad,
+--     estado,
+--     created_at,
+--     updated_at
+-- )
+-- SELECT
+--     'mp' AS tabla,
+--     m.id AS row_id,
+--     0 AS visible,
+--     NULL AS resultados,
+--     NULL AS cancelado,
+--     NULL AS programado,
+--     'MP' AS unidad,
+--     NULL AS estado,
+--     m.created_at,
+--     m.updated_at
+-- FROM mp_eventos m
+-- LEFT JOIN events2 e
+--     ON e.row_id = m.id
+--     AND e.tabla = 'mp'
+-- WHERE m.deleted_at IS NULL
+--   AND e.id IS NULL;
+
+
+-- UPDATE attendancelist
+-- SET date = DATE(startDate);
+
+
+-- ALTER TABLE mp_eventos
+-- ADD COLUMN user_id BIGINT UNSIGNED NULL AFTER aliado,
+-- ADD CONSTRAINT fk_mp_eventos_user
+-- FOREIGN KEY (user_id) REFERENCES users(id)
+-- ON DELETE SET NULL
+-- ON UPDATE CASCADE;
+
 
 ALTER TABLE attendancelist
-ADD CONSTRAINT fk_attendancelist_updated_by
-FOREIGN KEY (updated_by) REFERENCES users(id)
-ON DELETE SET NULL;
+ADD COLUMN visible TINYINT(1) DEFAULT 0 AFTER team,
+ADD COLUMN resultados TEXT AFTER visible,
+ADD COLUMN cancelado TEXT AFTER resultados,
+ADD COLUMN reprogramado TEXT AFTER cancelado,
+ADD COLUMN unidad VARCHAR(10) DEFAULT 'UGO' AFTER reprogramado;
+
+
+ALTER TABLE mp_eventos
+ADD COLUMN visible TINYINT(1) DEFAULT 0 AFTER user_id,
+ADD COLUMN resultados TEXT AFTER visible,
+ADD COLUMN cancelado TEXT AFTER resultados,
+ADD COLUMN reprogramado TEXT AFTER cancelado,
+ADD COLUMN unidad VARCHAR(10) DEFAULT 'MP' AFTER reprogramado;
+
+
+
+
+
+ALTER TABLE fairs
+ADD COLUMN visible TINYINT(1) DEFAULT 0 AFTER user_id,
+ADD COLUMN resultados TEXT AFTER visible,
+ADD COLUMN cancelado TEXT AFTER resultados,
+ADD COLUMN reprogramado TEXT AFTER cancelado,
+ADD COLUMN unidad VARCHAR(10) AFTER reprogramado;
+
