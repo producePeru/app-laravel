@@ -38,6 +38,10 @@ class MPEvent extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'dates' => 'array',
+    ];
+
     public function capacitador()
     {
         return $this->belongsTo(MPCapacitador::class, 'capacitador_id');
