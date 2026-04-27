@@ -18,6 +18,7 @@ class MPEvent extends Model
         'component',
         'capacitador_id',
         'date',
+        'dates',
         // 'hours',
         'training_time',
         'startDate',
@@ -34,9 +35,8 @@ class MPEvent extends Model
         'modality_id',
         'place',
 
-        'user_id'
+        'user_id',
     ];
-
 
     public function capacitador()
     {
@@ -68,8 +68,6 @@ class MPEvent extends Model
         return $this->hasMany(MPAttendance::class, 'event_id');
     }
 
-
-
     public function scopeWithItems($query, $filters)
     {
         $query = $query->with([
@@ -78,21 +76,21 @@ class MPEvent extends Model
             'city',
         ]);
 
-        if (!empty($filters['name'])) {
+        if (! empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('title', 'like', '%' . $filters['name'] . '%');
+                $q->where('title', 'like', '%'.$filters['name'].'%');
             });
         }
 
         // filtra fechas de la columna date
-        if (!empty($filters['startDate']) && !empty($filters['endDate'])) {
+        if (! empty($filters['startDate']) && ! empty($filters['endDate'])) {
             $query->whereBetween('date', [
                 $filters['startDate'],
-                $filters['endDate']
+                $filters['endDate'],
             ]);
         }
 
-        if (!empty($filters['year'])) {
+        if (! empty($filters['year'])) {
 
             $query->whereYear('created_at', $filters['year']);
         }

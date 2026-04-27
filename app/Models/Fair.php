@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Carbon\Carbon;
 
 class Fair extends Model
 {
@@ -30,6 +30,7 @@ class Fair extends Model
         'reprogramado',
         'unidad',
         'fecha',
+        'dates',
         'place',
         'hours',
         'msgEndForm',
@@ -38,14 +39,14 @@ class Fair extends Model
         'image_id',
         'created_by',
         'updated_by',
-        'cooperativa'
+        'cooperativa',
+        'metaMypes',
     ];
-
 
     protected $casts = [
         'fecha' => 'datetime',
+        'dates' => 'array', // ✅ era 'datex'
     ];
-
 
     protected $dates = ['startDate', 'endDate', 'deleted_at'];
 
@@ -112,24 +113,24 @@ class Fair extends Model
             ->whereYear('created_at', now()->year);
     }
 
-
     // SCOPE SEARCH
     public function scopeSearch($query, $search)
     {
         if ($search) {
-            return $query->where('title', 'like', '%' . $search . '%')
-                ->orWhere('description', 'like', '%' . $search . '%')
-                ->orWhere('typeFair', 'like', '%' . $search . '%')
+            return $query->where('title', 'like', '%'.$search.'%')
+                ->orWhere('description', 'like', '%'.$search.'%')
+                ->orWhere('typeFair', 'like', '%'.$search.'%')
                 ->orWhereHas('region', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%'); // Buscar por nombre de la ciudad
+                    $q->where('name', 'like', '%'.$search.'%'); // Buscar por nombre de la ciudad
                 })
                 ->orWhereHas('provincia', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%'); // Buscar por nombre de la provincia
+                    $q->where('name', 'like', '%'.$search.'%'); // Buscar por nombre de la provincia
                 })
                 ->orWhereHas('profile', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%'); // Buscar por nombre del perfil
+                    $q->where('name', 'like', '%'.$search.'%'); // Buscar por nombre del perfil
                 });
         }
+
         return $query;
     }
 
@@ -143,15 +144,15 @@ class Fair extends Model
         ])->withCount(['postulantes', 'postulantesWow', 'sedSurvey', 'sedSurveyMonth']);
 
         // 🔍 NOMBRE
-        if (!empty($filters['name'])) {
+        if (! empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('nameEvent', 'like', '%' . $filters['name'] . '%')
-                    ->orWhere('description', 'like', '%' . $filters['name'] . '%');
+                $q->where('nameEvent', 'like', '%'.$filters['name'].'%')
+                    ->orWhere('description', 'like', '%'.$filters['name'].'%');
             });
         }
 
         // 📅 RANGO DE FECHAS
-        if (!empty($filters['startDate']) && !empty($filters['endDate'])) {
+        if (! empty($filters['startDate']) && ! empty($filters['endDate'])) {
             $query->where(function ($q) use ($filters) {
                 $q->whereBetween('startDate', [$filters['startDate'], $filters['endDate']])
                     ->orWhereBetween('endDate', [$filters['startDate'], $filters['endDate']]);
@@ -159,32 +160,32 @@ class Fair extends Model
         }
 
         // 📅 AÑO
-        if (!empty($filters['year'])) {
+        if (! empty($filters['year'])) {
             $query->whereYear('created_at', $filters['year']);
         }
 
         // 📅 FECHA EXACTA
-        if (!empty($filters['date'])) {
+        if (! empty($filters['date'])) {
             $query->whereDate('fecha', $filters['date']);
         }
 
         // 🌎 UBICACIÓN
-        if (!empty($filters['city'])) {
+        if (! empty($filters['city'])) {
             $query->where('city_id', $filters['city']);
         }
 
-        if (!empty($filters['province'])) {
+        if (! empty($filters['province'])) {
             $query->where('province_id', $filters['province']);
         }
 
-        if (!empty($filters['district'])) {
+        if (! empty($filters['district'])) {
             $query->where('district_id', $filters['district']);
         }
 
         // 🔃 ORDEN
         $today = Carbon::today();
 
-        if (!empty($filters['orderby'])) {
+        if (! empty($filters['orderby'])) {
             switch ($filters['orderby']) {
                 case 1:
                     $query->whereDate('endDate', '>=', $today)->orderBy('endDate', 'asc');

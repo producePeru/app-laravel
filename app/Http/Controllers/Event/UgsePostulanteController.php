@@ -3,34 +3,29 @@
 namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
-use App\Models\Fair;
 use App\Mail\FairSedInfoMail;
 use App\Models\CyberwowBrand;
 use App\Models\CyberwowLeader;
 use App\Models\CyberwowOffer;
 use App\Models\CyberwowParticipant;
-use App\Models\FairPostulate;
+use App\Models\Fair;
 use App\Models\SedAsistente;
 use App\Models\UgsePostulante;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\File;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Illuminate\Support\Facades\Storage;
-use PDF;
-use Illuminate\Support\Str;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use PDF;
 
 class UgsePostulanteController extends Controller
 {
-
-
     // public function usersRegisteredList(Request $request, $slug)
     // {
     //     $fair = Fair::where('slug', $slug)->firstOrFail();
@@ -216,15 +211,14 @@ class UgsePostulanteController extends Controller
     //     ];
     // }
 
-
     public function usersRegisteredList(Request $request, $slug)
     {
         $fair = Fair::where('slug', $slug)->firstOrFail();
 
         $filters = [
-            'name'      => $request->input('name'),
+            'name' => $request->input('name'),
             'dateStart' => $request->input('dateStart'),
-            'dateEnd'   => $request->input('dateEnd'),
+            'dateEnd' => $request->input('dateEnd'),
         ];
 
         // 🔥 PAGINADOR SEGURO
@@ -252,21 +246,21 @@ class UgsePostulanteController extends Controller
             ->orderBy('id', 'desc');
 
         // 🔍 FILTRO
-        if (!empty($filters['name'])) {
+        if (! empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('dni', 'like', '%' . $filters['name'] . '%')
+                $q->where('dni', 'like', '%'.$filters['name'].'%')
                     ->orWhereHas('postulante', function ($q2) use ($filters) {
-                        $q2->where('ruc', 'like', '%' . $filters['name'] . '%')
-                            ->orWhere('documentnumber', 'like', '%' . $filters['name'] . '%');
+                        $q2->where('ruc', 'like', '%'.$filters['name'].'%')
+                            ->orWhere('documentnumber', 'like', '%'.$filters['name'].'%');
                     });
             });
         }
 
         // 📅 FECHAS
-        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+        if (! empty($filters['dateStart']) && ! empty($filters['dateEnd'])) {
             $query->whereBetween('created_at', [
                 \Carbon\Carbon::parse($filters['dateStart'])->startOfDay(),
-                \Carbon\Carbon::parse($filters['dateEnd'])->endOfDay()
+                \Carbon\Carbon::parse($filters['dateEnd'])->endOfDay(),
             ]);
         }
 
@@ -294,14 +288,14 @@ class UgsePostulanteController extends Controller
             'event' => [
                 'id' => $fair->id,
                 'name' => $fair->title,
-                'fecha' => $fair->fecha
+                'fecha' => $fair->fecha,
             ],
             'statistic' => [
                 'total' => $total,
                 'asistieron' => $conAsistencia,
                 'no_asistieron' => $sinAsistencia,
             ],
-            'status' => 200
+            'status' => 200,
         ]);
     }
 
@@ -353,7 +347,7 @@ class UgsePostulanteController extends Controller
 
             // 🔥 NUNCA NULL
             'attended' => $item->attendance ?? '',
-            'asistio' => !empty($item->attendance),
+            'asistio' => ! empty($item->attendance),
 
             'socialReason' => $p->socialReason ?? '',
 
@@ -378,7 +372,7 @@ class UgsePostulanteController extends Controller
 
             'event' => $p->event ? [
                 'id' => $p->event->id ?? '',
-                'name' => $p->event->title ?? ''
+                'name' => $p->event->title ?? '',
             ] : null,
         ];
     }
@@ -408,8 +402,6 @@ class UgsePostulanteController extends Controller
                 'positionCompany' => 'required',
                 'mailer' => 'nullable|string',
             ]);
-
-
 
             $fair = Fair::where('slug', $request->slug)->firstOrFail();
 
@@ -454,9 +446,7 @@ class UgsePostulanteController extends Controller
                 'web' => $request->web,
             ]);
 
-
             $mailer = $request->mailer ?? 'digitalization';
-
 
             // ✅ Codificar logo en base64
             // ✅ Generar QR en base64 usando Endroid QR Code
@@ -465,7 +455,7 @@ class UgsePostulanteController extends Controller
             $logoMime = mime_content_type($logoPath);
             $logoDataUri = "data:$logoMime;base64,$logoBase64";
             $qrResult = Builder::create()
-                ->writer(new PngWriter())
+                ->writer(new PngWriter)
                 ->data($representante->documentnumber)
                 ->size(200)
                 ->margin(10)
@@ -473,9 +463,8 @@ class UgsePostulanteController extends Controller
 
             $qrBase64 = base64_encode($qrResult->getString());
 
-
             $qrResult = Builder::create()
-                ->writer(new PngWriter())
+                ->writer(new PngWriter)
                 ->data($representante->documentnumber)
                 ->size(200)
                 ->margin(10)
@@ -491,15 +480,13 @@ class UgsePostulanteController extends Controller
                 'logoDataUri' => $logoDataUri,
             ]);
 
-            $filename = 'entrada_' . Str::random(10) . '.pdf';
+            $filename = 'entrada_'.Str::random(10).'.pdf';
             $filepath = storage_path("app/public/entradas/{$filename}");
             Storage::makeDirectory('public/entradas');
             $pdf->save($filepath);
 
             $participantName = "{$representante->name} {$representante->lastname}";
             $messageContent = strip_tags($fair->msgSendEmail);
-
-
 
             Mail::mailer($mailer)
                 ->to($representante->email)
@@ -509,7 +496,6 @@ class UgsePostulanteController extends Controller
                     $participantName,
                     $fair
                 ));
-
 
             // Si el representante trae invitado
             if ($request->has('invitado') && $request->invitado === true) {
@@ -542,7 +528,7 @@ class UgsePostulanteController extends Controller
                 ]);
 
                 $qrInvitado = Builder::create()
-                    ->writer(new PngWriter())
+                    ->writer(new PngWriter)
                     ->data($invitado->documentnumber)
                     ->size(200)
                     ->margin(10)
@@ -556,7 +542,7 @@ class UgsePostulanteController extends Controller
                     'logoDataUri' => $logoDataUri,
                 ]);
 
-                $filenameInvitado = 'entrada_' . Str::random(10) . '.pdf';
+                $filenameInvitado = 'entrada_'.Str::random(10).'.pdf';
                 $filepathInvitado = storage_path("app/public/entradas/{$filenameInvitado}");
                 $pdfInvitado->save($filepathInvitado);
 
@@ -570,14 +556,12 @@ class UgsePostulanteController extends Controller
                     ));
             }
 
-
             DB::commit();
-
 
             return response()->json([
                 'message' => 'Postulante registrado correctamente y correo enviado.',
                 'representante_id' => $representante->id,
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -588,7 +572,6 @@ class UgsePostulanteController extends Controller
             ], 500);
         }
     }
-
 
     // public function store(Request $request)
     // {
@@ -692,9 +675,7 @@ class UgsePostulanteController extends Controller
     //                 $fair
     //             ));
 
-
     //         DB::commit();
-
 
     //         return response()->json([
     //             'message' => 'Postulante registrado correctamente y correo enviado.',
@@ -711,33 +692,31 @@ class UgsePostulanteController extends Controller
     //     }
     // }
 
-
     // devuelve el tipo de evento x el slug que te paso
     public function showFairBySlug($slug)
     {
         try {
             $fair = Fair::where('slug', $slug)->first();
 
-            if (!$fair) {
+            if (! $fair) {
                 return response()->json([
                     'message' => 'Feria no encontrada',
-                    'status'  => 404
+                    'status' => 404,
                 ], 404);
             }
 
             return response()->json([
-                'data'   => $fair,
-                'status' => 200
+                'data' => $fair,
+                'status' => 200,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error al buscar la feria',
-                'error'   => $e->getMessage(),
-                'status'  => 500
+                'error' => $e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }
-
 
     // Actualizamos los datos del registrado
     public function update(Request $request, $id)
@@ -746,7 +725,7 @@ class UgsePostulanteController extends Controller
             $postulante = UgsePostulante::findOrFail($id);
 
             // Solo actualiza los campos que están en $request y son fillables
-            $fillable = (new UgsePostulante())->getFillable();
+            $fillable = (new UgsePostulante)->getFillable();
             $data = $request->only($fillable);
 
             $postulante->fill($data);
@@ -754,14 +733,14 @@ class UgsePostulanteController extends Controller
 
             return response()->json([
                 'message' => 'Postulante actualizado correctamente',
-                'data'    => $postulante,
-                'status'  => 200
+                'data' => $postulante,
+                'status' => 200,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error al actualizar el postulante',
-                'error'   => $e->getMessage(),
-                'status'  => 500
+                'error' => $e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }
@@ -774,13 +753,13 @@ class UgsePostulanteController extends Controller
 
             return response()->json([
                 'message' => 'Participante eliminado correctamente',
-                'status'  => 200
+                'status' => 200,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error al eliminar el participante',
-                'error'   => $e->getMessage(),
-                'status'  => 500
+                'error' => $e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }
@@ -803,16 +782,18 @@ class UgsePostulanteController extends Controller
             if ($postulante) {
                 // Actualiza los datos existentes
                 $postulante->update($data);
+
                 return response()->json(['message' => 'Datos actualizados correctamente', 'status' => 200]);
             } else {
                 // Crea nuevo registro
                 UgsePostulante::create($data);
+
                 return response()->json(['message' => 'Registro exitoso', 'status' => 200]);
             }
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Ocurrió un error al procesar el registro',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -825,8 +806,8 @@ class UgsePostulanteController extends Controller
 
             // 2️⃣ Buscar asistencia directamente
             $asistencia = SedAsistente::firstOrNew([
-                'sed_id'  => $fair->id,
-                'mype_id' => $request->mype_id
+                'sed_id' => $fair->id,
+                'mype_id' => $request->mype_id,
             ]);
 
             // 3️⃣ Lógica
@@ -842,17 +823,15 @@ class UgsePostulanteController extends Controller
                 'message' => $request->check
                     ? 'Asistencia registrada correctamente.'
                     : 'Asistencia eliminada correctamente.',
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al actualizar asistencia.',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
-
 
     // ******** Cyber-wow *************
 
@@ -861,53 +840,56 @@ class UgsePostulanteController extends Controller
     {
         // 1) Validar datos mínimos
         $validated = $request->validate([
-            'title'         => 'required|string|max:255',
-            'description'   => 'nullable|string',
-            'fairtype_id'   => 'required|integer|exists:fairtypes,id',
-            'modality_id'   => 'required|integer|exists:modalities,id',
-            'startDate'     => 'required|date',
-            'endDate'       => 'required|date|after_or_equal:startDate',
-            'metaMypes'     => 'nullable|integer|min:0',
-            'city_id'       => 'nullable|integer|exists:cities,id',
-            'fecha'         => 'nullable|date',
-            'place'         => 'nullable|string|max:255',
-            'hours'         => 'nullable|string|max:255',
-            'msgEndForm'    => 'nullable|string',
-            'msgSendEmail'  => 'nullable|string',
-            'image_id'      => 'nullable|integer|exists:images,id',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'fairtype_id' => 'required|integer|exists:fairtypes,id',
+            'modality_id' => 'required|integer|exists:modalities,id',
+            'startDate' => 'required|date',
+            'endDate' => 'required|date|after_or_equal:startDate',
+            'metaMypes' => 'nullable|min:0',
+            'city_id' => 'nullable|integer|exists:cities,id',
+            'fecha' => 'nullable|date',
+            'place' => 'nullable|string|max:255',
+            'hours' => 'nullable|string|max:255',
+            'msgEndForm' => 'nullable|string',
+            'msgSendEmail' => 'nullable|string',
+            'image_id' => 'nullable|integer|exists:images,id',
+            'dates' => 'nullable|array',
+            'dates.*' => 'date_format:Y-m-d',
         ]);
 
         try {
             // 2) Registrar el evento en fairs
             $fair = Fair::create([
-                'title'        => $validated['title'],
-                'description'  => $validated['description'] ?? null,
-                'fairtype_id'  => $validated['fairtype_id'],
-                'modality_id'  => $validated['modality_id'],
-                'startDate'    => $validated['startDate'],
-                'endDate'      => $validated['endDate'],
-                'metaMypes'    => $validated['metaMypes'] ?? null,
-                'city_id'      => $validated['city_id'] ?? null,
-                'fecha'        => $validated['fecha'] ?? null,
-                'place'        => $validated['place'] ?? null,
-                'hours'        => $validated['hours'] ?? null,
-                'msgEndForm'   => $validated['msgEndForm'] ?? null,
+                'title' => $validated['title'],
+                'description' => $validated['description'] ?? null,
+                'fairtype_id' => $validated['fairtype_id'],
+                'modality_id' => $validated['modality_id'],
+                'startDate' => $validated['startDate'],
+                'endDate' => $validated['endDate'],
+                'metaMypes' => $validated['metaMypes'] ?? null,
+                'city_id' => $validated['city_id'] ?? null,
+                'fecha' => $validated['fecha'] ?? null,
+                'place' => $validated['place'] ?? null,
+                'hours' => $validated['hours'] ?? null,
+                'msgEndForm' => $validated['msgEndForm'] ?? null,
                 'msgSendEmail' => $validated['msgSendEmail'] ?? null,
-                'image_id'     => $validated['image_id'] ?? null,
-                'slug'         => Str::slug($validated['title']) . '-' . Str::uuid(), // generar slug único
+                'image_id' => $validated['image_id'] ?? null,
+                'slug' => Str::slug($validated['title']).'-'.Str::uuid(),
+                'dates' => $validated['dates'] ?? [], // ✅ era 'date' y '$validated[datex]'
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Evento CyberWow registrado correctamente',
-                'data'    => $fair,
-                'status' => 200
+                'data' => $fair,
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al registrar el evento',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -932,7 +914,7 @@ class UgsePostulanteController extends Controller
             'tipoDocumento',
             'genero',
             'pais',
-            'medioEntero'
+            'medioEntero',
         ])->where('event_id', $fair->id)
             ->orderBy('created_at', 'desc');
 
@@ -976,9 +958,9 @@ class UgsePostulanteController extends Controller
 
         // 5) Respuesta JSON estructurada
         return response()->json([
-            'data'   => $participants,
-            'event'  => [
-                'id'   => $fair->id,
+            'data' => $participants,
+            'event' => [
+                'id' => $fair->id,
                 'name' => $fair->title,
             ],
             'status' => 200,
@@ -1028,7 +1010,6 @@ class UgsePostulanteController extends Controller
         ];
     }
 
-
     // eliminar participante del cyber-wow
     public function cyberWowDeleteParticipant($id)
     {
@@ -1038,13 +1019,13 @@ class UgsePostulanteController extends Controller
 
             return response()->json([
                 'message' => 'Participante eliminado correctamente',
-                'status'  => 200
+                'status' => 200,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error al eliminar el participante',
-                'error'   => $e->getMessage(),
-                'status'  => 500
+                'error' => $e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }
@@ -1054,16 +1035,16 @@ class UgsePostulanteController extends Controller
     {
         $request->validate([
             'user_id' => 'required|integer|exists:users,id',
-            'slug'    => 'required|string|exists:fairs,slug',
+            'slug' => 'required|string|exists:fairs,slug',
         ]);
 
         // Buscar el evento en Fair por slug
         $fair = Fair::where('slug', $request->input('slug'))->first();
 
-        if (!$fair) {
+        if (! $fair) {
             return response()->json([
                 'message' => 'Evento no encontrado',
-                'status'  => 404
+                'status' => 404,
             ]);
         }
 
@@ -1075,21 +1056,21 @@ class UgsePostulanteController extends Controller
         if ($exists) {
             return response()->json([
                 'message' => 'El usuario ya está registrado como líder en este evento',
-                'status'  => 409 // conflicto
+                'status' => 409, // conflicto
             ]);
         }
 
         // Crear registro con el modelo
         $leader = CyberwowLeader::create([
             'user_id' => $request->input('user_id'),
-            'wow_id'  => $fair->id,
-            'status'  => 1
+            'wow_id' => $fair->id,
+            'status' => 1,
         ]);
 
         return response()->json([
             'message' => 'Líder asignado correctamente',
-            'data'    => $leader,
-            'status'  => 200
+            'data' => $leader,
+            'status' => 200,
         ]);
     }
 
@@ -1097,17 +1078,17 @@ class UgsePostulanteController extends Controller
     public function aCompanyToLeader(Request $request)
     {
         $request->validate([
-            'slug'       => 'required|string|exists:fairs,slug',
-            'user_id'    => 'required|integer|exists:users,id',
-            'company_id' => 'required|integer'
+            'slug' => 'required|string|exists:fairs,slug',
+            'user_id' => 'required|integer|exists:users,id',
+            'company_id' => 'required|integer',
         ]);
 
         $fair = Fair::where('slug', $request->input('slug'))->first();
 
-        if (!$fair) {
+        if (! $fair) {
             return response()->json([
                 'message' => 'Evento no encontrado',
-                'status'  => 404
+                'status' => 404,
             ]);
         }
 
@@ -1115,48 +1096,48 @@ class UgsePostulanteController extends Controller
             ->where('id', $request->input('company_id'))
             ->first();
 
-        if (!$participant) {
+        if (! $participant) {
             return response()->json([
                 'message' => 'La empresa no está registrada en este evento',
-                'status'  => 404
+                'status' => 404,
             ]);
         }
 
         $participant->user_id = $request->input('user_id');
         $participant->save();
+
         return response()->json([
             'message' => 'Líder asignado a la empresa correctamente',
-            'data'    => $participant,
-            'status'  => 200
+            'data' => $participant,
+            'status' => 200,
         ]);
     }
-
 
     // cyberwow Empresas mini-dashboard
     public function cyberwowCompanyCount($slug)
     {
         $fair = Fair::where('slug', $slug)->first();
 
-        if (!$fair) {
+        if (! $fair) {
             return response()->json([
                 'message' => 'Evento no encontrado',
-                'status'  => 404
+                'status' => 404,
             ]);
         }
 
-        $total       = CyberwowParticipant::where('event_id', $fair->id)->count();
+        $total = CyberwowParticipant::where('event_id', $fair->id)->count();
         $no_asignadas = CyberwowParticipant::where('event_id', $fair->id)
             ->whereNull('user_id')
             ->count();
-        $asignadas   = CyberwowParticipant::where('event_id', $fair->id)
+        $asignadas = CyberwowParticipant::where('event_id', $fair->id)
             ->whereNotNull('user_id')
             ->count();
 
         return response()->json([
-            'total'        => $total,
+            'total' => $total,
             'no_asignadas' => $no_asignadas,
-            'asignadas'    => $asignadas,
-            'status'       => 200
+            'asignadas' => $asignadas,
+            'status' => 200,
         ]);
     }
 
@@ -1165,16 +1146,16 @@ class UgsePostulanteController extends Controller
     {
         $request->validate([
             'slug' => 'required|string',
-            'company_id' => 'required|integer'
+            'company_id' => 'required|integer',
         ]);
 
         // Buscamos la feria por slug
         $fair = Fair::where('slug', $request->slug)->first();
 
-        if (!$fair) {
+        if (! $fair) {
             return response()->json([
                 'message' => 'Evento no encontrado',
-                'status'  => 404
+                'status' => 404,
             ]);
         }
 
@@ -1182,11 +1163,10 @@ class UgsePostulanteController extends Controller
             ->where('id', $request->company_id)
             ->first();
 
-
-        if (!$participant) {
+        if (! $participant) {
             return response()->json([
                 'message' => 'Participante no encontrado',
-                'status'  => 404
+                'status' => 404,
             ]);
         }
 
@@ -1195,29 +1175,28 @@ class UgsePostulanteController extends Controller
 
         return response()->json([
             'message' => 'Datos actualizados correctamente',
-            'status'  => 200
+            'status' => 200,
         ]);
     }
-
 
     public function cyberwowStep2(Request $request)
     {
         $request->validate([
-            'isService'   => 'required|string|max:2',
-            'logo256_id'  => 'required|exists:images,id',
-            'logo160_id'  => 'required|exists:images,id',
+            'isService' => 'required|string|max:2',
+            'logo256_id' => 'required|exists:images,id',
+            'logo160_id' => 'required|exists:images,id',
             'description' => 'nullable|string|max:1000',
-            'slug'        => 'required|string|exists:fairs,slug',
-            'url'         => 'required|url|max:255',
-            'company_id'  => 'required|integer',
-            'red'         => 'integer'
+            'slug' => 'required|string|exists:fairs,slug',
+            'url' => 'required|url|max:255',
+            'company_id' => 'required|integer',
+            'red' => 'integer',
         ]);
 
         try {
             // Buscar la feria
             $fair = Fair::where('slug', $request->slug)->first();
 
-            if (!$fair) {
+            if (! $fair) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Feria no encontrada',
@@ -1232,28 +1211,28 @@ class UgsePostulanteController extends Controller
             if ($brand) {
                 // 🔄 Actualizar registro existente
                 $brand->update([
-                    'isService'   => $request->isService,
+                    'isService' => $request->isService,
                     'description' => $request->description,
-                    'url'         => $request->url,
-                    'logo256_id'  => $request->logo256_id,
-                    'logo160_id'  => $request->logo160_id,
-                    'user_id'     => Auth::id(),
-                    'red'         => $request->red,
+                    'url' => $request->url,
+                    'logo256_id' => $request->logo256_id,
+                    'logo160_id' => $request->logo160_id,
+                    'user_id' => Auth::id(),
+                    'red' => $request->red,
                 ]);
 
                 $action = 'actualizado';
             } else {
                 // 🆕 Crear nuevo registro
                 $brand = CyberwowBrand::create([
-                    'isService'   => $request->isService,
+                    'isService' => $request->isService,
                     'description' => $request->description,
-                    'url'         => $request->url,
-                    'logo256_id'  => $request->logo256_id,
-                    'logo160_id'  => $request->logo160_id,
-                    'wow_id'      => $fair->id,
-                    'company_id'  => $request->company_id,
-                    'user_id'     => Auth::id(),
-                    'red'         => $request->red,
+                    'url' => $request->url,
+                    'logo256_id' => $request->logo256_id,
+                    'logo160_id' => $request->logo160_id,
+                    'wow_id' => $fair->id,
+                    'company_id' => $request->company_id,
+                    'user_id' => Auth::id(),
+                    'red' => $request->red,
                 ]);
 
                 $action = 'creado';
@@ -1272,20 +1251,18 @@ class UgsePostulanteController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Registro {$action} correctamente",
-                'brand'   => $brand,
+                'brand' => $brand,
                 'participant' => $participant,
-                'status' => 200
+                'status' => 200,
 
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al procesar: ' . $e->getMessage()
+                'message' => 'Error al procesar: '.$e->getMessage(),
             ], 500);
         }
     }
-
-
 
     public function cyberwowStep3(Request $request)
     {
@@ -1319,23 +1296,23 @@ class UgsePostulanteController extends Controller
                 // Si existe → actualizar
                 if ($offer) {
                     $offer->update([
-                        'imgFull'        => $data['imgFull'] ?? null,
-                        'img'            => $data['img'] ?? null,
-                        'title'          => $data['title'] ?? '',
-                        'link'           => $data['link'] ?? null,
-                        'category'       => $data['category'] ?? null,
-                        'tipo'           => $data['tipo'] ?? null,
-                        'beneficio'      => $data['beneficio'] ?? null,
-                        'moneda'         => $data['moneda'] ?: 'S/',
+                        'imgFull' => $data['imgFull'] ?? null,
+                        'img' => $data['img'] ?? null,
+                        'title' => $data['title'] ?? '',
+                        'link' => $data['link'] ?? null,
+                        'category' => $data['category'] ?? null,
+                        'tipo' => $data['tipo'] ?? null,
+                        'beneficio' => $data['beneficio'] ?? null,
+                        'moneda' => $data['moneda'] ?: 'S/',
                         'precioAnterior' => $data['precioAnterior'] ?? 0,
-                        'precioOferta'   => $data['precioOferta'] ?? 0,
-                        'descripcion'    => $data['descripcion'] ?? null,
+                        'precioOferta' => $data['precioOferta'] ?? 0,
+                        'descripcion' => $data['descripcion'] ?? null,
                     ]);
 
                     $processed[] = [
                         'action' => 'updated',
                         'dia' => $data['dia'],
-                        'offer' => $offer
+                        'offer' => $offer,
                     ];
                 }
                 // Si no existe → crear nueva (solo si no excede 3 por empresa)
@@ -1346,26 +1323,26 @@ class UgsePostulanteController extends Controller
 
                     if ($count < 3) {
                         $newOffer = CyberwowOffer::create([
-                            'wow_id'         => $fair->id,
-                            'company_id'     => $data['company_id'],
-                            'imgFull'        => $data['imgFull'] ?? null,
-                            'img'            => $data['img'] ?? null,
-                            'title'          => $data['title'] ?? '',
-                            'link'           => $data['link'] ?? null,
-                            'category'       => $data['category'] ?? null,
-                            'tipo'           => $data['tipo'] ?? null,
-                            'beneficio'      => $data['beneficio'] ?? null,
-                            'moneda'         => $data['moneda'] ?: 'S/',
+                            'wow_id' => $fair->id,
+                            'company_id' => $data['company_id'],
+                            'imgFull' => $data['imgFull'] ?? null,
+                            'img' => $data['img'] ?? null,
+                            'title' => $data['title'] ?? '',
+                            'link' => $data['link'] ?? null,
+                            'category' => $data['category'] ?? null,
+                            'tipo' => $data['tipo'] ?? null,
+                            'beneficio' => $data['beneficio'] ?? null,
+                            'moneda' => $data['moneda'] ?: 'S/',
                             'precioAnterior' => $data['precioAnterior'] ?? 0,
-                            'precioOferta'   => $data['precioOferta'] ?? 0,
-                            'descripcion'    => $data['descripcion'] ?? null,
-                            'dia'            => $data['dia'],
+                            'precioOferta' => $data['precioOferta'] ?? 0,
+                            'descripcion' => $data['descripcion'] ?? null,
+                            'dia' => $data['dia'],
                         ]);
 
                         $processed[] = [
                             'action' => 'created',
                             'dia' => $data['dia'],
-                            'offer' => $newOffer
+                            'offer' => $newOffer,
                         ];
                     } else {
                         $processed[] = [
@@ -1380,7 +1357,7 @@ class UgsePostulanteController extends Controller
             DB::commit();
 
             // Actualizar paso3 del participante (solo si hubo creación o edición)
-            if (!empty($processed)) {
+            if (! empty($processed)) {
                 $firstData = $request->days[0]['data'];
                 $fair = Fair::where('slug', $firstData['slug'])->first();
                 $participant = CyberwowParticipant::where('event_id', $fair->id)
@@ -1397,7 +1374,7 @@ class UgsePostulanteController extends Controller
                 'success' => true,
                 'message' => 'Ofertas procesadas correctamente.',
                 'resultados' => $processed,
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -1409,8 +1386,6 @@ class UgsePostulanteController extends Controller
             ], 500);
         }
     }
-
-
 
     public function cyberwowCountMyProgress($slug)
     {
@@ -1425,19 +1400,19 @@ class UgsePostulanteController extends Controller
             ->where('user_id', $userId);
 
         // Clones del query
-        $asignados   = (clone $query)->count();
+        $asignados = (clone $query)->count();
         $completados = (clone $query)->where('paso3', 1)->count();
-        $pendientes  = (clone $query)->whereNull('paso3')->count();
+        $pendientes = (clone $query)->whereNull('paso3')->count();
 
         // Calcular porcentaje (evitar división por 0)
         $porcentaje = $asignados > 0 ? round(($completados / $asignados) * 100, 2) : 0;
 
         return response()->json([
-            'status'      => 200,
-            'asignados'   => $asignados,
+            'status' => 200,
+            'asignados' => $asignados,
             'completados' => $completados,
-            'pendientes'  => $pendientes,
-            'porcentaje'  => $porcentaje,
+            'pendientes' => $pendientes,
+            'porcentaje' => $porcentaje,
         ]);
     }
 
@@ -1473,7 +1448,7 @@ class UgsePostulanteController extends Controller
                 'empresas_asignadas' => $empresasAsignadas,
                 'perfiles_completados' => $perfilesCompletados,
                 'lideres_activos' => $lideresActivos,
-            ]
+            ],
         ], 200);
     }
 
@@ -1504,7 +1479,7 @@ class UgsePostulanteController extends Controller
             '#a0d911',
             '#f5222d',
             '#08979c',
-            '#fa8c16'
+            '#fa8c16',
         ];
         shuffle($colores); // Aleatorio
 
@@ -1531,7 +1506,7 @@ class UgsePostulanteController extends Controller
                 $productividad = 'Baja';
             }
 
-            $tiempo = round(mt_rand(15, 40) / 10, 1) . " días";
+            $tiempo = round(mt_rand(15, 40) / 10, 1).' días';
 
             // 4️⃣ Buscar supervisor del líder actual
             $leaderRecord = CyberwowLeader::where('wow_id', $fair->id)
@@ -1551,7 +1526,7 @@ class UgsePostulanteController extends Controller
                 'tiempo' => $tiempo,
                 'productividad' => $productividad,
                 'actividad' => now()->subDays(rand(1, 30))->format('Y-m-d H:i'),
-                'color' => $colores[$i] ?? sprintf("#%06X", mt_rand(0, 0xFFFFFF)),
+                'color' => $colores[$i] ?? sprintf('#%06X', mt_rand(0, 0xFFFFFF)),
                 'supervisor' => $supervisor,
             ];
 
@@ -1566,7 +1541,7 @@ class UgsePostulanteController extends Controller
         return response()->json([
             'status' => 200,
             'message' => 'Resumen generado correctamente',
-            'data' => $resultados
+            'data' => $resultados,
         ], 200);
     }
 }

@@ -8,17 +8,14 @@ use App\Mail\UgoActividadCreadaMail;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
 use App\Models\City;
-use App\Models\District;
 use App\Models\Event;
-use App\Models\Province;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
-use mysqli;
+use Illuminate\Support\Str;
 
 class AttendanceController extends Controller
 {
@@ -26,39 +23,34 @@ class AttendanceController extends Controller
     {
         $permission = getPermission('eventos-ugo');
 
-        if (!$permission['hasPermission']) {
+        if (! $permission['hasPermission']) {
             return response()->json([
                 'message' => 'No tienes permiso para acceder a esta sección',
-                'status' => 403
+                'status' => 403,
             ]);
         }
 
         $filters = [
-            'name'       => $request->input('name'),
-            'asesor'     => $request->input('asesor'),
-            'modalidad'  => $request->input('modalidad'),
-            'year'       => $request->input('year'),
-            'date'       => $request->input('date'),
-            'rangeDate'  => $request->input('rangeDate'),
-            'city'       => $request->input('city'),
-            'province'   => $request->input('province'),
-            'district'   => $request->input('district'),
-            'status'     => $request->input('status'),
-            'orderby'    => $request->input('orderby'),
-
-            'dateStart' => $request->input('dateStart'),
-            'dateEnd'   => $request->input('dateEnd'),
+            'name' => $request->input('name'),
+            'asesor' => $request->input('asesor'),
+            'modalidad' => $request->input('modalidad'),
+            'year' => $request->input('year'),
+            'date' => $request->input('date'),
+            'rangeDate' => $request->input('rangeDate'),
+            'city' => $request->input('city'),
+            'province' => $request->input('province'),
+            'district' => $request->input('district'),
+            'status' => $request->input('status'),
+            'orderby' => $request->input('orderby'),
         ];
 
         $user = Auth::user();
 
-        // filtro automático para asesores
         if ($user->rol == 2) {
             $filters['asesor'] = $user->id;
         }
 
         $query = Attendance::query();
-
         $query->withItems($filters);
 
         $perPage = $request->input('pageSize', 10);
@@ -67,42 +59,45 @@ class AttendanceController extends Controller
             return $this->mapAdvisory($item);
         });
 
-        $year  = 2026;
-
-        $today = Carbon::today();
+        $year = 2026;
+        $today = Carbon::today()->toDateString();
 
         $baseQuery = Attendance::query()
             ->withCount('attendanceList')
-            ->whereYear('startDate', $year);
+            ->whereRaw("JSON_CONTAINS(dates, '\"' || YEAR(JSON_UNQUOTE(JSON_EXTRACT(dates, '$[0]'))) || '\"') OR YEAR(JSON_UNQUOTE(JSON_EXTRACT(dates, '$[0]'))) = ?", [$year])
+            ->whereRaw("YEAR(JSON_UNQUOTE(JSON_EXTRACT(dates, '$[0]'))) = ?", [$year]);
 
-        if (!empty($filters['asesor'])) {
+        if (! empty($filters['asesor'])) {
             $baseQuery->where('asesorId', $filters['asesor']);
         }
 
         $statistic = [
 
+            // HOY: alguna fecha del array es hoy
             'diaria' => (clone $baseQuery)
-                ->whereDate('startDate', '<=', $today)
-                ->whereDate('endDate', '>=', $today)
+                ->whereJsonContains('dates', $today)
                 ->count(),
 
+            // FUTURAS: la primera fecha del array es >= hoy
             'consolidada' => (clone $baseQuery)
-                ->whereDate('startDate', '>=', $today)
+                ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(dates, '$[0]')) >= ?", [$today])
                 ->count(),
 
+            // PASADAS sin asistentes: la última fecha < hoy
             'pendiente' => (clone $baseQuery)
-                ->whereDate('endDate', '<', $today)
+                ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(dates, '$[last]')) < ?", [$today])
                 ->having('attendance_list_count', 0)
                 ->count(),
 
+            // PASADAS con asistentes: la última fecha < hoy
             'finalizadas' => (clone $baseQuery)
-                ->whereDate('endDate', '<', $today)
+                ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(dates, '$[last]')) < ?", [$today])
                 ->having('attendance_list_count', '>=', 1)
                 ->count(),
         ];
 
         return response()->json([
-            'data'   => $items,
+            'data' => $items,
             'statisti' => $statistic,
             'status' => 200,
         ]);
@@ -119,11 +114,12 @@ class AttendanceController extends Controller
             'entidad' => strtoupper($item->entidad ?? null),
             'entidad_aliada' => strtoupper($item->entidad_aliada ?? null),
             'asesor' => $item->asesor
-                ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
+                ? strtoupper($item->asesor->name.' '.$item->asesor->lastname.' '.$item->asesor->middlename)
                 : null,
             'beneficiarios' => $item->beneficiarios ?? null,
             'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
             'endDate' => Carbon::parse($item->endDate)->format('d/m/Y'),
+            'dates' => $item->dates ?? [],
             'modality' => $item->modality == 'v' ? 'VIRTUAL' : 'PRESENCIAL',
 
             'city' => $item->region->name ?? null,
@@ -138,14 +134,14 @@ class AttendanceController extends Controller
             'city_id' => $item->region->id ?? null,
             'province_id' => $item->provincia->id ?? null,
             'district_id' => $item->distrito->id ?? null,
-            'registrador' => $item->registrador ? strtoupper($item->registrador->name . ' ' . $item->registrador->lastname . ' ' . $item->registrador->middlename) : null,
+            'registrador' => $item->registrador ? strtoupper($item->registrador->name.' '.$item->registrador->lastname.' '.$item->registrador->middlename) : null,
 
             'totalAsesorias' => $item->total_asesorias ?? 0,
             'totalFormalizaciones' => $item->total_formalizaciones ?? 0,
 
             'attendance_list_count' => $item->attendanceList?->count() ?? 0,
             'slug' => $item->slug,
-            'created_at' => Carbon::parse($item->created_at)->format('d/m/Y H:i')
+            'created_at' => Carbon::parse($item->created_at)->format('d/m/Y H:i'),
 
         ];
     }
@@ -163,7 +159,6 @@ class AttendanceController extends Controller
 
     // 'description' => $item->description ?? null,
 
-
     public function allWithoutPagination(Request $request)
     {
 
@@ -177,7 +172,7 @@ class AttendanceController extends Controller
             'provincia',
             'distrito',
             'profile:id,user_id,name,lastname,middlename',
-            'asesor'
+            'asesor',
         ])
             ->withCount('attendanceList')
             ->search($search)
@@ -206,37 +201,37 @@ class AttendanceController extends Controller
                 'address' => $item->address ?? null,
                 'province_id' => $item->provincia->id,
                 'district_id' => $item->distrito->id,
-                'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
+                'profile' => strtoupper($item->profile->name.' '.$item->profile->lastname.' '.$item->profile->middlename),
                 'asesorId' => $item->asesor->id ?? null,
                 'asesor' => $item->asesor
-                    ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
+                    ? strtoupper($item->asesor->name.' '.$item->asesor->lastname.' '.$item->asesor->middlename)
                     : null,
                 'description' => $item->description ?? null,
-                'created_at' => Carbon::parse($item->created_at)->format('d-m-Y')
+                'created_at' => Carbon::parse($item->created_at)->format('d-m-Y'),
             ];
         });
 
         return response()->json(['data' => $transformedData]);
     }
 
-
     public function create(Request $request)
     {
-        // 🔥 VALIDACIÓN DE DUPLICIDAD (ANTES DE TODO)
         $exists = Attendance::where('eventsoffice_id', $request->eventsoffice_id)
-            ->where('startDate', $request->startDate)
-            ->where('endDate', $request->endDate)
             ->where('city_id', $request->city_id)
             ->where('province_id', $request->province_id)
             ->where('district_id', $request->district_id)
             ->where('title', $request->title)
+            ->where(function ($query) use ($request) {
+                $query->whereJsonContains('dates', $request->dates[0] ?? null)
+                    ->orWhereJsonContains('dates', $request->dates[count($request->dates) - 1] ?? null);
+            })
             ->exists();
 
         if ($exists) {
             return response()->json([
-                'status'  => 409,
-                'message' => "Ya existe una actividad registrada con los mismos datos:\n\n• Tipo de actividad\n• Nombre de la actividad\n• Fechas\n• Ubicación\n\nPor favor, verifica la información o comunícate con tu supervisor."
-            ],);
+                'status' => 409,
+                'message' => "Ya existe una actividad registrada con los mismos datos:\n\n• Tipo de actividad\n• Nombre de la actividad\n• Fechas\n• Ubicación\n\nPor favor, verifica la información o comunícate con tu supervisor.",
+            ]);
         }
 
         DB::beginTransaction();
@@ -259,11 +254,17 @@ class AttendanceController extends Controller
                 $data['asesorId'] = $data['asesorId'] ?? null;
             }
 
+            // 🔹 FECHAS: tomar primera y última del array dates
+            $dates = $request->dates ?? [];
+            $data['startDate'] = $dates[0] ?? null;
+            $data['endDate'] = $dates[count($dates) - 1] ?? null;
+            $data['dates'] = $dates;
+
             // 🔹 SLUG
             $slug = Str::slug($data['title']);
 
             if (Attendance::where('slug', $slug)->exists()) {
-                $slug .= '-' . now()->format('His');
+                $slug .= '-'.now()->format('His');
             }
 
             $data['slug'] = $slug;
@@ -274,20 +275,21 @@ class AttendanceController extends Controller
             DB::commit();
 
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Actividad creada correctamente',
-                'data'    => $attendance
+                'data' => $attendance,
             ]);
+
         } catch (\Throwable $e) {
             DB::rollBack();
 
             return response()->json([
+                'status' => 500,
                 'message' => 'Error al crear la actividad',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     public function update(Request $request, string $id)
     {
@@ -307,8 +309,8 @@ class AttendanceController extends Controller
 
             if ($exists) {
                 return response()->json([
-                    'status'  => 409,
-                    'message' => "Ya existe una actividad registrada con los mismos datos:\n\n• Tipo de actividad\n• Nombre de la actividad\n• Fechas\n• Ubicación\n• Modalidad\n\nPor favor, verifica la información o comunícate con tu supervisor."
+                    'status' => 409,
+                    'message' => "Ya existe una actividad registrada con los mismos datos:\n\n• Tipo de actividad\n• Nombre de la actividad\n• Fechas\n• Ubicación\n• Modalidad\n\nPor favor, verifica la información o comunícate con tu supervisor.",
                 ]);
             }
 
@@ -321,14 +323,14 @@ class AttendanceController extends Controller
                 if ($registro->user_id != $user->id || $registro->asesorId != $user->id) {
                     return response()->json([
                         'message' => 'No tiene permisos para editar este registro',
-                        'status'  => 403
+                        'status' => 403,
                     ]);
                 }
 
                 if (now()->greaterThan($registro->created_at->addHours(24))) {
                     return response()->json([
                         'message' => 'No puede editar el registro después de 24 horas de su creación',
-                        'status'  => 405
+                        'status' => 405,
                     ]);
                 }
 
@@ -349,18 +351,17 @@ class AttendanceController extends Controller
 
             return response()->json([
                 'message' => 'Registro actualizado con éxito',
-                'status'  => 200,
-                'data'    => $registro
+                'status' => 200,
+                'data' => $registro,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error de actualización',
-                'status'  => 500,
-                'error'   => $e->getMessage()
+                'status' => 500,
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     public function delete($id)
     {
@@ -370,12 +371,12 @@ class AttendanceController extends Controller
         if (in_array(5, $role_array) || in_array(1, $role_array)) {
             $registro = Attendance::findOrFail($id);
             $registro->delete();
+
             return response()->json(['message' => 'Registro eliminado con éxito', 'status' => 200]);
         } else {
             return response()->json(['message' => 'Sin acceso', 'status' => 403]);
         }
     }
-
 
     public function show($slug)
     {
@@ -383,17 +384,17 @@ class AttendanceController extends Controller
             ->where('slug', $slug)
             ->first();
 
-        if (!$attendance) {
+        if (! $attendance) {
             return response()->json([
                 'message' => 'Actividad no registrada.',
-                'status' => 404
+                'status' => 404,
             ], 404);
         }
 
         if ($attendance->finally == 1) {
             return response()->json([
                 'message' => 'Esta lista ya no está vigente.',
-                'status' => 422
+                'status' => 422,
             ], 422);
         }
 
@@ -419,10 +420,10 @@ class AttendanceController extends Controller
                     'name' => $attendance->asesor->name,
                     'lastname' => $attendance->asesor->lastname,
                     'middlename' => $attendance->asesor->middlename,
-                ] : null
+                ] : null,
 
             ],
-            'status' => 200
+            'status' => 200,
         ], 200);
     }
 
@@ -430,10 +431,10 @@ class AttendanceController extends Controller
     {
         $attendance = Attendance::where('slug', $request->slug)->first();
 
-        if (!$attendance) {
+        if (! $attendance) {
             return response()->json([
                 'message' => 'No se encontró la lista de asistencia proporcionada.',
-                'status' => 404
+                'status' => 404,
             ]);
         }
 
@@ -447,7 +448,7 @@ class AttendanceController extends Controller
         if ($existingUser) {
             return response()->json([
                 'message' => 'El documento ya está registrado en esta lista de asistencia.',
-                'status' => 400
+                'status' => 400,
             ]);
         }
 
@@ -461,7 +462,7 @@ class AttendanceController extends Controller
         return response()->json([
             'message' => 'Registrado exitosamente.',
             'status' => 200,
-            'data' => $user
+            'data' => $user,
         ]);
     }
 
@@ -471,7 +472,7 @@ class AttendanceController extends Controller
 
         $attendance = Attendance::where('slug', $slug)->first();
 
-        if (!$attendance) {
+        if (! $attendance) {
             return response()->json(['message' => 'Fair not found'], 404);
         }
 
@@ -482,7 +483,7 @@ class AttendanceController extends Controller
             'comercialactivity:id,name',
             'economicsector:id,name',
             'country:id,name',
-            'list'
+            'list',
         ])
             ->where('attendancelist_id', $attendance->id)
             ->searchApplicants($search)
@@ -493,33 +494,33 @@ class AttendanceController extends Controller
         $data->getCollection()->transform(function ($item) {
             return [
                 'id' => $item->id,
-                'typedocument_name'     => $item->typedocument->avr,
-                'socialReason'          => $item->socialReason ?? null,
-                'documentnumber'        => $item->documentnumber,
-                'economicsector_id'     => $item->economicsector->id ?? null,
-                'category_id'           => $item->rubro->id ?? null,
-                'comercialactivity_id'  => $item->comercialactivity->id ?? null,
-                'city_id'               => $item->city_id ?? null,
-                'province_id'           => $item->province_id ?? null,
-                'district_id'           => $item->district_id ?? null,
-                'country_id'            => $item->country_id ?? null,
-                'lastname'              => mb_strtoupper($item->lastname),
-                'middlename'            => mb_strtoupper($item->middlename),
-                'name'                  => mb_strtoupper($item->name),
-                'gender_name'           => $item->gender->avr,
-                'sick'                  => mb_strtoupper($item->sick ?? null),
-                'email'                 => $item->email ?? null,
-                'phone'                 => $item->phone ?? null,
-                'country_name'          => mb_strtoupper($item->country->name ?? null),
-                'is_asesoria'           => $item->is_asesoria,
-                'was_formalizado'       => $item->was_formalizado,
-                'typedocument_id'       => $item->typedocument->id,
-                'gender_id'             => $item->gender->id,
-                'ruc'                   => $item->ruc ?? null,
-                'comercialName'        => $item->comercialName ?? null,
-                'comercialActivity'     => $item->comercialActivity,
-                'mercado'               => $item->mercado,
-                'created_at'            => Carbon::parse($item->created_at)->format('d-m-Y H:i'),
+                'typedocument_name' => $item->typedocument->avr,
+                'socialReason' => $item->socialReason ?? null,
+                'documentnumber' => $item->documentnumber,
+                'economicsector_id' => $item->economicsector->id ?? null,
+                'category_id' => $item->rubro->id ?? null,
+                'comercialactivity_id' => $item->comercialactivity->id ?? null,
+                'city_id' => $item->city_id ?? null,
+                'province_id' => $item->province_id ?? null,
+                'district_id' => $item->district_id ?? null,
+                'country_id' => $item->country_id ?? null,
+                'lastname' => mb_strtoupper($item->lastname),
+                'middlename' => mb_strtoupper($item->middlename),
+                'name' => mb_strtoupper($item->name),
+                'gender_name' => $item->gender->avr,
+                'sick' => mb_strtoupper($item->sick ?? null),
+                'email' => $item->email ?? null,
+                'phone' => $item->phone ?? null,
+                'country_name' => mb_strtoupper($item->country->name ?? null),
+                'is_asesoria' => $item->is_asesoria,
+                'was_formalizado' => $item->was_formalizado,
+                'typedocument_id' => $item->typedocument->id,
+                'gender_id' => $item->gender->id,
+                'ruc' => $item->ruc ?? null,
+                'comercialName' => $item->comercialName ?? null,
+                'comercialActivity' => $item->comercialActivity,
+                'mercado' => $item->mercado,
+                'created_at' => Carbon::parse($item->created_at)->format('d-m-Y H:i'),
             ];
         });
 
@@ -534,15 +535,15 @@ class AttendanceController extends Controller
                 'provincia',
                 'distrito',
                 'profile:id,user_id,name,lastname,middlename',
-                'asesor'
+                'asesor',
             ])->get();
 
             foreach ($events as $event) {
                 Event::create([
-                    'id_pnte'    => $event->eventsoffice_id,
-                    'title'      => $event->title,
-                    'dateStart'  => Carbon::parse($event->startDate)->format('Y-m-d'),
-                    'dateEnd'    => Carbon::parse($event->endDate)->format('Y-m-d'),
+                    'id_pnte' => $event->eventsoffice_id,
+                    'title' => $event->title,
+                    'dateStart' => Carbon::parse($event->startDate)->format('Y-m-d'),
+                    'dateEnd' => Carbon::parse($event->endDate)->format('Y-m-d'),
                     'description' => "
 					<strong>Lugar:</strong>
 					<p>{$event->region->name} - {$event->provincia->name} - {$event->distrito->name}</p>
@@ -550,20 +551,20 @@ class AttendanceController extends Controller
 					<br>
 					<p style='margin-top: 10px !important;'>{$event->description}</p>
 				",
-                    'nameUser'   => $event->asesor ? $event->asesor->name . ' ' . $event->asesor->lastname : null,
-                    'user_id'   => 1
+                    'nameUser' => $event->asesor ? $event->asesor->name.' '.$event->asesor->lastname : null,
+                    'user_id' => 1,
                 ]);
             }
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Eventos migrados con éxito'
+                'message' => 'Eventos migrados con éxito',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
                 'message' => 'Error al migrar los eventos',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -577,21 +578,21 @@ class AttendanceController extends Controller
                 'provincia',
                 'distrito',
                 'profile:id,user_id,name,lastname,middlename',
-                'asesor'
+                'asesor',
             ])->find($id);
 
-            if (!$event) {
+            if (! $event) {
                 return response()->json([
                     'status' => 404,
-                    'message' => 'El evento no existe'
+                    'message' => 'El evento no existe',
                 ]);
             }
 
             Event::create([
-                'id_pnte'    => $event->eventsoffice_id,
-                'title'      => $event->title,
-                'dateStart'  => Carbon::parse($event->startDate)->format('Y-m-d'),
-                'dateEnd'    => Carbon::parse($event->endDate)->format('Y-m-d'),
+                'id_pnte' => $event->eventsoffice_id,
+                'title' => $event->title,
+                'dateStart' => Carbon::parse($event->startDate)->format('Y-m-d'),
+                'dateEnd' => Carbon::parse($event->endDate)->format('Y-m-d'),
                 'description' => "
 				<strong>Lugar:</strong>
 				<p>{$event->region->name} - {$event->provincia->name} - {$event->distrito->name}</p>
@@ -599,19 +600,19 @@ class AttendanceController extends Controller
 				<br>
 				<p style='margin-top: 10px !important;'>{$event->description}</p>
 			",
-                'nameUser'   => $event->asesor ? $event->asesor->name . ' ' . $event->asesor->lastname : null,
-                'user_id'    => $event->user_id,
+                'nameUser' => $event->asesor ? $event->asesor->name.' '.$event->asesor->lastname : null,
+                'user_id' => $event->user_id,
             ]);
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Evento migrado con éxito'
+                'message' => 'Evento migrado con éxito',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
                 'message' => 'Error al migrar el evento',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -620,10 +621,10 @@ class AttendanceController extends Controller
     {
         $event = Attendance::find($id);
 
-        if (!$event) {
+        if (! $event) {
             return response()->json([
                 'status' => 404,
-                'message' => 'El evento no existe'
+                'message' => 'El evento no existe',
             ]);
         }
 
@@ -632,7 +633,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'status' => 200,
-            'message' => 'El evento se marco como finalizado'
+            'message' => 'El evento se marco como finalizado',
         ]);
     }
 
@@ -646,13 +647,13 @@ class AttendanceController extends Controller
             return response()->json([
                 'message' => 'Datos del participante actualizados correctamente.',
                 'data' => $participant,
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al actualizar el participante.',
                 'error' => $e->getMessage(),
-                'status' => 500
+                'status' => 500,
             ], 500);
         }
     }
@@ -667,24 +668,21 @@ class AttendanceController extends Controller
 
             return response()->json([
                 'message' => 'Participante eliminado correctamente.',
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Ocurrió un error al intentar eliminar el participante.',
                 'error' => $e->getMessage(),
-                'status' => 500
+                'status' => 500,
             ], 500);
         }
     }
-
-
 
     // LISTA DE LOS ASESORES - EVENTOS ASIGNADOS A ELLOS
     public function eventsAssignedAdvisor()
     {
         $userId = Auth::id();
-
 
         // return $userId;
 
@@ -698,8 +696,8 @@ class AttendanceController extends Controller
         });
 
         return response()->json([
-            'data'   => $items,
-            'status' => 200
+            'data' => $items,
+            'status' => 200,
         ]);
     }
 
@@ -734,10 +732,10 @@ class AttendanceController extends Controller
             'people_id' => $item->asesor->id ?? null,
             'team' => $item->team ?? null,
             'asesor' => $item->asesor
-                ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
+                ? strtoupper($item->asesor->name.' '.$item->asesor->lastname.' '.$item->asesor->middlename)
                 : null,
             'description' => $item->description ?? null,
-            'created_at' => Carbon::parse($item->created_at)->format('d/m/Y')
+            'created_at' => Carbon::parse($item->created_at)->format('d/m/Y'),
 
         ];
     }
@@ -764,28 +762,28 @@ class AttendanceController extends Controller
         return response()->json([
             'status' => 200,
             'data' => [
-                'total_eventos'   => $totalEventos,
+                'total_eventos' => $totalEventos,
                 'total_inscritos' => $totalInscritos,
-                'total_regiones'  => $totalRegiones,
-            ]
+                'total_regiones' => $totalRegiones,
+            ],
         ]);
     }
 
     public function updateValuesSelect(Request $request)
     {
         $request->validate([
-            'slug'   => 'required|string',
-            'rowId'  => 'required|integer',
+            'slug' => 'required|string',
+            'rowId' => 'required|integer',
             'column' => 'required|string|in:is_asesoria,was_formalizado',
-            'value'  => 'nullable|in:s,n',
+            'value' => 'nullable|in:s,n',
         ]);
 
         // 1️⃣ Buscar evento por slug
         $attendance = Attendance::where('slug', $request->slug)->first();
 
-        if (!$attendance) {
+        if (! $attendance) {
             return response()->json([
-                'message' => 'Evento no encontrado'
+                'message' => 'Evento no encontrado',
             ], 404);
         }
 
@@ -794,9 +792,9 @@ class AttendanceController extends Controller
             ->where('attendancelist_id', $attendance->id)
             ->first();
 
-        if (!$row) {
+        if (! $row) {
             return response()->json([
-                'message' => 'Registro no encontrado para este evento'
+                'message' => 'Registro no encontrado para este evento',
             ], 404);
         }
 
@@ -807,10 +805,10 @@ class AttendanceController extends Controller
         return response()->json([
             'message' => 'Actualizado correctamente',
             'data' => [
-                'id'     => $row->id,
+                'id' => $row->id,
                 'column' => $request->column,
-                'value'  => $request->value
-            ]
+                'value' => $request->value,
+            ],
         ], 200);
     }
 
@@ -822,7 +820,7 @@ class AttendanceController extends Controller
 
         $my_email = Auth::user()->personalemail;
 
-        if (!empty($my_email)) {
+        if (! empty($my_email)) {
             $emailDestinoS[] = $my_email;
         }
 
@@ -838,7 +836,7 @@ class AttendanceController extends Controller
                 if (isset($data[$field]) && $data[$field] != $oldValue) {
                     $changes[$field] = [
                         'antes' => $oldValue,
-                        'ahora' => $data[$field]
+                        'ahora' => $data[$field],
                     ];
                 }
             }
@@ -849,7 +847,7 @@ class AttendanceController extends Controller
 
         $asesor = User::find($data['asesorId']);
 
-        $link = 'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $data['slug'];
+        $link = 'https://inscripcion.soporte-pnte.com/actividades-ugo/'.$data['slug'];
 
         Mail::mailer($mailer)
             ->to($emailDestinoS)
@@ -864,32 +862,29 @@ class AttendanceController extends Controller
         return response()->json(['ok' => true]);
     }
 
-
     public function eventsByRegion(Request $request)
     {
         $year = $request->get('year'); // ej: 2026
 
         return response()->json([
             'status' => true,
-            'data'   => City::numberEventsByRegion($year)
+            'data' => City::numberEventsByRegion($year),
         ]);
     }
-
-
 
     // REPORTES ****
     public function listEventsUgoByCity($city_id)
     {
         $permission = getPermission('eventos-ugo');
 
-        if (!$permission['hasPermission']) {
+        if (! $permission['hasPermission']) {
             return response()->json([
                 'message' => 'No tienes permiso para acceder a esta sección',
-                'status' => 403
+                'status' => 403,
             ]);
         }
 
-        $year  = 2026;
+        $year = 2026;
         $today = Carbon::today();
 
         // 🔹 Query base por ciudad
@@ -906,7 +901,7 @@ class AttendanceController extends Controller
                 'region',
                 'provincia',
                 'distrito',
-                'attendanceList'
+                'attendanceList',
             ])
             ->get()
             ->map(function ($item) {
@@ -946,10 +941,10 @@ class AttendanceController extends Controller
             ->first();
 
         return response()->json([
-            'data'      => $items,
+            'data' => $items,
             'statistic' => $statistic,
             'modalidad' => $modalidad,
-            'status'    => 200,
+            'status' => 200,
         ]);
     }
 
@@ -970,7 +965,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'status' => 200,
-            'message' => 'Registro actualizado correctamente.'
+            'message' => 'Registro actualizado correctamente.',
         ]);
     }
 
@@ -988,7 +983,7 @@ class AttendanceController extends Controller
                 return response()->json([
                     'success' => false,
                     'status' => 403,
-                    'message' => 'No se puede actualizar el participante después de 24 horas de su registro.'
+                    'message' => 'No se puede actualizar el participante después de 24 horas de su registro.',
                 ], 403);
             }
 
@@ -997,21 +992,21 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Participante actualizado correctamente.',
-                'data'    => $participant,
-                'status'  => 200
+                'data' => $participant,
+                'status' => 200,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
 
             return response()->json([
                 'success' => false,
-                'message' => 'Participante no encontrado.'
+                'message' => 'Participante no encontrado.',
             ], 404);
         } catch (\Exception $e) {
 
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error inesperado.',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -1027,7 +1022,7 @@ class AttendanceController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'No se puede eliminar el participante después de 24 horas de su creación.',
-                    'status'  => 403
+                    'status' => 403,
                 ], 403);
             }
 
@@ -1036,20 +1031,20 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Participante eliminado correctamente.',
-                'status'  => 200
+                'status' => 200,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
 
             return response()->json([
                 'success' => false,
-                'message' => 'Participante no encontrado.'
+                'message' => 'Participante no encontrado.',
             ], 404);
         } catch (\Exception $e) {
 
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error inesperado.',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

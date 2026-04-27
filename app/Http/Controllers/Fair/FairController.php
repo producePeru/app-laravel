@@ -4,35 +4,38 @@ namespace App\Http\Controllers\Fair;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateFairRequest;
-use Illuminate\Http\Request;
-use App\Models\Fair;
-use App\Models\Mype;
-use Illuminate\Support\Str;
-use Carbon\Carbon;
 use App\Mail\FeriasEmpresarialesMail;
+use App\Models\Fair;
 use App\Models\FairPostulate;
+use App\Models\Mype;
 use App\Models\SedAsistente;
-use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class FairController extends Controller
 {
-
     public function cyberWowList(Request $request)
     {
         $filters = [
-            'year'      =>  $request->input('year'),
-            'startDate' =>  $request->input('dateStart'),
-            'endDate'   =>  $request->input('dateEnd'),
-            'name'      =>  $request->input('name'),
-            'orderby'   =>  $request->input('orderby'),
+            'year' => $request->input('year'),
+            'startDate' => $request->input('dateStart'),
+            'endDate' => $request->input('dateEnd'),
+            'name' => $request->input('name'),
+            'orderby' => $request->input('orderby'),
         ];
 
-        $query = Fair::query();
+        $query = Fair::query()->with([
+            'fairType',
+            'modality',
+            'region',
+            'image',
+        ]);
 
         $query->where('fairtype_id', 2);
-
         $query->withItems($filters);
 
         $items = $query->paginate(100)->through(function ($item) {
@@ -40,19 +43,19 @@ class FairController extends Controller
         });
 
         return response()->json([
-            'data'   => $items,
-            'status' => 200
+            'data' => $items,
+            'status' => 200,
         ]);
     }
 
     public function mujerProduceList(Request $request)
     {
         $filters = [
-            'year'      =>  $request->input('year'),
-            'startDate' =>  $request->input('dateStart'),
-            'endDate'   =>  $request->input('dateEnd'),
-            'name'      =>  $request->input('name'),
-            'orderby'   =>  $request->input('orderby'),
+            'year' => $request->input('year'),
+            'startDate' => $request->input('dateStart'),
+            'endDate' => $request->input('dateEnd'),
+            'name' => $request->input('name'),
+            'orderby' => $request->input('orderby'),
         ];
 
         $query = Fair::query();
@@ -70,23 +73,23 @@ class FairController extends Controller
         });
 
         return response()->json([
-            'data'   => $items,
-            'status' => 200
+            'data' => $items,
+            'status' => 200,
         ]);
     }
 
     public function sedList(Request $request)
     {
         $filters = [
-            'year'      => $request->input('year'),
+            'year' => $request->input('year'),
             'startDate' => $request->input('dateStart'),
-            'endDate'   => $request->input('dateEnd'),
-            'name'      => $request->input('name'),
-            'orderby'   => $request->input('orderby'),
-            'date'      => $request->input('date'),
-            'city'      => $request->input('city'),
-            'province'  => $request->input('province'),
-            'district'  => $request->input('district'),
+            'endDate' => $request->input('dateEnd'),
+            'name' => $request->input('name'),
+            'orderby' => $request->input('orderby'),
+            'date' => $request->input('date'),
+            'city' => $request->input('city'),
+            'province' => $request->input('province'),
+            'district' => $request->input('district'),
         ];
 
         $query = Fair::query()
@@ -100,8 +103,8 @@ class FairController extends Controller
         });
 
         return response()->json([
-            'data'   => $items,
-            'status' => 200
+            'data' => $items,
+            'status' => 200,
         ]);
     }
 
@@ -113,9 +116,9 @@ class FairController extends Controller
             'title' => $item->title ?? null,
             'subTitle' => $item->subTitle ?? null,
             'description' => $item->description ? $item->description : null,
-            'description3'   => isset($item->description)
+            'description3' => isset($item->description)
                 ? (mb_strlen(strip_tags($item->description)) > 200
-                    ? mb_substr(strip_tags($item->description), 0, 200) . '...'
+                    ? mb_substr(strip_tags($item->description), 0, 200).'...'
                     : strip_tags($item->description))
                 : null,
             'fairtype_id' => $item->fairType->id ?? null,
@@ -126,6 +129,7 @@ class FairController extends Controller
             'endDate' => $item->endDate ?? null,
             'dateStartFormat' => $item->startDate ? Carbon::parse($item->startDate)->format('d/m/Y') : null,
             'dateEndFormat' => $item->endDate ? Carbon::parse($item->endDate)->format('d/m/Y') : null,
+            'dates' => $item->dates ?? [],
 
             'registered' => $item->postulantes_count,
 
@@ -141,23 +145,23 @@ class FairController extends Controller
             'msgEndForm' => $item->msgEndForm ? $item->msgEndForm : null,
             'msgEndForm3' => isset($item->msgEndForm)
                 ? (mb_strlen(strip_tags($item->msgEndForm)) > 200
-                    ? mb_substr(strip_tags($item->msgEndForm), 0, 200) . '...'
+                    ? mb_substr(strip_tags($item->msgEndForm), 0, 200).'...'
                     : strip_tags($item->msgEndForm))
                 : null,
             'msgSendEmail' => $item->msgSendEmail ? $item->msgSendEmail : null,
             'msgSendEmail3' => isset($item->msgSendEmail)
                 ? (mb_strlen(strip_tags($item->msgSendEmail)) > 200
-                    ? mb_substr(strip_tags($item->msgSendEmail), 0, 200) . '...'
+                    ? mb_substr(strip_tags($item->msgSendEmail), 0, 200).'...'
                     : strip_tags($item->msgSendEmail))
                 : null,
             'image' => $item->image ? [
-                'id'   => $item->image->id ?? null,
+                'id' => $item->image->id ?? null,
                 'name' => $item->image->name ?? null,
-                'url'  => $item->image->url ? url($item->image->url) : null,
+                'url' => $item->image->url ? url($item->image->url) : null,
             ] : [
-                'id'   => null,
+                'id' => null,
                 'name' => null,
-                'url'  => null,
+                'url' => null,
             ],
             'encuesta' => $item->sed_survey_count,
             'cooperativa' => $item->cooperativa ?? null,
@@ -180,7 +184,7 @@ class FairController extends Controller
             $count = 1;
 
             while (Fair::where('slug', $slug)->exists()) {
-                $slug = $originalSlug . '-' . $count;
+                $slug = $originalSlug.'-'.$count;
                 $count++;
             }
 
@@ -193,20 +197,19 @@ class FairController extends Controller
             return response()->json([
                 'data' => $fair,
                 'message' => 'Feria creada con éxito',
-                'status' => 200
+                'status' => 200,
             ], 201);
         } catch (\Exception $e) {
-            Log::error('Error al crear feria: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            Log::error('Error al crear feria: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'message' => 'Ocurrió un error al crear la feria',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     public function sedDetailsEvent($slug)
     {
@@ -218,7 +221,7 @@ class FairController extends Controller
             if ($fair) {
 
                 // 🔥 VALIDAR HASTA EL FINAL DEL DÍA usando "fecha"
-                if (!empty($fair->fecha)) {
+                if (! empty($fair->fecha)) {
 
                     $fechaEvento = Carbon::parse($fair->fecha)->endOfDay();
 
@@ -233,27 +236,27 @@ class FairController extends Controller
                             Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos </br>
                             para seguir fortaleciendo tu emprendimiento.
                             ',
-                                'status' => 404
-                            ]
+                                'status' => 404,
+                            ],
                         ]);
                     }
                 }
 
                 return response()->json([
                     'data' => [
-                        'slug'        => $fair->slug,
-                        'title'       => $fair->title,
-                        'subTitle'    => $fair->subTitle,
+                        'slug' => $fair->slug,
+                        'title' => $fair->title,
+                        'subTitle' => $fair->subTitle,
                         'description' => $fair->description,
-                        'modality'    => $fair->modality,
-                        'typeFair'    => $fair->fairtype_id,
-                        'fecha'       => $fair->fecha,
-                        'place'       => $fair->place,
-                        'schedule'    => $fair->hours,
-                        'cooperativa'   => $fair->cooperativa == 1 ? true : false,
-                        'textFooter' => $fair->textFooter ?? null
+                        'modality' => $fair->modality,
+                        'typeFair' => $fair->fairtype_id,
+                        'fecha' => $fair->fecha,
+                        'place' => $fair->place,
+                        'schedule' => $fair->hours,
+                        'cooperativa' => $fair->cooperativa == 1 ? true : false,
+                        'textFooter' => $fair->textFooter ?? null,
                     ],
-                    'status' => 200
+                    'status' => 200,
                 ]);
             }
 
@@ -261,18 +264,17 @@ class FairController extends Controller
                 'data' => [
                     'title' => 'No se encontró el evento.',
                     'message' => 'No existe una feria con este registro.',
-                    'status' => 404
-                ]
+                    'status' => 404,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener los detalles del evento.',
                 'error' => $e->getMessage(),
-                'status' => 500
+                'status' => 500,
             ], 500);
         }
     }
-
 
     public function showEventCount($slug)
     {
@@ -280,10 +282,10 @@ class FairController extends Controller
 
             $fair = Fair::where('slug', $slug)->first();
 
-            if (!$fair) {
+            if (! $fair) {
                 return response()->json([
                     'message' => 'Feria no encontrada.',
-                    'status' => 404
+                    'status' => 404,
                 ], 404);
             }
 
@@ -296,21 +298,19 @@ class FairController extends Controller
 
             return response()->json([
                 'data' => [
-                    'total'     => $total,
+                    'total' => $total,
                     'amountNow' => $amountNow,
                 ],
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error al obtener los datos.',
-                'error'   => $e->getMessage(),
-                'status'  => 500
+                'error' => $e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }
-
-
 
     public function update(Request $request, string $id)
     {
@@ -347,9 +347,6 @@ class FairController extends Controller
             return response()->json(['message' => 'Error al actualizar el registro', 'error' => $e->getMessage(), 'status' => 500], 500);
         }
     }
-
-
-
 
     /**
      * Remove the specified resource from storage.
@@ -414,24 +411,16 @@ class FairController extends Controller
                 'nameService' => $request->nameService,
                 // 'hasParticipatedFair' => $request->hasParticipatedFair,
                 'nameFair' => $request->nameFair,
-                'propagandamedia_id' => $request->propagandamedia_id
+                'propagandamedia_id' => $request->propagandamedia_id,
             ];
 
             FairPostulate::create($data);
 
-
-
             $mailer = 'digitalization';
-
 
             Mail::mailer($mailer)->to($request->input('email'))->send(new FeriasEmpresarialesMail($fair));
 
-
-
             // Mail::to($request->email)->send(new FeriasEmpresarialesMail($fair));
-
-
-
 
             return response()->json(['message' => 'Se le ha enviado un mensaje a su correo', 'status' => 200]);
         } else {
@@ -440,14 +429,13 @@ class FairController extends Controller
         }
     }
 
-
     public function fairApplicants(Request $request, $slugFair)
     {
         $search = $request->input('search');
 
         $fair = Fair::where('slug', $slugFair)->first();
 
-        if (!$fair) {
+        if (! $fair) {
             return response()->json(['message' => 'Fair not found'], 404);
         }
 
@@ -464,7 +452,7 @@ class FairController extends Controller
             'person.province:id,name',
             'person.district:id,name',
             'person.typedocument:id,name',
-            'person.gender:id,name'
+            'person.gender:id,name',
         ])
             ->where('fair_id', $fair->id)
             ->search($search)
@@ -520,7 +508,7 @@ class FairController extends Controller
                 'img3_url' => $item->mype->img3_path ? asset($item->mype->img3_path) : null,
 
                 'documentnumber' => $item->person->documentnumber,
-                'lastname' => $item->person->lastname . ' ' . $item->person->middlename,
+                'lastname' => $item->person->lastname.' '.$item->person->middlename,
                 // 'middlename' => $item->person->middlename,
                 'name' => $item->person->name,
                 'phone' => $item->person->phone,
@@ -536,7 +524,6 @@ class FairController extends Controller
                 'gender' => $item->person->gender->name ?? null,
 
                 'propagandamedia' => $mediaOptions[$item->propagandamedia_id] ?? ' ',
-
 
             ];
         });
@@ -557,7 +544,7 @@ class FairController extends Controller
         ) {
             $fairPostulate = FairPostulate::find($id);
 
-            if (!$fairPostulate) {
+            if (! $fairPostulate) {
                 return response()->json(['message' => 'Record not found'], 404);
             }
 
@@ -589,6 +576,7 @@ class FairController extends Controller
 
             if ($fairPostulate) {
                 $fairPostulate->delete();
+
                 return response()->json(['message' => 'Participante eliminado', 'status' => 200]);
             }
 
@@ -605,13 +593,13 @@ class FairController extends Controller
 
             return response()->json([
                 'message' => $fair->msgEndForm,
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener el mensaje del formulario.',
                 'error' => $e->getMessage(),
-                'status' => 500
+                'status' => 500,
             ]);
         }
     }

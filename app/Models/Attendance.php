@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Carbon\Carbon;
 
 class Attendance extends Model
 {
     use HasFactory;
-
     use SoftDeletes;
 
     protected $table = 'attendancelist';
@@ -28,15 +27,15 @@ class Attendance extends Model
         'district_id',
         'address',
 
-        'date',
+        'dates',
         'hora',
         'user_id',
         'updated_by',
-        // 'people_id',
         'asesorId',
         'description',
         'finally',
 
+        // 'people_id',
         // nuevos campos
         'theme',
         'entidad',
@@ -47,7 +46,11 @@ class Attendance extends Model
         'team',
 
         'totalAsesorias',
-        'totalFormalizaciones'
+        'totalFormalizaciones',
+    ];
+
+    protected $casts = [
+        'dates' => 'array', // Laravel hace JSON parse/stringify automático
     ];
 
     public function region()
@@ -93,8 +96,9 @@ class Attendance extends Model
     public function scopeSearch($query, $search)
     {
         if ($search) {
-            return $query->where('title', 'like', '%' . $search . '%');
+            return $query->where('title', 'like', '%'.$search.'%');
         }
+
         return $query;
     }
 
@@ -108,7 +112,7 @@ class Attendance extends Model
             'profile:id,user_id,name,lastname,middlename',
             'asesor',
             'pnte',
-            'registrador'
+            'registrador',
         ])
             ->withCount('attendanceList')
             ->withCount([
@@ -117,48 +121,48 @@ class Attendance extends Model
                 },
                 'attendanceList as total_formalizaciones' => function ($q) {
                     $q->where('was_formalizado', 's');
-                }
+                },
             ]);
 
         // 🔍 NOMBRE (title)
-        if (!empty($filters['name'])) {
-            $query->where('theme', 'like', '%' . $filters['name'] . '%');
+        if (! empty($filters['name'])) {
+            $query->where('theme', 'like', '%'.$filters['name'].'%');
         }
 
         // 👤 ASESOR
-        if (!empty($filters['asesor'])) {
+        if (! empty($filters['asesor'])) {
             $query->where('asesorId', $filters['asesor']);
         }
 
         // 🏢 MODALIDAD
-        if (!empty($filters['modalidad'])) {
+        if (! empty($filters['modalidad'])) {
             $modalidad = $filters['modalidad'] === 'presencial' ? 'p' : 'v';
             $query->where('modality', $modalidad);
         }
 
         // 📅 AÑO (startDate)
-        if (!empty($filters['year'])) {
+        if (! empty($filters['year'])) {
             $query->whereYear('startDate', $filters['year']);
         }
 
         // 📅 FECHA EXACTA (created_at)
-        if (!empty($filters['date'])) {
+        if (! empty($filters['date'])) {
             $query->whereDate('created_at', $filters['date']);
         }
 
         // 📅 RANGO (startDate)
-        if (!empty($filters['rangeDate']) && count($filters['rangeDate']) === 2) {
+        if (! empty($filters['rangeDate']) && count($filters['rangeDate']) === 2) {
             $query->whereBetween('startDate', [
                 $filters['rangeDate'][0],
-                $filters['rangeDate'][1]
+                $filters['rangeDate'][1],
             ]);
         }
 
         // 📅 RANGO (date)
-        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+        if (! empty($filters['dateStart']) && ! empty($filters['dateEnd'])) {
 
             $start = Carbon::createFromFormat('Y/m/d', $filters['dateStart'])->format('Y-m-d');
-            $end   = Carbon::createFromFormat('Y/m/d', $filters['dateEnd'])->format('Y-m-d');
+            $end = Carbon::createFromFormat('Y/m/d', $filters['dateEnd'])->format('Y-m-d');
 
             $query->where(function ($q) use ($start, $end) {
                 $q->whereDate('startDate', '<=', $end)
@@ -167,20 +171,20 @@ class Attendance extends Model
         }
 
         // 🌎 UBICACIÓN
-        if (!empty($filters['city'])) {
+        if (! empty($filters['city'])) {
             $query->where('city_id', $filters['city']);
         }
 
-        if (!empty($filters['province'])) {
+        if (! empty($filters['province'])) {
             $query->where('province_id', $filters['province']);
         }
 
-        if (!empty($filters['district'])) {
+        if (! empty($filters['district'])) {
             $query->where('district_id', $filters['district']);
         }
 
         // 🚦 STATUS (LO MÁS IMPORTANTE 🔥)
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
 
             $today = Carbon::today();
 
@@ -208,7 +212,7 @@ class Attendance extends Model
         }
 
         // 🔽 ORDEN
-        if (!empty($filters['orderby'])) {
+        if (! empty($filters['orderby'])) {
             switch ($filters['orderby']) {
                 case 1:
                     $query->orderBy('attendance_list_count', 'desc');
@@ -225,7 +229,6 @@ class Attendance extends Model
         }
     }
 
-
     // eventos asignados a un asesor
 
     public function scopeWithEvents($query, $filters)
@@ -237,7 +240,7 @@ class Attendance extends Model
             'distrito',
             'profile:id,user_id,name,lastname,middlename',
             'asesor',
-            'pnte'
+            'pnte',
         ])->withCount('attendanceList');
     }
 
