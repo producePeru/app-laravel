@@ -96,7 +96,7 @@ class Attendance extends Model
     public function scopeSearch($query, $search)
     {
         if ($search) {
-            return $query->where('title', 'like', '%'.$search.'%');
+            return $query->where('title', 'like', '%' . $search . '%');
         }
 
         return $query;
@@ -124,84 +124,100 @@ class Attendance extends Model
                 },
             ]);
 
-        // 🔍 NOMBRE (title)
-        if (! empty($filters['name'])) {
-            $query->where('theme', 'like', '%'.$filters['name'].'%');
+        // 🔍 NOMBRE
+        if (!empty($filters['name'])) {
+            $query->where('theme', 'like', '%' . $filters['name'] . '%');
         }
 
         // 👤 ASESOR
-        if (! empty($filters['asesor'])) {
+        if (!empty($filters['asesor'])) {
             $query->where('asesorId', $filters['asesor']);
         }
 
         // 🏢 MODALIDAD
-        if (! empty($filters['modalidad'])) {
+        if (!empty($filters['modalidad'])) {
             $modalidad = $filters['modalidad'] === 'presencial' ? 'p' : 'v';
             $query->where('modality', $modalidad);
         }
 
-        // 📅 AÑO (startDate)
-        if (! empty($filters['year'])) {
-            $query->whereYear('startDate', $filters['year']);
+        // 📅 AÑO (DESDE dates JSON)
+        if (!empty($filters['year'])) {
+
+            $year = $filters['year'];
+
+            $query->where(function ($q) use ($year) {
+
+                // inicio del array
+                $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(dates, '$[0]')) LIKE ?", ["$year%"])
+
+                    // fin del array (MariaDB compatible)
+                    ->orWhereRaw("
+                JSON_UNQUOTE(
+                    JSON_EXTRACT(dates, CONCAT('$[', JSON_LENGTH(dates) - 1, ']'))
+                ) LIKE ?
+              ", ["$year%"]);
+            });
         }
 
-        // 📅 FECHA EXACTA (created_at)
-        if (! empty($filters['date'])) {
-            $query->whereDate('created_at', $filters['date']);
+        // 📅 FECHA EXACTA
+        if (!empty($filters['date'])) {
+            $query->whereJsonContains('dates', $filters['date']);
         }
 
-        // 📅 RANGO (startDate)
-        if (! empty($filters['rangeDate']) && count($filters['rangeDate']) === 2) {
-            $query->whereBetween('startDate', [
-                $filters['rangeDate'][0],
-                $filters['rangeDate'][1],
-            ]);
-        }
+        // 📅 RANGO (dateStart / dateEnd desde payload)
+        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
 
-        // 📅 RANGO (date)
-        if (! empty($filters['dateStart']) && ! empty($filters['dateEnd'])) {
-
-            $start = Carbon::createFromFormat('Y/m/d', $filters['dateStart'])->format('Y-m-d');
-            $end = Carbon::createFromFormat('Y/m/d', $filters['dateEnd'])->format('Y-m-d');
+            $start = \Carbon\Carbon::createFromFormat('Y/m/d', $filters['dateStart'])->format('Y-m-d');
+            $end   = \Carbon\Carbon::createFromFormat('Y/m/d', $filters['dateEnd'])->format('Y-m-d');
 
             $query->where(function ($q) use ($start, $end) {
-                $q->whereDate('startDate', '<=', $end)
-                    ->whereDate('endDate', '>=', $start);
+
+                $q->whereRaw("
+                JSON_UNQUOTE(JSON_EXTRACT(dates, '$[0]')) <= ?
+                AND JSON_UNQUOTE(
+                    JSON_EXTRACT(dates, CONCAT('$[', JSON_LENGTH(dates) - 1, ']'))
+                ) >= ?
+            ", [$end, $start]);
             });
         }
 
         // 🌎 UBICACIÓN
-        if (! empty($filters['city'])) {
+        if (!empty($filters['city'])) {
             $query->where('city_id', $filters['city']);
         }
 
-        if (! empty($filters['province'])) {
+        if (!empty($filters['province'])) {
             $query->where('province_id', $filters['province']);
         }
 
-        if (! empty($filters['district'])) {
+        if (!empty($filters['district'])) {
             $query->where('district_id', $filters['district']);
         }
 
-        // 🚦 STATUS (LO MÁS IMPORTANTE 🔥)
-        if (! empty($filters['status'])) {
+        // 🚦 STATUS (USANDO dates)
+        if (!empty($filters['status'])) {
 
-            $today = Carbon::today();
+            $today = \Carbon\Carbon::today()->toDateString();
 
             switch ($filters['status']) {
 
                 case '1. PROGRAMACION DIARIA':
-                    $query->whereDate('created_at', $today);
+                    $query->whereJsonContains('dates', $today);
                     break;
 
                 case '2. PROGRAMACION CONSOLIDADA':
-                    $query->whereDate('created_at', '<', $today)
-                        ->whereDate('endDate', '>=', $today)
+                    $query->whereRaw("
+                    JSON_UNQUOTE(JSON_EXTRACT(dates, '$[0]')) >= ?
+                ", [$today])
                         ->having('attendance_list_count', 0);
                     break;
 
                 case '3. PENDIENTE DE RESULTADOS':
-                    $query->whereDate('endDate', '<', $today)
+                    $query->whereRaw("
+                    JSON_UNQUOTE(
+                        JSON_EXTRACT(dates, CONCAT('$[', JSON_LENGTH(dates) - 1, ']'))
+                    ) < ?
+                ", [$today])
                         ->having('attendance_list_count', 0);
                     break;
 
@@ -212,20 +228,33 @@ class Attendance extends Model
         }
 
         // 🔽 ORDEN
-        if (! empty($filters['orderby'])) {
+        if (!empty($filters['orderby'])) {
+
             switch ($filters['orderby']) {
                 case 1:
                     $query->orderBy('attendance_list_count', 'desc');
                     break;
+
                 case 2:
                     $query->orderBy('attendance_list_count', 'asc');
                     break;
+
                 case 3:
-                    $query->orderBy('finally', 'desc');
+                    $query->orderByRaw("
+                    JSON_UNQUOTE(
+                        JSON_EXTRACT(dates, CONCAT('$[', JSON_LENGTH(dates) - 1, ']'))
+                    ) DESC
+                ");
                     break;
             }
         } else {
-            $query->orderBy('created_at', 'desc');
+
+            // 🔥 POR DEFECTO: más reciente primero
+            $query->orderByRaw("
+            JSON_UNQUOTE(
+                JSON_EXTRACT(dates, CONCAT('$[', JSON_LENGTH(dates) - 1, ']'))
+            ) DESC
+        ");
         }
     }
 

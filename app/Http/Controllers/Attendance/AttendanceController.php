@@ -30,18 +30,37 @@ class AttendanceController extends Controller
             ]);
         }
 
+        // $filters = [
+        //     'name' => $request->input('name'),
+        //     'asesor' => $request->input('asesor'),
+        //     'modalidad' => $request->input('modalidad'),
+        //     'year' => $request->input('year'),
+        //     'date' => $request->input('date'),
+        //     'rangeDate' => $request->input('rangeDate'),
+        //     'city' => $request->input('city'),
+        //     'province' => $request->input('province'),
+        //     'district' => $request->input('district'),
+        //     'status' => $request->input('status'),
+        //     'orderby' => $request->input('orderby'),
+        // ];
+
         $filters = [
-            'name' => $request->input('name'),
-            'asesor' => $request->input('asesor'),
-            'modalidad' => $request->input('modalidad'),
-            'year' => $request->input('year'),
-            'date' => $request->input('date'),
-            'rangeDate' => $request->input('rangeDate'),
-            'city' => $request->input('city'),
-            'province' => $request->input('province'),
-            'district' => $request->input('district'),
-            'status' => $request->input('status'),
-            'orderby' => $request->input('orderby'),
+            'name'       => $request->input('name'),
+            'asesor'     => $request->input('asesor'),
+            'modalidad'  => $request->input('modalidad'),
+            'year'       => $request->input('year'),
+            'date'       => $request->input('date'),
+
+            // 🔥 NUEVO (LO QUE REALMENTE USAS)
+            'dateStart'  => $request->input('dateStart'),
+            'dateEnd'    => $request->input('dateEnd'),
+
+            'rangeDate'  => $request->input('rangeDate'),
+            'city'       => $request->input('city'),
+            'province'   => $request->input('province'),
+            'district'   => $request->input('district'),
+            'status'     => $request->input('status'),
+            'orderby'    => $request->input('orderby'),
         ];
 
         $user = Auth::user();
@@ -114,7 +133,7 @@ class AttendanceController extends Controller
             'entidad' => strtoupper($item->entidad ?? null),
             'entidad_aliada' => strtoupper($item->entidad_aliada ?? null),
             'asesor' => $item->asesor
-                ? strtoupper($item->asesor->name.' '.$item->asesor->lastname.' '.$item->asesor->middlename)
+                ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
                 : null,
             'beneficiarios' => $item->beneficiarios ?? null,
             'startDate' => Carbon::parse($item->startDate)->format('d/m/Y'),
@@ -134,7 +153,7 @@ class AttendanceController extends Controller
             'city_id' => $item->region->id ?? null,
             'province_id' => $item->provincia->id ?? null,
             'district_id' => $item->distrito->id ?? null,
-            'registrador' => $item->registrador ? strtoupper($item->registrador->name.' '.$item->registrador->lastname.' '.$item->registrador->middlename) : null,
+            'registrador' => $item->registrador ? strtoupper($item->registrador->name . ' ' . $item->registrador->lastname . ' ' . $item->registrador->middlename) : null,
 
             'totalAsesorias' => $item->total_asesorias ?? 0,
             'totalFormalizaciones' => $item->total_formalizaciones ?? 0,
@@ -201,10 +220,10 @@ class AttendanceController extends Controller
                 'address' => $item->address ?? null,
                 'province_id' => $item->provincia->id,
                 'district_id' => $item->distrito->id,
-                'profile' => strtoupper($item->profile->name.' '.$item->profile->lastname.' '.$item->profile->middlename),
+                'profile' => strtoupper($item->profile->name . ' ' . $item->profile->lastname . ' ' . $item->profile->middlename),
                 'asesorId' => $item->asesor->id ?? null,
                 'asesor' => $item->asesor
-                    ? strtoupper($item->asesor->name.' '.$item->asesor->lastname.' '.$item->asesor->middlename)
+                    ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
                     : null,
                 'description' => $item->description ?? null,
                 'created_at' => Carbon::parse($item->created_at)->format('d-m-Y'),
@@ -264,7 +283,7 @@ class AttendanceController extends Controller
             $slug = Str::slug($data['title']);
 
             if (Attendance::where('slug', $slug)->exists()) {
-                $slug .= '-'.now()->format('His');
+                $slug .= '-' . now()->format('His');
             }
 
             $data['slug'] = $slug;
@@ -279,7 +298,6 @@ class AttendanceController extends Controller
                 'message' => 'Actividad creada correctamente',
                 'data' => $attendance,
             ]);
-
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -296,26 +314,41 @@ class AttendanceController extends Controller
         try {
             $user = Auth::user();
 
-            // 🔥 VALIDACIÓN DE DUPLICIDAD (EXCLUYE EL MISMO ID)
+            // 🔥 NORMALIZAR DATES (SIN JSON_ENCODE)
+            $dates = $request->input('dates');
+
+            if (is_string($dates)) {
+                $decoded = json_decode($dates, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $dates = $decoded;
+                }
+            }
+
+            if (is_array($dates)) {
+                sort($dates); // 🔥 evita problemas de orden
+            }
+
+            // 🔥 VALIDACIÓN DUPLICADO (CON ASESOR)
             $exists = Attendance::where('eventsoffice_id', $request->eventsoffice_id)
-                ->where('startDate', $request->startDate)
-                ->where('endDate', $request->endDate)
+                ->where('title', $request->title)
                 ->where('city_id', $request->city_id)
                 ->where('province_id', $request->province_id)
                 ->where('district_id', $request->district_id)
-                ->where('title', $request->title)
-                ->where('id', '!=', $id) // ✅ CLAVE
+                ->where('asesorId', $request->asesorId)
+                ->where('id', '!=', $id)
                 ->exists();
 
             if ($exists) {
                 return response()->json([
                     'status' => 409,
-                    'message' => "Ya existe una actividad registrada con los mismos datos:\n\n• Tipo de actividad\n• Nombre de la actividad\n• Fechas\n• Ubicación\n• Modalidad\n\nPor favor, verifica la información o comunícate con tu supervisor.",
+                    'message' => "Ya existe una actividad con los mismos datos para este asesor.",
                 ]);
             }
 
             $registro = Attendance::findOrFail($id);
-            $data = $request->all();
+
+            // 🔥 SOLO CAMPOS EDITABLES
+            $data = $request->except(['slug']);
 
             /** 🔒 VALIDACIONES POR ROL **/
             if ($user->rol == 2) {
@@ -329,22 +362,29 @@ class AttendanceController extends Controller
 
                 if (now()->greaterThan($registro->created_at->addHours(24))) {
                     return response()->json([
-                        'message' => 'No puede editar el registro después de 24 horas de su creación',
+                        'message' => 'No puede editar después de 24h',
                         'status' => 405,
                     ]);
                 }
 
-                // 🚫 No puede cambiar estos campos
+                // 🚫 BLOQUEAR CAMPOS
                 unset($data['user_id'], $data['asesorId']);
             }
 
-            /**
-             * 🚫 NUNCA actualizar slug
-             */
-            unset($data['slug']);
-
             // 🔥 AUDITORÍA
             $data['updated_by'] = $user->id;
+
+            // 🔥 MANEJO CORRECTO DE DATES (SIN json_encode)
+            if ($request->has('dates')) {
+
+                if (is_array($dates)) {
+                    $data['dates'] = $dates; // ✅ Laravel lo convierte a JSON
+                } else {
+                    unset($data['dates']); // 🚫 evitar corrupción
+                }
+            } else {
+                unset($data['dates']); // 🚫 no tocar si no viene
+            }
 
             // 🔥 UPDATE
             $registro->update($data);
@@ -551,7 +591,7 @@ class AttendanceController extends Controller
 					<br>
 					<p style='margin-top: 10px !important;'>{$event->description}</p>
 				",
-                    'nameUser' => $event->asesor ? $event->asesor->name.' '.$event->asesor->lastname : null,
+                    'nameUser' => $event->asesor ? $event->asesor->name . ' ' . $event->asesor->lastname : null,
                     'user_id' => 1,
                 ]);
             }
@@ -600,7 +640,7 @@ class AttendanceController extends Controller
 				<br>
 				<p style='margin-top: 10px !important;'>{$event->description}</p>
 			",
-                'nameUser' => $event->asesor ? $event->asesor->name.' '.$event->asesor->lastname : null,
+                'nameUser' => $event->asesor ? $event->asesor->name . ' ' . $event->asesor->lastname : null,
                 'user_id' => $event->user_id,
             ]);
 
@@ -732,7 +772,7 @@ class AttendanceController extends Controller
             'people_id' => $item->asesor->id ?? null,
             'team' => $item->team ?? null,
             'asesor' => $item->asesor
-                ? strtoupper($item->asesor->name.' '.$item->asesor->lastname.' '.$item->asesor->middlename)
+                ? strtoupper($item->asesor->name . ' ' . $item->asesor->lastname . ' ' . $item->asesor->middlename)
                 : null,
             'description' => $item->description ?? null,
             'created_at' => Carbon::parse($item->created_at)->format('d/m/Y'),
@@ -847,7 +887,7 @@ class AttendanceController extends Controller
 
         $asesor = User::find($data['asesorId']);
 
-        $link = 'https://inscripcion.soporte-pnte.com/actividades-ugo/'.$data['slug'];
+        $link = 'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $data['slug'];
 
         Mail::mailer($mailer)
             ->to($emailDestinoS)
