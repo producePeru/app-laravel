@@ -1472,12 +1472,12 @@ SET sa.dni = up.documentnumber;
 -- SET date = DATE(startDate);
 
 
--- ALTER TABLE mp_eventos
--- ADD COLUMN user_id BIGINT UNSIGNED NULL AFTER aliado,
--- ADD CONSTRAINT fk_mp_eventos_user
--- FOREIGN KEY (user_id) REFERENCES users(id)
--- ON DELETE SET NULL
--- ON UPDATE CASCADE;
+ALTER TABLE mp_eventos
+ADD COLUMN user_id BIGINT UNSIGNED NULL AFTER aliado,
+ADD CONSTRAINT fk_mp_eventos_user
+FOREIGN KEY (user_id) REFERENCES users(id)
+ON DELETE SET NULL
+ON UPDATE CASCADE;
 
 
 ALTER TABLE attendancelist
@@ -1496,9 +1496,6 @@ ADD COLUMN reprogramado TEXT AFTER cancelado,
 ADD COLUMN unidad VARCHAR(10) DEFAULT 'MP' AFTER reprogramado;
 
 
-
-
-
 ALTER TABLE fairs
 ADD COLUMN visible TINYINT(1) DEFAULT 0 AFTER user_id,
 ADD COLUMN resultados TEXT AFTER visible,
@@ -1506,3 +1503,7 @@ ADD COLUMN cancelado TEXT AFTER resultados,
 ADD COLUMN reprogramado TEXT AFTER cancelado,
 ADD COLUMN unidad VARCHAR(10) AFTER reprogramado;
 
+-- en la base de datos cambiar fecha por date tipo date
+
+tabla fairs dates JSON
+mp_eventos dates JSON
