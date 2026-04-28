@@ -82,7 +82,7 @@ class MPEvent extends Model
 
         if (! empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('title', 'like', '%'.$filters['name'].'%');
+                $q->where('title', 'like', '%' . $filters['name'] . '%');
             });
         }
 
