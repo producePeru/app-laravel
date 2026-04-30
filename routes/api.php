@@ -246,6 +246,11 @@ Route::prefix('ugger')->group(function () {
     require __DIR__ . '/api/ugger.php';
 });
 
+// todos los eventos del PNTE
+Route::prefix('event-pnte')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/eventpnte.php';
+});
+
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
     // Route::get('list',                                  [UserController::class, 'index']);                  // v2.0
@@ -541,6 +546,9 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('sector-priorizado', [SelectController::class, 'getSectorPriorizado']);
     Route::get('cp-components', [SelectController::class, 'getCpComponents']);
     Route::get('cp-themes/{idComponent}', [SelectController::class, 'getThemes']);
+
+    Route::get('get-tipo-actividades', [SelectController::class, 'getTipoActividades']);
+    Route::get('get-nombre-actividades/{id}', [SelectController::class, 'getNombreActividades']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {

@@ -44,8 +44,10 @@ use App\Models\CyberwowLeader;
 use App\Models\Fair;
 use App\Models\FairType;
 use App\Models\MPCapacitador;
+use App\Models\NombreActividad;
 use App\Models\PropagandaMedia;
 use App\Models\RoleCompany;
+use App\Models\TipoActividad;
 use App\Models\TrainingDimension;
 use App\Models\TrainingMeta;
 use App\Models\TrainingSpecialist;
@@ -784,5 +786,40 @@ class SelectController extends Controller
         });
 
         return response()->json(['data' => $data]);
+    }
+
+
+
+    public function getTipoActividades()
+    {
+        // Filtrar por unidad = 1
+        $types = TipoActividad::where('unidad', 1)->get();
+
+        $data = $types->sortBy('name')->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id,
+            ];
+        })->values();
+
+        return response()->json(['data' => $data]);
+    }
+
+
+
+    public function getNombreActividades($id)
+    {
+        $districts = NombreActividad::where('tipo_actividad_id', $id)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $data = $districts->map(fn($item) => [
+            'label' => $item->name,
+            'value' => $item->id,
+        ])->values();
+
+        return response()->json([
+            'data' => $data,
+        ]);
     }
 }
