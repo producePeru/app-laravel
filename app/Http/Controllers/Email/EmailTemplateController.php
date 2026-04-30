@@ -9,6 +9,7 @@ use App\Models\EmailSend;
 use App\Models\EmailTemplate;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 
 class EmailTemplateController extends Controller
 {
@@ -140,6 +141,9 @@ class EmailTemplateController extends Controller
             'copia' => 'nullable|array',
             // 'copia.*' => 'email'
         ]);
+
+        // ✅ Cambiar configuración al mailer 'hostinger3k'
+        Config::set('mail.default', 'hostinger3k');
 
         $template = EmailTemplate::findOrFail($request->template_id);
         $emails = $request->emails;

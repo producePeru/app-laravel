@@ -852,6 +852,9 @@ class EventsController extends Controller
                     : null,
                 'component' => $event['component'] ?? null,
                 'entidad_aliada' => $event['entidad_aliada'] ?? null,
+
+                'asesor' => $event['asesor'] ?? null
+
             ];
         })->values();
 
