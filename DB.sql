@@ -79,7 +79,7 @@ INSERT INTO nombre_actividad (tipo_actividad_id, name) VALUES
 
 
 
-CREATE TABLE actividades (
+CREATE TABLE actividades_pnte (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     unidad TINYINT UNSIGNED NOT NULL,
     mes TINYINT UNSIGNED NOT NULL,
@@ -157,3 +157,7 @@ CREATE TABLE actividades (
         FOREIGN KEY (actualizado_por_id) REFERENCES users(id) ON DELETE SET NULL
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+
