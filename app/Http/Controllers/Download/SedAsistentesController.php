@@ -416,7 +416,21 @@ class SedAsistentesController extends Controller
 
                 foreach ($questions as $q) {
                     $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
-                    $sheet->setCellValue("{$col}1", $q);
+
+                    // MAYÚSCULAS
+                    $sheet->setCellValue("{$col}1", mb_strtoupper($q, 'UTF-8'));
+
+                    // WRAP TEXT
+                    $sheet->getStyle("{$col}1")->getAlignment()->setWrapText(true);
+
+                    // Alineación vertical (opcional)
+                    $sheet->getStyle("{$col}1")->getAlignment()->setVertical(
+                        \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                    );
+
+                    // 👉 ANCHO FIJO
+                    $sheet->getColumnDimension($col)->setWidth(40);
+
                     $colIndex++;
                 }
             }
