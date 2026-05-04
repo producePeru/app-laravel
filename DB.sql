@@ -157,3 +157,143 @@ CREATE TABLE actividades (
         FOREIGN KEY (actualizado_por_id) REFERENCES users(id) ON DELETE SET NULL
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- PARA LOS PARTICIPANTES
+
+CREATE TABLE sectores_economicos (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+CREATE TABLE rubros (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+CREATE TABLE actividades_comerciales (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    rubro_id BIGINT UNSIGNED NOT NULL,
+
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT fk_actividades_rubro
+        FOREIGN KEY (rubro_id)
+        REFERENCES rubros(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE cargo_empresa (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+CREATE TABLE participantes (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    -- Empresa
+    ruc CHAR(11) NOT NULL,
+    razon_social VARCHAR(255) NOT NULL,
+    nombre_comercial VARCHAR(255) NULL,
+
+    sector_economico_id BIGINT UNSIGNED NULL,
+    rubro_id BIGINT UNSIGNED NULL,
+    actividad_comercial_id BIGINT UNSIGNED NULL,
+
+    region_id BIGINT UNSIGNED NULL,
+    provincia_id BIGINT UNSIGNED NULL,
+    distrito_id BIGINT UNSIGNED NULL,
+
+    direccion VARCHAR(255) NULL,
+
+    -- Persona
+    tipo_documento_id BIGINT UNSIGNED NULL,
+    numero_dni VARCHAR(12) NULL,
+
+    apellido_paterno VARCHAR(150) NULL,
+    apellido_materno VARCHAR(150) NULL,
+    nombres VARCHAR(150) NULL,
+
+    genero_id BIGINT UNSIGNED NULL,
+    discapacidad TINYINT(1) DEFAULT 0,
+
+    celular CHAR(9) NULL,
+    correo_electronico VARCHAR(255) NULL,
+
+    cargo_empresa_id BIGINT UNSIGNED NULL,
+
+    fecha_nacimiento DATE NULL,
+    edad TINYINT UNSIGNED NULL,
+
+    -- Timestamps
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    -- 🔗 FOREIGN KEYS
+    CONSTRAINT fk_empresa_sector
+        FOREIGN KEY (sector_economico_id)
+        REFERENCES sectores_economicos(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_empresa_rubro
+        FOREIGN KEY (rubro_id)
+        REFERENCES rubros(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_empresa_actividad
+        FOREIGN KEY (actividad_comercial_id)
+        REFERENCES actividades_comerciales(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_empresa_region
+        FOREIGN KEY (region_id)
+        REFERENCES cities(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_empresa_provincia
+        FOREIGN KEY (provincia_id)
+        REFERENCES provinces(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_empresa_distrito
+        FOREIGN KEY (distrito_id)
+        REFERENCES districts(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_empresa_tipo_doc
+        FOREIGN KEY (tipo_documento_id)
+        REFERENCES typedocuments(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_empresa_genero
+        FOREIGN KEY (genero_id)
+        REFERENCES genders(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_empresa_cargo
+        FOREIGN KEY (cargo_empresa_id)
+        REFERENCES cargo_empresa(id)
+        ON DELETE SET NULL
+);
