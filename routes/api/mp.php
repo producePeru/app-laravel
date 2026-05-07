@@ -82,6 +82,10 @@ Route::controller(FormularioPublicoController::class)->group(function () {
     Route::post('cancel-my-advice', 'cancelMyAdvice');
 
     Route::post('register-participant-new', 'registerParticipantNew');
+
+    Route::get('show-by-slug/{slug}', 'showBySlug');
+
+    Route::post('marcar-asistencia/{slug}', 'marcarAsistencia');
 });
 
 // mp

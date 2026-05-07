@@ -1604,4 +1604,119 @@ class FormularioPublicoController extends Controller
             ], 500);
         }
     }
+
+    public function showBySlug(string $slug)
+    {
+        $event = MPEvent::with([
+            'city:id,name',
+            'provincia:id,name',
+            'distrito:id,name',
+        ])
+            ->where('slug', $slug)
+            ->select([
+                'id',
+                'title',
+                'dates',
+                'hourStart',
+                'hourEnd',
+                'city_id',
+                'province_id',
+                'district_id',
+            ])
+            ->first();
+
+        if (!$event) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Evento no encontrado.',
+            ], 404);
+        }
+
+        // ✅ Total inscritos
+        $totalParticipantes = MPAttendance::where('event_id', $event->id)->count();
+
+        // ✅ Total que ya asistieron (attendance = 1)
+        $totalAsistentes = MPAttendance::where('event_id', $event->id)
+            ->where('attendance', 1)
+            ->count();
+
+        // ✅ Fechas formateadas a dd/mm/yyyy
+        $fechasFormateadas = collect($event->dates)
+            ->map(fn($date) => Carbon::parse($date)->format('d/m/Y'))
+            ->values();
+
+        // ✅ Horario formateado a HH:mm
+        $horario = null;
+        if ($event->hourStart && $event->hourEnd) {
+            $horario = Carbon::parse($event->hourStart)->format('H:i') .
+                ' - ' .
+                Carbon::parse($event->hourEnd)->format('H:i');
+        }
+
+        return response()->json([
+            'status' => 200,
+            'data'   => [
+                'title'               => $event->title,
+                'dates'               => $fechasFormateadas,
+                'horario'             => $horario,
+                'region'              => $event->city->name      ?? null,
+                'provincia'           => $event->provincia->name ?? null,
+                'distrito'            => $event->distrito->name  ?? null,
+                'total_participantes' => $totalParticipantes,
+                'total_asistentes'    => $totalAsistentes,
+            ],
+        ]);
+    }
+
+    public function marcarAsistencia(Request $request, string $slug)
+    {
+        $request->validate([
+            'doc_number' => 'required|max:20',
+        ]);
+
+        // ✅ Buscar el evento por slug
+        $event = MPEvent::where('slug', $slug)->first();
+
+        if (!$event) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Evento no encontrado.',
+            ]);
+        }
+
+        // ✅ Buscar participante por doc_number
+        $participant = MPParticipant::where('doc_number', $request->doc_number)->first();
+
+        if (!$participant) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Participante no encontrado con ese número de documento.',
+            ], 404);
+        }
+
+        // ✅ Buscar asistencia por event_id + participant_id
+        $attendance = MPAttendance::where('event_id', $event->id)
+            ->where('participant_id', $participant->id)
+            ->first();
+
+        if (!$attendance) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'El participante no está registrado en este evento.',
+            ], 404);
+        }
+
+        // ✅ Setear attendance = 1
+        $attendance->update(['attendance' => 1]);
+
+        return response()->json([
+            'status'  => 200,
+            'message' => 'Asistencia registrada correctamente.',
+            'data'    => [
+                'nombres'    => $participant->names . ' ' . $participant->last_name . ' ' . $participant->middle_name,
+                'doc_number' => $participant->doc_number,
+                'attendance' => $attendance->attendance,
+            ],
+        ]);
+    }
 }
