@@ -1072,32 +1072,39 @@ class EventsController extends Controller
     public function aprobarEvento(Request $request, $tabla, $id)
     {
         try {
+
             $model = match ($tabla) {
                 'attendancelist' => \App\Models\Attendance::findOrFail($id),
-                'mp_eventos' => \App\Models\MPEvent::findOrFail($id),
-                'fairs' => \App\Models\Fair::findOrFail($id),
-                default => null,
+                'mp_eventos'     => \App\Models\MPEvent::findOrFail($id),
+                'fairs'          => \App\Models\Fair::findOrFail($id),
+                default          => null,
             };
 
-            if (! $model) {
+            if (!$model) {
                 return response()->json([
-                    'status' => 404,
+                    'status'  => 404,
                     'message' => 'Tabla no reconocida',
-                ]);
+                ], 404);
             }
 
-            $model->visible = 1;
+            // 🔥 Toggle 1 ↔ 0
+            $model->visible = $model->visible == 1 ? 0 : 1;
+
             $model->save();
 
             return response()->json([
-                'status' => 200,
-                'message' => 'Evento aprobado correctamente',
+                'status'  => 200,
+                'message' => $model->visible
+                    ? 'Evento aprobado correctamente'
+                    : 'Evento ocultado correctamente',
+                'visible' => $model->visible
             ]);
         } catch (\Throwable $e) {
+
             return response()->json([
-                'status' => 500,
-                'message' => 'Error al aprobar el evento',
-                'error' => $e->getMessage(),
+                'status'  => 500,
+                'message' => 'Error al actualizar el evento',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
