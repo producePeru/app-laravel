@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class EmpresarioActividad extends Model
+{
+    use HasFactory;
+
+    protected $table = 'empresario_actividad';
+
+    protected $fillable = [
+        'actividad_id',
+        'slug',
+        'empresario_id',
+        'numero_dni',
+        'fecha_asistencia'
+    ];
+
+    public function empresario()
+    {
+        return $this->belongsTo(Empresario::class, 'empresario_id');
+    }
+}

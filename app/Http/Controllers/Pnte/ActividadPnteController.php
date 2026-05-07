@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pnte;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ActividadPnte;
+use App\Models\EmpresarioActividad;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,8 @@ class ActividadPnteController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $user = Auth::user();
+
         $validated = $request->validate([
             'unidad'               => 'required|integer|in:1,2,3,4,5',
             'fechas'               => 'required|array|min:1',
@@ -30,12 +33,17 @@ class ActividadPnteController extends Controller
             'lugar'                => 'nullable|string|max:255',
             'entidad_organizadora' => 'nullable|string|max:255',
             'entidad_aliada'       => 'nullable|string|max:255',
-            'representante_id'     => 'nullable|exists:users,id',
+            'representante_id'     => $user->rol == 1 ? 'nullable|exists:users,id' : 'sometimes',
             'requiere_pasaje'      => 'required|boolean',
             'monto_gasto'          => 'nullable|max:255',
             'mypes_beneficiadas'   => 'nullable|integer|min:0',
             'modalidad_id'         => 'nullable|exists:modalities,id',
         ]);
+
+        // ✅ Si rol == 2 → ignorar lo que venga y forzar su propio ID
+        $validated['representante_id'] = $user->rol == 1
+            ? ($validated['representante_id'] ?? null)
+            : $user->id;
 
         // ✅ Mes: extraer el mes de la fecha más antigua del array
         $fechaMinima = collect($validated['fechas'])
@@ -43,12 +51,11 @@ class ActividadPnteController extends Controller
             ->sortBy(fn($d) => $d->timestamp)
             ->first();
 
-        $validated['mes']          = (int) $fechaMinima->format('n'); // 1-12 sin cero
-        $validated['cantidad_dias'] = count($validated['fechas']);     // bonus: setear cantidad_dias
+        $validated['mes']           = (int) $fechaMinima->format('n');
+        $validated['cantidad_dias'] = count($validated['fechas']);
 
         try {
             $actividad = DB::transaction(function () use ($validated) {
-
                 $validated['slug']              = $this->generateUniqueSlug($validated);
                 $validated['registrado_por_id'] = Auth::id();
 
@@ -107,16 +114,21 @@ class ActividadPnteController extends Controller
     {
         $actividad = ActividadPnte::findOrFail($id);
 
-        // ✅ VALIDAR: solo se puede editar hasta las 23:59 del día de creación
-        $limiteEdicion = Carbon::parse($actividad->created_at)->endOfDay();
+        // ✅ Verificar rol del usuario autenticado
+        $userRol = Auth::user()->rol; // ajusta según tu campo de rol
 
-        if (Carbon::now()->gt($limiteEdicion)) { // 👈 era $limitEdicion (faltaba la 'e')
-            return response()->json([
-                'status'  => 403,
-                'message' => 'No es posible editar esta actividad. El plazo de edición venció el ' .
-                    Carbon::parse($actividad->created_at)->format('d/m/Y') . ' a las 23:59. ' .
-                    'Por favor, contacte con su supervisor.',
-            ], 403);
+        // 🔒 Solo rol 2 tiene restricción de tiempo
+        if ($userRol == 2) {
+            $limiteEdicion = Carbon::parse($actividad->created_at)->endOfDay();
+
+            if (Carbon::now()->gt($limiteEdicion)) {
+                return response()->json([
+                    'status'  => 403,
+                    'message' => 'No es posible editar esta actividad. El plazo de edición venció el ' .
+                        Carbon::parse($actividad->created_at)->format('d/m/Y') . ' a las 23:59. ' .
+                        'Por favor, contacte con su supervisor.',
+                ]);
+            }
         }
 
         $validated = $request->validate([
@@ -134,7 +146,7 @@ class ActividadPnteController extends Controller
             'entidad_aliada'       => 'nullable|string|max:255',
             'representante_id'     => 'nullable|exists:users,id',
             'requiere_pasaje'      => 'required|boolean',
-            'monto_gasto'          => 'nullable|string|max:255',
+            'monto_gasto'          => 'nullable|max:255',
             'mypes_beneficiadas'   => 'nullable|integer|min:0',
             'modalidad_id'         => 'nullable|exists:modalities,id',
             'total_participantes'  => 'nullable|integer|min:0',
@@ -189,8 +201,10 @@ class ActividadPnteController extends Controller
             'rangeDate.*'       => 'required|date_format:Y-m-d',
             'city'              => 'nullable|integer|exists:cities,id',
             'tipo_actividad_id' => 'nullable|integer|exists:tipo_actividad,id',
+            'asesor'            => 'nullable|integer|exists:users,id'
         ]);
 
+        $user     = Auth::user();
         $pageSize = $request->input('pageSize', 10);
 
         $actividades = ActividadPnte::with([
@@ -236,6 +250,11 @@ class ActividadPnteController extends Controller
             ])
             ->where('unidad', 1)
 
+            // ✅ ROL: si es rol 2 solo ve sus propias actividades
+            ->when($user->rol == 2, function ($q) use ($user) {
+                $q->where('representante_id', $user->id);
+            })
+
             // ✅ FILTRO: year
             ->when($request->filled('year'), function ($q) use ($request) {
                 $year = $request->input('year');
@@ -246,15 +265,13 @@ class ActividadPnteController extends Controller
             ->when($request->filled('rangeDate'), function ($q) use ($request) {
                 [$from, $to] = $request->input('rangeDate');
 
-                $current = \Carbon\Carbon::parse($from);
-                $end     = \Carbon\Carbon::parse($to);
+                $current = Carbon::parse($from);
+                $end     = Carbon::parse($to);
 
                 $q->where(function ($query) use ($current, $end) {
                     while ($current->lte($end)) {
                         $fecha = $current->format('Y-m-d');
-
-                        $query->orWhereJsonContains('fechas', $fecha);
-
+                        $query->orWhere('fechas', 'LIKE', "%{$fecha}%");
                         $current->addDay();
                     }
                 });
@@ -270,9 +287,14 @@ class ActividadPnteController extends Controller
                 $q->where('tipo_actividad_id', $request->input('tipo_actividad_id'));
             })
 
+            // ✅ FILTRO: asesor → representante_id (solo aplica si rol == 1)
+            ->when($request->filled('asesor') && $user->rol == 1, function ($q) use ($request) {
+                $q->where('representante_id', $request->input('asesor'));
+            })
+
             ->paginate($pageSize, ['*'], 'page', $request->input('page', 1));
 
-        // ✅ ORDENAR por la fecha más reciente dentro del JSON (en PHP post-query)
+        // ✅ ORDENAR por la fecha más reciente dentro del JSON
         $actividades->setCollection(
             $actividades->getCollection()
                 ->sortByDesc(function ($actividad) {
@@ -289,20 +311,206 @@ class ActividadPnteController extends Controller
             'status'  => 200,
             'message' => 'Actividades obtenidas correctamente.',
             'data'    => [
-                'current_page'  => $actividades->currentPage(),
-                'data'          => $actividades->items(),
+                'current_page'   => $actividades->currentPage(),
+                'data'           => $actividades->items(),
                 'first_page_url' => $actividades->url(1),
-                'from'          => $actividades->firstItem(),
-                'last_page'     => $actividades->lastPage(),
-                'last_page_url' => $actividades->url($actividades->lastPage()),
-                'links'         => $actividades->linkCollection()->toArray(),
-                'next_page_url' => $actividades->nextPageUrl(),
-                'path'          => $actividades->path(),
-                'per_page'      => $actividades->perPage(),
-                'prev_page_url' => $actividades->previousPageUrl(),
-                'to'            => $actividades->lastItem(),
-                'total'         => $actividades->total(),
+                'from'           => $actividades->firstItem(),
+                'last_page'      => $actividades->lastPage(),
+                'last_page_url'  => $actividades->url($actividades->lastPage()),
+                'links'          => $actividades->linkCollection()->toArray(),
+                'next_page_url'  => $actividades->nextPageUrl(),
+                'path'           => $actividades->path(),
+                'per_page'       => $actividades->perPage(),
+                'prev_page_url'  => $actividades->previousPageUrl(),
+                'to'             => $actividades->lastItem(),
+                'total'          => $actividades->total(),
             ],
         ]);
+    }
+
+    public function reprogramar(Request $request, int $id): JsonResponse
+    {
+        $actividad = ActividadPnte::findOrFail($id);
+
+        $validated = $request->validate([
+            'fechas'       => 'required|array|min:1',
+            'fechas.*'     => 'required|date_format:Y-m-d',
+            'reprogramado' => 'required|string|max:255',
+        ]);
+
+        // ✅ Mes: extraer el mes de la fecha más antigua
+        $fechaMinima = collect($validated['fechas'])
+            ->map(fn($f) => Carbon::parse($f))
+            ->sortBy(fn($d) => $d->timestamp)
+            ->first();
+
+        try {
+            DB::transaction(function () use ($actividad, $validated, $fechaMinima) {
+                $actividad->update([
+                    'fechas'               => $validated['fechas'],
+                    'mes'                  => (int) $fechaMinima->format('n'),
+                    'cantidad_dias'        => count($validated['fechas']),
+                    'reprogramado'         => $validated['reprogramado'],
+                    'reprogramado_por_id'  => Auth::id(),
+                ]);
+            });
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Actividad reprogramada correctamente.',
+                'data'    => $actividad->fresh()->load([
+                    'tipoActividad',
+                    'nombreActividad',
+                    'regionRel',
+                    'provinciaRel',
+                    'distritoRel',
+                    'representante',
+                    'modalidad',
+                ]),
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al reprogramar la actividad.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function cancelar(Request $request, int $id): JsonResponse
+    {
+        $actividad = ActividadPnte::findOrFail($id);
+
+        $validated = $request->validate([
+            'cancelado' => 'required|string|max:255',
+        ]);
+
+        try {
+            DB::transaction(function () use ($actividad, $validated) {
+                $actividad->update([
+                    'cancelado'        => $validated['cancelado'],
+                    'cancelado_por_id' => Auth::id(),
+                ]);
+            });
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Actividad cancelada correctamente.',
+                'data'    => $actividad->fresh()->load([
+                    'tipoActividad',
+                    'nombreActividad',
+                    'regionRel',
+                    'provinciaRel',
+                    'distritoRel',
+                    'representante',
+                    'modalidad',
+                ]),
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cancelar la actividad.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function inscritosPorSlug(Request $request, $slug)
+    {
+        try {
+
+            $perPage = $request->input('per_page', 10);
+
+            $event = ActividadPnte::select(
+                'id',
+                'slug',
+                'tema',
+                'fechas'
+            )
+                ->where('slug', $slug)
+                ->first();
+
+            $query = EmpresarioActividad::with([
+                'empresario',
+                'empresario.pais',
+                'empresario.region',
+                'empresario.provincia',
+                'empresario.distrito',
+                'empresario.sectorEconomico',
+                'empresario.rubro',
+                'empresario.tipoDocumento',
+                'empresario.genero'
+            ])
+                ->where('slug', $slug)
+                ->orderBy('created_at', 'desc'); // 🔥 recientes primero
+
+            $data = $query->paginate($perPage);
+
+            // 🔥 Transformamos la data (flat + limpio)
+            $data->getCollection()->transform(function ($item) {
+
+                $e = $item->empresario;
+
+                return [
+                    'actividad_id' => $item->actividad_id,
+                    'slug' => $item->slug,
+                    'fecha_asistencia' => $item->fecha_asistencia,
+                    'numero_dni' => $item->numero_dni,
+
+                    // 🔥 Datos del empresario
+                    'ruc' => $e->ruc,
+                    'razon_social'      => mb_strtoupper($e->razon_social ?? '', 'UTF-8'),
+                    'nombre_comercial'  => mb_strtoupper($e->nombre_comercial ?? '', 'UTF-8'),
+                    'sector_economico_id' => $e->sector_economico_id,
+                    'sector_economico_nombre' => mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8'),
+                    'rubro_id' => $e->rubro_id,
+                    'rubro_nombre' => mb_strtoupper($e->rubro?->name ?? '', 'UTF-8'),
+                    'actividad_comercial_id' => $e->actividad_comercial_id,
+                    'actividad_comercial_nombre' => mb_strtoupper($e->actividad_comercial_nombre ?? '', 'UTF-8'),
+
+                    'region_id' => $e->region_id,
+                    'region_nombre' => $e->region?->name,
+                    'provincia_id' => $e->provincia_id,
+                    'provincia_nombre' => $e->provincia?->name,
+                    'distrito_id' => $e->distrito_id,
+                    'distrito_nombre' => $e->distrito?->name,
+                    'direccion' => mb_strtoupper($e->direccion ?? '', 'UTF-8'),
+
+                    'pais_id' => $e->pais_id,
+                    'pais_nombre' => $e->pais?->name,
+                    'tipo_documento_id' => $e->tipo_documento_id,
+                    'tipo_documento_nombre' => $e->tipoDocumento?->avr,
+                    'numero_dni_empresario' => $e->numero_dni,
+
+                    'apellido_paterno' => mb_strtoupper($e->apellido_paterno ?? '', 'UTF-8'),
+                    'apellido_materno' => mb_strtoupper($e->apellido_materno ?? '', 'UTF-8'),
+                    'nombres'          => mb_strtoupper($e->nombres ?? '', 'UTF-8'),
+
+                    'genero_id' => $e->genero_id,
+                    'genero_avr' => $e->genero?->avr,
+                    'discapacidad' => $e->discapacidad,
+                    'discapacidad_nombre' => $e->discapacidad ? 'SI' : 'NO',
+                    'celular' => $e->celular,
+                    'correo_electronico' => $e->correo_electronico,
+
+                    'cargo_empresa_id' => $e->cargo_empresa_id,
+                    'fecha_nacimiento' => $e->fecha_nacimiento,
+                    'edad' => $e->edad,
+                    'como_entero' => $e->como_entero,
+                ];
+            });
+
+            return response()->json([
+                'status' => 200,
+                'data' => $data,
+                'event' => $event
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al obtener inscritos',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

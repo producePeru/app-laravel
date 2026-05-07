@@ -251,6 +251,10 @@ Route::prefix('event-pnte')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/eventpnte.php';
 });
 
+Route::prefix('event-pnte-public')->group(function () {
+    require __DIR__ . '/api/eventpnte.php';
+});
+
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
     // Route::get('list',                                  [UserController::class, 'index']);                  // v2.0

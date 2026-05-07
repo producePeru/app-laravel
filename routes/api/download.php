@@ -49,7 +49,7 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
 
     Route::get('attendance-mercado/{slug}', 'exportFortaleceTuMercado');
 
-    Route::post('attendance/{slug}', 'exportRegistrantsUgoEvents');
+    Route::POST('attendance/{slug}', 'exportInscritosPorSlug');
 });
 
 
