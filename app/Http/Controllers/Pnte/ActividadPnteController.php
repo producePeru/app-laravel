@@ -216,6 +216,7 @@ class ActividadPnteController extends Controller
             'representante:id,name,lastname,middlename',
             'modalidad:id,name',
         ])
+
             ->select([
                 'id',
                 'unidad',
@@ -248,6 +249,16 @@ class ActividadPnteController extends Controller
                 'actualizado_por_id',
                 'created_at',
             ])
+
+            // ✅ DESPUÉS DEL select
+            ->addSelect([
+                'inscritos' => EmpresarioActividad::selectRaw('COUNT(*)')
+                    ->whereColumn(
+                        'empresario_actividad.slug',
+                        'actividades_pnte.slug'
+                    )
+            ])
+
             ->where('unidad', 1)
 
             // ✅ ROL: si es rol 2 solo ve sus propias actividades
@@ -257,21 +268,32 @@ class ActividadPnteController extends Controller
 
             // ✅ FILTRO: year
             ->when($request->filled('year'), function ($q) use ($request) {
+
                 $year = $request->input('year');
+
                 $q->where('fechas', 'LIKE', "%{$year}%");
             })
 
             // ✅ FILTRO: rangeDate
             ->when($request->filled('rangeDate'), function ($q) use ($request) {
+
                 [$from, $to] = $request->input('rangeDate');
 
                 $current = Carbon::parse($from);
                 $end     = Carbon::parse($to);
 
                 $q->where(function ($query) use ($current, $end) {
+
                     while ($current->lte($end)) {
+
                         $fecha = $current->format('Y-m-d');
-                        $query->orWhere('fechas', 'LIKE', "%{$fecha}%");
+
+                        $query->orWhere(
+                            'fechas',
+                            'LIKE',
+                            "%{$fecha}%"
+                        );
+
                         $current->addDay();
                     }
                 });
@@ -279,25 +301,46 @@ class ActividadPnteController extends Controller
 
             // ✅ FILTRO: city → region
             ->when($request->filled('city'), function ($q) use ($request) {
-                $q->where('region', $request->input('city'));
+
+                $q->where(
+                    'region',
+                    $request->input('city')
+                );
             })
 
             // ✅ FILTRO: tipo_actividad_id
             ->when($request->filled('tipo_actividad_id'), function ($q) use ($request) {
-                $q->where('tipo_actividad_id', $request->input('tipo_actividad_id'));
+
+                $q->where(
+                    'tipo_actividad_id',
+                    $request->input('tipo_actividad_id')
+                );
             })
 
-            // ✅ FILTRO: asesor → representante_id (solo aplica si rol == 1)
-            ->when($request->filled('asesor') && $user->rol == 1, function ($q) use ($request) {
-                $q->where('representante_id', $request->input('asesor'));
-            })
+            // ✅ FILTRO: asesor
+            ->when(
+                $request->filled('asesor') && $user->rol == 1,
+                function ($q) use ($request) {
 
-            ->paginate($pageSize, ['*'], 'page', $request->input('page', 1));
+                    $q->where(
+                        'representante_id',
+                        $request->input('asesor')
+                    );
+                }
+            )
 
-        // ✅ ORDENAR por la fecha más reciente dentro del JSON
+            ->paginate(
+                $pageSize,
+                ['*'],
+                'page',
+                $request->input('page', 1)
+            );
+
+        // ✅ ORDENAR por fecha más reciente
         $actividades->setCollection(
             $actividades->getCollection()
                 ->sortByDesc(function ($actividad) {
+
                     $fechas = is_array($actividad->fechas)
                         ? $actividad->fechas
                         : json_decode($actividad->fechas, true);
@@ -419,7 +462,8 @@ class ActividadPnteController extends Controller
     {
         try {
 
-            $perPage = $request->input('per_page', 10);
+            $perPage = $request->input('pageSize', 10);
+            $search  = trim($request->input('name', ''));
 
             $event = ActividadPnte::select(
                 'id',
@@ -441,62 +485,151 @@ class ActividadPnteController extends Controller
                 'empresario.tipoDocumento',
                 'empresario.genero'
             ])
+
                 ->where('slug', $slug)
-                ->orderBy('created_at', 'desc'); // 🔥 recientes primero
+
+                // 🔥 BUSCADOR
+                ->when($search, function ($q) use ($search) {
+
+                    $q->whereHas('empresario', function ($emp) use ($search) {
+
+                        $emp->where('ruc', 'LIKE', "%{$search}%")
+
+                            ->orWhere('numero_dni', 'LIKE', "%{$search}%")
+
+                            ->orWhereRaw("
+                            CONCAT(
+                                COALESCE(apellido_paterno, ''),
+                                ' ',
+                                COALESCE(apellido_materno, ''),
+                                ' ',
+                                COALESCE(nombres, '')
+                            ) LIKE ?
+                        ", ["%{$search}%"]);
+                    });
+                })
+
+                ->orderBy('created_at', 'desc');
 
             $data = $query->paginate($perPage);
 
-            // 🔥 Transformamos la data (flat + limpio)
+            // 🔥 TRANSFORMAR
             $data->getCollection()->transform(function ($item) {
 
                 $e = $item->empresario;
 
                 return [
+                    'id' => $item->id,
                     'actividad_id' => $item->actividad_id,
                     'slug' => $item->slug,
                     'fecha_asistencia' => $item->fecha_asistencia,
                     'numero_dni' => $item->numero_dni,
 
-                    // 🔥 Datos del empresario
+                    // 🔥 DATOS EMPRESARIO
                     'ruc' => $e->ruc,
-                    'razon_social'      => mb_strtoupper($e->razon_social ?? '', 'UTF-8'),
-                    'nombre_comercial'  => mb_strtoupper($e->nombre_comercial ?? '', 'UTF-8'),
+
+                    'razon_social' => mb_strtoupper(
+                        $e->razon_social ?? '',
+                        'UTF-8'
+                    ),
+
+                    'nombre_comercial' => mb_strtoupper(
+                        $e->nombre_comercial ?? '',
+                        'UTF-8'
+                    ),
+
                     'sector_economico_id' => $e->sector_economico_id,
-                    'sector_economico_nombre' => mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8'),
+
+                    'sector_economico_nombre' => mb_strtoupper(
+                        $e->sectorEconomico?->name ?? '',
+                        'UTF-8'
+                    ),
+
                     'rubro_id' => $e->rubro_id,
-                    'rubro_nombre' => mb_strtoupper($e->rubro?->name ?? '', 'UTF-8'),
+
+                    'rubro_nombre' => mb_strtoupper(
+                        $e->rubro?->name ?? '',
+                        'UTF-8'
+                    ),
+
                     'actividad_comercial_id' => $e->actividad_comercial_id,
-                    'actividad_comercial_nombre' => mb_strtoupper($e->actividad_comercial_nombre ?? '', 'UTF-8'),
+
+                    'actividad_comercial_nombre' => mb_strtoupper(
+                        $e->actividad_comercial_nombre ?? '',
+                        'UTF-8'
+                    ),
 
                     'region_id' => $e->region_id,
                     'region_nombre' => $e->region?->name,
+
                     'provincia_id' => $e->provincia_id,
                     'provincia_nombre' => $e->provincia?->name,
+
                     'distrito_id' => $e->distrito_id,
                     'distrito_nombre' => $e->distrito?->name,
-                    'direccion' => mb_strtoupper($e->direccion ?? '', 'UTF-8'),
+
+                    'direccion' => mb_strtoupper(
+                        $e->direccion ?? '',
+                        'UTF-8'
+                    ),
 
                     'pais_id' => $e->pais_id,
                     'pais_nombre' => $e->pais?->name,
+
                     'tipo_documento_id' => $e->tipo_documento_id,
+
                     'tipo_documento_nombre' => $e->tipoDocumento?->avr,
+
                     'numero_dni_empresario' => $e->numero_dni,
 
-                    'apellido_paterno' => mb_strtoupper($e->apellido_paterno ?? '', 'UTF-8'),
-                    'apellido_materno' => mb_strtoupper($e->apellido_materno ?? '', 'UTF-8'),
-                    'nombres'          => mb_strtoupper($e->nombres ?? '', 'UTF-8'),
+                    'apellido_paterno' => mb_strtoupper(
+                        $e->apellido_paterno ?? '',
+                        'UTF-8'
+                    ),
+
+                    'apellido_materno' => mb_strtoupper(
+                        $e->apellido_materno ?? '',
+                        'UTF-8'
+                    ),
+
+                    'nombres' => mb_strtoupper(
+                        $e->nombres ?? '',
+                        'UTF-8'
+                    ),
+
+                    'nombre_completo' => mb_strtoupper(
+                        trim(
+                            ($e->apellido_paterno ?? '') . ' ' .
+                                ($e->apellido_materno ?? '') . ' ' .
+                                ($e->nombres ?? '')
+                        ),
+                        'UTF-8'
+                    ),
 
                     'genero_id' => $e->genero_id,
                     'genero_avr' => $e->genero?->avr,
+
                     'discapacidad' => $e->discapacidad,
-                    'discapacidad_nombre' => $e->discapacidad ? 'SI' : 'NO',
+
+                    'discapacidad_nombre' => $e->discapacidad
+                        ? 'SI'
+                        : 'NO',
+
                     'celular' => $e->celular,
+
                     'correo_electronico' => $e->correo_electronico,
 
                     'cargo_empresa_id' => $e->cargo_empresa_id,
+
                     'fecha_nacimiento' => $e->fecha_nacimiento,
+
                     'edad' => $e->edad,
+
                     'como_entero' => $e->como_entero,
+
+                    'personal_asesoria' => $item->personal_asesoria,
+
+                    'personal_formalizacion' => $item->personal_formalizacion,
                 ];
             });
 
@@ -506,10 +639,83 @@ class ActividadPnteController extends Controller
                 'event' => $event
             ]);
         } catch (\Throwable $e) {
+
             return response()->json([
                 'status' => 500,
                 'message' => 'Error al obtener inscritos',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateValuesSelect(Request $request)
+    {
+        $request->validate([
+            'slug'   => 'required|string',
+            'rowId'  => 'required|integer',
+            'column' => 'required|string|in:personal_asesoria,personal_formalizacion',
+            'value'  => 'required|in:0,1',
+        ]);
+
+        try {
+
+            // 1️⃣ Buscar actividad
+            $actividad = ActividadPnte::where('slug', $request->slug)->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'message' => 'Actividad no encontrada',
+                ], 404);
+            }
+
+            // 2️⃣ Buscar registro
+            $row = EmpresarioActividad::where('id', $request->rowId)
+                ->where('slug', $request->slug)
+                ->first();
+
+            if (! $row) {
+                return response()->json([
+                    'message' => 'Registro no encontrado',
+                ], 404);
+            }
+
+            // 3️⃣ Actualizar columna dinámica
+            $column = $request->column;
+
+            $row->{$column} = (int) $request->value;
+            $row->save();
+
+            // 4️⃣ Recalcular totales
+            $totalAsesorias = EmpresarioActividad::where('slug', $request->slug)
+                ->where('personal_asesoria', 1)
+                ->count();
+
+            $totalFormalizaciones = EmpresarioActividad::where('slug', $request->slug)
+                ->where('personal_formalizacion', 1)
+                ->count();
+
+            // 5️⃣ Actualizar actividad
+            $actividad->total_asesorias = $totalAsesorias;
+            $actividad->total_formalizaciones = $totalFormalizaciones;
+            $actividad->save();
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Actualizado correctamente',
+                'data'    => [
+                    'id'                       => $row->id,
+                    'column'                   => $column,
+                    'value'                    => $row->{$column},
+                    'total_asesorias'          => $totalAsesorias,
+                    'total_formalizaciones'    => $totalFormalizaciones,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Error al actualizar',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }

@@ -16,7 +16,9 @@ class EmpresarioActividad extends Model
         'slug',
         'empresario_id',
         'numero_dni',
-        'fecha_asistencia'
+        'fecha_asistencia',
+        'personal_asesoria',
+        'personal_formalizacion'
     ];
 
     public function empresario()
