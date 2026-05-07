@@ -471,7 +471,9 @@ ADD COLUMN actividad_comercial_nombre VARCHAR(255) NULL
 AFTER actividad_comercial_id;
 
 
-
+ALTER TABLE empresario_actividad
+ADD COLUMN personal_asesoria TINYINT(1) NOT NULL DEFAULT NULL AFTER fecha_asistencia,
+ADD COLUMN personal_formalizacion TINYINT(1) NOT NULL DEFAULT NULL AFTER personal_asesoria;
 
 
 

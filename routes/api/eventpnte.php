@@ -18,6 +18,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
     Route::PUT('cancelar/{id}', 'cancelar');
 
     Route::GET('inscritos/{slug}', 'inscritosPorSlug');
+
+    Route::PUT('update-values-select', 'updateValuesSelect');
 });
 
 // event-pnte
