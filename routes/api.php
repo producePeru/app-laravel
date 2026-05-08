@@ -396,8 +396,8 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('notaries', [DownloadNotariesController::class, 'exportNotaries']);
     Route::post('cdes', [DownloadCdesController::class, 'exportCdes']);
     Route::post('events', [DownloadEventsController::class, 'exportEvents']);
-    // Route::post('sed-asistentes/{slug}',        [SedAsistentesController::class, 'exportList']);                 // asistentes de sed
 
+    Route::post('export-todos-inscritos', [DownloadAttendanceController::class, 'exportInscritos']);
 });
 
 // Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
