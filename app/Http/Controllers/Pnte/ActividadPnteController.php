@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pnte;
 use App\Http\Controllers\Controller;
 use App\Models\ActividadPnte;
 use App\Models\Attendance;
+use App\Models\EmpresarioActividad;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -234,23 +235,28 @@ class ActividadPnteController extends Controller
                 'actualizado_por_id',
                 'created_at',
             ])
+
             ->where('unidad', 1)
 
             // ✅ FILTRO: year
             ->when($request->filled('year'), function ($q) use ($request) {
                 $year = $request->input('year');
+
                 $q->where('fechas', 'LIKE', "%{$year}%");
             })
 
             // ✅ FILTRO: rangeDate
             ->when($request->filled('rangeDate'), function ($q) use ($request) {
+
                 [$from, $to] = $request->input('rangeDate');
 
                 $current = \Carbon\Carbon::parse($from);
                 $end = \Carbon\Carbon::parse($to);
 
                 $q->where(function ($query) use ($current, $end) {
+
                     while ($current->lte($end)) {
+
                         $fecha = $current->format('Y-m-d');
 
                         $query->orWhereJsonContains('fechas', $fecha);
@@ -262,28 +268,32 @@ class ActividadPnteController extends Controller
 
             // ✅ FILTRO: city → region
             ->when($request->filled('city'), function ($q) use ($request) {
+
                 $q->where('region', $request->input('city'));
             })
 
             // ✅ FILTRO: tipo_actividad_id
             ->when($request->filled('tipo_actividad_id'), function ($q) use ($request) {
+
                 $q->where('tipo_actividad_id', $request->input('tipo_actividad_id'));
             })
 
-            ->paginate($pageSize, ['*'], 'page', $request->input('page', 1));
+            // ✅ ORDENAR POR LA FECHA MÁS RECIENTE DEL ARRAY JSON
+            ->orderByRaw("
+            JSON_UNQUOTE(
+                JSON_EXTRACT(
+                    fechas,
+                    CONCAT('$[', JSON_LENGTH(fechas) - 1, ']')
+                )
+            ) DESC
+        ")
 
-        // ✅ ORDENAR por la fecha más reciente dentro del JSON (en PHP post-query)
-        $actividades->setCollection(
-            $actividades->getCollection()
-                ->sortByDesc(function ($actividad) {
-                    $fechas = is_array($actividad->fechas)
-                        ? $actividad->fechas
-                        : json_decode($actividad->fechas, true);
-
-                    return collect($fechas)->max();
-                })
-                ->values()
-        );
+            ->paginate(
+                $pageSize,
+                ['*'],
+                'page',
+                $request->input('page', 1)
+            );
 
         return response()->json([
             'status' => 200,
@@ -304,6 +314,265 @@ class ActividadPnteController extends Controller
                 'total' => $actividades->total(),
             ],
         ]);
+    }
+
+    public function inscritosPorSlug(Request $request, $slug)
+    {
+        try {
+
+            $perPage = $request->input('pageSize', 10);
+            $search = trim($request->input('name', ''));
+
+            $event = ActividadPnte::select(
+                'id',
+                'slug',
+                'tema',
+                'fechas'
+            )
+                ->where('slug', $slug)
+                ->first();
+
+            $query = EmpresarioActividad::with([
+                'empresario',
+                'empresario.pais',
+                'empresario.region',
+                'empresario.provincia',
+                'empresario.distrito',
+                'empresario.sectorEconomico',
+                'empresario.rubro',
+                'empresario.tipoDocumento',
+                'empresario.genero',
+            ])
+
+                ->where('slug', $slug)
+
+                // 🔥 BUSCADOR
+                ->when($search, function ($q) use ($search) {
+
+                    $q->whereHas('empresario', function ($emp) use ($search) {
+
+                        $emp->where('ruc', 'LIKE', "%{$search}%")
+
+                            ->orWhere('numero_dni', 'LIKE', "%{$search}%")
+
+                            ->orWhereRaw("
+                            CONCAT(
+                                COALESCE(apellido_paterno, ''),
+                                ' ',
+                                COALESCE(apellido_materno, ''),
+                                ' ',
+                                COALESCE(nombres, '')
+                            ) LIKE ?
+                        ", ["%{$search}%"]);
+                    });
+                })
+
+                ->orderBy('created_at', 'desc');
+
+            $data = $query->paginate($perPage);
+
+            // 🔥 TRANSFORMAR
+            $data->getCollection()->transform(function ($item) {
+
+                $e = $item->empresario;
+
+                return [
+                    'id' => $item->id,
+                    'actividad_id' => $item->actividad_id,
+                    'slug' => $item->slug,
+                    'fecha_asistencia' => $item->fecha_asistencia,
+                    'numero_dni' => $item->numero_dni,
+
+                    // 🔥 DATOS EMPRESARIO
+                    'ruc' => $e?->ruc,
+
+                    'razon_social' => ! empty($e?->razon_social)
+                        ? mb_strtoupper($e->razon_social, 'UTF-8')
+                        : null,
+
+                    'nombre_comercial' => ! empty($e?->nombre_comercial)
+                        ? mb_strtoupper($e->nombre_comercial, 'UTF-8')
+                        : null,
+
+                    'sector_economico_id' => $e?->sector_economico_id,
+
+                    'sector_economico_nombre' => ! empty($e?->sectorEconomico?->name)
+                        ? mb_strtoupper($e->sectorEconomico->name, 'UTF-8')
+                        : null,
+
+                    'rubro_id' => $e?->rubro_id,
+
+                    'rubro_nombre' => ! empty($e?->rubro?->name)
+                        ? mb_strtoupper($e->rubro->name, 'UTF-8')
+                        : null,
+
+                    'actividad_comercial_id' => $e?->actividad_comercial_id,
+
+                    'actividad_comercial_nombre' => ! empty($e?->actividad_comercial_nombre)
+                        ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8')
+                        : null,
+
+                    'region_id' => $e?->region_id,
+                    'region_nombre' => $e?->region?->name,
+
+                    'provincia_id' => $e?->provincia_id,
+                    'provincia_nombre' => $e?->provincia?->name,
+
+                    'distrito_id' => $e?->distrito_id,
+                    'distrito_nombre' => $e?->distrito?->name,
+
+                    'direccion' => ! empty($e?->direccion)
+                        ? mb_strtoupper($e->direccion, 'UTF-8')
+                        : null,
+
+                    'pais_id' => $e?->pais_id,
+                    'pais_nombre' => $e?->pais?->name,
+
+                    'tipo_documento_id' => $e?->tipo_documento_id,
+
+                    'tipo_documento_nombre' => $e?->tipoDocumento?->avr,
+
+                    'numero_dni_empresario' => $e?->numero_dni,
+
+                    'apellido_paterno' => ! empty($e?->apellido_paterno)
+                        ? mb_strtoupper($e->apellido_paterno, 'UTF-8')
+                        : null,
+
+                    'apellido_materno' => ! empty($e?->apellido_materno)
+                        ? mb_strtoupper($e->apellido_materno, 'UTF-8')
+                        : null,
+
+                    'nombres' => ! empty($e?->nombres)
+                        ? mb_strtoupper($e->nombres, 'UTF-8')
+                        : null,
+
+                    'nombre_completo' => ! empty(trim(
+                        ($e?->apellido_paterno ?? '').' '.
+                        ($e?->apellido_materno ?? '').' '.
+                        ($e?->nombres ?? '')
+                    ))
+                        ? mb_strtoupper(
+                            trim(
+                                ($e?->apellido_paterno ?? '').' '.
+                                ($e?->apellido_materno ?? '').' '.
+                                ($e?->nombres ?? '')
+                            ),
+                            'UTF-8'
+                        )
+                        : null,
+
+                    'genero_id' => $e?->genero_id,
+                    'genero_avr' => $e?->genero?->avr,
+
+                    'discapacidad' => $e?->discapacidad,
+
+                    'discapacidad_nombre' => isset($e?->discapacidad)
+                        ? ($e->discapacidad ? 'SI' : 'NO')
+                        : null,
+
+                    'celular' => $e?->celular,
+
+                    'correo_electronico' => $e?->correo_electronico,
+
+                    'cargo_empresa_id' => $e?->cargo_empresa_id,
+
+                    'fecha_nacimiento' => $e?->fecha_nacimiento,
+
+                    'edad' => $e?->edad,
+
+                    'como_entero' => $e?->como_entero,
+
+                    'personal_asesoria' => $item->personal_asesoria,
+
+                    'personal_formalizacion' => $item->personal_formalizacion,
+                ];
+            });
+
+            return response()->json([
+                'status' => 200,
+                'data' => $data,
+                'event' => $event,
+            ]);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al obtener inscritos',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updateValuesSelect(Request $request)
+    {
+        $request->validate([
+            'slug' => 'required|string',
+            'rowId' => 'required|integer',
+            'column' => 'required|string|in:personal_asesoria,personal_formalizacion',
+            'value' => 'required|in:0,1',
+        ]);
+
+        try {
+
+            // 1️⃣ Buscar actividad
+            $actividad = ActividadPnte::where('slug', $request->slug)->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'message' => 'Actividad no encontrada',
+                ], 404);
+            }
+
+            // 2️⃣ Buscar registro
+            $row = EmpresarioActividad::where('id', $request->rowId)
+                ->where('slug', $request->slug)
+                ->first();
+
+            if (! $row) {
+                return response()->json([
+                    'message' => 'Registro no encontrado',
+                ], 404);
+            }
+
+            // 3️⃣ Actualizar columna dinámica
+            $column = $request->column;
+
+            $row->{$column} = (int) $request->value;
+            $row->save();
+
+            // 4️⃣ Recalcular totales
+            $totalAsesorias = EmpresarioActividad::where('slug', $request->slug)
+                ->where('personal_asesoria', 1)
+                ->count();
+
+            $totalFormalizaciones = EmpresarioActividad::where('slug', $request->slug)
+                ->where('personal_formalizacion', 1)
+                ->count();
+
+            // 5️⃣ Actualizar actividad
+            $actividad->total_asesorias = $totalAsesorias;
+            $actividad->total_formalizaciones = $totalFormalizaciones;
+            $actividad->save();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Actualizado correctamente',
+                'data' => [
+                    'id' => $row->id,
+                    'column' => $column,
+                    'value' => $row->{$column},
+                    'total_asesorias' => $totalAsesorias,
+                    'total_formalizaciones' => $totalFormalizaciones,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al actualizar',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     // para las migraciones
@@ -391,7 +660,7 @@ class ActividadPnteController extends Controller
     public function setNombreActividad(Request $request)
     {
         // 1. Definimos el listado maestro (puedes mover esto a un config/actividades.php)
-        $mapping = [
+        $mappingOriginal = [
             'expo puno' => 9,
             'campaña despega tu empresa y produce-lima' => 8,
             'potencia tu empresa - digitalización' => 3,
@@ -791,21 +1060,320 @@ class ActividadPnteController extends Controller
             'campaña despega tu empresa' => 8,
             'POTENCIA TU EMPRESA - DIGITALIZACIÓN' => 3,
             'POTENCIA TU EMPRESA - FORMALIZACIÓN' => 1,
+            'CAMPAÑA DESPEGA TU EMPRESA Y PRODUCE-LIMA' => 8,
+            'Potencia Tu Empresa - Formalizacion' => 1,
+            'Potencia Tu Empresa - Digitalizacion' => 3,
+            'DIFUSIóN DE LOS SERVICIOS DEL PNTE EN LA FERIA "CAMPAÑA DE FORMALIZACION"' => 9,
+            'Difusión de los servicios del PNTE en la feria "CAMPAÑA FORMALIZADOS GANAMOS TODOS"' => 9,
+            'POTENCIA TU EMPRESA - FORMALIZACION' => 1,
+            'PRIMERA JORNADA POR LA COOPER-ACCIÓN' => 9,
+            'CAMPAÑA DE DIFUSION DE LOS SERVICIOS DEL PNTE' => 9,
+            'Potencia tu empresa - formalizacion' => 1,
+            'Difusion de los servicios del PNTE' => 9,
+            'CAMPAÑA FORMALIZATE YA' => 8,
+            'difusion de los servicios del PNTE' => 9,
+            'Potencia Tu Empresa - Formalizaciòn' => 1,
+            'Difusión de los servicios del PNTE en la feria Jaen emprende' => 9,
+            'GESTIÓN EMPRESARIAL - calidad y atencion del cliente - sector turismo' => 2,
+            'FORMALIZACIÓN - Formalización empresarial' => 1,
+            'FORMALIZACIÓN - formalización y tributación de MYPE.' => 1,
+            'FORMALIZACIÓN - capacitación en formalización' => 1,
+            'GESTIÓN EMPRESARIAL - atención al cliente' => 2,
+            'DIGITALIZACIÓN - digitalizacion' => 3,
+            'FORMALIZACIÓN - formalizacion empresarial' => 1,
+            'FORMALIZACIÓN - diferencias entre pp.nn y pp.jj' => 1,
+            'DIGITALIZACIÓN - monederos digitales' => 3,
+            'DIGITALIZACIÓN - marketing y ventas digitales' => 3,
+            'GESTIÓN EMPRESARIAL - MODELAMIENTO CANVAS' => 2,
+            'GESTIÓN EMPRESARIAL - liderazgo empresaria y habilidades gerenciales' => 2,
+            'FORMALIZACIÓN - Beneficios de la formalización' => 1,
+            'DIGITALIZACIÓN - digitalizando tu empresa' => 3,
+            'FORMALIZACIÓN - reMYPE (normatividad e inscripción de trabajadores)' => 1,
+            'FORMALIZACIÓN - benefcios de la formalizacion' => 1,
+            'DIGITALIZACIÓN - digitalizacion empresarial' => 3,
+            'GESTIÓN EMPRESARIAL - emprendimiento' => 2,
+            'DIGITALIZACIÓN - herramientas digitales' => 3,
+            'DIGITALIZACIÓN - whatsapp business y billeteras digitales' => 3,
+            'GESTIÓN EMPRESARIAL - gestion empresarial' => 2,
+            'FORMALIZACIÓN - formalizacion empresarial y tributacion' => 1,
+            'FORMALIZACIÓN - formalizate artesano' => 1,
+            'GESTIÓN EMPRESARIAL - idea de negocio- Modelo canvas' => 2,
+            'GESTIÓN EMPRESARIAL - como iniciar mi idea de negocio' => 2,
+            'DIGITALIZACIÓN - seguridad con las billeteras digitales' => 3,
+            'GESTIÓN EMPRESARIAL - gestion empresarial para MYPE' => 2,
+            'FORMALIZACIÓN - Formalización empresarial y registro MYPE plataforma compras my peru' => 1,
+            'FORMALIZACIÓN - emprende y formaliza tu empresa' => 1,
+            'GESTIÓN EMPRESARIAL - complementación de competencias laborales' => 2,
+            'FORMALIZACIÓN - formalizacion como pp.nn' => 1,
+            'FORMALIZACIÓN - pasos para formalizar mi emprendimiento (grupo n°02)' => 1,
+            'DIGITALIZACIÓN - digitalizacion empresarial para MYPE' => 3,
+            'FORMALIZACIÓN - creacion, formalizacion y desarrollo de las micro y pequeñas empresas' => 1,
+            'FORMALIZACIÓN - guia para la formalizacion' => 1,
+            'FORMALIZACIÓN - tributacion' => 1,
+            'GESTIÓN EMPRESARIAL - registro MYPE plataforma compras my peru' => 2,
+            'FORMALIZACIÓN - formalización y registratare en la plataforma compras my peru' => 1,
+            'FORMALIZACIÓN - formalizacion y trubutacion de empresas' => 1,
+            'GESTIÓN EMPRESARIAL - generacion de ideas de negocios' => 2,
+            'GESTIÓN EMPRESARIAL - compras a mi peru' => 2,
+            'GESTIÓN EMPRESARIAL - compras a MYPEru (grupo 01)' => 2,
+            'DIGITALIZACIÓN - digitalización' => 3,
+            'FORMALIZACIÓN - asociatividad' => 1,
+            'GESTIÓN EMPRESARIAL - comercializacion e innovacion para abrir nuevas lineas de negocio' => 2,
+            'FORMALIZACIÓN - emprende y crea tu empresa' => 1,
+            'FORMALIZACIÓN - proceso de formalizacion empresarial' => 1,
+            'FORMALIZACIÓN - emprende sacs' => 1,
+            'FORMALIZACIÓN - emisíon de boletas y facturación electronica' => 1,
+            'GESTIÓN EMPRESARIAL - guia para el registro  MYPE a compras MYPErú' => 2,
+            'GESTIÓN EMPRESARIAL - emprendimiento empresarial' => 2,
+            'DIGITALIZACIÓN - marketing digital aplicada a las empresas de servicios de hospedaje' => 3,
+            'GESTIÓN EMPRESARIAL - tecnicas de venta para negocios de artesanias' => 2,
+            'DIGITALIZACIÓN - gestion de redes sociales para emprendimientos de atractivos turisticos' => 3,
+            'GESTIÓN EMPRESARIAL - marketing estrategico' => 2,
+            'DIGITALIZACIÓN - marketing digital y estrategia de ventas - facebook ads' => 3,
+            'GESTIÓN EMPRESARIAL - gestión empresarial' => 2,
+            'GESTIÓN EMPRESARIAL - nuevas tendencias empresariales' => 2,
+            'DIGITALIZACIÓN - marketing digital' => 3,
+            'GESTIÓN EMPRESARIAL - tecnicas de ventas' => 2,
+            'GESTIÓN EMPRESARIAL - ideas de negocios' => 2,
+            'GESTIÓN EMPRESARIAL - generacionde ideasde negocios' => 2,
+            'DIGITALIZACIÓN - medios de pago digitales' => 3,
+            'GESTIÓN EMPRESARIAL - articulando mi negocio' => 2,
+            'GESTIÓN EMPRESARIAL - liderazgo empresarial y habilidades gerenciales' => 2,
+            'FORMALIZACIÓN - proceso de Formalización empresarial' => 1,
+            'FORMALIZACIÓN - ventajas y oportunidades de la formalizacion' => 1,
+            'GESTIÓN EMPRESARIAL - emprendemimiento e innovacion' => 2,
+            'DIGITALIZACIÓN - marketing digital y estrategia de ventas - whatsapp business' => 3,
+            'FORMALIZACIÓN - pasos para constituir  una pncn y ppjj' => 1,
+            'GESTIÓN EMPRESARIAL - innovación empresarial con desígn thinking' => 2,
+            'GESTIÓN EMPRESARIAL - habilidades blandas' => 2,
+            'DIGITALIZACIÓN - pago de salarios digitales' => 3,
+            'GESTIÓN EMPRESARIAL - economia circular' => 2,
+            'GESTIÓN EMPRESARIAL - Modelo de negocio- metodo canvas' => 2,
+            'FORMALIZACIÓN - formalizacion tributaria' => 1,
+            'GESTIÓN EMPRESARIAL - lanzamiento de emprendiemientos' => 2,
+            'FORMALIZACIÓN - Formalización empresarial y tributaria a productores agropecuarios' => 1,
+            'FORMALIZACIÓN - Formalización empresarial y tributaria a artesanos' => 1,
+            'FORMALIZACIÓN - formalizacion empresarial y regimenes tributarios' => 1,
+            'GESTIÓN EMPRESARIAL -  de Modelo canvas' => 2,
+            'GESTIÓN EMPRESARIAL - liderazgo empresarial' => 2,
+            'DIGITALIZACIÓN - marketing digital y gestion de redes sociales' => 3,
+            'FORMALIZACIÓN - Formalizacion empresarial' => 1,
+            'GESTIÓN EMPRESARIAL - cómo desarrollar y potenciar negocios exitosos' => 2,
+            'DIGITALIZACIÓN - Diseño gráfico para redes sociales canva' => 3,
+            'GESTIÓN EMPRESARIAL - atencion al cliente' => 2,
+            'GESTIÓN EMPRESARIAL - destaca y vende más' => 2,
+            'GESTIÓN EMPRESARIAL - emprendimiento e idea de negocios' => 2,
+            'FORMALIZACIÓN - Beneficios de la formalización empresarial' => 1,
+            'DIGITALIZACIÓN - crea tu catálogo digital con whatsapp business' => 3,
+            'GESTIÓN EMPRESARIAL - gestión empresarial exitosa' => 2,
+            'DIGITALIZACIÓN - Herramientas digitales para mercados' => 3,
+            'DIGITALIZACIÓN - digitaliza tus canales de comunicación correo y whatsapp business' => 3,
+            'GESTIÓN EMPRESARIAL - Generacion de ideas de negocios' => 2,
+            'GESTIÓN EMPRESARIAL -  estudia tu mercado e identifica nuevas tendencias' => 2,
+            'GESTIÓN EMPRESARIAL - registro MYPE' => 2,
+            'GESTIÓN EMPRESARIAL - atencion al cliente y tecnicas de venta' => 2,
+            'FORMALIZACIÓN - Formalizacion ruc 10 y nrus' => 1,
+            'GESTIÓN EMPRESARIAL - técnicas en venta' => 2,
+            'FORMALIZACIÓN - inscríbete al reMYPE' => 1,
+            'GESTIÓN EMPRESARIAL - Herramientas para la sostenibilidad del emprendimiento' => 2,
+            'GESTIÓN EMPRESARIAL -  liderazgo empresarial y habilidades gerenciales' => 2,
+            'GESTIÓN EMPRESARIAL - registro de marca y atencion al cliente' => 2,
+            'FORMALIZACIÓN - Importancia de la formalizacion' => 1,
+            'GESTIÓN EMPRESARIAL - de economia circular' => 2,
+            'FORMALIZACIÓN - Regimenes tributarios' => 1,
+            'GESTIÓN EMPRESARIAL - Conociendo mi negocio' => 2,
+            'GESTIÓN EMPRESARIAL - estudia tu mercado e identifica nuevas tendencias' => 2,
+            'GESTIÓN EMPRESARIAL - beneficios del neuromarketing' => 2,
+            'FORMALIZACIÓN - formalización e inscríbete al reMYPE' => 1,
+            'DIGITALIZACIÓN - crea contenido y posíciona tu MYPE' => 3,
+            'FORMALIZACIÓN - Formalización empresarial y digitalización' => 1,
+            'DIGITALIZACIÓN - Fortalece tu negocio con whastapp de negocios' => 3,
+            'GESTIÓN EMPRESARIAL - Definicion de procesos para mejorar la productividad' => 2,
+            'GESTIÓN EMPRESARIAL - marketing para pymes' => 2,
+            'GESTIÓN EMPRESARIAL - fidelización de clientes internos y externos' => 2,
+            'GESTIÓN EMPRESARIAL - Economia circular como estrategia de crecimiento para MYPE' => 2,
+            'FORMALIZACIÓN - Beneficios de la formalización de negocios' => 1,
+            'FORMALIZACIÓN - Proceso de formalizacion ppnn y sus ventajas' => 1,
+            'GESTIÓN EMPRESARIAL - idea de negocio y emprendimiento' => 2,
+            'FORMALIZACIÓN - Regimen tributario y Beneficios de la formalización' => 1,
+            'FORMALIZACIÓN - Formalización empresarial e inscripción al REMYPE' => 1,
+            'FORMALIZACIÓN - mitos y verdades de la Formalización empresarial' => 1,
+            'DIGITALIZACIÓN - digitalización para bodegueros' => 3,
+            'FORMALIZACIÓN - constitución de personas jurídicas' => 1,
+            'FORMALIZACIÓN -  mitos y verdades de la formalizacion' => 1,
+            'DIGITALIZACIÓN - Whatsapp de negocios crea tu catalogo digital' => 3,
+            'DIGITALIZACIÓN - Camino a la digitalizacion' => 3,
+            'GESTIÓN EMPRESARIAL - conoce las estrategias y tácticas para vender más' => 2,
+            'FORMALIZACIÓN - regímenes tributarios y contables y sus obligaciones' => 1,
+            'GESTIÓN EMPRESARIAL - Idea de negocios' => 2,
+            'GESTIÓN EMPRESARIAL - Modelo canvas' => 2,
+            'FORMALIZACIÓN - como formalizar y potenciar mi emprendimiento' => 1,
+            'FORMALIZACIÓN - Beneficios de formalizacion de las MYPE y uso de medios digitales' => 1,
+            'FORMALIZACIÓN - Proceso de constitución empresarial' => 1,
+            'DIGITALIZACIÓN -  digitaliza tus canales de comunicación crea contenido y posíciona tu MYPE' => 3,
+            'FORMALIZACIÓN - Beneficios de formalizar mi emprendimiento y modalidades societarias para procompite' => 1,
+            'FORMALIZACIÓN - consejos legales para emprendedores' => 1,
+            'GESTIÓN EMPRESARIAL - Destaca y vende más' => 2,
+            'FORMALIZACIÓN - formalizacion regimenes tributarios yCaja rápida' => 1,
+            'GESTIÓN EMPRESARIAL - ¿cómo generamos mas oportunidades en nuevos mercados? - Modelo canvas' => 2,
+            'DIGITALIZACIÓN - whatsapp business' => 3,
+            'FORMALIZACIÓN - inscribete al reMYPE' => 1,
+            'FORMALIZACIÓN - Beneficios de formalizar mi emprendimiento' => 1,
+            'FORMALIZACIÓN - proceso de constitución empresarial' => 1,
+            'GESTIÓN EMPRESARIAL - técnicas de venta para negocios de artesania y textil' => 2,
+            'GESTIÓN EMPRESARIAL - diseño y propuesta de marca' => 2,
+            'FORMALIZACIÓN - formalizacion  y regimenes tributarios' => 1,
+            'DIGITALIZACIÓN - medios de pagos digitales y whatsapp business' => 3,
+            'FORMALIZACIÓN -  formalizacion empresarial y tributaria en el encuetro de jovenes unh 2024' => 1,
+            'GESTIÓN EMPRESARIAL - destaca y vende mas' => 2,
+            'FORMALIZACIÓN - formalizacion empresarial y regimen tributario' => 1,
+            'FORMALIZACIÓN - Formalización empresarial registro MYPE plataforma compras my peru' => 1,
+            'GESTIÓN EMPRESARIAL - generacion de ideas, Modelo de negocios canvas y prototipos de negocios' => 2,
+            'FORMALIZACIÓN - Formalización empreasarial' => 1,
+            'DIGITALIZACIÓN - digitaliza tus canales de comunicacion' => 3,
+            'GESTIÓN EMPRESARIAL - estudio de mercado y nuevas tendecias' => 2,
+            'GESTIÓN EMPRESARIAL -  como desarrollar y potenciar negocios exitosos' => 2,
+            'GESTIÓN EMPRESARIAL - atencion al cliente y asociatividad' => 2,
+            'GESTIÓN EMPRESARIAL - ¿cómo elaborar un plan de negocios?' => 2,
+            'FORMALIZACIÓN - Modelo canvas y formalizando mi emprendimiento' => 1,
+            'FORMALIZACIÓN - Pasos y Beneficios de la formalización' => 1,
+            'DIGITALIZACIÓN - atencion al cliente y gestion de redes sociales' => 3,
+            'GESTIÓN EMPRESARIAL - gestión de atención al cliente' => 2,
+            'DIGITALIZACIÓN - digitalizando mi negocio' => 3,
+            'GESTIÓN EMPRESARIAL - catalogo digital y destaca y vende mas' => 2,
+            'GESTIÓN EMPRESARIAL - modelamiento de negocios' => 2,
+            'FORMALIZACIÓN - facilidades y Beneficios de la formalización, a los productores alpaqueros' => 1,
+            'GESTIÓN EMPRESARIAL - atencion al cliente  y dijitalizacion' => 2,
+            'GESTIÓN EMPRESARIAL - Registro de marcas' => 2,
+            'FORMALIZACIÓN - Mitos de la formalización' => 1,
+            'DIGITALIZACIÓN - abc digital - redes sociales.' => 3,
+            'GESTIÓN EMPRESARIAL - segmento de mercado' => 2,
+            'GESTIÓN EMPRESARIAL - uso de billeteras digitales y crédito MYPE' => 2,
+            'GESTIÓN EMPRESARIAL - como generar mi Modelo de negocio' => 2,
+            'FORMALIZACIÓN - cómo formalizar mi emprendimiento' => 1,
+            'GESTIÓN EMPRESARIAL - ideas y modelamiento de negocios' => 2,
+            'GESTIÓN EMPRESARIAL -  estrategias y tacticas para vender mas' => 2,
+            'FORMALIZACIÓN - diferencia entre personas naturales y jurídicas' => 1,
+            'FORMALIZACIÓN - formalizacion empresarial y régimen tributario' => 1,
+            'FORMALIZACIÓN - regímenes tributarios' => 1,
+            'DIGITALIZACIÓN - contenido digital para tu negocio' => 3,
+            'GESTIÓN EMPRESARIAL - estrategias y tácticas para vender más' => 2,
+            'FORMALIZACIÓN - beneficios y facilidades de la Formalización empresarial' => 1,
+            'GESTIÓN EMPRESARIAL -  habilidades blandas, modelamiento de negocios (Modelo canva)' => 2,
+            'FORMALIZACIÓN - flujo de  caja' => 1,
+            'FORMALIZACIÓN - cómo generar una idea de negocio y Beneficios de la formalización' => 1,
+            'GESTIÓN EMPRESARIAL - ¿como elaborar un plan de negocio?' => 2,
+            'FORMALIZACIÓN - inscríbete en el reMYPE' => 1,
+            'GESTIÓN EMPRESARIAL - estudio de mercado e identificación de nuevas tendencias' => 2,
+            'FORMALIZACIÓN - formalizando mi emprendimiento' => 1,
+            'GESTIÓN EMPRESARIAL - modelamiento de negocios - aplicación práctica' => 2,
+            'GESTIÓN EMPRESARIAL - Estudio de mercado e identificación de nuevas tendencias' => 2,
+            'FORMALIZACIÓN - Estudia tu Mercado e identifica nuevas tendencias' => 1,
+            'FORMALIZACIÓN - proceso de constitución de empresas' => 1,
+            'GESTIÓN EMPRESARIAL - idea y Modelo de negocio' => 2,
+            'GESTIÓN EMPRESARIAL - Cómo desarrollar y potenciar negocios exitosos' => 2,
+            'GESTIÓN EMPRESARIAL - servicio de atención al cliente' => 2,
+            'DIGITALIZACIÓN - Administración de grupos y comunidades por Whatsapp' => 3,
+            'FORMALIZACIÓN - Formalización empresarial y régimen tributario' => 1,
+            'GESTIÓN EMPRESARIAL - generación de ideas, Modelo de negocios canvas y prototipos de negocios' => 2,
+            'FORMALIZACIÓN - pautas para constituir una empresa, de emprendedor a empresario' => 1,
+            'DIGITALIZACIÓN - ventas digitales con whatsapp business' => 3,
+            'GESTIÓN EMPRESARIAL - gestión comercial' => 2,
+            'GESTIÓN EMPRESARIAL - Marketing para emprendedores' => 2,
+            'GESTIÓN EMPRESARIAL - estudio de mercados y nuevas tendencias' => 2,
+            'FORMALIZACIÓN - Formalización y constitución del negocio' => 1,
+            'GESTIÓN EMPRESARIAL - flujo de caja y whatsapp business' => 2,
+            'GESTIÓN EMPRESARIAL - Registro MYPE' => 2,
+            'GESTIÓN EMPRESARIAL - Obten mayores ganancias con el flujo de caja' => 2,
+            'FORMALIZACIÓN - tributación, comprobantes electrónicos y medios de pago' => 1,
+            'FORMALIZACIÓN - mitos y verdades de la formalización' => 1,
+            'GESTIÓN EMPRESARIAL - Optimiza tus procesos y mejora tu MYPE' => 2,
+            'DIGITALIZACIÓN -  crea contenido de valor para redes sociales e incrementa tus ventas' => 3,
+            'FORMALIZACIÓN - Cómo formalizar mi emprendimiento' => 1,
+            'FORMALIZACIÓN - Formalización a emprendedores y regímenes tributarios' => 1,
+            'FORMALIZACIÓN - Formalización empresarial y comprobantes electrónicos' => 1,
+            'FORMALIZACIÓN - Registro MYPE' => 1,
+            'FORMALIZACIÓN - beneficios de la formalizaciòn' => 1,
+            'FORMALIZACIÓN - creación y beneficios de la formalizar una empresa' => 1,
+            'GESTIÓN EMPRESARIAL - Mejora tus deciSíones financieras' => 2,
+            'GESTIÓN EMPRESARIAL - generando ideas de negocio' => 2,
+            'FORMALIZACIÓN - beneficios de  formalización' => 1,
+            'GESTIÓN EMPRESARIAL - Gestión empresarial' => 2,
+            'FORMALIZACIÓN - creación de empresa, régimen tributario y acceso al Acceso a financiamiento' => 5,
+            'DIGITALIZACIÓN - redes sociales de alto impacto' => 3,
+            'GESTIÓN EMPRESARIAL - Investigación de mercado' => 2,
+            'FORMALIZACIÓN - formalización de empresas y regimenes tributarios' => 1,
+            'DIGITALIZACIÓN - Herramientas digitales' => 3,
+            'GESTIÓN EMPRESARIAL - Fidelización de clientes internos y externos' => 2,
+            'FORMALIZACIÓN - Creación de empresa, regimen tributario y acceso al Acceso a financiamiento' => 5,
+            'GESTIÓN EMPRESARIAL - Atencion al cliente' => 2,
+            'DIGITALIZACIÓN - Plataformas digitales para tu emprendimiento' => 3,
+            'DIGITALIZACIÓN - Digitalización para MYPE' => 3,
+            'DIGITALIZACIÓN - Incrementa tus ventas con herramientas digitales' => 3,
+            'FORMALIZACIÓN - Emprendimiento y Formalizacion' => 1,
+            'FORMALIZACIÓN - Formalización empresarial y Regímenes Tributarios.' => 1,
+            'GESTIÓN EMPRESARIAL - Estudio de mercados y nuevas tendencias' => 2,
+            'FORMALIZACIÓN - Conoce el IGV aplicable a tu MYPE y cómo obtener tu RUC' => 1,
+            'GESTIÓN EMPRESARIAL - Inscribete en el REMYPE' => 2,
+            'FORMALIZACIÓN - Diferencia entre personas naturales y jurídicas' => 1,
+            'FORMALIZACIÓN - Importancia de la Formalización empresarial' => 1,
+            'DIGITALIZACIÓN - Marketing digital' => 3,
+            'FORMALIZACIÓN - Formalizacion y regimenes tributarios' => 1,
+            'FORMALIZACIÓN - Beneficios de la Formalizaciòn' => 1,
+            'FORMALIZACIÓN - Modelo de negocios canvas' => 1,
+            'DIGITALIZACIÓN - Digitaliza tus canales de comunicación' => 3,
+            'GESTIÓN EMPRESARIAL - Ténicas de venta y escaparatismo' => 2,
+            'GESTIÓN EMPRESARIAL - Planes de negocio' => 2,
+            'GESTIÓN EMPRESARIAL - Gestión Empresarial Exitosa, empleando el Modelo CANVAS.' => 2,
+            'FORMALIZACIÓN - Emprende y formaliza para crecer' => 1,
+            'FORMALIZACIÓN - Cómo crear tu empresa.' => 1,
+            'FORMALIZACIÓN - Formalización empresarial y regímenes tributarios' => 1,
+            'DIGITALIZACIÓN - Plataformas digitales para tu negocio' => 3,
+            'FORMALIZACIÓN - Infórmate sobre tus obligaciones tributarias' => 1,
+            'FORMALIZACIÓN - Emprende Joven y Formaliza tu futuro' => 1,
+            'FORMALIZACIÓN - Pasos para la Formalización Personas Naturales y Jurídicas' => 1,
+            'FORMALIZACIÓN - Regímenes Tributarios' => 1,
+            'DIGITALIZACIÓN - Crea contenido y posiciona tu Mype' => 3,
+            'DIGITALIZACIÓN - Marketing y marketing digital' => 3,
+            'DIGITALIZACIÓN - Digitaliza tus canales de comunicacion' => 3,
+            'POTENCIA TU EMPRESA - FORMALZACIÓN' => 1,
+            'POTENCIA TU MPRESA - GESTIÓN EMPRESARIAL' => 2,
+            'I ENCUENTRO DE JÓVENES POR LA FORMALIZACIÓN LABORAL' => 1,
+            'Potencia Tu Empresa- Gestion Empresarial' => 2,
+            'Potencia Tu Empresa - Formalizacion.' => 1,
+            'DIFUSIÓN DE LOS SERVICIOS DEL PNTE' => 9,
+            'COMPRAS -SECTOR ECONÓMICO PRIORIZADO' => 6,
+            'CAMPAÑA DESPEGA TU EMPRESA' => 8,
         ];
 
+        // Normalizar las claves del mapping
+        $mapping = [];
+
+        foreach ($mappingOriginal as $key => $value) {
+            $keyNormalizada = $this->eliminarAcentos(
+                mb_strtolower(trim($key), 'UTF-8')
+            );
+
+            $mapping[$keyNormalizada] = $value;
+        }
+
         $registros = DB::table('attendancelist')->get();
+
         $contador = 0;
 
         foreach ($registros as $item) {
-            // NORMALIZACIÓN AGRESIVA:
-            // a. Pasamos a minúsculas correctamente (mb_strtolower)
-            // b. Quitamos acentos para que "DIFUSIÓN" coincida con "difusion"
-            $tituloLimpio = $this->eliminarAcentos(mb_strtolower(trim($item->title), 'UTF-8'));
+
+            $tituloLimpio = $this->eliminarAcentos(
+                mb_strtolower(trim($item->title), 'UTF-8')
+            );
 
             if (array_key_exists($tituloLimpio, $mapping)) {
+
                 DB::table('attendancelist')
                     ->where('id', $item->id)
-                    ->update(['nombre_actividad_id' => $mapping[$tituloLimpio]]);
+                    ->update([
+                        'nombre_actividad_id' => $mapping[$tituloLimpio],
+                    ]);
 
                 $contador++;
             }
@@ -819,10 +1387,20 @@ class ActividadPnteController extends Controller
 
     private function eliminarAcentos($cadena)
     {
-        $buscar = ['á', 'é', 'í', 'ó', 'ú', 'ñ', 'Á', 'É', 'Í', 'Ó', 'Ú', 'Ñ'];
-        $reemplazar = ['a', 'e', 'i', 'o', 'u', 'n', 'a', 'e', 'i', 'o', 'u', 'n'];
-
-        return str_replace($buscar, $reemplazar, $cadena);
+        return strtr($cadena, [
+            'á' => 'a',
+            'é' => 'e',
+            'í' => 'i',
+            'ó' => 'o',
+            'ú' => 'u',
+            'Á' => 'A',
+            'É' => 'E',
+            'Í' => 'I',
+            'Ó' => 'O',
+            'Ú' => 'U',
+            'ñ' => 'n',
+            'Ñ' => 'N',
+        ]);
     }
 
     // 5
