@@ -251,6 +251,10 @@ Route::prefix('event-pnte')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/eventpnte.php';
 });
 
+Route::prefix('event-pnte-public')->group(function () {
+    require __DIR__ . '/api/eventpnte.php';
+});
+
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
     // Route::get('list',                                  [UserController::class, 'index']);                  // v2.0
@@ -392,8 +396,8 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('notaries', [DownloadNotariesController::class, 'exportNotaries']);
     Route::post('cdes', [DownloadCdesController::class, 'exportCdes']);
     Route::post('events', [DownloadEventsController::class, 'exportEvents']);
-    // Route::post('sed-asistentes/{slug}',        [SedAsistentesController::class, 'exportList']);                 // asistentes de sed
 
+    Route::post('export-todos-inscritos', [DownloadAttendanceController::class, 'exportInscritos']);
 });
 
 // Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -668,7 +672,7 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
     Route::post('migrate-events', [AttendanceController::class, 'migrateEvents']);        // migra los eventos de UGO al calendario sr Carlos
     Route::put('event-finally/{id}', [AttendanceController::class, 'eventFinally']);        // migra los eventos de UGO al calendario sr Carlos
 
-    Route::put('update-values-select', [AttendanceController::class, 'updateValuesSelect']);
+    // Route::put('update-values-select', [AttendanceController::class, 'updateValuesSelect']);
     Route::post('email-create-activity', [AttendanceController::class, 'sendAttendanceMail']);        // migra los eventos de UGO al calendario sr Carlos
     Route::get('events-by-region', [AttendanceController::class, 'eventsByRegion']);        // migra los eventos de UGO al calendario sr Carlos
 

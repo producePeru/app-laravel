@@ -6,10 +6,12 @@ use App\Exports\AttendanceExport;
 use App\Exports\AttendanceListSlugExport;
 // use App\Exports\AttendanceListExport;
 use App\Http\Controllers\Controller;
+use App\Models\ActividadPnte;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
 use App\Models\City;
 use App\Models\District;
+use App\Models\EmpresarioActividad;
 use App\Models\People;
 use App\Models\Province;
 use App\Models\User;
@@ -28,164 +30,189 @@ class DownloadAttendanceController extends Controller
     public function exportAttendance(Request $request)
     {
         try {
-
             ini_set('memory_limit', '2G');
             set_time_limit(300);
 
-            $filters = [
-                'name'       => $request->input('name'),
-                'asesor'     => $request->input('asesor'),
-                'modalidad'  => $request->input('modalidad'),
-                'year'       => $request->input('year'),
-                'date'       => $request->input('date'),
-                'rangeDate'  => $request->input('rangeDate') ?? [],
-                'city'       => $request->input('city'),
-                'province'   => $request->input('province'),
-                'district'   => $request->input('district'),
-                'status'     => $request->input('status'),
-                'orderby'    => $request->input('orderby'),
-            ];
-
             $user = Auth::user();
 
-            // 🔒 si es asesor solo exporta sus eventos
-            if ($user->rol == 2) {
-                $filters['asesor'] = $user->id;
-            }
+            $actividades = ActividadPnte::with([
+                'tipoActividad:id,name',
+                'nombreActividad:id,name',
+                'regionRel:id,name',
+                'provinciaRel:id,name',
+                'distritoRel:id,name',
+                'representante:id,name,lastname,middlename',
+                'modalidad:id,name',
+                'registradoPor:id,name,lastname,middlename',
+            ])
+                ->select([
+                    'id',
+                    'unidad',
+                    'mes',
+                    'fechas',
+                    'cantidad_dias',
+                    'tipo_actividad_id',
+                    'nombre_actividad_id',
+                    'tema',
+                    'region',
+                    'provincia',
+                    'distrito',
+                    'lugar',
+                    'entidad_organizadora',
+                    'entidad_aliada',
+                    'representante_id',
+                    'requiere_pasaje',
+                    'monto_gasto',
+                    'mypes_beneficiadas',
+                    'modalidad_id',
+                    'total_participantes',
+                    'total_asesorias',
+                    'total_formalizaciones',
+                    'slug',
+                    'cancelado',
+                    'reprogramado',
+                    'registrado_por_id',
+                    'created_at',
+                ])
+                ->addSelect([
+                    'inscritos' => EmpresarioActividad::selectRaw('COUNT(*)')
+                        ->whereColumn('empresario_actividad.slug', 'actividades_pnte.slug')
+                ])
+                ->where('unidad', 1)
 
-            $query = Attendance::query();
+                ->when($user->rol == 2, function ($q) use ($user) {
+                    $q->where('representante_id', $user->id);
+                })
+                ->when($request->filled('year'), function ($q) use ($request) {
+                    $q->where('fechas', 'LIKE', "%{$request->input('year')}%");
+                })
+                ->when($request->filled('rangeDate'), function ($q) use ($request) {
+                    [$from, $to] = $request->input('rangeDate');
+                    $current = Carbon::parse($from);
+                    $end     = Carbon::parse($to);
+                    $q->where(function ($query) use ($current, $end) {
+                        while ($current->lte($end)) {
+                            $query->orWhere('fechas', 'LIKE', "%{$current->format('Y-m-d')}%");
+                            $current->addDay();
+                        }
+                    });
+                })
+                ->when($request->filled('city'), function ($q) use ($request) {
+                    $q->where('region', $request->input('city'));
+                })
+                ->when($request->filled('tipo_actividad_id'), function ($q) use ($request) {
+                    $q->where('tipo_actividad_id', $request->input('tipo_actividad_id'));
+                })
+                ->when($request->filled('asesor') && $user->rol == 1, function ($q) use ($request) {
+                    $q->where('representante_id', $request->input('asesor'));
+                })
+                ->get()
+                ->sortByDesc(function ($actividad) {
+                    $fechas = is_array($actividad->fechas)
+                        ? $actividad->fechas
+                        : json_decode($actividad->fechas, true);
+                    return collect($fechas)->max();
+                })
+                ->values();
 
-            $query->withItems($filters)
-                ->withCount('attendanceList'); // ⚡ evita consultas extra
-
-            // 📄 Cargar plantilla Excel
+            // 📄 Plantilla Excel
             $templatePath = storage_path('app/plantillas/attendance_template.xlsx');
             $spreadsheet  = IOFactory::load($templatePath);
             $sheet        = $spreadsheet->getActiveSheet();
 
-            $startRow    = 2;
-            $rowIndex    = 0;
-            $globalIndex = 1;
+            $startRow = 2;
 
-            // 🚀 Procesar por bloques
-            $query->chunk(500, function ($rows) use (
-                &$sheet,
-                &$rowIndex,
-                &$globalIndex,
-                $startRow
-            ) {
+            foreach ($actividades as $index => $item) {
 
-                foreach ($rows as $item) {
+                $fechas   = is_array($item->fechas) ? $item->fechas : json_decode($item->fechas, true);
+                $fechaMin = collect($fechas)->min();
+                $fechaMax = collect($fechas)->max();
 
-                    $estado = $item->getEstado();
+                // ── ESTADO (getEstado equivalente) ──────────────────────────
+                $today = Carbon::today();
 
-                    $row = [
-
-                        $globalIndex++,
-
-                        'UGO',
-
-                        strtoupper(Carbon::parse($item->startDate)->translatedFormat('F')),
-
-                        Carbon::parse($item->startDate)->format('d/m/Y'),
-                        Carbon::parse($item->endDate)->format('d/m/Y'),
-
-                        Carbon::parse($item->startDate)
-                            ->diffInDays(Carbon::parse($item->endDate)) + 1,
-
-                        $item->pnte->name ?? '-',
-
-                        strtoupper($item->title) ?? '-',
-
-                        strtoupper($item->theme ?? '-') ?? '-',
-
-                        $item->region->name ?? null,
-                        $item->provincia->name ?? null,
-                        $item->distrito->name ?? null,
-
-                        $item->address ?? null,
-
-                        strtoupper($item->entidad ?? '-') ?? '-',
-
-                        strtoupper($item->entidad_aliada ?? '-') ?? '-',
-
-                        $item->asesor
-                            ? strtoupper(
-                                $item->asesor->name . ' ' .
-                                    $item->asesor->lastname . ' ' .
-                                    $item->asesor->middlename
-                            )
-                            : null,
-
-                        $item->pasaje == 'n'
-                            ? 'NO'
-                            : ($item->pasaje == 's' ? 'SI' : '-'),
-
-                        $item->monto ?? 0,
-
-                        $item->beneficiarios ?? null,
-
-                        $item->modality == 'v'
-                            ? 'VIRTUAL'
-                            : 'PRESENCIAL',
-
-                        $item->attendance_list_count > 0
-                            ? 'CON LISTA'
-                            : 'SIN LISTA',
-
-                        $item->attendance_list_count ?? 0,
-
-                        $item->total_asesorias ?? 0,
-
-                        $item->total_formalizaciones ?? 0,
-
-                        // null,
-                        // null,
-                        // null,
-                        // null,
-                        // null,
-                        // null,
-                        // null,
-
-                        $estado,
-
-                        Carbon::parse($item->created_at)->format('d/m/Y'),
-
-                        'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/' . $item->slug,
-
-                        'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $item->slug,
-
-                        $item->registrador ? strtoupper($item->registrador->name . ' ' . $item->registrador->lastname . ' ' . $item->registrador->middlename) : null,
-
-                    ];
-
-                    $col = 'A';
-
-                    foreach ($row as $value) {
-                        $sheet->setCellValue($col . ($startRow + $rowIndex), $value);
-                        $col++;
-                    }
-
-                    $rowIndex++;
+                if ($item->inscritos > 0) {
+                    $estado = '4. FINALIZADOS';
+                } elseif (Carbon::parse($fechaMax)->lt($today)) {
+                    $estado = '3. PENDIENTE DE RESULTADOS';
+                } elseif (Carbon::parse($item->created_at)->isToday()) {
+                    $estado = '1. PROGRAMACION DIARIA';
+                } else {
+                    $estado = '2. PROGRAMACION CONSOLIDADA';
                 }
-            });
 
-            // 📥 Descargar archivo
+                // ── ESTADO CANCELADO / REPROGRAMADO ─────────────────────────
+                $estadoActividad = $item->cancelado
+                    ? 'CANCELADO'
+                    : ($item->reprogramado ? 'REPROGRAMADO' : 'EN CURSO');
+
+                // ── REPRESENTANTE ────────────────────────────────────────────
+                $representante = $item->representante
+                    ? strtoupper(
+                        $item->representante->lastname . ' ' .
+                            $item->representante->middlename . ', ' .
+                            $item->representante->name
+                    )
+                    : null;
+
+                // ── REGISTRADO POR ───────────────────────────────────────────
+                $registradoPor = $item->registradoPor
+                    ? strtoupper(
+                        $item->registradoPor->name . ' ' .
+                            $item->registradoPor->lastname . ' ' .
+                            $item->registradoPor->middlename
+                    )
+                    : null;
+
+                // ── COLUMNAS (A → AD = 30 columnas) ─────────────────────────
+                $row = [
+                    $index + 1,                                                         // A  Nro.
+                    'UGO',                                                              // B  UNIDAD
+                    strtoupper(Carbon::parse($fechaMin)->translatedFormat('F')),        // C  MES
+                    Carbon::parse($fechaMin)->format('d/m/Y'),                          // D  FECHA INICIO
+                    Carbon::parse($fechaMax)->format('d/m/Y'),                          // E  FECHA FIN
+                    $item->cantidad_dias,                                               // F  CANTIDAD DIAS
+                    $item->tipoActividad->name    ?? '-',                               // G  TIPO ACTIVIDAD
+                    $item->nombreActividad->name  ?? '-',                               // H  NOMBRE ACTIVIDAD
+                    strtoupper($item->tema ?? '-'),                                     // I  TEMA
+                    $item->regionRel->name        ?? null,                              // J  REGION
+                    $item->provinciaRel->name     ?? null,                              // K  PROVINCIA
+                    $item->distritoRel->name      ?? null,                              // L  DISTRITO
+                    $item->lugar                  ?? null,                              // M  LUGAR
+                    strtoupper($item->entidad_organizadora ?? '-'),                     // N  ENTIDAD ORGANIZADORA
+                    strtoupper($item->entidad_aliada       ?? '-'),                     // O  ENTIDAD ALIADA
+                    $representante,                                                     // P  REPRESENTANTE
+                    $item->requiere_pasaje ? 'SÍ' : 'NO',                              // Q  REQUIERE PASAJE
+                    $item->monto_gasto            ?? 0,                                 // R  MONTO GASTOS
+                    $item->mypes_beneficiadas     ?? 0,                                 // S  MYPES BENEFICIADAS
+                    $item->modalidad->name        ?? null,                              // T  MODALIDAD
+                    $item->inscritos > 0 ? 'CON LISTA' : 'SIN LISTA',                 // U  ESTADO LISTA
+                    $item->inscritos              ?? 0,                                 // V  TOTAL INSCRITOS
+                    $item->total_asesorias        ?? 0,                                 // W  TOTAL ASESORIAS
+                    $item->total_formalizaciones  ?? 0,                                 // X  TOTAL FORMALIZACIONES
+                    $estado,                                                            // Y  ESTADO
+                    Carbon::parse($item->created_at)->format('d/m/Y'),                 // Z  FECHA CREADA
+                    'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/' . $item->slug, // AA LINK INSCRITOS
+                    'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $item->slug,                      // AB LINK FORMULARIO
+                    $registradoPor,                                                     // AC REGISTRADO POR
+                    $estadoActividad,                                                   // AD ESTADO CANCELADO/REPROGRAMADO
+                ];
+
+                $col = 'A';
+                foreach ($row as $value) {
+                    $sheet->setCellValue($col . ($startRow + $index), $value);
+                    $col++;
+                }
+            }
+
             return new StreamedResponse(function () use ($spreadsheet) {
-
                 $writer = new Xlsx($spreadsheet);
                 $writer->save('php://output');
             }, 200, [
-
-                'Content-Type' =>
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-
-                'Content-Disposition' =>
-                'attachment; filename="attendance_template.xlsx"',
-
+                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="actividades_pnte_' . now()->format('Ymd_His') . '.xlsx"',
             ]);
         } catch (\Exception $e) {
-
             return response()->json([
                 'message' => 'Ocurrió un error al generar el reporte',
                 'error'   => $e->getMessage(),
@@ -193,190 +220,347 @@ class DownloadAttendanceController extends Controller
         }
     }
 
-    // Carbon::parse($item->startDate)->format('d/m/Y'),
-    // Carbon::parse($item->endDate)->format('d/m/Y'),
-    // Carbon::parse($item->startDate)
-    //     ->diffInDays(Carbon::parse($item->endDate)) + 1,
-    // $item->region->name ?? '-',
-    // $item->provincia->name ?? '-',
-    // $item->distrito->name ?? '-',
-    // $item->address ?? '-',
-    // $item->asesor
-    //     ? strtoupper(
-    //         $item->asesor->name . ' ' .
-    //             $item->asesor->lastname . ' ' .
-    //             $item->asesor->middlename
-    //     )
-    //     : '-',
-    // $item->profile
-    //     ? strtoupper(
-    //         $item->profile->name . ' ' .
-    //             $item->profile->lastname . ' ' .
-    //             $item->profile->middlename
-    //     )
-    //     : '-',
-    // $item->description ?? '-',
-    // Carbon::parse($item->created_at)->format('d/m/Y'),
-    // 'https://programa.soporte-pnte.com/admin/ugo/eventos-inscritos/' . $item->slug,
-    // $item->eventsoffice_id == 3
-    //     ? 'https://inscripcion.soporte-pnte.com/fortalece-tu-mercado/' . $item->slug
-    //     : 'https://programa.soporte-pnte.com/asistencias/' . $item->slug,
-
-
-    public function exportRegistrantsUgoEvents($slug)
+    public function exportInscritosPorSlug($slug)
     {
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
 
-        // ===== Buscar evento =====
-        $attendance = Attendance::with([
-            'asesor:id,name,lastname,middlename',
-            'region:id,name',
-            'provincia:id,name',
-            'distrito:id,name',
-            'pnte:id,name'
-        ])->where('slug', $slug)->first();
+        // ─────────────────────────────────────────────
+        // EVENTO
+        // ─────────────────────────────────────────────
+        $actividad = ActividadPnte::with([
+            'tipoActividad:id,name',
+            'nombreActividad:id,name',
+            'regionRel:id,name',
+            'provinciaRel:id,name',
+            'distritoRel:id,name',
+            'representante:id,name,lastname,middlename'
+        ])
+            ->where('slug', $slug)
+            ->first();
 
-        if (!$attendance) {
-            return response()->json(['message' => 'Not found'], 404);
+        if (!$actividad) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Actividad no encontrada'
+            ], 404);
         }
 
-        // ===== Query participantes =====
-        $query = AttendanceList::with([
-            'typedocument:id,avr',
-            'gender:id,avr',
-            'economicsector:id,name',
-            'country:id,name',
-            'city:id,name',
-            'province:id,name',
-            'dictrict:id,name',
-            'rubro:id,name'
-        ])
-            ->where('attendancelist_id', $attendance->id)
-            ->orderBy('created_at', 'desc');
+        // ─────────────────────────────────────────────
+        // QUERY INSCRITOS
+        // ─────────────────────────────────────────────
+        $query = EmpresarioActividad::with([
+            'empresario' => function ($q) {
+                $q->select([
+                    'id',
+                    'ruc',
+                    'razon_social',
+                    'nombre_comercial',
+                    'sector_economico_id',
+                    'rubro_id',
+                    'actividad_comercial_nombre',
+                    'region_id',
+                    'provincia_id',
+                    'distrito_id',
+                    'direccion',
+                    'pais_id',
+                    'tipo_documento_id',
+                    'numero_dni',
+                    'apellido_paterno',
+                    'apellido_materno',
+                    'nombres',
+                    'genero_id',
+                    'discapacidad',
+                    'celular',
+                    'correo_electronico'
+                ]);
+            },
 
-        // ===== Cargar plantilla =====
+            'empresario.tipoDocumento:id,avr',
+            'empresario.pais:id,name',
+            'empresario.genero:id,avr',
+            'empresario.region:id,name',
+            'empresario.provincia:id,name',
+            'empresario.distrito:id,name',
+
+            // 🔥 ESTOS FALTABAN
+            'empresario.sectorEconomico:id,name',
+            'empresario.rubro:id,name',
+        ])
+            ->where('slug', $slug)
+            ->orderByDesc('created_at');
+
+        // ─────────────────────────────────────────────
+        // TEMPLATE
+        // ─────────────────────────────────────────────
         $templatePath = storage_path('app/plantillas/ugo_eventos_lista_registrados_template.xlsx');
 
         if (!file_exists($templatePath)) {
-            return response()->json(['message' => 'Template not found'], 404);
+            return response()->json([
+                'status' => 404,
+                'message' => 'Plantilla no encontrada'
+            ], 404);
         }
 
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        // ===== Fila inicial D3 =====
+        // ─────────────────────────────────────────────
+        // START
+        // ─────────────────────────────────────────────
         $row = 3;
         $index = 1;
 
-        $query->chunk(1000, function ($items) use (&$row, &$index, $sheet, $attendance) {
+        $query->chunk(1000, function ($items) use (
+            &$row,
+            &$index,
+            $sheet,
+            $actividad
+        ) {
 
             foreach ($items as $item) {
 
+                $e = $item->empresario;
+
                 $col = 'D';
 
+                // NRO
                 $sheet->setCellValue("{$col}{$row}", $index++);
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $attendance->startDate ? Carbon::parse($attendance->startDate)->format('d/m/Y') : null);
+                // FECHAS
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    collect($actividad->fechas ?? [])
+                        ->map(fn($f) => Carbon::parse($f)->format('d/m/Y'))
+                        ->implode(' - ')
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $attendance->endDate ? Carbon::parse($attendance->endDate)->format('d/m/Y') : null);
+                // TIPO ACTIVIDAD
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->tipoActividad?->name
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $attendance->pnte->name);
+                // NOMBRE ACTIVIDAD
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->nombreActividad?->name
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $attendance->title);
+                // TEMA
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($actividad->tema ?? '', 'UTF-8')
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($attendance->theme));
+                // REGION
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->regionRel?->name
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $attendance->region?->name ?? '');
+                // PROVINCIA
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->provinciaRel?->name
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $attendance->provincia?->name ?? '');
+                // DISTRITO
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->distritoRel?->name
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $attendance->distrito?->name ?? '');
+                // LUGAR
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($actividad->lugar ?? '', 'UTF-8')
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($attendance->address ?? '', 'UTF-8'));
+                // REPRESENTANTE
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        trim(
+                            ($actividad->representante?->name ?? '') . ' ' .
+                                ($actividad->representante?->lastname ?? '') . ' ' .
+                                ($actividad->representante?->middlename ?? '')
+                        ),
+                        'UTF-8'
+                    )
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($attendance->asesor->lastname . ' ' . $attendance->asesor->middlename . ' ' . $attendance->asesor->name) ?? '');
+                // ─────────────────────────────────────────────
+                // TIPO DOCUMENTO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->tipoDocumento?->avr
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->typedocument?->avr ?? '');
+                // ─────────────────────────────────────────────
+                // NRO DOCUMENTO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->numero_dni
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->documentnumber ?? null);
+                // ─────────────────────────────────────────────
+                // PAIS
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->pais?->name ?? '', 'UTF-8')
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($item->country->name ?? null));
+                // ─────────────────────────────────────────────
+                // APELLIDOS
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        trim(
+                            ($e->apellido_paterno ?? '') . ' ' .
+                                ($e->apellido_materno ?? '')
+                        ),
+                        'UTF-8'
+                    )
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim("{$item->lastname} {$item->middlename}"), 'UTF-8'));
+                // ─────────────────────────────────────────────
+                // NOMBRES
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->nombres ?? '', 'UTF-8')
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim("{$item->name}"), 'UTF-8'));
+                // ─────────────────────────────────────────────
+                // GENERO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->genero?->avr
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->gender?->avr);
+                // ─────────────────────────────────────────────
+                // DISCAPACIDAD
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->discapacidad ? 'SI' : 'NO'
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim("{$item->sick}"), 'UTF-8'));
+                // ─────────────────────────────────────────────
+                // RUC
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->ruc
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->ruc ?? '-');
+                // ─────────────────────────────────────────────
+                // REGION
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->region?->name ?? '', 'UTF-8')
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->city?->name ?? '');
+                // ─────────────────────────────────────────────
+                // PROVINCIA
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->provincia?->name ?? '', 'UTF-8')
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->province?->name ?? '');
+                // ─────────────────────────────────────────────
+                // DISTRITO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->distrito?->name ?? '', 'UTF-8')
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->dictrict?->name ?? '');
+                // ─────────────────────────────────────────────
+                // SECTOR ECONOMICO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8')
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->economicsector?->name);
+                // ─────────────────────────────────────────────
+                // RUBRO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->rubro?->name ?? '', 'UTF-8')
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->rubro->name ?? '');
+                // ─────────────────────────────────────────────
+                // CELULAR
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->celular
+                );
                 $col++;
 
-                $sheet->setCellValue("{$col}{$row}", $item->phone);
-                $col++;
-
-                $sheet->setCellValue("{$col}{$row}", $item->email);
-                $col++;
-
-                $sheet->setCellValue("{$col}{$row}", $item->is_asesoria);
-                $col++;
-
-                $sheet->setCellValue("{$col}{$row}", $item->was_formalizado);
+                // ─────────────────────────────────────────────
+                // CORREO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->correo_electronico
+                );
 
                 $row++;
             }
         });
 
-        // ===== Descargar =====
+        // ─────────────────────────────────────────────
+        // DOWNLOAD
+        // ─────────────────────────────────────────────
         return new StreamedResponse(function () use ($spreadsheet) {
 
             $writer = new Xlsx($spreadsheet);
-            $writer->setPreCalculateFormulas(false); // mejora rendimiento
+
+            // 🔥 mejora rendimiento
+            $writer->setPreCalculateFormulas(false);
+
             $writer->save('php://output');
         }, 200, [
-            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="lista-registrados.xlsx"',
-            'Cache-Control'       => 'max-age=0',
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="lista-inscritos-ugo.xlsx"',
+            'Cache-Control' => 'max-age=0',
         ]);
     }
-
-
-
 
     public function exportFortaleceTuMercado($slug)
     {
@@ -449,9 +633,6 @@ class DownloadAttendanceController extends Controller
             'Content-Disposition' => 'attachment; filename="lista-registrados.xlsx"',
         ]);
     }
-
-
-
 
     // descargamos de acuerdo al tipo de evento que queremos 1,2,3,4,5
     public function exportAttendanceByComponentsId($eventsoffice_id)
@@ -532,5 +713,300 @@ class DownloadAttendanceController extends Controller
             'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => 'attachment; filename="lista-registrados.xlsx"',
         ]);
+    }
+
+
+    // DESCARGAR TODAS LAS ACTIVIDADES CON LOS INSCRITOS
+    public function exportInscritos(Request $request)
+    {
+        try {
+            ini_set('memory_limit', '2G');
+            set_time_limit(600);
+
+            $user = Auth::user();
+
+            // ✅ Solo rol 1 puede descargar
+            if ($user->rol != 1) {
+                return response()->json([
+                    'status'  => 403,
+                    'message' => 'No tienes permisos para descargar este reporte.',
+                ], 403);
+            }
+
+            // ✅ Helper para limpiar saltos de línea y tabs
+            $clean = fn($value) => is_string($value)
+                ? str_replace(["\r\n", "\r", "\n", "\t"], ' ', trim($value))
+                : $value;
+
+            $actividades = ActividadPnte::with([
+                'tipoActividad:id,name',
+                'nombreActividad:id,name',
+                'regionRel:id,name',
+                'provinciaRel:id,name',
+                'distritoRel:id,name',
+                'representante:id,name,lastname,middlename',
+                'modalidad:id,name',
+                'registradoPor:id,name,lastname,middlename',
+            ])
+                ->select([
+                    'id',
+                    'slug',
+                    'fechas',
+                    'cantidad_dias',
+                    'tema',
+                    'lugar',
+                    'tipo_actividad_id',
+                    'nombre_actividad_id',
+                    'modalidad_id',
+                    'region',
+                    'provincia',
+                    'distrito',
+                    'representante_id',
+                    'entidad_organizadora',
+                    'entidad_aliada',
+                    'requiere_pasaje',
+                    'monto_gasto',
+                    'mypes_beneficiadas',
+                    'total_participantes',
+                    'total_asesorias',
+                    'total_formalizaciones',
+                    'cancelado',
+                    'reprogramado',
+                    'registrado_por_id',
+                    'created_at',
+                ])
+                ->addSelect([
+                    'inscritos' => EmpresarioActividad::selectRaw('COUNT(*)')
+                        ->whereColumn('empresario_actividad.slug', 'actividades_pnte.slug')
+                ])
+                ->where('unidad', 1)
+                ->when(
+                    $request->filled('year'),
+                    fn($q) => $q->where('fechas', 'LIKE', "%{$request->input('year')}%")
+                )
+                ->when($request->filled('rangeDate'), function ($q) use ($request) {
+                    [$from, $to] = $request->input('rangeDate');
+                    $current = Carbon::parse($from);
+                    $end     = Carbon::parse($to);
+                    $q->where(function ($query) use ($current, $end) {
+                        while ($current->lte($end)) {
+                            $query->orWhere('fechas', 'LIKE', "%{$current->format('Y-m-d')}%");
+                            $current->addDay();
+                        }
+                    });
+                })
+                ->when($request->filled('city'), fn($q) => $q->where('region', $request->input('city')))
+                ->when($request->filled('tipo_actividad_id'), fn($q) => $q->where('tipo_actividad_id', $request->input('tipo_actividad_id')))
+                ->when($request->filled('asesor'), fn($q) => $q->where('representante_id', $request->input('asesor')))
+                ->get()
+                ->sortByDesc(function ($a) {
+                    $fechas = is_array($a->fechas) ? $a->fechas : json_decode($a->fechas, true);
+                    return collect($fechas)->max();
+                })
+                ->values();
+
+            $slugs = $actividades->pluck('slug')->toArray();
+
+            $inscritosPorSlug = EmpresarioActividad::with([
+                'empresario:id,ruc,razon_social,apellido_paterno,apellido_materno,nombres,numero_dni,celular,correo_electronico,genero_id,discapacidad,sector_economico_id,rubro_id,region_id,provincia_id,distrito_id,pais_id,tipo_documento_id',
+                'empresario.genero:id,name',
+                'empresario.tipoDocumento:id,name',
+                'empresario.pais:id,name',
+                'empresario.region:id,name',
+                'empresario.provincia:id,name',
+                'empresario.distrito:id,name',
+                'empresario.sectorEconomico:id,name',
+                'empresario.rubro:id,name',
+            ])
+                ->whereIn('slug', $slugs)
+                ->orderBy('slug')
+                ->orderBy('id')
+                ->get()
+                ->groupBy('slug');
+
+            // ✅ CSV en memoria con BOM UTF-8
+            $handle = fopen('php://temp', 'r+');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // ✅ Cabecera
+            fputcsv($handle, [
+                'Nro.',
+                'UNIDAD',
+                'MES   (autollenado)',
+                'FECHA DE INICIO',
+                'FECHA DE FIN',
+                'CANTIDAD DE DIAS DE LA ACTIVIDAD   (autollenado)',
+                'TIPO DE ACTIVIDAD',
+                'NOMBRE DE ACTIVIDAD',
+                'TEMA',
+                'REGION DE LA ACTIVIDAD',
+                'PROVINCIA DE LA ACTIVIDAD',
+                'DISTRITO DE LA ACTIVIDAD',
+                'LUGAR DE LA ACTIVIDAD',
+                'NOMBRE DE ENTIDAD ORGANIZADORA',
+                'NOMBRE DE ENTIDAD O INSTITUCIÓN ALIADA / PARTICIPANTE',
+                'REPRESENTANTE DE PRODUCE QUE PARTICIPA (APELLIDOS Y NOMBRES)',
+                '¿REQUERIRA PASAJES?  (SÍ / NO)',
+                'COLOCAR SOLO EL MONTO DE GASTOS EN PASAJES EN SOLES IDA + VUELTA (BUS Y/O AVION)',
+                'MYPE Y/O EMPRENDEDORES BENEFICIADOS ESPERADOS',
+                'MODALIDAD   (VIRTUAL / PRESENCIAL)',
+                'ESTADO DE LISTA',
+                'TOTAL DE INSCRITOS',
+                'TOTAL ASESORIAS (UGO)',
+                'TOTAL FORMALIZACIONES (UGO)',
+                'ESTADO',
+                'FECHA CREADA LA ACTIVIDAD',
+                'LINK DE INSCRITOS A LA ACTIVIDAD',
+                'LINK DE FORMULARIO DE REGISTRO',
+                'REGISTRADO POR',
+                'ESTADO DE LA ACTIVIDAD EN CURSO / CANCELADO / REPROGRAMADO',
+                'TIPO DE DOCUMENTO (DNI, CE, CPP, PS)',
+                'NRO. DE DOCUMENTO  (NO DEJAR EN BLANCO NI COLOCAR GUION)',
+                'PAIS DE PROCEDENCIA',
+                'APELLIDOS',
+                'NOMBRES',
+                'GENERO  F / M',
+                'DISCAPACIDAD   SI / NO',
+                'RUC',
+                'REGIÓN_MYPE',
+                'PROVINCIA_MYPE',
+                'DISTRITO_MYPE',
+                'SECTOR (COMERCIO, SERVICIOS O INDUSTRIA)',
+                'RUBRO / RUBRO',
+                'CELULAR',
+                'CORREO',
+                '¿SE BRINDÓ ASESORÍA AL USUARIO DURANTE LA ACTIVIDAD?  SI / NO',
+                '¿SE FORMALIZO AL USUARIO DURANTE LA ACTIVIDAD?  SI / NO',
+            ], ',');
+
+            $globalIndex = 1;
+            $today       = Carbon::today();
+
+            foreach ($actividades as $actividad) {
+
+                $fechas   = is_array($actividad->fechas) ? $actividad->fechas : json_decode($actividad->fechas, true);
+                $fechaMin = collect($fechas)->min();
+                $fechaMax = collect($fechas)->max();
+
+                // ── ESTADO ───────────────────────────────────────────
+                if ($actividad->inscritos > 0) {
+                    $estado = '4. FINALIZADOS';
+                } elseif (Carbon::parse($fechaMax)->lt($today)) {
+                    $estado = '3. PENDIENTE DE RESULTADOS';
+                } elseif (Carbon::parse($actividad->created_at)->isToday()) {
+                    $estado = '1. PROGRAMACION DIARIA';
+                } else {
+                    $estado = '2. PROGRAMACION CONSOLIDADA';
+                }
+
+                $estadoActividad = $actividad->cancelado
+                    ? 'CANCELADO'
+                    : ($actividad->reprogramado ? 'REPROGRAMADO' : 'EN CURSO');
+
+                $representante = $actividad->representante
+                    ? strtoupper(
+                        $actividad->representante->lastname . ' ' .
+                            $actividad->representante->middlename . ', ' .
+                            $actividad->representante->name
+                    )
+                    : null;
+
+                $registradoPor = $actividad->registradoPor
+                    ? strtoupper(
+                        $actividad->registradoPor->name . ' ' .
+                            $actividad->registradoPor->lastname . ' ' .
+                            $actividad->registradoPor->middlename
+                    )
+                    : null;
+
+                // ── COLUMNAS FIJAS DE LA ACTIVIDAD ───────────────────
+                $colsActividad = [
+                    $globalIndex,
+                    'UGO',
+                    $clean(strtoupper(Carbon::parse($fechaMin)->translatedFormat('F'))),
+                    Carbon::parse($fechaMin)->format('d/m/Y'),
+                    Carbon::parse($fechaMax)->format('d/m/Y'),
+                    $actividad->cantidad_dias,
+                    $clean($actividad->tipoActividad->name   ?? '-'),
+                    $clean($actividad->nombreActividad->name ?? '-'),
+                    $clean(strtoupper($actividad->tema       ?? '-')),
+                    $clean($actividad->regionRel->name       ?? null),
+                    $clean($actividad->provinciaRel->name    ?? null),
+                    $clean($actividad->distritoRel->name     ?? null),
+                    $clean($actividad->lugar                 ?? null),
+                    $clean(strtoupper($actividad->entidad_organizadora ?? '-')),
+                    $clean(strtoupper($actividad->entidad_aliada       ?? '-')),
+                    $clean($representante),
+                    $actividad->requiere_pasaje ? 'SÍ' : 'NO',
+                    $actividad->monto_gasto           ?? 0,
+                    $actividad->mypes_beneficiadas    ?? 0,
+                    $clean($actividad->modalidad->name ?? null),
+                    $actividad->inscritos > 0 ? 'CON LISTA' : 'SIN LISTA',
+                    $actividad->inscritos             ?? 0,
+                    $actividad->total_asesorias       ?? 0,
+                    $actividad->total_formalizaciones ?? 0,
+                    $clean($estado),
+                    Carbon::parse($actividad->created_at)->format('d/m/Y'),
+                    'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/' . $actividad->slug,
+                    'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $actividad->slug,
+                    $clean($registradoPor),
+                    $clean($estadoActividad),
+                ];
+
+                $inscritos = $inscritosPorSlug->get($actividad->slug, collect());
+
+                if ($inscritos->isEmpty()) {
+                    fputcsv($handle, array_merge($colsActividad, array_fill(0, 17, null)), ',');
+                } else {
+                    foreach ($inscritos as $registro) {
+                        $emp      = $registro->empresario;
+                        $apellidos = $emp
+                            ? strtoupper(trim($emp->apellido_paterno . ' ' . $emp->apellido_materno))
+                            : null;
+
+                        $colsParticipante = [
+                            $clean($emp?->tipoDocumento?->name     ?? null),
+                            $clean($registro->numero_dni           ?? null),
+                            $clean($emp?->pais?->name              ?? null),
+                            $clean($apellidos),
+                            $clean(strtoupper($emp?->nombres       ?? '')),
+                            $clean(strtoupper($emp?->genero?->name ?? '')),
+                            $emp?->discapacidad ? 'SI' : 'NO',
+                            $clean($emp?->ruc                      ?? null),
+                            $clean($emp?->region?->name            ?? null),
+                            $clean($emp?->provincia?->name         ?? null),
+                            $clean($emp?->distrito?->name          ?? null),
+                            $clean($emp?->sectorEconomico?->name   ?? null),
+                            $clean($emp?->rubro?->name             ?? null),
+                            $clean($emp?->celular                  ?? null),
+                            $clean($emp?->correo_electronico       ?? null),
+                            $registro->personal_asesoria      ? 'SI' : 'NO',
+                            $registro->personal_formalizacion ? 'SI' : 'NO',
+                        ];
+
+                        fputcsv($handle, array_merge($colsActividad, $colsParticipante), ',');
+                    }
+                }
+
+                $globalIndex++;
+            }
+
+            rewind($handle);
+            $csvContent = stream_get_contents($handle);
+            fclose($handle);
+
+            $filename = 'inscritos_ugo_' . now()->format('Ymd_His') . '.csv';
+
+            return response($csvContent, 200, [
+                'Content-Type'        => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-Length'      => strlen($csvContent),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al generar el reporte.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
     }
 }

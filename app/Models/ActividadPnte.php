@@ -104,4 +104,9 @@ class ActividadPnte extends Model
     {
         return $this->belongsTo(User::class, 'actualizado_por_id');
     }
+
+    public function empresariosActividad()
+    {
+        return $this->hasMany(EmpresarioActividad::class, 'slug', 'slug');
+    }
 }
