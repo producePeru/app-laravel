@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Download;
 
-use App\Exports\AttendanceExport;
 use App\Exports\AttendanceListSlugExport;
 // use App\Exports\AttendanceListExport;
 use App\Http\Controllers\Controller;
@@ -14,14 +13,13 @@ use App\Models\District;
 use App\Models\EmpresarioActividad;
 use App\Models\People;
 use App\Models\Province;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 Carbon::setLocale('es');
 
@@ -76,7 +74,7 @@ class DownloadAttendanceController extends Controller
                 ])
                 ->addSelect([
                     'inscritos' => EmpresarioActividad::selectRaw('COUNT(*)')
-                        ->whereColumn('empresario_actividad.slug', 'actividades_pnte.slug')
+                        ->whereColumn('empresario_actividad.slug', 'actividades_pnte.slug'),
                 ])
                 ->where('unidad', 1)
 
@@ -89,7 +87,7 @@ class DownloadAttendanceController extends Controller
                 ->when($request->filled('rangeDate'), function ($q) use ($request) {
                     [$from, $to] = $request->input('rangeDate');
                     $current = Carbon::parse($from);
-                    $end     = Carbon::parse($to);
+                    $end = Carbon::parse($to);
                     $q->where(function ($query) use ($current, $end) {
                         while ($current->lte($end)) {
                             $query->orWhere('fechas', 'LIKE', "%{$current->format('Y-m-d')}%");
@@ -111,20 +109,21 @@ class DownloadAttendanceController extends Controller
                     $fechas = is_array($actividad->fechas)
                         ? $actividad->fechas
                         : json_decode($actividad->fechas, true);
+
                     return collect($fechas)->max();
                 })
                 ->values();
 
             // 📄 Plantilla Excel
             $templatePath = storage_path('app/plantillas/attendance_template.xlsx');
-            $spreadsheet  = IOFactory::load($templatePath);
-            $sheet        = $spreadsheet->getActiveSheet();
+            $spreadsheet = IOFactory::load($templatePath);
+            $sheet = $spreadsheet->getActiveSheet();
 
             $startRow = 2;
 
             foreach ($actividades as $index => $item) {
 
-                $fechas   = is_array($item->fechas) ? $item->fechas : json_decode($item->fechas, true);
+                $fechas = is_array($item->fechas) ? $item->fechas : json_decode($item->fechas, true);
                 $fechaMin = collect($fechas)->min();
                 $fechaMax = collect($fechas)->max();
 
@@ -149,8 +148,8 @@ class DownloadAttendanceController extends Controller
                 // ── REPRESENTANTE ────────────────────────────────────────────
                 $representante = $item->representante
                     ? strtoupper(
-                        $item->representante->lastname . ' ' .
-                            $item->representante->middlename . ', ' .
+                        $item->representante->lastname.' '.
+                            $item->representante->middlename.', '.
                             $item->representante->name
                     )
                     : null;
@@ -158,8 +157,8 @@ class DownloadAttendanceController extends Controller
                 // ── REGISTRADO POR ───────────────────────────────────────────
                 $registradoPor = $item->registradoPor
                     ? strtoupper(
-                        $item->registradoPor->name . ' ' .
-                            $item->registradoPor->lastname . ' ' .
+                        $item->registradoPor->name.' '.
+                            $item->registradoPor->lastname.' '.
                             $item->registradoPor->middlename
                     )
                     : null;
@@ -172,35 +171,35 @@ class DownloadAttendanceController extends Controller
                     Carbon::parse($fechaMin)->format('d/m/Y'),                          // D  FECHA INICIO
                     Carbon::parse($fechaMax)->format('d/m/Y'),                          // E  FECHA FIN
                     $item->cantidad_dias,                                               // F  CANTIDAD DIAS
-                    $item->tipoActividad->name    ?? '-',                               // G  TIPO ACTIVIDAD
-                    $item->nombreActividad->name  ?? '-',                               // H  NOMBRE ACTIVIDAD
+                    $item->tipoActividad->name ?? '-',                               // G  TIPO ACTIVIDAD
+                    $item->nombreActividad->name ?? '-',                               // H  NOMBRE ACTIVIDAD
                     strtoupper($item->tema ?? '-'),                                     // I  TEMA
-                    $item->regionRel->name        ?? null,                              // J  REGION
-                    $item->provinciaRel->name     ?? null,                              // K  PROVINCIA
-                    $item->distritoRel->name      ?? null,                              // L  DISTRITO
-                    $item->lugar                  ?? null,                              // M  LUGAR
+                    $item->regionRel->name ?? null,                              // J  REGION
+                    $item->provinciaRel->name ?? null,                              // K  PROVINCIA
+                    $item->distritoRel->name ?? null,                              // L  DISTRITO
+                    $item->lugar ?? null,                              // M  LUGAR
                     strtoupper($item->entidad_organizadora ?? '-'),                     // N  ENTIDAD ORGANIZADORA
-                    strtoupper($item->entidad_aliada       ?? '-'),                     // O  ENTIDAD ALIADA
+                    strtoupper($item->entidad_aliada ?? '-'),                     // O  ENTIDAD ALIADA
                     $representante,                                                     // P  REPRESENTANTE
                     $item->requiere_pasaje ? 'SÍ' : 'NO',                              // Q  REQUIERE PASAJE
-                    $item->monto_gasto            ?? 0,                                 // R  MONTO GASTOS
-                    $item->mypes_beneficiadas     ?? 0,                                 // S  MYPES BENEFICIADAS
-                    $item->modalidad->name        ?? null,                              // T  MODALIDAD
+                    $item->monto_gasto ?? 0,                                 // R  MONTO GASTOS
+                    $item->mypes_beneficiadas ?? 0,                                 // S  MYPES BENEFICIADAS
+                    $item->modalidad->name ?? null,                              // T  MODALIDAD
                     $item->inscritos > 0 ? 'CON LISTA' : 'SIN LISTA',                 // U  ESTADO LISTA
-                    $item->inscritos              ?? 0,                                 // V  TOTAL INSCRITOS
-                    $item->total_asesorias        ?? 0,                                 // W  TOTAL ASESORIAS
-                    $item->total_formalizaciones  ?? 0,                                 // X  TOTAL FORMALIZACIONES
+                    $item->inscritos ?? 0,                                 // V  TOTAL INSCRITOS
+                    $item->total_asesorias ?? 0,                                 // W  TOTAL ASESORIAS
+                    $item->total_formalizaciones ?? 0,                                 // X  TOTAL FORMALIZACIONES
                     $estado,                                                            // Y  ESTADO
                     Carbon::parse($item->created_at)->format('d/m/Y'),                 // Z  FECHA CREADA
-                    'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/' . $item->slug, // AA LINK INSCRITOS
-                    'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $item->slug,                      // AB LINK FORMULARIO
+                    'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/'.$item->slug, // AA LINK INSCRITOS
+                    'https://inscripcion.soporte-pnte.com/actividades-ugo/'.$item->slug,                      // AB LINK FORMULARIO
                     $registradoPor,                                                     // AC REGISTRADO POR
                     $estadoActividad,                                                   // AD ESTADO CANCELADO/REPROGRAMADO
                 ];
 
                 $col = 'A';
                 foreach ($row as $value) {
-                    $sheet->setCellValue($col . ($startRow + $index), $value);
+                    $sheet->setCellValue($col.($startRow + $index), $value);
                     $col++;
                 }
             }
@@ -209,13 +208,13 @@ class DownloadAttendanceController extends Controller
                 $writer = new Xlsx($spreadsheet);
                 $writer->save('php://output');
             }, 200, [
-                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="actividades_pnte_' . now()->format('Ymd_His') . '.xlsx"',
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="actividades_pnte_'.now()->format('Ymd_His').'.xlsx"',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Ocurrió un error al generar el reporte',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -234,15 +233,15 @@ class DownloadAttendanceController extends Controller
             'regionRel:id,name',
             'provinciaRel:id,name',
             'distritoRel:id,name',
-            'representante:id,name,lastname,middlename'
+            'representante:id,name,lastname,middlename',
         ])
             ->where('slug', $slug)
             ->first();
 
-        if (!$actividad) {
+        if (! $actividad) {
             return response()->json([
                 'status' => 404,
-                'message' => 'Actividad no encontrada'
+                'message' => 'Actividad no encontrada',
             ], 404);
         }
 
@@ -272,7 +271,7 @@ class DownloadAttendanceController extends Controller
                     'genero_id',
                     'discapacidad',
                     'celular',
-                    'correo_electronico'
+                    'correo_electronico',
                 ]);
             },
 
@@ -295,10 +294,10 @@ class DownloadAttendanceController extends Controller
         // ─────────────────────────────────────────────
         $templatePath = storage_path('app/plantillas/ugo_eventos_lista_registrados_template.xlsx');
 
-        if (!file_exists($templatePath)) {
+        if (! file_exists($templatePath)) {
             return response()->json([
                 'status' => 404,
-                'message' => 'Plantilla no encontrada'
+                'message' => 'Plantilla no encontrada',
             ], 404);
         }
 
@@ -332,7 +331,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     collect($actividad->fechas ?? [])
-                        ->map(fn($f) => Carbon::parse($f)->format('d/m/Y'))
+                        ->map(fn ($f) => Carbon::parse($f)->format('d/m/Y'))
                         ->implode(' - ')
                 );
                 $col++;
@@ -391,8 +390,8 @@ class DownloadAttendanceController extends Controller
                     "{$col}{$row}",
                     mb_strtoupper(
                         trim(
-                            ($actividad->representante?->name ?? '') . ' ' .
-                                ($actividad->representante?->lastname ?? '') . ' ' .
+                            ($actividad->representante?->name ?? '').' '.
+                                ($actividad->representante?->lastname ?? '').' '.
                                 ($actividad->representante?->middlename ?? '')
                         ),
                         'UTF-8'
@@ -434,7 +433,7 @@ class DownloadAttendanceController extends Controller
                     "{$col}{$row}",
                     mb_strtoupper(
                         trim(
-                            ($e->apellido_paterno ?? '') . ' ' .
+                            ($e->apellido_paterno ?? '').' '.
                                 ($e->apellido_materno ?? '')
                         ),
                         'UTF-8'
@@ -567,7 +566,7 @@ class DownloadAttendanceController extends Controller
 
         $attendance = Attendance::where('slug', $slug)->first();
 
-        if (!$attendance) {
+        if (! $attendance) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
@@ -581,32 +580,32 @@ class DownloadAttendanceController extends Controller
             'gender:id,name,avr',
             'economicsector:id,name',
             // 'comercialactivity:id,name',
-            'list'
+            'list',
         ])->where('attendancelist_id', $attendance->id)
             ->orderBy('created_at', 'desc');
 
         $data = $query->get();
 
-        $result = $data->map(function ($item, $index) use ($attendance, $asesor, $region, $province, $district) {
+        $result = $data->map(function ($item, $index) use ($attendance, $region, $province, $district) {
             return [
                 'index' => $index + 1,
-                'fechaCapacitacion'     => Carbon::parse($item->startDate)->format('d/m/Y'),
-                'name'                  => mb_strtoupper($item->name, 'UTF-8'),
-                'lastName'              => mb_strtoupper($item->lastname, 'UTF-8'),
-                'middleName'            => mb_strtoupper($item->middlename, 'UTF-8'),
-                'documentType'          => $item->typedocument->name,
-                'numberDocument'        => $item->documentnumber,
-                'gender'                => mb_strtoupper($item->gender->avr, 'UTF-8'),
-                'email'                 => $item->email ? $item->email : '-',
-                'phone'                 => $item->phone ?? '-',
-                'ruc'                   => $item->ruc ?? '-',
-                'region'                => $region->name,
-                'provincia'             => $province->name,
-                'distrito'              => $district->name,
-                'comercialActivity'     => $item->comercialActivity ?? '-',            // rubro *
-                'tema'                  => $item->list->title,                                      // Tema de la capacitación *
-                'place'                 => $attendance->address ?? '-',
-                'mercadoPertenece'      => $item->mercado ?? '-'
+                'fechaCapacitacion' => Carbon::parse($item->startDate)->format('d/m/Y'),
+                'name' => mb_strtoupper($item->name, 'UTF-8'),
+                'lastName' => mb_strtoupper($item->lastname, 'UTF-8'),
+                'middleName' => mb_strtoupper($item->middlename, 'UTF-8'),
+                'documentType' => $item->typedocument->name,
+                'numberDocument' => $item->documentnumber,
+                'gender' => mb_strtoupper($item->gender->avr, 'UTF-8'),
+                'email' => $item->email ? $item->email : '-',
+                'phone' => $item->phone ?? '-',
+                'ruc' => $item->ruc ?? '-',
+                'region' => $region->name,
+                'provincia' => $province->name,
+                'distrito' => $district->name,
+                'comercialActivity' => $item->comercialActivity ?? '-',            // rubro *
+                'tema' => $item->list->title,                                      // Tema de la capacitación *
+                'place' => $attendance->address ?? '-',
+                'mercadoPertenece' => $item->mercado ?? '-',
             ];
         });
 
@@ -620,7 +619,7 @@ class DownloadAttendanceController extends Controller
         foreach ($result as $i => $resultRow) {
             $col = 'A';
             foreach ($resultRow as $value) {
-                $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
+                $sheet->setCellValue("{$col}".($startRow + $i), $value);
                 $col++;
             }
         }
@@ -629,7 +628,7 @@ class DownloadAttendanceController extends Controller
             $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');
         }, 200, [
-            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => 'attachment; filename="lista-registrados.xlsx"',
         ]);
     }
@@ -658,7 +657,7 @@ class DownloadAttendanceController extends Controller
                 'typedocument:id,name',
                 'gender:id,name,avr',
                 'economicsector:id,name',
-                'list'
+                'list',
             ])
                 ->where('attendancelist_id', $attendance->id)
                 ->orderBy('created_at', 'desc')
@@ -668,13 +667,13 @@ class DownloadAttendanceController extends Controller
                 return [
                     'index' => $data->count() + $index + 1,
                     'nameActividad' => $attendance->title,
-                    'dateActividad' => Carbon::parse($attendance->startDate)->format('d/m/Y') . ' - ' . Carbon::parse($attendance->endDate)->format('d/m/Y'),
+                    'dateActividad' => Carbon::parse($attendance->startDate)->format('d/m/Y').' - '.Carbon::parse($attendance->endDate)->format('d/m/Y'),
                     'asesor' => $asesor ? "{$asesor->name} {$asesor->lastname} {$asesor->middlename}" : null,
                     'region' => $region->name ?? '-',
                     'provincia' => $province->name ?? '-',
                     'distrito' => $district->name ?? '-',
                     'place' => $attendance->address ?? null,
-                    'lastname' => $item->lastname . ' ' . $item->middlename,
+                    'lastname' => $item->lastname.' '.$item->middlename,
                     'name' => $item->name,
                     'typedocument' => $item->typedocument->name ?? '-',
                     'documentnumber' => $item->documentnumber,
@@ -701,7 +700,7 @@ class DownloadAttendanceController extends Controller
         foreach ($data as $i => $row) {
             $col = 'A';
             foreach ($row as $value) {
-                $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
+                $sheet->setCellValue("{$col}".($startRow + $i), $value);
                 $col++;
             }
         }
@@ -710,11 +709,10 @@ class DownloadAttendanceController extends Controller
             $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');
         }, 200, [
-            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => 'attachment; filename="lista-registrados.xlsx"',
         ]);
     }
-
 
     // DESCARGAR TODAS LAS ACTIVIDADES CON LOS INSCRITOS
     public function exportInscritos(Request $request)
@@ -728,13 +726,13 @@ class DownloadAttendanceController extends Controller
             // ✅ Solo rol 1 puede descargar
             if ($user->rol != 1) {
                 return response()->json([
-                    'status'  => 403,
+                    'status' => 403,
                     'message' => 'No tienes permisos para descargar este reporte.',
                 ], 403);
             }
 
             // ✅ Helper para limpiar saltos de línea y tabs
-            $clean = fn($value) => is_string($value)
+            $clean = fn ($value) => is_string($value)
                 ? str_replace(["\r\n", "\r", "\n", "\t"], ' ', trim($value))
                 : $value;
 
@@ -777,17 +775,17 @@ class DownloadAttendanceController extends Controller
                 ])
                 ->addSelect([
                     'inscritos' => EmpresarioActividad::selectRaw('COUNT(*)')
-                        ->whereColumn('empresario_actividad.slug', 'actividades_pnte.slug')
+                        ->whereColumn('empresario_actividad.slug', 'actividades_pnte.slug'),
                 ])
                 ->where('unidad', 1)
                 ->when(
                     $request->filled('year'),
-                    fn($q) => $q->where('fechas', 'LIKE', "%{$request->input('year')}%")
+                    fn ($q) => $q->where('fechas', 'LIKE', "%{$request->input('year')}%")
                 )
                 ->when($request->filled('rangeDate'), function ($q) use ($request) {
                     [$from, $to] = $request->input('rangeDate');
                     $current = Carbon::parse($from);
-                    $end     = Carbon::parse($to);
+                    $end = Carbon::parse($to);
                     $q->where(function ($query) use ($current, $end) {
                         while ($current->lte($end)) {
                             $query->orWhere('fechas', 'LIKE', "%{$current->format('Y-m-d')}%");
@@ -795,12 +793,13 @@ class DownloadAttendanceController extends Controller
                         }
                     });
                 })
-                ->when($request->filled('city'), fn($q) => $q->where('region', $request->input('city')))
-                ->when($request->filled('tipo_actividad_id'), fn($q) => $q->where('tipo_actividad_id', $request->input('tipo_actividad_id')))
-                ->when($request->filled('asesor'), fn($q) => $q->where('representante_id', $request->input('asesor')))
+                ->when($request->filled('city'), fn ($q) => $q->where('region', $request->input('city')))
+                ->when($request->filled('tipo_actividad_id'), fn ($q) => $q->where('tipo_actividad_id', $request->input('tipo_actividad_id')))
+                ->when($request->filled('asesor'), fn ($q) => $q->where('representante_id', $request->input('asesor')))
                 ->get()
                 ->sortByDesc(function ($a) {
                     $fechas = is_array($a->fechas) ? $a->fechas : json_decode($a->fechas, true);
+
                     return collect($fechas)->max();
                 })
                 ->values();
@@ -826,7 +825,7 @@ class DownloadAttendanceController extends Controller
 
             // ✅ CSV en memoria con BOM UTF-8
             $handle = fopen('php://temp', 'r+');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // ✅ Cabecera
             fputcsv($handle, [
@@ -880,11 +879,11 @@ class DownloadAttendanceController extends Controller
             ], ',');
 
             $globalIndex = 1;
-            $today       = Carbon::today();
+            $today = Carbon::today();
 
             foreach ($actividades as $actividad) {
 
-                $fechas   = is_array($actividad->fechas) ? $actividad->fechas : json_decode($actividad->fechas, true);
+                $fechas = is_array($actividad->fechas) ? $actividad->fechas : json_decode($actividad->fechas, true);
                 $fechaMin = collect($fechas)->min();
                 $fechaMax = collect($fechas)->max();
 
@@ -905,16 +904,16 @@ class DownloadAttendanceController extends Controller
 
                 $representante = $actividad->representante
                     ? strtoupper(
-                        $actividad->representante->lastname . ' ' .
-                            $actividad->representante->middlename . ', ' .
+                        $actividad->representante->lastname.' '.
+                            $actividad->representante->middlename.', '.
                             $actividad->representante->name
                     )
                     : null;
 
                 $registradoPor = $actividad->registradoPor
                     ? strtoupper(
-                        $actividad->registradoPor->name . ' ' .
-                            $actividad->registradoPor->lastname . ' ' .
+                        $actividad->registradoPor->name.' '.
+                            $actividad->registradoPor->lastname.' '.
                             $actividad->registradoPor->middlename
                     )
                     : null;
@@ -927,28 +926,28 @@ class DownloadAttendanceController extends Controller
                     Carbon::parse($fechaMin)->format('d/m/Y'),
                     Carbon::parse($fechaMax)->format('d/m/Y'),
                     $actividad->cantidad_dias,
-                    $clean($actividad->tipoActividad->name   ?? '-'),
+                    $clean($actividad->tipoActividad->name ?? '-'),
                     $clean($actividad->nombreActividad->name ?? '-'),
-                    $clean(strtoupper($actividad->tema       ?? '-')),
-                    $clean($actividad->regionRel->name       ?? null),
-                    $clean($actividad->provinciaRel->name    ?? null),
-                    $clean($actividad->distritoRel->name     ?? null),
-                    $clean($actividad->lugar                 ?? null),
+                    $clean(strtoupper($actividad->tema ?? '-')),
+                    $clean($actividad->regionRel->name ?? null),
+                    $clean($actividad->provinciaRel->name ?? null),
+                    $clean($actividad->distritoRel->name ?? null),
+                    $clean($actividad->lugar ?? null),
                     $clean(strtoupper($actividad->entidad_organizadora ?? '-')),
-                    $clean(strtoupper($actividad->entidad_aliada       ?? '-')),
+                    $clean(strtoupper($actividad->entidad_aliada ?? '-')),
                     $clean($representante),
                     $actividad->requiere_pasaje ? 'SÍ' : 'NO',
-                    $actividad->monto_gasto           ?? 0,
-                    $actividad->mypes_beneficiadas    ?? 0,
+                    $actividad->monto_gasto ?? 0,
+                    $actividad->mypes_beneficiadas ?? 0,
                     $clean($actividad->modalidad->name ?? null),
                     $actividad->inscritos > 0 ? 'CON LISTA' : 'SIN LISTA',
-                    $actividad->inscritos             ?? 0,
-                    $actividad->total_asesorias       ?? 0,
+                    $actividad->inscritos ?? 0,
+                    $actividad->total_asesorias ?? 0,
                     $actividad->total_formalizaciones ?? 0,
                     $clean($estado),
                     Carbon::parse($actividad->created_at)->format('d/m/Y'),
-                    'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/' . $actividad->slug,
-                    'https://inscripcion.soporte-pnte.com/actividades-ugo/' . $actividad->slug,
+                    'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/'.$actividad->slug,
+                    'https://inscripcion.soporte-pnte.com/actividades-ugo/'.$actividad->slug,
                     $clean($registradoPor),
                     $clean($estadoActividad),
                 ];
@@ -959,28 +958,28 @@ class DownloadAttendanceController extends Controller
                     fputcsv($handle, array_merge($colsActividad, array_fill(0, 17, null)), ',');
                 } else {
                     foreach ($inscritos as $registro) {
-                        $emp      = $registro->empresario;
+                        $emp = $registro->empresario;
                         $apellidos = $emp
-                            ? strtoupper(trim($emp->apellido_paterno . ' ' . $emp->apellido_materno))
+                            ? strtoupper(trim($emp->apellido_paterno.' '.$emp->apellido_materno))
                             : null;
 
                         $colsParticipante = [
-                            $clean($emp?->tipoDocumento?->name     ?? null),
-                            $clean($registro->numero_dni           ?? null),
-                            $clean($emp?->pais?->name              ?? null),
+                            $clean($emp?->tipoDocumento?->name ?? null),
+                            $clean($registro->numero_dni ?? null),
+                            $clean($emp?->pais?->name ?? null),
                             $clean($apellidos),
-                            $clean(strtoupper($emp?->nombres       ?? '')),
+                            $clean(strtoupper($emp?->nombres ?? '')),
                             $clean(strtoupper($emp?->genero?->name ?? '')),
                             $emp?->discapacidad ? 'SI' : 'NO',
-                            $clean($emp?->ruc                      ?? null),
-                            $clean($emp?->region?->name            ?? null),
-                            $clean($emp?->provincia?->name         ?? null),
-                            $clean($emp?->distrito?->name          ?? null),
-                            $clean($emp?->sectorEconomico?->name   ?? null),
-                            $clean($emp?->rubro?->name             ?? null),
-                            $clean($emp?->celular                  ?? null),
-                            $clean($emp?->correo_electronico       ?? null),
-                            $registro->personal_asesoria      ? 'SI' : 'NO',
+                            $clean($emp?->ruc ?? null),
+                            $clean($emp?->region?->name ?? null),
+                            $clean($emp?->provincia?->name ?? null),
+                            $clean($emp?->distrito?->name ?? null),
+                            $clean($emp?->sectorEconomico?->name ?? null),
+                            $clean($emp?->rubro?->name ?? null),
+                            $clean($emp?->celular ?? null),
+                            $clean($emp?->correo_electronico ?? null),
+                            $registro->personal_asesoria ? 'SI' : 'NO',
                             $registro->personal_formalizacion ? 'SI' : 'NO',
                         ];
 
@@ -995,17 +994,17 @@ class DownloadAttendanceController extends Controller
             $csvContent = stream_get_contents($handle);
             fclose($handle);
 
-            $filename = 'inscritos_ugo_' . now()->format('Ymd_His') . '.csv';
+            $filename = 'inscritos_ugo_'.now()->format('Ymd_His').'.csv';
 
             return response($csvContent, 200, [
-                'Content-Type'        => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-                'Content-Length'      => strlen($csvContent),
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+                'Content-Length' => strlen($csvContent),
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al generar el reporte.',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

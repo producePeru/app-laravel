@@ -575,6 +575,22 @@ class ActividadPnteController extends Controller
         }
     }
 
+    public function descargarPantillaInscritos()
+    {
+        $path = storage_path('app/plantillas/plantilla_importar_inscritos.xlsx');
+
+        if (! file_exists($path)) {
+            return response()->json([
+                'message' => 'Archivo no encontrado',
+            ], 404);
+        }
+
+        return response()->download(
+            $path,
+            'plantilla_importar_inscritos.xlsx'
+        );
+    }
+
     // para las migraciones
     // 1. las fechas de startDate y endDate a dates
     public function generarFechasAttendance(Request $request)
