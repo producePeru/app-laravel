@@ -40,8 +40,8 @@ class ActividadPnteController extends Controller
 
         // ✅ Mes: extraer el mes de la fecha más antigua del array
         $fechaMinima = collect($validated['fechas'])
-            ->map(fn ($f) => Carbon::parse($f))
-            ->sortBy(fn ($d) => $d->timestamp)
+            ->map(fn($f) => Carbon::parse($f))
+            ->sortBy(fn($d) => $d->timestamp)
             ->first();
 
         $validated['mes'] = (int) $fechaMinima->format('n'); // 1-12 sin cero
@@ -98,7 +98,7 @@ class ActividadPnteController extends Controller
 
         while (ActividadPnte::where('slug', $slug)->exists()) {
             $count++;
-            $slug = $original.'-'.$count;
+            $slug = $original . '-' . $count;
         }
 
         return $slug;
@@ -114,10 +114,10 @@ class ActividadPnteController extends Controller
         if (Carbon::now()->gt($limiteEdicion)) { // 👈 era $limitEdicion (faltaba la 'e')
             return response()->json([
                 'status' => 403,
-                'message' => 'No es posible editar esta actividad. El plazo de edición venció el '.
-                    Carbon::parse($actividad->created_at)->format('d/m/Y').' a las 23:59. '.
+                'message' => 'No es posible editar esta actividad. El plazo de edición venció el ' .
+                    Carbon::parse($actividad->created_at)->format('d/m/Y') . ' a las 23:59. ' .
                     'Por favor, contacte con su supervisor.',
-            ], 403);
+            ]);
         }
 
         $validated = $request->validate([
@@ -145,8 +145,8 @@ class ActividadPnteController extends Controller
 
         // ✅ Mes: extraer el mes de la fecha más antigua del array
         $fechaMinima = collect($validated['fechas'])
-            ->map(fn ($f) => Carbon::parse($f))
-            ->sortBy(fn ($d) => $d->timestamp)
+            ->map(fn($f) => Carbon::parse($f))
+            ->sortBy(fn($d) => $d->timestamp)
             ->first();
 
         $validated['mes'] = (int) $fechaMinima->format('n');
@@ -189,10 +189,16 @@ class ActividadPnteController extends Controller
             'rangeDate' => 'nullable|array|size:2',
             'rangeDate.*' => 'required|date_format:Y-m-d',
             'city' => 'nullable|integer|exists:cities,id',
+
+            // ✅ FILTROS
             'tipo_actividad_id' => 'nullable|integer|exists:tipo_actividad,id',
+            'asesor' => 'nullable|integer',
+            'pnte' => 'nullable|integer',
         ]);
 
         $pageSize = $request->input('pageSize', 10);
+
+        $user = auth()->user();
 
         $actividades = ActividadPnte::with([
             'tipoActividad:id,name',
@@ -238,8 +244,33 @@ class ActividadPnteController extends Controller
 
             ->where('unidad', 1)
 
+            // ✅ FILTRO POR ROL
+            ->when($user->rol == 2, function ($q) use ($user) {
+
+                $q->where('representante_id', $user->id);
+            })
+
+            // ✅ FILTRO: asesor
+            ->when($request->filled('asesor'), function ($q) use ($request) {
+
+                $q->where('representante_id', $request->input('asesor'));
+            })
+
+            // ✅ FILTRO: pnte
+            ->when($request->filled('pnte'), function ($q) use ($request) {
+
+                $q->where('tipo_actividad_id', $request->input('pnte'));
+            })
+
+            // ✅ FILTRO: tipo_actividad_id
+            ->when($request->filled('tipo_actividad_id'), function ($q) use ($request) {
+
+                $q->where('tipo_actividad_id', $request->input('tipo_actividad_id'));
+            })
+
             // ✅ FILTRO: year
             ->when($request->filled('year'), function ($q) use ($request) {
+
                 $year = $request->input('year');
 
                 $q->where('fechas', 'LIKE', "%{$year}%");
@@ -270,12 +301,6 @@ class ActividadPnteController extends Controller
             ->when($request->filled('city'), function ($q) use ($request) {
 
                 $q->where('region', $request->input('city'));
-            })
-
-            // ✅ FILTRO: tipo_actividad_id
-            ->when($request->filled('tipo_actividad_id'), function ($q) use ($request) {
-
-                $q->where('tipo_actividad_id', $request->input('tipo_actividad_id'));
             })
 
             // ✅ ORDENAR POR LA FECHA MÁS RECIENTE DEL ARRAY JSON
@@ -314,6 +339,108 @@ class ActividadPnteController extends Controller
                 'total' => $actividades->total(),
             ],
         ]);
+    }
+
+    public function reprogramar(Request $request, int $id): JsonResponse
+    {
+        // ✅ Solo rol 1
+        if (Auth::user()->rol != 1) {
+            return response()->json([
+                'status'  => 403,
+                'message' => 'No tienes permisos para reprogramar actividades.',
+            ]);
+        }
+
+        $actividad = ActividadPnte::findOrFail($id);
+
+        $validated = $request->validate([
+            'fechas'       => 'required|array|min:1',
+            'fechas.*'     => 'required|date_format:Y-m-d',
+            'reprogramado' => 'required|string|max:255',
+        ]);
+
+        $fechaMinima = collect($validated['fechas'])
+            ->map(fn($f) => Carbon::parse($f))
+            ->sortBy(fn($d) => $d->timestamp)
+            ->first();
+
+        try {
+            DB::transaction(function () use ($actividad, $validated, $fechaMinima) {
+                $actividad->update([
+                    'fechas'              => $validated['fechas'],
+                    'mes'                 => (int) $fechaMinima->format('n'),
+                    'cantidad_dias'       => count($validated['fechas']),
+                    'reprogramado'        => $validated['reprogramado'],
+                    'reprogramado_por_id' => Auth::id(),
+                ]);
+            });
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Actividad reprogramada correctamente.',
+                'data'    => $actividad->fresh()->load([
+                    'tipoActividad',
+                    'nombreActividad',
+                    'regionRel',
+                    'provinciaRel',
+                    'distritoRel',
+                    'representante',
+                    'modalidad',
+                ]),
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al reprogramar la actividad.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function cancelar(Request $request, int $id): JsonResponse
+    {
+        // ✅ Solo rol 1
+        if (Auth::user()->rol != 1) {
+            return response()->json([
+                'status'  => 403,
+                'message' => 'No tienes permisos para cancelar actividades.',
+            ]);
+        }
+
+        $actividad = ActividadPnte::findOrFail($id);
+
+        $validated = $request->validate([
+            'cancelado' => 'required|string|max:255',
+        ]);
+
+        try {
+            DB::transaction(function () use ($actividad, $validated) {
+                $actividad->update([
+                    'cancelado'        => $validated['cancelado'],
+                    'cancelado_por_id' => Auth::id(),
+                ]);
+            });
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Actividad cancelada correctamente.',
+                'data'    => $actividad->fresh()->load([
+                    'tipoActividad',
+                    'nombreActividad',
+                    'regionRel',
+                    'provinciaRel',
+                    'distritoRel',
+                    'representante',
+                    'modalidad',
+                ]),
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cancelar la actividad.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function inscritosPorSlug(Request $request, $slug)
@@ -447,15 +574,15 @@ class ActividadPnteController extends Controller
                         : null,
 
                     'nombre_completo' => ! empty(trim(
-                        ($e?->apellido_paterno ?? '').' '.
-                        ($e?->apellido_materno ?? '').' '.
-                        ($e?->nombres ?? '')
+                        ($e?->apellido_paterno ?? '') . ' ' .
+                            ($e?->apellido_materno ?? '') . ' ' .
+                            ($e?->nombres ?? '')
                     ))
                         ? mb_strtoupper(
                             trim(
-                                ($e?->apellido_paterno ?? '').' '.
-                                ($e?->apellido_materno ?? '').' '.
-                                ($e?->nombres ?? '')
+                                ($e?->apellido_paterno ?? '') . ' ' .
+                                    ($e?->apellido_materno ?? '') . ' ' .
+                                    ($e?->nombres ?? '')
                             ),
                             'UTF-8'
                         )
@@ -591,6 +718,29 @@ class ActividadPnteController extends Controller
         );
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // para las migraciones
     // 1. las fechas de startDate y endDate a dates
     public function generarFechasAttendance(Request $request)
@@ -632,7 +782,6 @@ class ActividadPnteController extends Controller
                 $lastId = $row->id;
                 $totalProcesados++;
             }
-
         } while (true);
 
         return response()->json([
