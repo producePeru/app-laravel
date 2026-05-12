@@ -24,6 +24,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
     Route::POST('generar-fechas-attendance', 'generarFechasAttendance');
 
     Route::POST('clasificar-actividades-exacto', 'setNombreActividad');
+
+    Route::PUT('actualizar-total-participantes', 'actualizarTotalParticipantes');
 });
 
 // event-pnte
