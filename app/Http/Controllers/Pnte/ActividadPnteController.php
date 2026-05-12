@@ -718,22 +718,33 @@ class ActividadPnteController extends Controller
         );
     }
 
+    public function actualizarTotalParticipantes(): JsonResponse
+    {
+        $actividades = ActividadPnte::all();
 
+        foreach ($actividades as $actividad) {
+            $total = EmpresarioActividad::where('slug', $actividad->slug)->count();
 
+            $totalAsesorias      = EmpresarioActividad::where('slug', $actividad->slug)
+                ->where('personal_asesoria', 1)
+                ->count();
 
+            $totalFormalizaciones = EmpresarioActividad::where('slug', $actividad->slug)
+                ->where('personal_formalizacion', 1)
+                ->count();
 
+            $actividad->update([
+                'total_participantes'  => $total,
+                'total_asesorias'      => $totalAsesorias,
+                'total_formalizaciones' => $totalFormalizaciones,
+            ]);
+        }
 
-
-
-
-
-
-
-
-
-
-
-
+        return response()->json([
+            'status'  => 200,
+            'message' => 'Total de participantes, asesorías y formalizaciones actualizado correctamente.',
+        ]);
+    }
 
 
 
