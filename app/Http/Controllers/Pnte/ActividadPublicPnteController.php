@@ -112,7 +112,7 @@ class ActividadPublicPnteController extends Controller
     {
         $request->validate([
             'slug' => 'required|string',
-            'ruc' => 'required|string|size:11',
+            'ruc' => 'nullable|size:11',
             'numero_dni' => 'required|string|max:12',
         ]);
 
