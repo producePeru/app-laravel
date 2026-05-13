@@ -31,7 +31,9 @@ class ActividadesUgoImport extends Controller
         $actividad = ActividadPnte::where('slug', $slug)->firstOrFail();
 
         try {
+
             ini_set('memory_limit', '512M');
+
             set_time_limit(300);
 
             $file        = $request->file('file');
@@ -53,51 +55,79 @@ class ActividadesUgoImport extends Controller
                 &$actualizados,
                 &$errores
             ) {
-                $sectores   = EconomicSector::pluck('id', 'name')
+
+                $sectores = EconomicSector::pluck('id', 'name')
                     ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
 
-                $rubros     = Category::pluck('id', 'name')
+                $rubros = Category::pluck('id', 'name')
                     ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
 
-                $paises     = Country::pluck('id', 'name')
+                $paises = Country::pluck('id', 'name')
                     ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
 
-                $ciudades   = City::pluck('id', 'name')
+                $ciudades = City::pluck('id', 'name')
                     ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
 
                 $provincias = Province::pluck('id', 'name')
                     ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
 
-                $distritos  = District::pluck('id', 'name')
+                $distritos = District::pluck('id', 'name')
                     ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
 
-                $tiposDocs  = Typedocument::pluck('id', 'name')
+                $tiposDocs = Typedocument::pluck('id', 'name')
                     ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
 
-                $generos    = Gender::pluck('id', 'name')
+                $generos = Gender::pluck('id', 'name')
                     ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
 
-                // ✅ Detectar duplicados ruc+numero_dni dentro del mismo archivo
+                // ✅ VALIDAR DUPLICADOS EN EL MISMO ARCHIVO
                 $combinacionesEnArchivo = [];
 
                 foreach ($rows as $index => $row) {
 
-                    $filaTieneDatos = collect($row)->filter(fn($v) => !is_null($v) && trim((string)$v) !== '')->isNotEmpty();
-                    if (!$filaTieneDatos) continue;
+                    $filaTieneDatos = collect($row)
+                        ->filter(fn($v) => !is_null($v) && trim((string)$v) !== '')
+                        ->isNotEmpty();
+
+                    if (!$filaTieneDatos) {
+                        continue;
+                    }
+
+                    $filaNum = $index + 2;
 
                     $ruc       = trim((string)($row['A'] ?? ''));
                     $numeroDoc = trim((string)($row['M'] ?? ''));
 
-                    if (empty($numeroDoc)) continue;
+                    if (empty($numeroDoc)) {
 
-                    $clave = $ruc . '|' . $numeroDoc;
+                        $errores[] = [
+                            'fila'   => $filaNum,
+                            'celda'  => 'M' . $filaNum,
+                            'campo'  => 'Número documento',
+                            'valor'  => '',
+                            'error'  => 'Número de documento vacío'
+                        ];
+
+                        continue;
+                    }
+
+                    // ✅ SI RUC ES NULL SOLO USA DOCUMENTO
+                    $clave = ($ruc ?: 'SIN_RUC') . '|' . $numeroDoc;
 
                     if (isset($combinacionesEnArchivo[$clave])) {
-                        $filaNum      = $index + 2;
+
                         $filaOriginal = $combinacionesEnArchivo[$clave];
-                        $errores[]    = "Fila {$filaNum}: RUC {$ruc} + documento {$numeroDoc} ya existe en la fila {$filaOriginal} del archivo.";
+
+                        $errores[] = [
+                            'fila'   => $filaNum,
+                            'celda'  => 'A' . $filaNum,
+                            'campo'  => 'RUC + Documento',
+                            'valor'  => $ruc . ' - ' . $numeroDoc,
+                            'error'  => "Duplicado con fila {$filaOriginal}"
+                        ];
                     } else {
-                        $combinacionesEnArchivo[$clave] = $index + 2;
+
+                        $combinacionesEnArchivo[$clave] = $filaNum;
                     }
                 }
 
@@ -107,12 +137,19 @@ class ActividadesUgoImport extends Controller
 
                 foreach ($rows as $index => $row) {
 
-                    $filaTieneDatos = collect($row)->filter(fn($v) => !is_null($v) && trim((string)$v) !== '')->isNotEmpty();
-                    if (!$filaTieneDatos) continue;
+                    $filaTieneDatos = collect($row)
+                        ->filter(fn($v) => !is_null($v) && trim((string)$v) !== '')
+                        ->isNotEmpty();
+
+                    if (!$filaTieneDatos) {
+                        continue;
+                    }
 
                     $filaNum = $index + 2;
 
-                    // ── MAPEO DE COLUMNAS ─────────────────────────────
+                    // ─────────────────────────────────────
+                    // MAPEO COLUMNAS
+                    // ─────────────────────────────────────
                     $ruc                   = trim((string)($row['A'] ?? ''));
                     $razonSocial           = trim((string)($row['B'] ?? ''));
                     $nombreComercial       = trim((string)($row['C'] ?? ''));
@@ -136,23 +173,47 @@ class ActividadesUgoImport extends Controller
                     $personalAsesoria      = strtoupper(trim((string)($row['U'] ?? '')));
                     $personalFormalizacion = strtoupper(trim((string)($row['V'] ?? '')));
 
+                    // ✅ SOLO DOCUMENTO OBLIGATORIO
                     if (empty($numeroDoc)) {
-                        $errores[] = "Fila {$filaNum}: número de documento vacío.";
+
+                        $errores[] = [
+                            'fila'   => $filaNum,
+                            'celda'  => 'M' . $filaNum,
+                            'campo'  => 'Número documento',
+                            'valor'  => '',
+                            'error'  => 'Número de documento vacío'
+                        ];
+
                         continue;
                     }
 
-                    // ── RESOLVER IDs desde catálogos ──────────────────
-                    $sectorId    = $sectores[strtoupper($sectorNombre)]     ?? null;
-                    $rubroId     = $rubros[strtoupper($rubroNombre)]         ?? null;
-                    $paisId      = $paises[strtoupper($paisNombre)]          ?? null;
-                    $regionId    = $ciudades[strtoupper($regionNombre)]      ?? null;
-                    $provinciaId = $provincias[strtoupper($provinciaNombre)] ?? null;
-                    $distritoId  = $distritos[strtoupper($distritoNombre)]   ?? null;
-                    $tipoDocId   = $tiposDocs[strtoupper($tipoDocNombre)]    ?? null;
-                    $generoId    = $generos[strtoupper($generoNombre)]       ?? null;
+                    // ─────────────────────────────────────
+                    // RESOLVER IDS
+                    // ─────────────────────────────────────
+                    $sectorId    = $sectores[$sectorNombre]     ?? null;
+                    $rubroId     = $rubros[$rubroNombre]        ?? null;
+                    $paisId      = $paises[$paisNombre]         ?? null;
+                    $regionId    = $ciudades[$regionNombre]     ?? null;
+                    $provinciaId = $provincias[$provinciaNombre] ?? null;
+                    $distritoId  = $distritos[$distritoNombre]  ?? null;
+                    $tipoDocId   = $tiposDocs[$tipoDocNombre]   ?? null;
+                    $generoId    = $generos[$generoNombre]      ?? null;
 
-                    // ── UPSERT Empresario ─────────────────────────────
-                    $empresario = Empresario::where('ruc', $ruc)
+                    // ✅ RUC Y RAZON SOCIAL PUEDEN SER NULL
+                    // NO ALTERAR LOGICA EXISTENTE
+
+                    // ─────────────────────────────────────
+                    // BUSCAR EMPRESARIO
+                    // ─────────────────────────────────────
+                    $query = Empresario::query();
+
+                    if (!empty($ruc)) {
+                        $query->where('ruc', $ruc);
+                    } else {
+                        $query->whereNull('ruc');
+                    }
+
+                    $empresario = $query
                         ->where('numero_dni', $numeroDoc)
                         ->first();
 
@@ -178,37 +239,86 @@ class ActividadesUgoImport extends Controller
                     ];
 
                     if ($empresario) {
+
                         $empresario->update($datosEmpresario);
+
                         $actualizados++;
                     } else {
-                        $empresario = Empresario::create(array_merge($datosEmpresario, [
-                            'ruc'        => $ruc       ?: null,
-                            'numero_dni' => $numeroDoc,
-                        ]));
+
+                        $empresario = Empresario::create(array_merge(
+                            $datosEmpresario,
+                            [
+                                'ruc'        => $ruc ?: null,
+                                'numero_dni' => $numeroDoc,
+                            ]
+                        ));
+
                         $registrados++;
                     }
 
-                    // ── UPSERT EmpresarioActividad ────────────────────
-                    // ✅ Buscar por slug + numero_dni, actualizar empresario_id siempre
-                    // ── UPSERT EmpresarioActividad ────────────────────
-                    // ✅ Clave única: slug + empresario_id (no numero_dni)
+                    // ─────────────────────────────────────
+                    // EMPRESARIO ACTIVIDAD
+                    // ─────────────────────────────────────
                     EmpresarioActividad::updateOrCreate(
                         [
                             'slug'          => $slug,
-                            'empresario_id' => $empresario->id,  // ✅ identifica unívocamente
+                            'empresario_id' => $empresario->id,
                         ],
                         [
                             'actividad_id'           => $actividad->id,
                             'numero_dni'             => $numeroDoc,
-                            'personal_asesoria'      => $personalAsesoria      === 'SI' ? 1 : 0,
-                            'personal_formalizacion' => $personalFormalizacion  === 'SI' ? 1 : 0,
+                            'personal_asesoria'      => $personalAsesoria === 'SI' ? 1 : 0,
+                            'personal_formalizacion' => $personalFormalizacion === 'SI' ? 1 : 0,
                         ]
                     );
                 }
 
                 $total = EmpresarioActividad::where('slug', $slug)->count();
-                $actividad->update(['total_participantes' => $total]);
+
+                $actividad->update([
+                    'total_participantes' => $total
+                ]);
             });
+
+            // ✅ HTML ERRORES
+            $htmlErrores = '';
+
+            if (!empty($errores)) {
+
+                $htmlErrores .= '
+            <div style="max-height:500px;overflow:auto">
+                <table border="1" cellpadding="8" cellspacing="0" width="100%" style="border-collapse:collapse;font-family:Arial;font-size:13px">
+                    <thead style="background:#f5f5f5">
+                        <tr>
+                            <th>Fila</th>
+                            <th>Celda</th>
+                            <th>Campo</th>
+                            <th>Valor</th>
+                            <th>Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            ';
+
+                foreach ($errores as $error) {
+
+                    $htmlErrores .= '
+                    <tr>
+                        <td>' . $error['fila'] . '</td>
+                        <td>' . $error['celda'] . '</td>
+                        <td>' . $error['campo'] . '</td>
+                        <td>' . $error['valor'] . '</td>
+                        <td style="color:red">' . $error['error'] . '</td>
+                    </tr>
+                ';
+                }
+
+                $htmlErrores .= '
+                    </tbody>
+                </table>
+            </div>
+            ';
+            }
 
             return response()->json([
                 'status'       => 200,
@@ -216,8 +326,10 @@ class ActividadesUgoImport extends Controller
                 'registrados'  => $registrados,
                 'actualizados' => $actualizados,
                 'errores'      => $errores,
+                'html_errores' => $htmlErrores,
             ]);
         } catch (Throwable $e) {
+
             return response()->json([
                 'status'  => 500,
                 'message' => 'Error al importar el archivo.',
