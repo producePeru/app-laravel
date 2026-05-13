@@ -13,6 +13,93 @@ use Illuminate\Support\Facades\Log;
 
 class SedController extends Controller
 {
+    // public function storeSedSurvey(Request $request)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+
+    //         $payload = $request->all();
+
+    //         $tableName = $payload['table'] ?? 'sed';
+
+    //         // 1. Obtener SED
+    //         $fair = Fair::where('slug', $payload['slug'])->firstOrFail();
+    //         $sedId = $fair->id;
+
+    //         foreach ($payload['questions'] as $q) {
+
+    //             // 2. Buscar pregunta por label
+    //             $question = Question::where('label', $q['label'])->first();
+
+    //             if (!$question) {
+
+    //                 // generar model único
+    //                 $nextId = Question::max('id') + 1;
+    //                 $model = "question_" . $nextId;
+
+    //                 $question = Question::create([
+    //                     // 'tableName' => 'sed',
+    //                     'tableName' => $tableName,
+    //                     'label' => $q['label'],
+    //                     'type' => $q['type'],
+    //                     'model' => $model,
+    //                     'required'  => $q['required'] ? 1 : 0
+    //                 ]);
+    //             }
+
+    //             // 3. Opciones
+    //             if (!empty($q['options'])) {
+
+    //                 foreach ($q['options'] as $opt) {
+
+    //                     QuestionOption::updateOrCreate(
+    //                         [
+    //                             'question_id' => $question->id,
+    //                             'value' => $opt['value']
+    //                         ],
+    //                         [
+    //                             'label' => $opt['label'],
+    //                             'status' => $opt['status'] ?? 1
+    //                         ]
+    //                     );
+    //                 }
+    //             }
+
+    //             // 4. Relación SedSurvey (sin title)
+    //             SedSurvey::updateOrCreate(
+    //                 [
+    //                     'sed_id' => $sedId,
+    //                     'question_id' => $question->id
+    //                 ],
+    //                 []
+    //             );
+    //         }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'status' => 200,
+    //             'message' => 'Encuesta registrada correctamente'
+    //         ]);
+    //     } catch (\Throwable $e) {
+
+    //         DB::rollBack();
+
+    //         Log::error('Error registrando encuesta SED', [
+    //             'error' => $e->getMessage(),
+    //             'line' => $e->getLine(),
+    //             'file' => $e->getFile()
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => 500,
+    //             'message' => 'Ocurrió un error al registrar la encuesta.',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
     public function storeSedSurvey(Request $request)
     {
         DB::beginTransaction();
@@ -23,57 +110,58 @@ class SedController extends Controller
 
             $tableName = $payload['table'] ?? 'sed';
 
-            // 1. Obtener SED
-            $fair = Fair::where('slug', $payload['slug'])->firstOrFail();
+            // ─────────────────────────────────────
+            // OBTENER SED
+            // ─────────────────────────────────────
+            $fair = Fair::where('slug', $payload['slug'])
+                ->firstOrFail();
+
             $sedId = $fair->id;
 
+            // ─────────────────────────────────────
+            // RECORRER PREGUNTAS
+            // ─────────────────────────────────────
             foreach ($payload['questions'] as $q) {
 
-                // 2. Buscar pregunta por label
-                $question = Question::where('label', $q['label'])->first();
+                // ─────────────────────────────────────
+                // SIEMPRE CREAR NUEVA PREGUNTA
+                // ─────────────────────────────────────
+                $nextId = (Question::max('id') ?? 0) + 1;
 
-                if (!$question) {
+                $model = "question_" . $nextId;
 
-                    // generar model único
-                    $nextId = Question::max('id') + 1;
-                    $model = "question_" . $nextId;
+                $question = Question::create([
+                    'tableName' => $tableName,
+                    'label'     => $q['label'],
+                    'type'      => $q['type'],
+                    'model'     => $model,
+                    'required'  => !empty($q['required']) ? 1 : 0,
+                    'visible'   => 1
+                ]);
 
-                    $question = Question::create([
-                        // 'tableName' => 'sed',
-                        'tableName' => $tableName,
-                        'label' => $q['label'],
-                        'type' => $q['type'],
-                        'model' => $model,
-                        'required'  => $q['required'] ? 1 : 0
-                    ]);
-                }
-
-                // 3. Opciones
+                // ─────────────────────────────────────
+                // REGISTRAR OPCIONES
+                // ─────────────────────────────────────
                 if (!empty($q['options'])) {
 
                     foreach ($q['options'] as $opt) {
 
-                        QuestionOption::updateOrCreate(
-                            [
-                                'question_id' => $question->id,
-                                'value' => $opt['value']
-                            ],
-                            [
-                                'label' => $opt['label'],
-                                'status' => $opt['status'] ?? 1
-                            ]
-                        );
+                        QuestionOption::create([
+                            'question_id' => $question->id,
+                            'value'       => $opt['value'],
+                            'label'       => $opt['label'],
+                            'status'      => $opt['status'] ?? 1
+                        ]);
                     }
                 }
 
-                // 4. Relación SedSurvey (sin title)
-                SedSurvey::updateOrCreate(
-                    [
-                        'sed_id' => $sedId,
-                        'question_id' => $question->id
-                    ],
-                    []
-                );
+                // ─────────────────────────────────────
+                // RELACIONAR CON SED
+                // ─────────────────────────────────────
+                SedSurvey::create([
+                    'sed_id'      => $sedId,
+                    'question_id' => $question->id
+                ]);
             }
 
             DB::commit();
@@ -88,14 +176,14 @@ class SedController extends Controller
 
             Log::error('Error registrando encuesta SED', [
                 'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
+                'line'  => $e->getLine(),
+                'file'  => $e->getFile()
             ]);
 
             return response()->json([
-                'status' => 500,
+                'status'  => 500,
                 'message' => 'Ocurrió un error al registrar la encuesta.',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
