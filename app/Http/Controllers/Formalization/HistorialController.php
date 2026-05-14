@@ -86,15 +86,6 @@ class HistorialController extends Controller
     // ULTIMO 2025 ***
     public function filterHistorialAdvisoriesByDates(Request $request)
     {
-        $permission = getPermission('reportes-asesoria-formalizacion');
-
-        // if (!$permission['hasPermission']) {
-        //     return response()->json([
-        //         'message' => 'No tienes permiso para acceder a esta sección',
-        //         'status' => 403
-        //     ]);
-        // }
-
         $filters = [
             'asesor'    => $request->input('asesor'),
             'name'      => $request->input('name'),
@@ -138,12 +129,6 @@ class HistorialController extends Controller
             'id'                    => $advisory->id,
             'date'                  => $advisory->created_at->format('d/m/Y h:i A'),
             'asesor'                => $advisory->user->name . ' ' . $advisory->user->lastname . ' ' . $advisory->user->middlename,
-
-            // 'asesor_cde_city'       => $advisory->sede->city ?? null,
-            // 'asesor_cde_province'   => $advisory->sede->province ?? null,
-            // 'asesor_cde_district'   => $advisory->sede->district ?? null,
-            // 'asesor_cde_id'         => $advisory->sede->cdetype_id ?? null,
-
             'asesor_cde'            => $advisory->sede ? strtoupper($advisory->sede->name) : null,
 
             'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
@@ -182,6 +167,7 @@ class HistorialController extends Controller
             'city_id'               => $advisory->city->id ?? null,
             'province_id'           => $advisory->province->id ?? null,
             'district_id'           => $advisory->district->id ?? null,
+            'cooperativa'           => $advisory
         ];
     }
 
@@ -648,5 +634,93 @@ class HistorialController extends Controller
                 ];
             })
         ]);
+    }
+
+    public function advisoriesCooperativas(Request $request)
+    {
+        $filters = [
+            'asesor'    => $request->input('asesor'),
+            'name'      => $request->input('name'),
+            'dateStart' => $request->input('dateStart'),
+            'dateEnd'   => $request->input('dateEnd'),
+            'year'      => $request->input('year'),
+            'typeCdes'  => $request->input('typeCdes'),
+            'capas'     => $request->input('capas'),
+        ];
+
+        $user = Auth::user();
+
+        $query = Advisory::query();
+
+
+        if ($user->rol == 1) {
+            $query->withAdvisoryCooperativas($filters);
+        } else if ($user->rol == 2) {
+            $query->withAdvisoryCooperativas($filters)->where('user_id', $user->id);
+        } else {
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a esta sección',
+                'status' => 403
+            ]);
+        }
+
+        $advisories = $query->paginate(90)->through(function ($advisory) {
+            return $this->mapAdvisoryCooperativas($advisory);
+        });
+
+        return response()->json([
+            'data'   => $advisories,
+            'rol' => $user->rol,
+            'status' => 200
+        ]);
+    }
+
+    private function mapAdvisoryCooperativas($advisory)
+    {
+        return [
+            'id'                    => $advisory->id,
+            'date'                  => $advisory->created_at->format('d/m/Y h:i A'),
+            'asesor'                => $advisory->user->name . ' ' . $advisory->user->lastname . ' ' . $advisory->user->middlename,
+            'asesor_cde'            => $advisory->sede ? strtoupper($advisory->sede->name) : null,
+
+            'emp_document_type'     => $advisory->people->typedocument->avr ?? null,
+            'emp_document_number'   => $advisory->people->documentnumber ?? null,
+            'emp_country'           => isset($advisory->people->pais->name) ? strtoupper($advisory->people->pais->name) : 'PERU',
+            'emp_birth'             => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->format('d/m/Y') : null,
+            'emp_age'               => $advisory->people->birthday ? \Carbon\Carbon::parse($advisory->people->birthday)->age : null,
+            'emp_lastname'          => $advisory->people->lastname,
+            'emp_middlename'        => $advisory->people->middlename,
+            'emp_name'              => $advisory->people->name,
+            'emp_gender'            => $advisory->people->gender->name == 'FEMENINO' ? 'F' : 'M',
+            'emp_discapabilities'   => $advisory->people->sick ? strtoupper($advisory->people->sick) : null,
+            'emp_soons'             => $advisory->people->hasSoon ?? null,
+            'emp_phone'             => $advisory->people->phone,
+            'emp_email'             => $advisory->people->email ? strtolower($advisory->people->email) : '-',
+
+            'supervisor'            => isset($advisory->supervisor->supervisorUser->profile) ? strtoupper($advisory->supervisor->supervisorUser->profile->name . ' ' . $advisory->supervisor->supervisorUser->profile->lastname . ' ' . $advisory->supervisor->supervisorUser->profile->middlename) : null,
+
+            'city'                  => $advisory->city->name ?? null,
+            'province'              => $advisory->province->name ?? null,
+            'district'              => $advisory->district->name ?? null,
+            'ruc'                   => $advisory->ruc ?? null,
+            'econimic_service'      => $advisory->economicsector->name ?? null,
+            'activity_comercial'    => $advisory->comercialactivity->name ?? null,
+            'component'             => $advisory->component->name ?? null,
+            'theme'                 => strtoupper($advisory->theme->name) ?? null,
+            'observations'          => $advisory->observations ?? null,
+            'modality'              => $advisory->modality->name ?? null,
+
+            // ids
+            'econimic_sector_id'    => $advisory->economicsector->id ?? null,
+            'activity_comercial_id' => $advisory->comercialactivity->id ?? null,
+            'component_id'             => $advisory->component->id ?? null,
+            'theme_id'              => $advisory->theme->id ?? null,
+            'modality_id'           => $advisory->modality->id ?? null,
+            'city_id'               => $advisory->city->id ?? null,
+            'province_id'           => $advisory->province->id ?? null,
+            'district_id'           => $advisory->district->id ?? null,
+            'cooperativa_ruc'       => $advisory->cooperativa?->ruc ?? null,
+            'cooperativa_nombre'    => $advisory->cooperativa?->nombre ?? null,
+        ];
     }
 }

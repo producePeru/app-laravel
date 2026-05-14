@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAdvisoryRequest;
 use Illuminate\Http\Request;
 use App\Models\Advisory;
+use App\Models\AsesoriaCooperativa;
 use App\Models\Formalization20;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -33,12 +34,20 @@ class AdvisoryController extends Controller
             // Crear la asesoría
             $advisory = Advisory::create($validatedData);
 
+            // ✅ Registrar cooperativa
+            AsesoriaCooperativa::create([
+                'advisory_id' => $advisory->id,
+                'ruc'         => $request->ruc_cooperativa,
+                'nombre'      => $request->nombre_cooperativa,
+            ]);
+
             return response()->json([
                 'data' => $advisory,
                 'message' => 'Asesoría creada correctamente',
                 'status' => 200
             ], 200);
         } catch (\Exception $e) {
+
             return response()->json([
                 'error' => 'Error al crear la asesoría',
                 'message' => 'Consulta con tu administrador',
