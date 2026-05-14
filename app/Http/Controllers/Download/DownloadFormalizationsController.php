@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Download;
 
 use App\Exports\AsesoriasAllExport;
+use App\Exports\AsesoriasCooperativasExport;
 use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Formalization20;
@@ -414,6 +415,208 @@ class DownloadFormalizationsController extends Controller
                 'success' => false,
                 'message' => 'Error al programar el reporte',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Cooperativas
+
+    public function exportAsesoriesCooperativas(\Illuminate\Http\Request $request)
+    {
+        try {
+
+            $filters = [
+                'asesor'    => $request->input('asesor'),
+                'name'      => $request->input('name'),
+                'dateStart' => $request->input('dateStart'),
+                'dateEnd'   => $request->input('dateEnd'),
+                'year'      => $request->input('year'),
+                'typeCdes'  => $request->input('typeCdes'),
+            ];
+
+            $user = Auth::user();
+
+            $query = Advisory::query();
+
+            // ✅ SOLO COOPERATIVAS
+            $query->whereHas('cooperativa');
+
+            if ($user->rol == 1) {
+
+                $query->withAdvisoryCooperativas($filters);
+            } else if ($user->rol == 2) {
+
+                $query->withAdvisoryCooperativas($filters)
+                    ->where('user_id', $user->id);
+            } else {
+
+                return response()->json([
+                    'message' => 'No tienes permiso para acceder a esta sección',
+                    'status'  => 403
+                ]);
+            }
+
+            ini_set('memory_limit', '2G');
+
+            set_time_limit(300);
+
+            $advisories = [];
+
+            $globalIndex = 1;
+
+            $query->chunk(1000, function ($rows) use (
+                &$advisories,
+                &$globalIndex,
+                $user
+            ) {
+
+                foreach ($rows as $advisory) {
+
+                    $advisories[] = [
+
+                        'index' => ($user->rol == 1)
+                            ? $advisory->id
+                            : $globalIndex++,
+
+                        'date' => $advisory->created_at
+                            ->format('d/m/Y'),
+
+                        'asesor' => strtoupper(
+                            $advisory->user->name . ' ' .
+                                $advisory->user->lastname . ' ' .
+                                $advisory->user->middlename
+                        ),
+
+                        'asesor_cde_city' => $advisory->sede->city
+                            ? $advisory->sede->city
+                            : $advisory->sede->region->name,
+
+                        'asesor_cde_province' => $advisory->sede->province
+                            ? $advisory->sede->province
+                            : $advisory->sede->provincia->name,
+
+                        'asesor_cde_district' => $advisory->sede->district
+                            ? $advisory->sede->district
+                            : $advisory->sede->distrito->name,
+
+                        'asesor_cde' => isset($advisory->sede->name)
+                            ? strtoupper($advisory->sede->name)
+                            : null,
+
+                        'emp_document_type' => $advisory->people
+                            ->typedocument->avr ?? null,
+
+                        'emp_document_number' => $advisory->people
+                            ->documentnumber ?? null,
+
+                        'emp_country' => isset(
+                            $advisory->people->pais->name
+                        )
+                            ? strtoupper($advisory->people->pais->name)
+                            : 'PERU',
+
+                        'emp_birth' => $advisory->people->birthday
+                            ? \Carbon\Carbon::parse(
+                                $advisory->people->birthday
+                            )->format('d/m/Y')
+                            : null,
+
+                        'emp_lastname' => strtoupper(
+                            $advisory->people->lastname
+                        ),
+
+                        'emp_middlename' => strtoupper(
+                            $advisory->people->middlename
+                        ),
+
+                        'emp_name' => strtoupper(
+                            $advisory->people->name
+                        ),
+
+                        'emp_gender' =>
+                        $advisory->people->gender->name == 'FEMENINO'
+                            ? 'F'
+                            : 'M',
+
+                        'emp_discapabilities' => match (trim(
+                            strtolower(
+                                $advisory->people->sick ?? ''
+                            )
+                        )) {
+                            'yes' => 'SI',
+                            'no'  => 'NO',
+                            default => 'PREFIERO NO ESPECIFICAR',
+                        },
+
+                        'emp_soons' => match (trim(
+                            strtolower(
+                                $advisory->people->hasSoon ?? ''
+                            )
+                        )) {
+                            'si' => 'SI',
+                            'no' => 'NO',
+                            'na', '' => 'PREFIERO NO ESPECIFICAR',
+                            default => 'PREFIERO NO ESPECIFICAR',
+                        },
+
+                        'emp_phone' => $advisory->people->phone,
+
+                        'emp_email' => isset(
+                            $advisory->people->email
+                        )
+                            ? strtolower($advisory->people->email)
+                            : '-',
+
+                        'supervisor' => 'MILIAN MELENDEZ ALEJANDRIA',
+
+                        'city' => $advisory->city->name ?? null,
+
+                        'province' => $advisory->province->name ?? null,
+
+                        'district' => $advisory->district->name ?? null,
+
+                        'ruc' => $advisory->ruc ?? null,
+
+                        'economic_service' => $advisory
+                            ->economicsector->name ?? null,
+
+                        'activity_comercial' => $advisory
+                            ->comercialactivity->name ?? null,
+
+                        'component' => $advisory
+                            ->component->name ?? null,
+
+                        'theme' => isset(
+                            $advisory->theme->name
+                        )
+                            ? strtoupper($advisory->theme->name)
+                            : null,
+
+                        'observations' => $advisory->observations
+                            ? 'Z' . $advisory->observations
+                            : '-',
+
+                        'modality' => $advisory->modality->name ?? null,
+
+                        // ✅ DATOS COOPERATIVA
+                        'cooperativa_ruc' => $advisory
+                            ->cooperativa?->ruc ?? null,
+
+                        'cooperativa_nombre' => $advisory
+                            ->cooperativa?->nombre ?? null,
+                    ];
+                }
+            });
+
+            return Excel::download(
+                new AsesoriasCooperativasExport($advisories),
+                'asesorias_cooperativas.xlsx'
+            );
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => 'Ocurrio un error al generar el reporte.',
+                'error'   => $e->getMessage()
             ], 500);
         }
     }

@@ -354,6 +354,7 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
 
 Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('advisories', [HistorialController::class, 'historialAdvisories']);
+    Route::get('advisories', [HistorialController::class, 'historialAdvisories']);
     Route::get('formalizations-10', [HistorialController::class, 'historialFormalizations10']);
     Route::get('formalizations-20', [HistorialController::class, 'historialFormalizations20']);
 
@@ -361,6 +362,8 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
     Route::get('advisories/filters', [HistorialController::class, 'filterHistorialAdvisoriesByDates']);                  // 1
     Route::get('formalizations-10/filters', [HistorialController::class, 'filterHistorialFormalizations10ByDates']);
     Route::get('formalizations-20/filters', [HistorialController::class, 'filterHistorialFormalizations20ByDates']);
+
+    Route::get('advisories-cooperativas', [HistorialController::class, 'advisoriesCooperativas']);
 
     // registros-historial
     Route::get('registers/{idPeople}', [HistorialController::class, 'getByPeopleIdRegisters']);

@@ -297,3 +297,26 @@ CREATE TABLE participantes (
         REFERENCES cargo_empresa(id)
         ON DELETE SET NULL
 );
+
+
+
+
+
+
+CREATE TABLE advisories_cooperativa (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    advisory_id BIGINT UNSIGNED NOT NULL,
+
+    ruc CHAR(11) NULL,
+
+    nombre VARCHAR(255) NULL,
+
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT fk_advisories_cooperativa_advisory
+        FOREIGN KEY (advisory_id)
+        REFERENCES advisories(id)
+        ON DELETE CASCADE
+);
