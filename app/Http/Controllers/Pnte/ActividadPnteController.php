@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActividadPnte;
 use App\Models\Attendance;
 use App\Models\EmpresarioActividad;
+use App\Models\SedDescripcion;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,7 @@ class ActividadPnteController extends Controller
             'monto_gasto' => 'nullable|max:255',
             'mypes_beneficiadas' => 'nullable|integer|min:0',
             'modalidad_id' => 'nullable|exists:modalities,id',
+            'horario' => 'nullable|string'
         ]);
 
         // ✅ Mes: extraer el mes de la fecha más antigua del array
@@ -135,12 +137,13 @@ class ActividadPnteController extends Controller
             'entidad_aliada' => 'nullable|string|max:255',
             'representante_id' => 'nullable|exists:users,id',
             'requiere_pasaje' => 'required|boolean',
-            'monto_gasto' => 'nullable|string|max:255',
+            'monto_gasto' => 'nullable|max:255',
             'mypes_beneficiadas' => 'nullable|integer|min:0',
             'modalidad_id' => 'nullable|exists:modalities,id',
             'total_participantes' => 'nullable|integer|min:0',
             'total_asesorias' => 'nullable|integer|min:0',
             'total_formalizaciones' => 'nullable|integer|min:0',
+            'horario' => 'nullable|string'
         ]);
 
         // ✅ Mes: extraer el mes de la fecha más antigua del array
@@ -194,6 +197,10 @@ class ActividadPnteController extends Controller
             'tipo_actividad_id' => 'nullable|integer|exists:tipo_actividad,id',
             'asesor' => 'nullable|integer',
             'pnte' => 'nullable|integer',
+
+            // ✅ NUEVO
+            'unidad' => 'nullable|integer',
+            'name' => 'nullable|string',
         ]);
 
         $pageSize = $request->input('pageSize', 10);
@@ -239,10 +246,23 @@ class ActividadPnteController extends Controller
                 'reprogramado_por_id',
                 'registrado_por_id',
                 'actualizado_por_id',
+                'horario',
                 'created_at',
             ])
 
-            ->where('unidad', 1)
+            // ✅ FILTRO UNIDAD
+            // si viene unidad filtra
+            // si no viene lista todos
+            ->when(
+                $request->filled('unidad'),
+                function ($q) use ($request) {
+
+                    $q->where(
+                        'unidad',
+                        $request->input('unidad')
+                    );
+                }
+            )
 
             // ✅ FILTRO POR ROL
             ->when($user->rol == 2, function ($q) use ($user) {
@@ -253,19 +273,28 @@ class ActividadPnteController extends Controller
             // ✅ FILTRO: asesor
             ->when($request->filled('asesor'), function ($q) use ($request) {
 
-                $q->where('representante_id', $request->input('asesor'));
+                $q->where(
+                    'representante_id',
+                    $request->input('asesor')
+                );
             })
 
             // ✅ FILTRO: pnte
             ->when($request->filled('pnte'), function ($q) use ($request) {
 
-                $q->where('tipo_actividad_id', $request->input('pnte'));
+                $q->where(
+                    'tipo_actividad_id',
+                    $request->input('pnte')
+                );
             })
 
             // ✅ FILTRO: tipo_actividad_id
             ->when($request->filled('tipo_actividad_id'), function ($q) use ($request) {
 
-                $q->where('tipo_actividad_id', $request->input('tipo_actividad_id'));
+                $q->where(
+                    'tipo_actividad_id',
+                    $request->input('tipo_actividad_id')
+                );
             })
 
             // ✅ FILTRO: year
@@ -273,7 +302,19 @@ class ActividadPnteController extends Controller
 
                 $year = $request->input('year');
 
-                $q->where('fechas', 'LIKE', "%{$year}%");
+                $q->where(
+                    'fechas',
+                    'LIKE',
+                    "%{$year}%"
+                );
+            })
+
+            // ✅ FILTRO: tema
+            ->when($request->filled('name'), function ($q) use ($request) {
+
+                $name = trim($request->input('name'));
+
+                $q->where('tema', 'LIKE', "%{$name}%");
             })
 
             // ✅ FILTRO: rangeDate
@@ -282,6 +323,7 @@ class ActividadPnteController extends Controller
                 [$from, $to] = $request->input('rangeDate');
 
                 $current = \Carbon\Carbon::parse($from);
+
                 $end = \Carbon\Carbon::parse($to);
 
                 $q->where(function ($query) use ($current, $end) {
@@ -290,7 +332,10 @@ class ActividadPnteController extends Controller
 
                         $fecha = $current->format('Y-m-d');
 
-                        $query->orWhereJsonContains('fechas', $fecha);
+                        $query->orWhereJsonContains(
+                            'fechas',
+                            $fecha
+                        );
 
                         $current->addDay();
                     }
@@ -300,10 +345,13 @@ class ActividadPnteController extends Controller
             // ✅ FILTRO: city → region
             ->when($request->filled('city'), function ($q) use ($request) {
 
-                $q->where('region', $request->input('city'));
+                $q->where(
+                    'region',
+                    $request->input('city')
+                );
             })
 
-            // ✅ ORDENAR POR LA FECHA MÁS RECIENTE DEL ARRAY JSON
+            // ✅ ORDENAR POR FECHA MÁS RECIENTE
             ->orderByRaw("
             JSON_UNQUOTE(
                 JSON_EXTRACT(
@@ -507,7 +555,7 @@ class ActividadPnteController extends Controller
                     'id' => $item->id,
                     'actividad_id' => $item->actividad_id,
                     'slug' => $item->slug,
-                    'fecha_asistencia' => $item->fecha_asistencia,
+                    'fecha_asistencia' => $item->fecha_asistencia ? true : false,
                     'numero_dni' => $item->numero_dni,
 
                     // 🔥 DATOS EMPRESARIO
@@ -718,24 +766,50 @@ class ActividadPnteController extends Controller
         );
     }
 
-    public function actualizarTotalParticipantes(): JsonResponse
+    public function actualizarTotalParticipantes(Request $request): JsonResponse
     {
-        $actividades = ActividadPnte::all();
+        // ✅ unidad puede venir: 1, 2 o 3
+        $request->validate([
+            'unidad' => 'nullable|integer|in:1,2,3',
+        ]);
+
+        // ✅ SI ENVÍA UNIDAD → FILTRA
+        // ✅ SI NO ENVÍA → TRAE TODOS
+        $actividades = ActividadPnte::when(
+            $request->filled('unidad'),
+            function ($q) use ($request) {
+
+                $q->where(
+                    'unidad',
+                    $request->input('unidad')
+                );
+            }
+        )->get();
 
         foreach ($actividades as $actividad) {
-            $total = EmpresarioActividad::where('slug', $actividad->slug)->count();
 
-            $totalAsesorias      = EmpresarioActividad::where('slug', $actividad->slug)
+            $total = EmpresarioActividad::where(
+                'slug',
+                $actividad->slug
+            )->count();
+
+            $totalAsesorias = EmpresarioActividad::where(
+                'slug',
+                $actividad->slug
+            )
                 ->where('personal_asesoria', 1)
                 ->count();
 
-            $totalFormalizaciones = EmpresarioActividad::where('slug', $actividad->slug)
+            $totalFormalizaciones = EmpresarioActividad::where(
+                'slug',
+                $actividad->slug
+            )
                 ->where('personal_formalizacion', 1)
                 ->count();
 
             $actividad->update([
-                'total_participantes'  => $total,
-                'total_asesorias'      => $totalAsesorias,
+                'total_participantes'   => $total,
+                'total_asesorias'       => $totalAsesorias,
                 'total_formalizaciones' => $totalFormalizaciones,
             ]);
         }
@@ -745,6 +819,166 @@ class ActividadPnteController extends Controller
             'message' => 'Total de participantes, asesorías y formalizaciones actualizado correctamente.',
         ]);
     }
+
+    public function storeOrUpdateDescripcion(Request $request)
+    {
+        try {
+
+            $request->validate([
+                'slug_actividad_pnte' => 'required|string',
+                'descripcion' => 'nullable|string',
+                'mensaje_finalizacion' => 'nullable|string',
+                'mensaje_correo' => 'nullable|string',
+                'mensaje_recordatorio' => 'nullable|string',
+            ]);
+
+            $descripcion = SedDescripcion::updateOrCreate(
+
+                [
+                    'slug_actividad_pnte' => $request->slug_actividad_pnte
+                ],
+
+                [
+                    'descripcion' => $request->descripcion,
+                    'mensaje_finalizacion' => $request->mensaje_finalizacion,
+                    'mensaje_correo' => $request->mensaje_correo,
+                    'mensaje_recordatorio' => $request->mensaje_recordatorio,
+                ]
+            );
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Registro guardado correctamente.',
+                'data' => $descripcion
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al guardar el registro.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getDescripcionBySlug($slug)
+    {
+        try {
+
+            $descripcion = SedDescripcion::where('slug_actividad_pnte', $slug)
+                ->first();
+
+            if (!$descripcion) {
+
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontró información para este slug.',
+                    'data' => null
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Información obtenida correctamente.',
+                'data' => $descripcion
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al obtener la información.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateAsistenciaFecha(Request $request)
+    {
+        try {
+
+            $request->validate([
+                'slug' => 'required|string',
+                'numero_dni' => 'required|string',
+                'check' => 'required|boolean',
+                'date' => 'nullable|string',
+            ]);
+
+            $registro = EmpresarioActividad::where('slug', $request->slug)
+                ->where('numero_dni', $request->numero_dni)
+                ->first();
+
+            if (!$registro) {
+
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontró el registro.',
+                ], 404);
+            }
+
+            $registro->update([
+                'fecha_asistencia' => $request->check
+                    ? $request->date
+                    : null
+            ]);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Asistencia actualizada correctamente.',
+                'data' => $registro
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al actualizar la asistencia.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function attendanceSummaryBySlug($slug)
+    {
+        try {
+
+            $total = EmpresarioActividad::where('slug', $slug)
+                ->count();
+
+            $asistieron = EmpresarioActividad::where('slug', $slug)
+                ->whereNotNull('fecha_asistencia')
+                ->count();
+
+            $noAsistieron = EmpresarioActividad::where('slug', $slug)
+                ->whereNull('fecha_asistencia')
+                ->count();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Resumen de asistencia obtenido correctamente.',
+                'data' => [
+                    'slug' => $slug,
+                    'total' => $total,
+                    'asistieron' => $asistieron,
+                    'no_asistieron' => $noAsistieron,
+                ]
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al obtener el resumen.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+
+
+
+
+
+
 
 
 

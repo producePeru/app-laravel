@@ -283,3 +283,69 @@ public function sendEmails(Request $request)
     ], 200);
 }
 
+
+
+
+
+
+
+
+
+
+
+// nuevo
+INSERT INTO tipo_actividad (name, unidad)
+VALUES
+('CAPACITACIÓN', 2),
+('ACTIVIDAD 1.1', 2),
+('CAPACITACIÓN SED', 2),
+('EVENTO COMERCIAL', 2),
+('MUJER PRODUCE', 2),
+('RUTA DIGITAL', 2),
+('DIFUSIÓN', 2),
+('ACTIVIDAD PROTOCOLAR', 2);
+
+
+INSERT INTO nombre_actividad (tipo_actividad_id, name)
+VALUES
+(5, 'POTENCIA TU EMPRESA – FORMALIZACION'),
+(5, 'POTENCIA TU EMPRESA - GESTION EMPRESARIAL'),
+(5, 'POTENCIA TU EMPRESA – DIGITALIZACION'),
+(5, 'POTENCIA TU EMPRESA - DESARROLLO PRODUCTIVO'),
+(5, 'POTENCIA TU EMPRESA - ACCESO AL FINANCIAMIENTO');
+
+
+
+
+
+
+INSERT INTO nombre_actividad (tipo_actividad_id, name)
+VALUES
+(6, 'CAPACITACIÓN PP093'),
+(7, 'SESION DE ENTRENAMIENTO DIGITAL – SED'),
+(8, 'FERIA Y/O MACROEVENTO'),
+(9, 'CAPACITACIÓN MUJER PRODUCE'),
+(10, 'CAPACITACIÓN RUTA DIGITAL'),
+(11, 'DIFUSION DE LOS SERVICIOS DEL PNTE'),
+(12, 'LANZAMIENTO DE FERIA Y/O MACROEVENTO');
+
+
+CREATE TABLE sed_descripcion (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug_actividad_pnte VARCHAR(255) NOT NULL,
+    descripcion TEXT NULL,
+    mensaje_finalizacion TEXT NULL,
+    mensaje_correo TEXT NULL,
+    mensaje_recordatorio TEXT NULL,
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+
+**** fecha_asistencia	varchar(50)  => empresario_actividad
+
+
+
+ALTER TABLE actividades_pnte
+ADD COLUMN horario VARCHAR(50)
+AFTER actualizado_por_id;
