@@ -39,6 +39,7 @@ class AdvisoryController extends Controller
                 'advisory_id' => $advisory->id,
                 'ruc'         => $request->ruc_cooperativa,
                 'nombre'      => $request->nombre_cooperativa,
+                'cargo'       => $request->cargo_cooperativa,
             ]);
 
             return response()->json([

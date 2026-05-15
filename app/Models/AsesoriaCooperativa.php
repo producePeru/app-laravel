@@ -14,7 +14,8 @@ class AsesoriaCooperativa extends Model
     protected $fillable = [
         'advisory_id',
         'ruc',
-        'nombre'
+        'nombre',
+        'cargo'
     ];
 
     public function advisory()
