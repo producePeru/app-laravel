@@ -677,6 +677,12 @@ class HistorialController extends Controller
 
     private function mapAdvisoryCooperativas($advisory)
     {
+        $cargosCooperativa = [
+            1 => 'DIRIGENTE',
+            2 => 'DELEGADO',
+            3 => 'SOCIO O PERSONAL ADMINISTRATIVO',
+        ];
+
         return [
             'id'                    => $advisory->id,
             'date'                  => $advisory->created_at->format('d/m/Y h:i A'),
@@ -721,6 +727,8 @@ class HistorialController extends Controller
             'district_id'           => $advisory->district->id ?? null,
             'cooperativa_ruc'       => $advisory->cooperativa?->ruc ?? null,
             'cooperativa_nombre'    => $advisory->cooperativa?->nombre ?? null,
+            'cooperativa_cargo'     => $cargosCooperativa[$advisory->cooperativa?->cargo] ?? null,
+
         ];
     }
 }

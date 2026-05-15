@@ -464,19 +464,25 @@ class DownloadFormalizationsController extends Controller
 
             $globalIndex = 1;
 
+            // ✅ MAPA DE CARGOS
+            $cargosCooperativa = [
+                1 => 'DIRIGENTE',
+                2 => 'DELEGADO',
+                3 => 'SOCIO O PERSONAL ADMINISTRATIVO',
+            ];
+
             $query->chunk(1000, function ($rows) use (
                 &$advisories,
                 &$globalIndex,
-                $user
+                $user,
+                $cargosCooperativa
             ) {
 
                 foreach ($rows as $advisory) {
 
                     $advisories[] = [
 
-                        'index' => ($user->rol == 1)
-                            ? $advisory->id
-                            : $globalIndex++,
+                        'index' => $globalIndex++,
 
                         'date' => $advisory->created_at
                             ->format('d/m/Y'),
@@ -604,6 +610,9 @@ class DownloadFormalizationsController extends Controller
 
                         'cooperativa_nombre' => $advisory
                             ->cooperativa?->nombre ?? null,
+
+                        'cooperativa_cargo' =>
+                        $cargosCooperativa[$advisory->cooperativa?->cargo] ?? null,
                     ];
                 }
             });
