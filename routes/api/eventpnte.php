@@ -26,6 +26,14 @@ Route::controller(ActividadPnteController::class)->group(function () {
     Route::POST('clasificar-actividades-exacto', 'setNombreActividad');
 
     Route::PUT('actualizar-total-participantes', 'actualizarTotalParticipantes');
+
+    Route::PUT('store-update-descripcion', 'storeOrUpdateDescripcion');
+
+    Route::GET('get-descripcion-slug/{slug}', 'getDescripcionBySlug');
+
+    Route::PUT('update-asistencia-fecha', 'updateAsistenciaFecha');
+
+    Route::GET('attendance-summary-slug/{slug}', 'attendanceSummaryBySlug');
 });
 
 // event-pnte

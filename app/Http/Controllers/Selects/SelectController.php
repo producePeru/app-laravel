@@ -805,7 +805,20 @@ class SelectController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    public function getTipoActividadesUgse()
+    {
+        // Filtrar por unidad = 2
+        $types = TipoActividad::where('unidad', 2)->get();
 
+        $data = $types->sortBy('name')->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id,
+            ];
+        })->values();
+
+        return response()->json(['data' => $data]);
+    }
 
     public function getNombreActividades($id)
     {
