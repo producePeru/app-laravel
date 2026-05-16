@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActividadPnte;
 use App\Models\Event;
 use App\Models\Event2;
 use App\Models\EventCategory;
@@ -427,7 +428,7 @@ class EventsController extends Controller
             ->get()
             ->flatMap(function ($item) use ($expandByDates) {
                 $base = [
-                    'id' => 'att-' . $item->id,
+                    'id' => 'att-'.$item->id,
                     'tabla' => 'attendancelist',
                     'row_id' => $item->id,
                     'unidad' => $item->unidad ?? 'UGO',
@@ -454,16 +455,16 @@ class EventsController extends Controller
                         : null,
                     'registrador' => $item->registrador
                         ? mb_strtoupper(
-                            $item->registrador->name . ' ' .
-                                $item->registrador->lastname . ' ' .
+                            $item->registrador->name.' '.
+                                $item->registrador->lastname.' '.
                                 $item->registrador->middlename,
                             'UTF-8'
                         )
                         : null,
                     'asesor' => $item->asesor
                         ? mb_strtoupper(
-                            $item->asesor->name . ' ' .
-                                $item->asesor->lastname . ' ' .
+                            $item->asesor->name.' '.
+                                $item->asesor->lastname.' '.
                                 $item->asesor->middlename,
                             'UTF-8'
                         )
@@ -498,12 +499,12 @@ class EventsController extends Controller
                 'province:id,name',
                 'district:id,name',
                 'modality:id,name',
-                'capacitador:id,name'
+                'capacitador:id,name',
             ])
             ->get()
             ->flatMap(function ($item) use ($expandByDates) {
                 $base = [
-                    'id' => 'ugse-' . $item->id,
+                    'id' => 'ugse-'.$item->id,
                     'tabla' => 'mp_eventos',
                     'row_id' => $item->id,
                     'unidad' => $item->unidad ?? 'UGSE',
@@ -561,7 +562,7 @@ class EventsController extends Controller
             ->get()
             ->flatMap(function ($item) use ($expandByDates) {
                 $base = [
-                    'id' => 'fair-' . $item->id,
+                    'id' => 'fair-'.$item->id,
                     'tabla' => 'fairs',
                     'row_id' => $item->id,
                     'unidad' => $item->unidad ?? 'UGO',
@@ -583,8 +584,8 @@ class EventsController extends Controller
 
                     'registrador' => $item->profile
                         ? mb_strtoupper(
-                            $item->profile->name . ' ' .
-                                $item->profile->lastname . ' ' .
+                            $item->profile->name.' '.
+                                $item->profile->lastname.' '.
                                 $item->profile->middlename,
                             'UTF-8'
                         )
@@ -611,19 +612,19 @@ class EventsController extends Controller
 
         if ($city) {
             $collection = $collection->filter(
-                fn($item) => isset($item['city_id']) && $item['city_id'] == $city
+                fn ($item) => isset($item['city_id']) && $item['city_id'] == $city
             );
         }
 
         if ($year) {
             $collection = $collection->filter(
-                fn($item) => isset($item['date']) && substr($item['date'], 0, 4) == $year
+                fn ($item) => isset($item['date']) && substr($item['date'], 0, 4) == $year
             );
         }
 
         if ($date) {
             $collection = $collection->filter(
-                fn($item) => isset($item['date']) && $item['date'] === $date
+                fn ($item) => isset($item['date']) && $item['date'] === $date
             );
         }
 
@@ -631,7 +632,9 @@ class EventsController extends Controller
             [$start, $end] = $range;
 
             $collection = $collection->filter(function ($item) use ($start, $end) {
-                if (!isset($item['date'])) return false;
+                if (! isset($item['date'])) {
+                    return false;
+                }
 
                 return $item['date'] >= $start && $item['date'] <= $end;
             });
@@ -648,7 +651,7 @@ class EventsController extends Controller
 
         // ✅ AGRUPAR: un solo registro por evento
         $grouped = $collection
-            ->groupBy(fn($item) => $item['tabla'] . '-' . $item['row_id'])
+            ->groupBy(fn ($item) => $item['tabla'].'-'.$item['row_id'])
             ->map(function ($group) {
                 $first = $group->first();
 
@@ -698,7 +701,7 @@ class EventsController extends Controller
         $yearMonth = $request->input('year_month'); // "YYYY-MM"
         $cityId = $request->input('city_id'); // opcional
 
-        if (!$yearMonth) {
+        if (! $yearMonth) {
             return response()->json([
                 ['key' => 'dot-ugse', 'dot' => 'red', 'dates' => []],
                 ['key' => 'dot-ugo', 'dot' => 'blue', 'dates' => []],
@@ -713,13 +716,13 @@ class EventsController extends Controller
         // 🔍 FILTRO POR MES + VISIBLES
         $events = $events->filter(function ($event) use ($year, $month) {
             return ($event['visible'] ?? 0) == 1
-                && !empty($event['date'])
+                && ! empty($event['date'])
                 && substr($event['date'], 0, 4) == $year
                 && substr($event['date'], 5, 2) == str_pad($month, 2, '0', STR_PAD_LEFT);
         });
 
         // 🔥 FILTRO POR CITY (CORREGIDO)
-        if (!empty($cityId)) {
+        if (! empty($cityId)) {
             $events = $events->filter(function ($event) use ($cityId) {
                 return isset($event['city_id']) && $event['city_id'] == $cityId;
             });
@@ -730,7 +733,9 @@ class EventsController extends Controller
 
         foreach ($events as $event) {
 
-            if (empty($event['date'])) continue;
+            if (empty($event['date'])) {
+                continue;
+            }
 
             // 🔥 NORMALIZAR UNIDAD (CLAVE)
             $unidadRaw = strtoupper(trim($event['unidad'] ?? ''));
@@ -739,11 +744,11 @@ class EventsController extends Controller
             $dateStr = \Carbon\Carbon::parse($event['date'])->toISOString();
 
             if ($unidad === 'UGO') {
-                if (!in_array($dateStr, $blueDates)) {
+                if (! in_array($dateStr, $blueDates)) {
                     $blueDates[] = $dateStr;
                 }
             } else {
-                if (!in_array($dateStr, $redDates)) {
+                if (! in_array($dateStr, $redDates)) {
                     $redDates[] = $dateStr;
                 }
             }
@@ -757,104 +762,65 @@ class EventsController extends Controller
 
     public function getEventsByDate(Request $request)
     {
-        $dateSelected = $request->input('dateSelected');
-        $offices = $request->input('office'); // array
+        $dateSelected = $request->input('dateSelected'); // "2026-05-28"
+        $offices = $request->input('office', []);
         $city = $request->input('city_id');
 
-        if (!$dateSelected) {
+        if (! $dateSelected) {
             return response()->json([
                 'message' => 'Debe proporcionar una fecha válida.',
                 'events' => [],
             ], 400);
         }
 
-        $events = $this->getUnifiedEvents();
+        // Mapear UGO => 1, UGSE => 2
+        $unidadMap = ['UGO' => 1, 'UGSE' => 2];
+        $unidadIds = collect($offices)
+            ->map(fn ($o) => $unidadMap[strtoupper(trim($o))] ?? null)
+            ->filter()
+            ->values()
+            ->toArray();
 
-        // 🔥 NORMALIZAR OFFICE (REQUEST)
-        $officesNormalized = [];
+        $actividades = ActividadPnte::with([
+            'tipoActividad:id,name',
+            'regionRel:id,name',
+            'provinciaRel:id,name',
+            'distritoRel:id,name',
+            'representante:id,name,lastname',
+        ])
+            ->whereJsonContains('fechas', $dateSelected) // 🔥 busca la fecha en el array
+            ->when(! empty($city), fn ($q) => $q->where('region', $city))
+            ->when(! empty($unidadIds), fn ($q) => $q->whereIn('unidad', $unidadIds))
+            ->get();
 
-        if (!empty($offices) && is_array($offices)) {
-            foreach ($offices as $office) {
-                $office = strtoupper(trim($office));
-
-                if ($office === 'UGO') {
-                    $officesNormalized[] = 'UGO';
-                } else {
-                    // TODO lo que no sea UGO → UGSE
-                    $officesNormalized[] = 'UGSE';
-                }
-            }
-
-            $officesNormalized = array_unique($officesNormalized);
-        }
-
-        // 🔥 FILTRO
-        $filtered = $events->filter(function ($event) use ($dateSelected, $city, $officesNormalized) {
-
-            // ✅ FECHA (OBLIGATORIO)
-            if (($event['date'] ?? null) !== $dateSelected) {
-                return false;
-            }
-
-            // ✅ SOLO VISIBLES
-            if (($event['visible'] ?? 0) != 1) {
-                return false;
-            }
-
-            // 🔥 CITY (OPCIONAL)
-            if (!empty($city)) {
-                if (!isset($event['city_id']) || $event['city_id'] != $city) {
-                    return false;
-                }
-            }
-
-            // 🔥 OFFICE (NORMALIZADO TAMBIÉN EN EVENTO)
-            if (!empty($officesNormalized)) {
-
-                $unidadRaw = strtoupper(trim($event['unidad'] ?? ''));
-
-                // 🔥 CLAVE: TODO lo que no sea UGO → UGSE
-                $unidad = ($unidadRaw === 'UGO') ? 'UGO' : 'UGSE';
-
-                if (!in_array($unidad, $officesNormalized)) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-
-        // 🎯 FORMATEO FINAL
-        $formatted = $filtered->map(function ($event) {
-
-            $unidadRaw = strtoupper(trim($event['unidad'] ?? ''));
-            $unidad = ($unidadRaw === 'UGO') ? 'UGO' : 'UGSE';
-
-            $dotColor = $unidad === 'UGO' ? 'blue' : 'red';
+        $formatted = $actividades->map(function ($actividad) use ($dateSelected) {
+            $unidad = (int) $actividad->unidad;
+            $tipo = $unidad === 1 ? 'UGO' : 'UGSE';
+            $dotColor = $unidad === 1 ? 'blue' : 'red';
 
             return [
-                'id' => $event['id'],
-                'title' => $event['titulo'],
-                'tipo' => $unidad,
-                'region' => $event['region'],
-                'provincia' => $event['provincia'],
-                'distrito' => $event['distrito'],
-                'direccion' => $event['direccion'],
-                'tipoActividad' => $event['tipoActividad'],
+                'id' => $actividad->id,
+                'title' => $actividad->tema,
+                'tipo' => $tipo,
+                'region' => $actividad->regionRel->name ?? $actividad->region,
+                'provincia' => $actividad->provinciaRel->name ?? $actividad->provincia,
+                'distrito' => $actividad->distritoRel->name ?? $actividad->distrito,
+                'direccion' => $actividad->lugar,
+                'tipoActividad' => $actividad->tipoActividad->name ?? null,
                 'dot' => $dotColor,
-                'dates' => [$event['date']],
-                'cancelado' => $event['cancelado'] ?? null,
-                'reprogramado' => $event['reprogramado'] ?? null,
-                'resultados' => $event['resultados'] ?? null,
-                'attendance_list_count' => $event['attendance_list_count'] ?? null,
-                'titulo' => $event['titulo']
-                    ? mb_strtoupper($event['titulo'], 'UTF-8')
-                    : null,
-                'component' => $event['component'] ?? null,
-                'entidad_aliada' => $event['entidad_aliada'] ?? null,
-
-                'asesor' => $event['asesor'] ?? null
-
+                'dates' => [$dateSelected],
+                'cancelado' => $actividad->cancelado,
+                'reprogramado' => $actividad->reprogramado,
+                'resultados' => null,
+                'attendance_list_count' => null,
+                'titulo' => $actividad->tema
+                                            ? mb_strtoupper($actividad->tema, 'UTF-8')
+                                            : null,
+                'component' => null,
+                'entidad_aliada' => $actividad->entidad_aliada,
+                'asesor' => $actividad->representante ?
+                mb_strtoupper(trim("{$actividad->representante->name} {$actividad->representante->lastname}"), 'UTF-8') :
+                null,
             ];
         })->values();
 
@@ -993,9 +959,9 @@ class EventsController extends Controller
 
             $model = match ($tabla) {
                 'attendancelist' => \App\Models\Attendance::find($rowId),
-                'mp_eventos'     => \App\Models\MPEvent::find($rowId),
-                'fairs'          => \App\Models\Fair::find($rowId),
-                default          => null,
+                'mp_eventos' => \App\Models\MPEvent::find($rowId),
+                'fairs' => \App\Models\Fair::find($rowId),
+                default => null,
             };
 
             if (! $model) {
@@ -1004,7 +970,7 @@ class EventsController extends Controller
 
             // CANCELAR
             if ($request->filled('canceled')) {
-                $model->cancelado  = $request->canceled;
+                $model->cancelado = $request->canceled;
                 $model->reprogramado = null;
                 // $model->dates      = null;
             }
@@ -1012,21 +978,21 @@ class EventsController extends Controller
             // REPROGRAMAR
             if ($request->filled('rescheduled')) {
                 $model->reprogramado = $request->rescheduled;
-                $model->cancelado    = null;
-                $model->dates        = $request->dates ?? [];
+                $model->cancelado = null;
+                $model->dates = $request->dates ?? [];
             }
 
             $model->save();
 
             return response()->json([
                 'message' => 'Actualizado correctamente',
-                'status'  => 200,
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al actualizar',
-                'error'   => $e->getMessage(),
-                'status'  => 500,
+                'error' => $e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }

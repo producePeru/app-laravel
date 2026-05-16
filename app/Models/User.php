@@ -6,8 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -37,7 +37,8 @@ class User extends Authenticatable
         'notary_id',
         'supervisor_id',
         'rol',
-        'active'
+        'active',
+        'rol_id',
 
     ];
 
@@ -52,7 +53,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
     /**
@@ -75,9 +76,14 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\View');
     }
 
-    public function roles()
+    public function role()
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsTo(Role::class, 'rol_id');
+    }
+
+    public function cde()
+    {
+        return $this->belongsTo(Cde::class);
     }
 
     public function people()
@@ -125,11 +131,6 @@ class User extends Authenticatable
         return $this->hasOne(SupervisorUser::class, 'supervisor_id', 'id');
     }
 
-    public function cde()
-    {
-        return $this->belongsTo('App\Models\Cde');
-    }
-
     public function office()
     {
         return $this->belongsTo('App\Models\Office');
@@ -151,7 +152,6 @@ class User extends Authenticatable
             ->paginate(50);
     }
 
-
     protected static function booted()
     {
         static::deleting(function ($user) {
@@ -166,7 +166,6 @@ class User extends Authenticatable
             ->orderBy('created_at', 'desc')
             ->paginate(50);
     }
-
 
     // public function advisories()
     // {
@@ -201,19 +200,17 @@ class User extends Authenticatable
             ])->withTimestamps();
     }
 
-
     public function scopeWithDataItems($query, $filters)
     {
         $query->with([
             'cde',
-            'office'
+            'office',
         ])->orderBy('created_at', 'desc');
 
-
-        if (!empty($filters['name'])) {
+        if (! empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('dni', 'like', '%' . $filters['name'] . '%')
-                    ->orWhere(DB::raw("CONCAT(name, ' ', lastname, ' ', middlename)"), 'like', '%' . $filters['name'] . '%');
+                $q->where('dni', 'like', '%'.$filters['name'].'%')
+                    ->orWhere(DB::raw("CONCAT(name, ' ', lastname, ' ', middlename)"), 'like', '%'.$filters['name'].'%');
             });
         }
     }
