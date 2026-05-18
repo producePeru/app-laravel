@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Pnte;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Models\ActividadPnte;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ActividadPublicPnteController extends Controller
 {
@@ -21,7 +20,7 @@ class ActividadPublicPnteController extends Controller
             'regionRel:id,name',
             'provinciaRel:id,name',
             'distritoRel:id,name',
-            'representante:id,name,lastname,middlename'
+            'representante:id,name,lastname,middlename',
         ])
             ->where('slug', $slug)
             ->select([
@@ -35,13 +34,13 @@ class ActividadPublicPnteController extends Controller
                 'region',
                 'provincia',
                 'distrito',
-                'representante_id'
+                'representante_id',
             ])
             ->firstOrFail();
 
         return response()->json([
             'status' => 200,
-            'data'   => $actividad,
+            'data' => $actividad,
         ]);
     }
 
@@ -60,20 +59,20 @@ class ActividadPublicPnteController extends Controller
                 'cargo_empresa_id',
                 'fecha_nacimiento',
                 'edad',
-                'pais_id'
+                'pais_id',
             ])
             ->first();
 
-        if (!$empresario) {
+        if (! $empresario) {
             return response()->json([
-                'status'  => 404,
+                'status' => 404,
                 'message' => 'Empresario no encontrado.',
             ]);
         }
 
         return response()->json([
             'status' => 200,
-            'data'   => $empresario,
+            'data' => $empresario,
         ]);
     }
 
@@ -91,20 +90,20 @@ class ActividadPublicPnteController extends Controller
                 'region_id',
                 'provincia_id',
                 'distrito_id',
-                'direccion'
+                'direccion',
             ])
             ->first();
 
-        if (!$empresario) {
+        if (! $empresario) {
             return response()->json([
-                'status'  => 404,
+                'status' => 404,
                 'message' => 'Empresa no encontrada.',
             ]);
         }
 
         return response()->json([
             'status' => 200,
-            'data'   => $empresario,
+            'data' => $empresario,
         ]);
     }
 
@@ -112,7 +111,7 @@ class ActividadPublicPnteController extends Controller
     {
         $request->validate([
             'slug' => 'required|string',
-            'ruc' => 'required|string|size:11',
+            'ruc' => 'nullable|size:11',
             'numero_dni' => 'required|string|max:12',
         ]);
 
@@ -186,9 +185,10 @@ class ActividadPublicPnteController extends Controller
 
             if ($existsActividad) {
                 DB::rollBack();
+
                 return response()->json([
                     'status' => 422,
-                    'message' => 'El participante ya está registrado en esta actividad.'
+                    'message' => 'El participante ya está registrado en esta actividad.',
                 ]);
             }
 
@@ -210,7 +210,7 @@ class ActividadPublicPnteController extends Controller
                 'status' => 200,
                 'message' => $empresario->wasRecentlyCreated
                     ? 'Empresario registrado correctamente.'
-                    : 'Empresario registrado en la actividad.'
+                    : 'Empresario registrado en la actividad.',
             ]);
         } catch (\Exception $e) {
 
@@ -219,8 +219,205 @@ class ActividadPublicPnteController extends Controller
             return response()->json([
                 'status' => 500,
                 'message' => 'Error en el servidor',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function getEventsDots(Request $request)
+    {
+        $yearMonth = $request->input('year_month'); // YYYY-MM
+        $cityId = $request->input('city_id'); // opcional
+
+        if (! $yearMonth) {
+            return response()->json([
+                ['key' => 'dot-ugo', 'dot' => 'blue', 'dates' => []],
+                ['key' => 'dot-ugse', 'dot' => 'red', 'dates' => []],
+                ['key' => 'dot-ugseco', 'dot' => 'green', 'dates' => []],
+            ]);
+        }
+
+        [$year, $month] = explode('-', $yearMonth);
+
+        $query = ActividadPnte::query()
+            ->where('activo', 1);
+
+        // filtro opcional por ciudad
+        if (! empty($cityId)) {
+            $query->where('city_id', $cityId);
+        }
+
+        $events = $query->get([
+            'id',
+            'unidad',
+            'fechas',
+        ]);
+
+        $blueDates = [];   // UGO
+        $redDates = [];    // UGSE
+        $greenDates = [];  // UGSECO
+
+        foreach ($events as $event) {
+
+            // convertir json/string a array
+            $fechas = $event->fechas;
+
+            if (is_string($fechas)) {
+                $fechas = json_decode($fechas, true);
+            }
+
+            if (! is_array($fechas)) {
+                continue;
+            }
+
+            foreach ($fechas as $fecha) {
+
+                if (empty($fecha)) {
+                    continue;
+                }
+
+                // validar que pertenezca al mes solicitado
+                if (
+                    substr($fecha, 0, 4) != $year ||
+                    substr($fecha, 5, 2) != str_pad($month, 2, '0', STR_PAD_LEFT)
+                ) {
+                    continue;
+                }
+
+                $dateStr = \Carbon\Carbon::parse($fecha)->toISOString();
+
+                switch ((int) $event->unidad) {
+
+                    case 1: // UGO
+                        if (! in_array($dateStr, $blueDates)) {
+                            $blueDates[] = $dateStr;
+                        }
+                        break;
+
+                    case 2: // UGSE
+                        if (! in_array($dateStr, $redDates)) {
+                            $redDates[] = $dateStr;
+                        }
+                        break;
+
+                    case 3: // UGSECO
+                        if (! in_array($dateStr, $greenDates)) {
+                            $greenDates[] = $dateStr;
+                        }
+                        break;
+                }
+            }
+        }
+
+        return response()->json([
+            [
+                'key' => 'dot-ugo',
+                'dot' => 'blue',
+                'dates' => $blueDates,
+            ],
+            [
+                'key' => 'dot-ugse',
+                'dot' => 'red',
+                'dates' => $redDates,
+            ],
+            [
+                'key' => 'dot-ugseco',
+                'dot' => 'green',
+                'dates' => $greenDates,
+            ],
+        ]);
+    }
+
+    public function getEventsByDate(Request $request)
+    {
+        $dateSelected = $request->input('dateSelected'); // "2026-05-28"
+        $offices = $request->input('office', []);
+        $city = $request->input('city_id');
+
+        if (! $dateSelected) {
+            return response()->json([
+                'message' => 'Debe proporcionar una fecha válida.',
+                'events' => [],
+            ], 400);
+        }
+
+        // Mapear unidades
+        $unidadMap = [
+            'UGO' => 1,
+            'UGSE' => 2,
+            'UGSECO' => 3,
+        ];
+
+        $unidadIds = collect($offices)
+            ->map(fn ($o) => $unidadMap[strtoupper(trim($o))] ?? null)
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $actividades = ActividadPnte::with([
+            'tipoActividad:id,name',
+            'nombreActividad:id,name',
+            'regionRel:id,name',
+            'provinciaRel:id,name',
+            'distritoRel:id,name',
+            'representante:id,name,lastname',
+        ])
+            ->where('activo', 1) // 🔥 SOLO ACTIVOS
+            ->whereJsonContains('fechas', $dateSelected)
+            ->when(! empty($city), fn ($q) => $q->where('region', $city))
+            ->when(! empty($unidadIds), fn ($q) => $q->whereIn('unidad', $unidadIds))
+            ->get();
+
+        $formatted = $actividades->map(function ($actividad) use ($dateSelected) {
+
+            $unidad = (int) $actividad->unidad;
+
+            $tipo = match ($unidad) {
+                1 => 'UGO',
+                2 => 'UGSE',
+                3 => 'UGSECO',
+                default => 'OTRO'
+            };
+
+            $dotColor = match ($unidad) {
+                1 => 'blue',
+                2 => 'red',
+                3 => 'green',
+                default => 'default'
+            };
+
+            return [
+                'id' => $actividad->id,
+                'dates' => [$dateSelected],
+                'cantidad_dias' => $actividad->cantidad_dias,
+                'tipo_actividad' => $actividad->tipoActividad->name ?? null,
+                'nombre_actividad' => $actividad->nombreActividad->name ?? null,
+                'title' => $actividad->tema,
+                'region' => $actividad->regionRel->name ?? $actividad->region,
+                'provincia' => $actividad->provinciaRel->name ?? $actividad->provincia,
+                'distrito' => $actividad->distritoRel->name ?? $actividad->distrito,
+                'direccion' => $actividad->lugar,
+                'entidad_organizadora' => $actividad->entidad_organizadora,
+                'entidad_aliada' => $actividad->entidad_aliada,
+                'mypes_beneficiadas' => $actividad->mypes_beneficiadas,
+                'total_participantes' => $actividad->total_participantes,
+                'tipo' => $tipo,
+                'dot' => $dotColor,
+                'cancelado' => $actividad->cancelado,
+                'reprogramado' => $actividad->reprogramado,
+                'asesor' => $actividad->representante
+                    ? mb_strtoupper(
+                        trim("{$actividad->representante->name} {$actividad->representante->lastname}"),
+                        'UTF-8'
+                    )
+                    : null,
+            ];
+        })->values();
+
+        return response()->json([
+            'message' => 'Eventos obtenidos correctamente.',
+            'status' => 200,
+            'data' => $formatted,
+        ]);
     }
 }

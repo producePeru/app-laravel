@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Fair;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateFairRequest;
 use App\Mail\FeriasEmpresarialesMail;
+use App\Models\ActividadPnte;
 use App\Models\Fair;
 use App\Models\FairPostulate;
 use App\Models\Mype;
 use App\Models\SedAsistente;
+use App\Models\SedDescripcion;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -118,7 +120,7 @@ class FairController extends Controller
             'description' => $item->description ? $item->description : null,
             'description3' => isset($item->description)
                 ? (mb_strlen(strip_tags($item->description)) > 200
-                    ? mb_substr(strip_tags($item->description), 0, 200).'...'
+                    ? mb_substr(strip_tags($item->description), 0, 200) . '...'
                     : strip_tags($item->description))
                 : null,
             'fairtype_id' => $item->fairType->id ?? null,
@@ -145,13 +147,13 @@ class FairController extends Controller
             'msgEndForm' => $item->msgEndForm ? $item->msgEndForm : null,
             'msgEndForm3' => isset($item->msgEndForm)
                 ? (mb_strlen(strip_tags($item->msgEndForm)) > 200
-                    ? mb_substr(strip_tags($item->msgEndForm), 0, 200).'...'
+                    ? mb_substr(strip_tags($item->msgEndForm), 0, 200) . '...'
                     : strip_tags($item->msgEndForm))
                 : null,
             'msgSendEmail' => $item->msgSendEmail ? $item->msgSendEmail : null,
             'msgSendEmail3' => isset($item->msgSendEmail)
                 ? (mb_strlen(strip_tags($item->msgSendEmail)) > 200
-                    ? mb_substr(strip_tags($item->msgSendEmail), 0, 200).'...'
+                    ? mb_substr(strip_tags($item->msgSendEmail), 0, 200) . '...'
                     : strip_tags($item->msgSendEmail))
                 : null,
             'image' => $item->image ? [
@@ -184,7 +186,7 @@ class FairController extends Controller
             $count = 1;
 
             while (Fair::where('slug', $slug)->exists()) {
-                $slug = $originalSlug.'-'.$count;
+                $slug = $originalSlug . '-' . $count;
                 $count++;
             }
 
@@ -200,7 +202,7 @@ class FairController extends Controller
                 'status' => 200,
             ], 201);
         } catch (\Exception $e) {
-            Log::error('Error al crear feria: '.$e->getMessage(), [
+            Log::error('Error al crear feria: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
 
@@ -214,28 +216,55 @@ class FairController extends Controller
     public function sedDetailsEvent($slug)
     {
         try {
+
             $today = Carbon::now();
 
-            $fair = Fair::where('slug', $slug)->first();
+            // ✅ Buscar actividad por slug
+            $actividad = ActividadPnte::with([
+                'regionRel:id,name',
+                'provinciaRel:id,name',
+                'distritoRel:id,name',
+            ])
+                ->where('slug', $slug)
+                ->first();
 
-            if ($fair) {
+            if ($actividad) {
 
-                // 🔥 VALIDAR HASTA EL FINAL DEL DÍA usando "fecha"
-                if (! empty($fair->fecha)) {
+                // ✅ Buscar descripción adicional
+                $descripcion = SedDescripcion::where(
+                    'slug_actividad_pnte',
+                    $slug
+                )->first();
 
-                    $fechaEvento = Carbon::parse($fair->fecha)->endOfDay();
+                // ✅ fechas puede venir como array o json
+                $fechas = is_array($actividad->fechas)
+                    ? $actividad->fechas
+                    : json_decode($actividad->fechas, true);
+
+                // ✅ Tomar fecha más alejada
+                $fechaFin = collect($fechas)->max();
+
+                // ✅ Validar hasta final del día
+                if (!empty($fechaFin)) {
+
+                    $fechaEvento = Carbon::parse($fechaFin)
+                        ->endOfDay();
 
                     if ($today->gt($fechaEvento)) {
+
                         return response()->json([
                             'data' => [
                                 'title' => '¡Evento Finalizado!',
-                                'message' => '
-                            El evento que estabas buscando ya ha caducado o no se encuentra disponible en este momento. </br>
-                            Pero no te detengas 🚀, </br>
-                            nuevas oportunidades están en camino.</br>
-                            Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos </br>
-                            para seguir fortaleciendo tu emprendimiento.
-                            ',
+
+                                'message' => $descripcion?->mensaje_finalizacion
+                                    ?? '
+                                El evento que estabas buscando ya ha caducado o no se encuentra disponible en este momento. </br>
+                                Pero no te detengas 🚀, </br>
+                                nuevas oportunidades están en camino.</br>
+                                Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos </br>
+                                para seguir fortaleciendo tu emprendimiento.
+                                ',
+
                                 'status' => 404,
                             ],
                         ]);
@@ -243,34 +272,51 @@ class FairController extends Controller
                 }
 
                 return response()->json([
-                    'data' => [
-                        'slug' => $fair->slug,
-                        'title' => $fair->title,
-                        'subTitle' => $fair->subTitle,
-                        'description' => $fair->description,
-                        'modality' => $fair->modality,
-                        'typeFair' => $fair->fairtype_id,
-                        'fecha' => $fair->fecha,
-                        'place' => $fair->place,
-                        'schedule' => $fair->hours,
-                        'cooperativa' => $fair->cooperativa == 1 ? true : false,
-                        'textFooter' => $fair->textFooter ?? null,
-                    ],
                     'status' => 200,
+
+                    'data' => [
+
+                        // ✅ Actividad
+                        'slug' => $actividad->slug,
+
+                        'fechas' => $fechas,
+
+                        'tema' => $actividad->tema,
+
+                        'region' => $actividad->regionRel?->name,
+
+                        'provincia' => $actividad->provinciaRel?->name,
+
+                        'distrito' => $actividad->distritoRel?->name,
+
+                        // ✅ Descripción
+                        'descripcion' => $descripcion?->descripcion,
+
+                        'mensaje_finalizacion' => $descripcion?->mensaje_finalizacion,
+
+                        'mensaje_correo' => $descripcion?->mensaje_correo,
+
+                        'mensaje_recordatorio' => $descripcion?->mensaje_recordatorio,
+                    ],
                 ]);
             }
 
             return response()->json([
                 'data' => [
                     'title' => 'No se encontró el evento.',
-                    'message' => 'No existe una feria con este registro.',
+
+                    'message' => 'No existe una actividad con este registro.',
+
                     'status' => 404,
                 ],
             ]);
         } catch (\Exception $e) {
+
             return response()->json([
                 'message' => 'Error al obtener los detalles del evento.',
+
                 'error' => $e->getMessage(),
+
                 'status' => 500,
             ], 500);
         }
@@ -508,7 +554,7 @@ class FairController extends Controller
                 'img3_url' => $item->mype->img3_path ? asset($item->mype->img3_path) : null,
 
                 'documentnumber' => $item->person->documentnumber,
-                'lastname' => $item->person->lastname.' '.$item->person->middlename,
+                'lastname' => $item->person->lastname . ' ' . $item->person->middlename,
                 // 'middlename' => $item->person->middlename,
                 'name' => $item->person->name,
                 'phone' => $item->person->phone,

@@ -41,10 +41,12 @@ class ActividadPnte extends Model
         'reprogramado_por_id',
         'registrado_por_id',
         'actualizado_por_id',
+        'horario',
+        'activo',
     ];
 
     protected $casts = [
-        'fechas'          => 'array',
+        'fechas' => 'array',
         'requiere_pasaje' => 'boolean',
     ];
 

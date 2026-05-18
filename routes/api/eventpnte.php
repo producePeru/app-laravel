@@ -20,12 +20,22 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::PUT('update-values-select', 'updateValuesSelect');
 
+    Route::PUT('aprobar-evento/{id}', 'aprobarEvento');
+
     // para las migraciones
     Route::POST('generar-fechas-attendance', 'generarFechasAttendance');
 
     Route::POST('clasificar-actividades-exacto', 'setNombreActividad');
 
     Route::PUT('actualizar-total-participantes', 'actualizarTotalParticipantes');
+
+    Route::PUT('store-update-descripcion', 'storeOrUpdateDescripcion');
+
+    Route::GET('get-descripcion-slug/{slug}', 'getDescripcionBySlug');
+
+    Route::PUT('update-asistencia-fecha', 'updateAsistenciaFecha');
+
+    Route::GET('attendance-summary-slug/{slug}', 'attendanceSummaryBySlug');
 });
 
 // event-pnte
@@ -39,6 +49,11 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
     Route::GET('empresario/{dni}', 'getByDni');
 
     Route::POST('registrar', 'storeEmpresario');
+
+    Route::GET('dots', 'getEventsDots');
+
+    Route::GET('events-day', 'getEventsByDate');
+
 });
 
 // event-pnte-public
