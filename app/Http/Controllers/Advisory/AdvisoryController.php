@@ -28,30 +28,34 @@ class AdvisoryController extends Controller
 
             $validatedData = $request->validated();
 
-            // Agregar el user_id del usuario autenticado
+            // ✅ Agregar user autenticado
             $validatedData['user_id'] = auth()->id();
 
-            // Crear la asesoría
+            // ✅ Crear asesoría
             $advisory = Advisory::create($validatedData);
 
-            // ✅ Registrar cooperativa
-            AsesoriaCooperativa::create([
-                'advisory_id' => $advisory->id,
-                'ruc'         => $request->ruc_cooperativa,
-                'nombre'      => $request->nombre_cooperativa,
-                'cargo'       => $request->cargo_cooperativa,
-            ]);
+            // ✅ SOLO guardar cooperativa cuando is_cooperativa = 1
+            if ((int) $request->is_cooperativa === 1) {
+
+                AsesoriaCooperativa::create([
+                    'advisory_id' => $advisory->id,
+                    'ruc'         => $request->ruc_cooperativa,
+                    'nombre'      => $request->nombre_cooperativa,
+                    'cargo'       => $request->cargo_cooperativa,
+                ]);
+            }
 
             return response()->json([
                 'data' => $advisory,
                 'message' => 'Asesoría creada correctamente',
                 'status' => 200
-            ], 200);
+            ]);
         } catch (\Exception $e) {
 
             return response()->json([
                 'error' => 'Error al crear la asesoría',
                 'message' => 'Consulta con tu administrador',
+                'dev' => $e->getMessage(),
                 'status' => 500
             ], 500);
         }
