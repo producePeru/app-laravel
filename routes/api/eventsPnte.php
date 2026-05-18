@@ -14,7 +14,6 @@ Route::controller(InfoController::class)->group(function () {
     Route::post('businessman', 'createEmpresario');
 });
 
-
 Route::controller(PublicEventsController::class)->group(function () {
 
     Route::post('participant-registration-sed', 'participantRegistrationSed');
@@ -26,7 +25,6 @@ Route::controller(PublicEventsController::class)->group(function () {
     Route::post('finally-questions-extras-sed', 'finallyQuestionsExtrasSed');
 });
 
-
 Route::controller(CoffeEventController::class)->group(function () {
 
     Route::get('show-all-photos-from-coffee-event', 'showAllPhotosFromCoffeeEvent');
@@ -34,12 +32,10 @@ Route::controller(CoffeEventController::class)->group(function () {
     Route::delete('remove-image-from-coffee-event/{idPhoto}', 'removeImageFromCoffeeEvent');
 });
 
-
 Route::controller(ForoController::class)->group(function () {
 
     Route::post('is-registered', 'isRegistered');
 });
-
 
 Route::controller(DisclaimerController::class)->group(function () {
 

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
-use App\Models\ActividadPnte;
 use App\Models\Event;
 use App\Models\Event2;
 use App\Models\EventCategory;
@@ -696,141 +695,6 @@ class EventsController extends Controller
     //     ];
     // }
 
-    public function getEventsDots(Request $request)
-    {
-        $yearMonth = $request->input('year_month'); // "YYYY-MM"
-        $cityId = $request->input('city_id'); // opcional
-
-        if (! $yearMonth) {
-            return response()->json([
-                ['key' => 'dot-ugse', 'dot' => 'red', 'dates' => []],
-                ['key' => 'dot-ugo', 'dot' => 'blue', 'dates' => []],
-            ]);
-        }
-
-        [$year, $month] = explode('-', $yearMonth);
-
-        // 🔥 DATA UNIFICADA
-        $events = $this->getUnifiedEvents();
-
-        // 🔍 FILTRO POR MES + VISIBLES
-        $events = $events->filter(function ($event) use ($year, $month) {
-            return ($event['visible'] ?? 0) == 1
-                && ! empty($event['date'])
-                && substr($event['date'], 0, 4) == $year
-                && substr($event['date'], 5, 2) == str_pad($month, 2, '0', STR_PAD_LEFT);
-        });
-
-        // 🔥 FILTRO POR CITY (CORREGIDO)
-        if (! empty($cityId)) {
-            $events = $events->filter(function ($event) use ($cityId) {
-                return isset($event['city_id']) && $event['city_id'] == $cityId;
-            });
-        }
-
-        $redDates = [];
-        $blueDates = [];
-
-        foreach ($events as $event) {
-
-            if (empty($event['date'])) {
-                continue;
-            }
-
-            // 🔥 NORMALIZAR UNIDAD (CLAVE)
-            $unidadRaw = strtoupper(trim($event['unidad'] ?? ''));
-            $unidad = ($unidadRaw === 'UGO') ? 'UGO' : 'UGSE';
-
-            $dateStr = \Carbon\Carbon::parse($event['date'])->toISOString();
-
-            if ($unidad === 'UGO') {
-                if (! in_array($dateStr, $blueDates)) {
-                    $blueDates[] = $dateStr;
-                }
-            } else {
-                if (! in_array($dateStr, $redDates)) {
-                    $redDates[] = $dateStr;
-                }
-            }
-        }
-
-        return response()->json([
-            ['key' => 'dot-ugse', 'dot' => 'red', 'dates' => $redDates],
-            ['key' => 'dot-ugo', 'dot' => 'blue', 'dates' => $blueDates],
-        ]);
-    }
-
-    public function getEventsByDate(Request $request)
-    {
-        $dateSelected = $request->input('dateSelected'); // "2026-05-28"
-        $offices = $request->input('office', []);
-        $city = $request->input('city_id');
-
-        if (! $dateSelected) {
-            return response()->json([
-                'message' => 'Debe proporcionar una fecha válida.',
-                'events' => [],
-            ], 400);
-        }
-
-        // Mapear UGO => 1, UGSE => 2
-        $unidadMap = ['UGO' => 1, 'UGSE' => 2];
-        $unidadIds = collect($offices)
-            ->map(fn ($o) => $unidadMap[strtoupper(trim($o))] ?? null)
-            ->filter()
-            ->values()
-            ->toArray();
-
-        $actividades = ActividadPnte::with([
-            'tipoActividad:id,name',
-            'regionRel:id,name',
-            'provinciaRel:id,name',
-            'distritoRel:id,name',
-            'representante:id,name,lastname',
-        ])
-            ->whereJsonContains('fechas', $dateSelected) // 🔥 busca la fecha en el array
-            ->when(! empty($city), fn ($q) => $q->where('region', $city))
-            ->when(! empty($unidadIds), fn ($q) => $q->whereIn('unidad', $unidadIds))
-            ->get();
-
-        $formatted = $actividades->map(function ($actividad) use ($dateSelected) {
-            $unidad = (int) $actividad->unidad;
-            $tipo = $unidad === 1 ? 'UGO' : 'UGSE';
-            $dotColor = $unidad === 1 ? 'blue' : 'red';
-
-            return [
-                'id' => $actividad->id,
-                'title' => $actividad->tema,
-                'tipo' => $tipo,
-                'region' => $actividad->regionRel->name ?? $actividad->region,
-                'provincia' => $actividad->provinciaRel->name ?? $actividad->provincia,
-                'distrito' => $actividad->distritoRel->name ?? $actividad->distrito,
-                'direccion' => $actividad->lugar,
-                'tipoActividad' => $actividad->tipoActividad->name ?? null,
-                'dot' => $dotColor,
-                'dates' => [$dateSelected],
-                'cancelado' => $actividad->cancelado,
-                'reprogramado' => $actividad->reprogramado,
-                'resultados' => null,
-                'attendance_list_count' => null,
-                'titulo' => $actividad->tema
-                                            ? mb_strtoupper($actividad->tema, 'UTF-8')
-                                            : null,
-                'component' => null,
-                'entidad_aliada' => $actividad->entidad_aliada,
-                'asesor' => $actividad->representante ?
-                mb_strtoupper(trim("{$actividad->representante->name} {$actividad->representante->lastname}"), 'UTF-8') :
-                null,
-            ];
-        })->values();
-
-        return response()->json([
-            'message' => 'Eventos obtenidos correctamente.',
-            'status' => 200,
-            'data' => $formatted,
-        ]);
-    }
-
     public function deleteEventById($idEvent)
     {
         $user_role = getUserRole();
@@ -1029,39 +893,6 @@ class EventsController extends Controller
             return response()->json([
                 'error' => 'No se pudo actualizar el evento',
                 'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function aprobarEvento(Request $request, $tabla, $id)
-    {
-        try {
-            $model = match ($tabla) {
-                'attendancelist' => \App\Models\Attendance::findOrFail($id),
-                'mp_eventos' => \App\Models\MPEvent::findOrFail($id),
-                'fairs' => \App\Models\Fair::findOrFail($id),
-                default => null,
-            };
-
-            if (! $model) {
-                return response()->json([
-                    'status' => 404,
-                    'message' => 'Tabla no reconocida',
-                ]);
-            }
-
-            $model->visible = 1;
-            $model->save();
-
-            return response()->json([
-                'status' => 200,
-                'message' => 'Evento aprobado correctamente',
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'status' => 500,
-                'message' => 'Error al aprobar el evento',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

@@ -283,3 +283,260 @@ public function sendEmails(Request $request)
     ], 200);
 }
 
+
+
+
+
+
+
+
+
+
+
+// nuevo
+INSERT INTO tipo_actividad (name, unidad)
+VALUES
+('CAPACITACIÓN', 2),
+('ACTIVIDAD 1.1', 2),
+('CAPACITACIÓN SED', 2),
+('EVENTO COMERCIAL', 2),
+('MUJER PRODUCE', 2),
+('RUTA DIGITAL', 2),
+('DIFUSIÓN', 2),
+('ACTIVIDAD PROTOCOLAR', 2);
+
+
+INSERT INTO nombre_actividad (tipo_actividad_id, name)
+VALUES
+(5, 'POTENCIA TU EMPRESA – FORMALIZACION'),
+(5, 'POTENCIA TU EMPRESA - GESTION EMPRESARIAL'),
+(5, 'POTENCIA TU EMPRESA – DIGITALIZACION'),
+(5, 'POTENCIA TU EMPRESA - DESARROLLO PRODUCTIVO'),
+(5, 'POTENCIA TU EMPRESA - ACCESO AL FINANCIAMIENTO');
+
+
+
+
+
+
+INSERT INTO nombre_actividad (tipo_actividad_id, name)
+VALUES
+(6, 'CAPACITACIÓN PP093'),
+(7, 'SESION DE ENTRENAMIENTO DIGITAL – SED'),
+(8, 'FERIA Y/O MACROEVENTO'),
+(9, 'CAPACITACIÓN MUJER PRODUCE'),
+(10, 'CAPACITACIÓN RUTA DIGITAL'),
+(11, 'DIFUSION DE LOS SERVICIOS DEL PNTE'),
+(12, 'LANZAMIENTO DE FERIA Y/O MACROEVENTO');
+
+
+CREATE TABLE sed_descripcion (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug_actividad_pnte VARCHAR(255) NOT NULL,
+    descripcion TEXT NULL,
+    mensaje_finalizacion TEXT NULL,
+    mensaje_correo TEXT NULL,
+    mensaje_recordatorio TEXT NULL,
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+
+**** fecha_asistencia	varchar(50)  => empresario_actividad
+
+
+
+ALTER TABLE actividades_pnte
+ADD COLUMN horario VARCHAR(50)
+AFTER actualizado_por_id;
+
+
+
+
+
+
+//------SED------
+
+INSERT INTO actividades_pnte (
+    unidad,
+    mes,
+    fechas,
+    cantidad_dias,
+    tipo_actividad_id,
+    nombre_actividad_id,
+    tema,
+    region,
+    provincia,
+    distrito,
+    lugar,
+    entidad_organizadora,
+    entidad_aliada,
+    representante_id,
+    requiere_pasaje,
+    monto_gasto,
+    mypes_beneficiadas,
+    modalidad_id,
+    total_participantes,
+    total_asesorias,
+    total_formalizaciones,
+    slug,
+    cancelado,
+    cancelado_por_id,
+    reprogramado,
+    reprogramado_por_id,
+    resultados,
+    activo,
+    registrado_por_id,
+    actualizado_por_id,
+    horario,
+    created_at,
+    updated_at
+)
+SELECT
+    2 AS unidad,
+
+    MONTH(
+        STR_TO_DATE(
+            JSON_UNQUOTE(JSON_EXTRACT(dates, '$[0]')),
+            '%Y-%m-%d'
+        )
+    ) AS mes,
+
+    dates AS fechas,
+    JSON_LENGTH(dates) AS cantidad_dias,
+    7 AS tipo_actividad_id,
+    16 AS nombre_actividad_id,
+    title AS tema,
+    city_id AS region,
+    province_id AS provincia,
+    district_id AS distrito,
+    place AS lugar,
+    NULL AS entidad_organizadora,
+    NULL AS entidad_aliada,
+    NULL AS representante_id,
+    NULL AS requiere_pasaje,
+    NULL AS monto_gasto,
+    metaMypes AS mypes_beneficiadas,
+    NULL AS modalidad_id,
+    NULL AS total_participantes,
+    NULL AS total_asesorias,
+    NULL AS total_formalizaciones,
+    slug AS slug,
+    cancelado AS cancelado,
+    NULL AS cancelado_por_id,
+    reprogramado AS reprogramado,
+    NULL AS reprogramado_por_id,
+    NULL AS resultados,
+    0 AS activo,
+    created_by AS registrado_por_id,
+    NULL AS actualizado_por_id,
+    hours AS horario,
+    created_at,
+    updated_at
+FROM fairs;
+
+
+
+
+SELECT COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'fairs';
+
+
+
+SELECT DISTINCT IFNULL(typedocument_id, 1) AS typedocument_id
+FROM ugse_postulantes;
+
+
+UPDATE ugse_postulantes
+SET typedocument_id = 1
+WHERE typedocument_id IS NULL;
+
+
+INSERT INTO empresarios (
+    ruc,
+    razon_social,
+    nombre_comercial,
+    sector_economico_id,
+    rubro_id,
+    actividad_comercial_id,
+    actividad_comercial_nombre,
+    pais_id,
+    region_id,
+    provincia_id,
+    distrito_id,
+    direccion,
+    tipo_documento_id,
+    numero_dni,
+    apellido_paterno,
+    apellido_materno,
+    nombres,
+    genero_id,
+    discapacidad,
+    celular,
+    correo_electronico,
+    cargo_empresa_id,
+    fecha_nacimiento,
+    edad,
+    como_entero
+)
+SELECT
+    NULLIF(u.ruc, ''),
+    NULLIF(u.socialReason, ''),
+    NULLIF(u.comercialName, ''),
+
+    NULLIF(u.economicsector_id, 0),
+
+    NULLIF(u.category_id, 0),
+
+    NULLIF(u.comercialactivity_id, 0),
+
+    NULL AS actividad_comercial_nombre,
+
+    NULL AS pais_id,
+
+    NULLIF(u.city_id, 0),
+    NULLIF(u.province_id, 0),
+    NULLIF(u.district_id, 0),
+
+    NULLIF(u.address, ''),
+
+    NULLIF(u.typedocument_id, 0),
+
+    NULLIF(u.documentnumber, ''),
+
+    NULLIF(u.lastname, ''),
+    NULLIF(u.middlename, ''),
+    NULLIF(u.name, ''),
+
+    NULLIF(u.gender_id, 0),
+    NULLIF(u.sick, 0),
+
+    NULLIF(u.phone, ''),
+    NULLIF(u.email, ''),
+
+    NULL AS cargo_empresa_id,
+
+    u.birthday,
+    u.age,
+
+    NULL AS como_entero
+
+FROM ugse_postulantes u
+
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM empresarios e
+    WHERE
+        (
+            e.ruc IS NOT NULL
+            AND u.ruc IS NOT NULL
+            AND e.ruc = u.ruc
+        )
+        OR
+        (
+            e.numero_dni IS NOT NULL
+            AND u.documentnumber IS NOT NULL
+            AND e.numero_dni = u.documentnumber
+        )
+);

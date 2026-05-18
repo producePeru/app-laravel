@@ -21,7 +21,6 @@ use App\Http\Controllers\Download\DownloadFairParticipantsController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\Download\DownloadNotariesController;
 use App\Http\Controllers\Download\DownloadOthersController;
-use App\Http\Controllers\Download\SedAsistentesController;
 use App\Http\Controllers\Drive\DriveController;
 use App\Http\Controllers\Email\EmailController;
 use App\Http\Controllers\Event\EventsController;
@@ -121,68 +120,62 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
 });
 
-// EVENTOS SR CARLOS   'middleware' => ['restrict.ip']
-Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], function () {
-    Route::get('dots', [EventsController::class, 'getEventsDots']);
-    Route::get('events-day', [EventsController::class, 'getEventsByDate']);
-});
-
 // nuevos
 
 Route::prefix('advisory')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/advisory.php';
+    require __DIR__.'/api/advisory.php';
 });
 
 Route::prefix('formalization')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/formalization.php';
+    require __DIR__.'/api/formalization.php';
 });
 
 Route::prefix('download')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/download.php';
+    require __DIR__.'/api/download.php';
 });
 
 Route::prefix('page')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/pages.php';
+    require __DIR__.'/api/pages.php';
 });
 
 Route::prefix('token')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/token.php';
+    require __DIR__.'/api/token.php';
 });
 
 Route::prefix('events-ugo')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/eventsugo.php';
+    require __DIR__.'/api/eventsugo.php';
 });
 
 Route::prefix('events-ugse')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/eventsugse.php';
+    require __DIR__.'/api/eventsugse.php';
 });
 
 Route::prefix('download')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/download.php';
+    require __DIR__.'/api/download.php';
 });
 
 Route::prefix('questionnaire')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/questionnaire.php';
+    require __DIR__.'/api/questionnaire.php';
 });
 
 Route::prefix('businessman')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/businessman.php';
+    require __DIR__.'/api/businessman.php';
 });
 
 Route::prefix('training')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/training.php';
+    require __DIR__.'/api/training.php';
 });
 
 Route::prefix('email')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/email.php';
+    require __DIR__.'/api/email.php';
 });
 
 Route::prefix('users')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/users.php';
+    require __DIR__.'/api/users.php';
 });
 
 Route::prefix('import')->group(function () {
-    require __DIR__ . '/api/import.php';
+    require __DIR__.'/api/import.php';
 });
 
 // Route::prefix('businessman')->middleware('auth:sanctum')->group(function () {
@@ -190,28 +183,28 @@ Route::prefix('import')->group(function () {
 // });
 
 Route::prefix('follow')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/follow.php';
+    require __DIR__.'/api/follow.php';
 });
 
 Route::prefix('mp')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/mp.php';
+    require __DIR__.'/api/mp.php';
 });
 
 Route::prefix('mp')->group(function () {
-    require __DIR__ . '/api/mp.php';
+    require __DIR__.'/api/mp.php';
 });
 
 Route::prefix('mp')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/mpAuth.php';
+    require __DIR__.'/api/mpAuth.php';
 });
 
 // PUBLICAS
 Route::prefix('api')->group(function () {
-    require __DIR__ . '/api/apis.php';
+    require __DIR__.'/api/apis.php';
 });
 
 Route::prefix('events-pnte')->group(function () {
-    require __DIR__ . '/api/eventsPnte.php';            // creamos empresarios & empresas
+    require __DIR__.'/api/eventsPnte.php';            // creamos empresarios & empresas
 });
 
 // Route::prefix('api')->group(function () {
@@ -219,40 +212,40 @@ Route::prefix('events-pnte')->group(function () {
 // });
 
 Route::prefix('public')->group(function () {
-    require __DIR__ . '/api/public.php';
+    require __DIR__.'/api/public.php';
 });
 
 Route::prefix('image')->group(function () {
-    require __DIR__ . '/api/image.php';
+    require __DIR__.'/api/image.php';
 });
 
 Route::prefix('google')->group(function () {
-    require __DIR__ . '/api/google.php';
+    require __DIR__.'/api/google.php';
 });
 
 Route::prefix('purchases-my-peru')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/purchasesmyperu.php';
+    require __DIR__.'/api/purchasesmyperu.php';
 });
 
 Route::prefix('sed')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/sed.php';
+    require __DIR__.'/api/sed.php';
 });
 
 Route::prefix('sed')->group(function () {
-    require __DIR__ . '/api/sed.php';
+    require __DIR__.'/api/sed.php';
 });
 
 Route::prefix('ugger')->group(function () {
-    require __DIR__ . '/api/ugger.php';
+    require __DIR__.'/api/ugger.php';
 });
 
 // todos los eventos del PNTE
 Route::prefix('event-pnte')->middleware('auth:sanctum')->group(function () {
-    require __DIR__ . '/api/eventpnte.php';
+    require __DIR__.'/api/eventpnte.php';
 });
 
 Route::prefix('event-pnte-public')->group(function () {
-    require __DIR__ . '/api/eventpnte.php';
+    require __DIR__.'/api/eventpnte.php';
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -386,7 +379,7 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('fair-participants/{slug}', [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::post('digital-routes', [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
 
-    Route::post('attendance-ugo', [DownloadAttendanceController::class, 'exportAttendance']);
+    Route::post('list-events', [DownloadAttendanceController::class, 'exportAttendance']);
     // Route::get('attendance/{slug}',                     [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
     // Route::get('attendance-mercado/{slug}',             [DownloadAttendanceController::class, 'exportFortaleceTuMercado']);         // lista de ventos ugo Fortalece tu Mercado
     Route::post('list-ugo-by-components-id/{id}', [DownloadAttendanceController::class, 'exportAttendanceByComponentsId']);         // lista de ventos ugo Fortalece tu Mercado
@@ -552,6 +545,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('cp-themes/{idComponent}', [SelectController::class, 'getThemes']);
 
     Route::get('get-tipo-actividades', [SelectController::class, 'getTipoActividades']);
+    Route::get('get-tipo-actividades-ugse', [SelectController::class, 'getTipoActividadesUgse']);
     Route::get('get-nombre-actividades/{id}', [SelectController::class, 'getNombreActividades']);
 });
 
@@ -599,7 +593,6 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
 
     Route::put('update-obs', [EventsController::class, 'updateObs']);
 
-
     // eventos sra dianita & Fernando Somocursio*** v2
     Route::post('reserve-room', [RoomController::class, 'store']);
     Route::get('rooms', [RoomController::class, 'getByMonth']);
@@ -609,8 +602,6 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     // Route::post('to-attendance/{id}',           [AttendanceController::class, 'createEventoToAttendance']);
     // Route::post('delete/{id}',                  [EventsController::class, 'destroy']);
     Route::put('update-obs/{id}', [EventsController::class, 'updateObservation']);
-
-    Route::put('aprobar/{tabla}/{row_id}', [EventsController::class, 'aprobarEvento']);
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
