@@ -559,4 +559,11 @@ AFTER propagandamedia_id;
 
 
 * EN LA TABLA sedquestions event_id NO OBLIGATORIO
+* TABLA sed_questions_answers sed_id  quital Obligatorio
+
+
+UPDATE sed_questions_answers sqa
+INNER JOIN fairs f 
+    ON f.id = sqa.sed_id
+SET sqa.slug_sed = f.slug;
 

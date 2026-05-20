@@ -467,10 +467,14 @@ WHERE ea.slug IS NULL;
 
 
 
+UPDATE sedsurvey ss
+INNER JOIN fairs f
+    ON f.id = ss.sed_id
+SET ss.actividad_pnte_slug = f.slug;
 
 
-
-
-
+ALTER TABLE sed_questions_answers
+ADD COLUMN slug_sed VARCHAR(100) NULL
+AFTER sed_id;
 
 

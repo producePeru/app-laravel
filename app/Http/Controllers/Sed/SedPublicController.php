@@ -17,9 +17,11 @@ use PDF;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Mail\FairSedInfoMail;
+use App\Models\ActividadPnte;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
 use App\Models\Question;
+use App\Models\QuestionOption;
 use App\Models\sedQuestionAnswer;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
@@ -34,10 +36,13 @@ class SedPublicController extends Controller
             $table = $request->input('table', 'sed');
 
             // 1. Buscar el evento
-            $fair = Fair::where('slug', $slug)->firstOrFail();
+
+            $fair = ActividadPnte::with(['regionRel', 'provinciaRel', 'distritoRel'])
+                ->where('slug', $slug)
+                ->firstOrFail();
 
             // 3. Traer preguntas
-            $questions = SedSurvey::where('sed_id', $fair->id)
+            $questions = SedSurvey::where('actividad_pnte_slug', $fair->slug)
                 ->with(['question.options'])
                 ->get()
                 ->map(function ($item) use ($table) {
@@ -54,7 +59,7 @@ class SedPublicController extends Controller
                         'type' => $q->type,
                         'label' => $q->label,
                         'model' => $q->model,
-                        'model' => $q->model,
+                        // 'model' => $q->model,
                         'required' => (bool) $q->required,
                         'md' => 12,
                         'visible' => $q->visible == 1 ? true : false,
@@ -73,8 +78,11 @@ class SedPublicController extends Controller
             return response()->json([
                 'status' => 200,
                 'questions' => $questions,
-                'sed_title' => $fair->title,
-                'sed_place' => $fair->place
+                'sed_title' => $fair->tema,
+                'sed_region' => $fair->regionRel?->name,
+                'sed_province' => $fair->provinciaRel?->name,
+                'sed_distrito' => $fair->distritoRel?->name,
+                'sed_lugar' => $fair->lugar
 
             ]);
         } catch (\Throwable $e) {
@@ -93,78 +101,50 @@ class SedPublicController extends Controller
 
     public function isRegisterThisUser(Request $request)
     {
-        try {
+        $documentNumber = $request->input('documentNumber');
+        $slug = $request->input('slug');
 
-            // 1️⃣ Validación
-            if (empty($request->slug) || empty($request->documentNumber)) {
-                return response()->json([
-                    'message' => 'slug y documentNumber son requeridos',
-                    'status' => 422
-                ], 422);
-            }
+        // 1. Buscar registro en EmpresarioActividad
+        $registro = EmpresarioActividad::where('numero_dni', $documentNumber)
+            ->where('slug', $slug)
+            ->first();
 
-            // 2️⃣ Buscar evento
-            $fair = Fair::where('slug', $request->slug)->firstOrFail();
-
-            $alreadyCompleted = sedQuestionAnswer::where('dni', $request->documentNumber)
-                ->where('sed_id', $fair->id)
-                ->exists();
-
-            if ($alreadyCompleted) {
-                return response()->json([
-                    'message' => '¡Gracias! Ya hemos recibido tus respuestas para este evento anteriormente.',
-                    'status' => 403
-                ]);
-            }
-
-
-            // 3️⃣ 🔥 Buscar TODOS los postulantes con ese documento
-            $postulantes = UgsePostulante::where('documentnumber', $request->documentNumber)->get();
-
-            if ($postulantes->isEmpty()) {
-                return response()->json([
-                    'message' => 'No existe este usuario',
-                    'status' => 409
-                ], 409);
-            }
-
-            // 4️⃣ 🔥 Buscar cuál está en sed_asistencias
-            $asistencia = SedAsistente::where('sed_id', $fair->id)
-                ->whereIn('mype_id', $postulantes->pluck('id'))
-                ->first();
-
-            if (!$asistencia) {
-                return response()->json([
-                    'message' => 'No existe este registro en el evento',
-                    'status' => 409
-                ], 409);
-            }
-
-            // 5️⃣ 🔥 Obtener el postulante correcto
-            $postulante = $postulantes->firstWhere('id', $asistencia->mype_id);
-
-            // 6️⃣ Respuesta OK
+        // 2. No existe registro
+        if (!$registro) {
             return response()->json([
-                'status' => 200,
-                'data' => [
-                    'ruc'        => $postulante->ruc,
-                    'name'       => strtoupper($postulante->name),
-                    'lastname'   => strtoupper($postulante->lastname),
-                    'middlename' => strtoupper($postulante->middlename)
-                ]
-            ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'Evento no encontrado',
-                'status' => 404
+                'status' => 404,
+                'message' => 'Para hacer el test debió haber estado registrado previamente en la actividad.'
             ], 404);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error interno',
-                'error' => $e->getMessage(),
-                'status' => 500
-            ], 500);
         }
+
+        // 3. Existe pero no tiene asistencia
+        if (is_null($registro->fecha_asistencia)) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'No puedes completar el test porque no se registró tu asistencia.'
+            ], 403);
+        }
+
+        // 4. Traer datos del empresario
+        $empresario = Empresario::select(
+            'id',
+            'apellido_paterno',
+            'apellido_materno',
+            'nombres',
+            'ruc'
+        )
+            ->where('numero_dni', $documentNumber)
+            ->first();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Usuario autorizado para el test.',
+            'empresario' => $empresario,
+            'registro' => [
+                'slug' => $registro->slug,
+                'fecha_asistencia' => $registro->fecha_asistencia,
+            ]
+        ]);
     }
 
     public function rucCompany($ruc)
@@ -629,96 +609,122 @@ class SedPublicController extends Controller
 
     public function saveSurvey(Request $request)
     {
+        DB::beginTransaction();
+
         try {
 
-            // 1️⃣ Obtener Fair
-            $fair = Fair::where('slug', $request->slug)->firstOrFail();
+            $documentNumber = $request->input('documentnumber');
+            $slug = $request->input('slug');
+            $ruc = $request->input('ruc');
 
-            // 2️⃣ Datos base
-            $dni = $request->documentnumber;
-            $ruc = $request->ruc;
-
-            // 🔥 3️⃣ VALIDAR ASISTENCIA
-            $asistencia = SedAsistente::where('sed_id', $fair->id)
-                ->where('dni', $dni)
-                ->where('removed', 0)
+            $empresarioActividad = EmpresarioActividad::where('slug', $slug)
+                ->where('numero_dni', $documentNumber)
                 ->first();
 
-            if (!$asistencia || is_null($asistencia->attendance)) {
+            // ❌ No registrado
+            if (!$empresarioActividad) {
                 return response()->json([
                     'status' => 403,
-                    'message' => "No puedes completar la encuesta porque no registras asistencia al evento.\n\nSi consideras que es un error, comunícate con los organizadores para recibir asistencia."
+                    'message' => 'No puedes continuar ya que no te registraste a este evento.'
                 ]);
             }
 
-            // 🔥 4️⃣ EVITAR DOBLE REGISTRO DE ENCUESTA
-            $existsSurvey = sedQuestionAnswer::where('dni', $dni)
-                ->where('sed_id', $fair->id)
-                ->exists();
-
-            if ($existsSurvey) {
+            // ❌ Sin asistencia
+            if (is_null($empresarioActividad->fecha_asistencia)) {
                 return response()->json([
-                    'status' => 409,
-                    'message' => 'Ya registraste esta encuesta anteriormente. No puedes enviarla nuevamente.'
+                    'status' => 403,
+                    'message' => 'No puedes completar el formulario por falta de asistencia.'
                 ]);
             }
 
-            // 5️⃣ Obtener preguntas con opciones
-            $questions = Question::with('options')->get()->keyBy('model');
-
-            $orderCounter = 1;
+            // ─────────────────────────────────────────────
+            // 2. RECORRER QUESTIONS
+            // ─────────────────────────────────────────────
 
             foreach ($request->all() as $key => $value) {
 
-                // 🔹 Solo procesar questions
-                if (!str_starts_with($key, 'question_')) continue;
+                // Ignorar campos base
+                if (in_array($key, ['documentnumber', 'slug', 'ruc'])) {
+                    continue;
+                }
 
-                if (!isset($questions[$key])) continue;
+                // Solo procesar question_X
+                if (!str_starts_with($key, 'question_')) {
+                    continue;
+                }
 
-                $question = $questions[$key];
+                // Obtener ID
+                $questionId = str_replace('question_', '', $key);
+
+                // Buscar question
+                $question = Question::with('options')
+                    ->find($questionId);
+
+                if (!$question) {
+                    continue;
+                }
 
                 $answerText = null;
 
-                // 🔥 Checkbox múltiple
-                if (is_array($value)) {
+                // ─────────────────────────────────────────
+                // CHECKBOX / RADIO / SELECTION
+                // ─────────────────────────────────────────
 
-                    $labels = collect($value)->map(function ($val) use ($question) {
-                        $option = $question->options->firstWhere('value', $val);
-                        return $option ? $option->label : $val;
-                    })->filter()->values();
+                if (
+                    in_array($question->type, [
+                        'checkbox-multiple',
+                        'Selection',
+                        'radio'
+                    ])
+                ) {
 
-                    $answerText = $labels
-                        ->map(fn($label) => '- ' . $label)
-                        ->implode("\n");
+                    // Checkbox múltiple
+                    if (is_array($value)) {
+
+                        $labels = QuestionOption::whereIn('value', $value)
+                            ->pluck('label')
+                            ->toArray();
+
+                        $answerText = implode(', ', $labels);
+                    } else {
+
+                        $option = QuestionOption::where('value', $value)
+                            ->first();
+
+                        $answerText = $option?->label;
+                    }
                 } else {
 
-                    // 🔹 Radio / select / input
-                    $option = $question->options->firstWhere('value', $value);
-                    $answerText = $option ? $option->label : $value;
+                    // Texto normal
+                    $answerText = $value;
                 }
 
-                // 🔥 Guardar
-                sedQuestionAnswer::create([
-                    'dni'      => $dni,
-                    'sed_id'   => $fair->id,
-                    'question' => $question->label,
-                    'ruc'      => $ruc,
-                    'answer'   => $answerText,
-                    'order'    => $orderCounter
-                ]);
+                // ─────────────────────────────────────────
+                // GUARDAR RESPUESTA
+                // ─────────────────────────────────────────
 
-                $orderCounter++;
+                SedQuestionAnswer::create([
+                    'dni' => $documentNumber,
+                    'ruc' => $ruc,
+                    'slug_sed' => $slug,
+                    'question' => $question->label,
+                    'answer' => $answerText,
+                ]);
             }
+
+            DB::commit();
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Encuesta guardada correctamente'
+                'message' => 'Respuestas guardadas correctamente.'
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
 
             return response()->json([
                 'status' => 500,
-                'message' => 'Error al guardar encuesta',
+                'message' => 'Error al guardar respuestas.',
                 'error' => $e->getMessage()
             ], 500);
         }
