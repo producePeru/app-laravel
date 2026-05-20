@@ -38,7 +38,6 @@ class Empresario extends Model
         'cargo_empresa_id',
         'fecha_nacimiento',
         'edad',
-        'como_entero',
 
         // otros
         'actividad_comercial_nombre'

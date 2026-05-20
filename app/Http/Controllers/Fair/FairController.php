@@ -289,6 +289,10 @@ class FairController extends Controller
 
                         'distrito' => $actividad->distritoRel?->name,
 
+                        'lugar' => $actividad->lugar,
+
+                        'horario' => $actividad->horario,
+
                         // ✅ Descripción
                         'descripcion' => $descripcion?->descripcion,
 

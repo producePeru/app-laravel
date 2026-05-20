@@ -17,9 +17,13 @@ use PDF;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Mail\FairSedInfoMail;
+use App\Models\Empresario;
+use App\Models\EmpresarioActividad;
 use App\Models\Question;
 use App\Models\sedQuestionAnswer;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class SedPublicController extends Controller
 {
@@ -165,176 +169,371 @@ class SedPublicController extends Controller
 
     public function rucCompany($ruc)
     {
-        $company = UgsePostulante::select(
-            'comercialName',
-            'socialReason',
-            'economicsector_id',
-            'category_id',
-            'comercialactivity_id',
-            'city_id',
-            'province_id',
-            'district_id',
-            'address'
-        )
-            ->where('ruc', $ruc)
-            ->first();
-
-        if ($company) {
-            return response()->json([
-                'status' => 200,
-                'exists' => true,
-                'data' => $company
-            ]);
-        }
-
-        return response()->json([
-            'status' => 404,
-            'exists' => false,
-            'message' => 'Empresa no encontrada'
-        ]);
-    }
-
-    public function dniBusimessMan($dni)
-    {
-        $company = UgsePostulante::select(
-            'lastname',
-            'middlename',
-            'name',
-            'gender_id',
-            'sick',
-            'phone',
-            'email',
-            'positionCompany',
-            'birthday',
-            'age'
-        )
-            ->where('documentnumber', $dni)
-            ->first();
-
-        if ($company) {
-            return response()->json([
-                'status' => 200,
-                'exists' => true,
-                'data' => $company
-            ]);
-        }
-
-        return response()->json([
-            'status' => 404,
-            'exists' => false,
-            'message' => 'Empresario no encontrado'
-        ]);
-    }
-
-
-    public function sedRegisterMype(Request $request)
-    {
         try {
 
-            // 1️⃣ Buscar evento
-            $fair = Fair::where('slug', $request->slug)->first();
+            $empresa = Empresario::where('ruc', $ruc)
 
-            if (!$fair) {
+                // ✅ seleccionar solo campos necesarios
+                ->select([
+                    'id',
+                    'ruc',
+                    'razon_social',
+                    'nombre_comercial',
+                    'sector_economico_id',
+                    'rubro_id',
+                    'actividad_comercial_id',
+                    'region_id',
+                    'provincia_id',
+                    'distrito_id',
+                    'direccion',
+                ])
+
+                // ✅ priorizar el registro más completo
+                ->orderByRaw("
+                (
+                    IF(ruc IS NOT NULL AND ruc != '', 1, 0) +
+                    IF(razon_social IS NOT NULL AND razon_social != '', 1, 0) +
+                    IF(nombre_comercial IS NOT NULL AND nombre_comercial != '', 1, 0) +
+                    IF(sector_economico_id IS NOT NULL, 1, 0) +
+                    IF(rubro_id IS NOT NULL, 1, 0) +
+                    IF(actividad_comercial_id IS NOT NULL, 1, 0) +
+                    IF(region_id IS NOT NULL, 1, 0) +
+                    IF(provincia_id IS NOT NULL, 1, 0) +
+                    IF(distrito_id IS NOT NULL, 1, 0) +
+                    IF(direccion IS NOT NULL AND direccion != '', 1, 0)
+                ) DESC
+            ")
+
+                ->first();
+
+            if (!$empresa) {
+
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Evento no encontrado'
-                ], 404);
+                    'message' => 'No se encontró información para este RUC.',
+                    'data' => null,
+                ]);
             }
-
-            // 2️⃣ Convertir fecha
-            $birthday = null;
-            if (!empty($request->birthday)) {
-                try {
-                    $birthday = Carbon::createFromFormat('d/m/Y', $request->birthday)->format('Y-m-d');
-                } catch (\Exception $e) {
-                    $birthday = null;
-                }
-            }
-
-            // 3️⃣ CREATE OR UPDATE (clave compuesta 🔥)
-            $postulante = UgsePostulante::updateOrCreate(
-                [
-                    // 'event_id' => $fair->id,
-                    'ruc' => $request->ruc,
-                    'documentnumber' => $request->documentnumber
-                ],
-                [
-                    'event_id' => $fair->id, // 👈 AHORA SOLO SE ACTUALIZA
-                    'comercialName' => $request->comercialName,
-                    'socialReason' => $request->socialReason,
-                    'economicsector_id' => $request->economicsector_id,
-                    'category_id' => $request->category_id,
-                    'comercialactivity_id' => $request->comercialactivity_id,
-                    'city_id' => $request->city_id,
-                    'province_id' => $request->province_id,
-                    'district_id' => $request->district_id,
-                    'address' => $request->address,
-                    'typedocument_id' => $request->typedocument_id,
-                    'lastname' => $request->lastname,
-                    'middlename' => $request->middlename,
-                    'name' => $request->name,
-                    'gender_id' => $request->gender_id,
-                    'sick' => $request->sick,
-                    'phone' => $request->phone,
-                    'email' => $request->email,
-                    'positionCompany' => $request->positionCompany,
-                    'birthday' => $birthday,
-                    'age' => $request->age,
-                    'howKnowEvent_id' => $request->howKnowEvent_id,
-                    'typeAsistente' => $request->typeAsistente
-                ]
-            );
-
-            // 4️⃣ Encuesta (igual lógica)
-            SedQuestion::updateOrCreate(
-                [
-                    'documentnumber' => $request->documentnumber,
-                    'event_id' => $fair->id
-                ],
-                [
-                    'question_1'        => $request->question_1,
-                    'question_2'        => $request->question_2,
-                    'question_3'        => $request->question_3,
-                    'question_4'        => $request->question_4,
-                    'question_5'        => $request->question_5,
-                    'cooperativa'       => $request->cooperativa,
-                    'rucCooperativa'    => $request->rucCooperativa,
-                    'rolCooperativa'    => $request->rolCooperativa
-                ]
-            );
-
-            // 5️⃣ Asistencia (update si ya existe)
-            SedAsistente::updateOrCreate(
-                [
-                    'sed_id'    => $fair->id,
-                    'mype_id'   => $postulante->id,
-                    'dni'       => $postulante->documentnumber
-                ],
-                [
-                    'attendance' => null,           // Carbon::now()->format('d/m/Y h:i a')
-                    'typeAsistente' => $request->typeAsistente
-                ]
-            );
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Registro guardado correctamente',
+                'message' => 'Información encontrada correctamente.',
                 'data' => [
-                    'postulante_id' => $postulante->id,
+                    'ruc'                    => $empresa->ruc,
+                    'razon_social'           => $empresa->razon_social,
+                    'nombre_comercial'       => $empresa->nombre_comercial,
+                    'sector_economico_id'    => $empresa->sector_economico_id,
+                    'rubro_id'               => $empresa->rubro_id,
+                    'actividad_comercial_id' => $empresa->actividad_comercial_id,
+                    'region_id'              => $empresa->region_id,
+                    'provincia_id'           => $empresa->provincia_id,
+                    'distrito_id'            => $empresa->distrito_id,
+                    'direccion'              => $empresa->direccion,
                 ]
             ]);
         } catch (\Exception $e) {
 
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al consultar el RUC.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
+    public function dniBusimessMan($dni)
+    {
+        try {
 
-            Log::error('Error obteniendo encuesta SED', [
-                'error' => $e->getMessage()
+            $empresario = Empresario::where('numero_dni', $dni)
+
+                // ✅ seleccionar solo campos necesarios
+                ->select([
+                    'id',
+                    'numero_dni',
+                    'apellido_paterno',
+                    'apellido_materno',
+                    'nombres',
+                    'genero_id',
+                    'discapacidad',
+                    'celular',
+                    'correo_electronico',
+                    'cargo_empresa_id',
+                    'fecha_nacimiento',
+                    'edad',
+                ])
+
+                // ✅ priorizar el registro más completo
+                ->orderByRaw("
+                (
+                    IF(apellido_paterno IS NOT NULL AND apellido_paterno != '', 1, 0) +
+                    IF(apellido_materno IS NOT NULL AND apellido_materno != '', 1, 0) +
+                    IF(nombres IS NOT NULL AND nombres != '', 1, 0) +
+                    IF(genero_id IS NOT NULL, 1, 0) +
+                    IF(discapacidad IS NOT NULL, 1, 0) +
+                    IF(celular IS NOT NULL AND celular != '', 1, 0) +
+                    IF(cargo_empresa_id IS NOT NULL, 1, 0) +
+                    IF(fecha_nacimiento IS NOT NULL, 1, 0) +
+                    IF(edad IS NOT NULL, 1, 0)
+                ) DESC
+            ")
+
+                ->first();
+
+            if (!$empresario) {
+
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontró información para este DNI.',
+                    'data' => null,
+                ]);
+            }
+
+            // ✅ ocultar últimos 4 dígitos del celular
+            $celular = $empresario->celular;
+
+            if (!empty($celular) && strlen($celular) >= 4) {
+
+                $celular = substr($celular, 0, -4) . '****';
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Información encontrada correctamente.',
+                'data' => [
+                    'apellido_paterno'  => $empresario->apellido_paterno,
+                    'apellido_materno'  => $empresario->apellido_materno,
+                    'nombres'           => $empresario->nombres,
+                    'genero_id'         => $empresario->genero_id,
+                    'discapacidad'      => $empresario->discapacidad,
+                    'celular'           => $celular,
+                    'correo_electronico' => $empresario->correo_electronico,
+                    'cargo_empresa_id'  => $empresario->cargo_empresa_id,
+                    'fecha_nacimiento'  => $empresario->fecha_nacimiento,
+                    'edad'              => $empresario->edad,
+                ]
             ]);
+        } catch (\Exception $e) {
 
             return response()->json([
                 'status' => 500,
-                'error' => $e,
-                'message' => 'Error interno del servidor'
+                'message' => 'Error al consultar el DNI.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function sedRegisterMype(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $validator = Validator::make($request->all(), [
+
+                // empresario
+                'ruc'                      => 'required|string|max:11',
+                'razon_social'             => 'required|string|max:255',
+                'nombre_comercial'         => 'nullable|string|max:255',
+                'sector_economico_id'      => 'nullable|integer',
+                'rubro_id'                 => 'nullable|integer',
+                'actividad_comercial_id'   => 'nullable|integer',
+                'region_id'                => 'nullable|integer',
+                'provincia_id'             => 'nullable|integer',
+                'distrito_id'              => 'nullable|integer',
+                'direccion'                => 'nullable|string|max:255',
+                'tipo_documento_id'        => 'nullable|integer',
+                'numero_dni'               => 'required|string|max:12',
+                'apellido_paterno'         => 'nullable|string|max:255',
+                'apellido_materno'         => 'nullable|string|max:255',
+                'nombres'                  => 'nullable|string|max:255',
+                'genero_id'                => 'nullable|integer',
+                'discapacidad'             => 'nullable',
+                'celular'                  => 'nullable|string|max:20',
+                'correo_electronico'       => 'nullable|email|max:255',
+                'cargo_empresa_id'         => 'nullable',
+                'fecha_nacimiento'         => 'nullable|string',
+                'edad'                     => 'nullable',
+
+                // sed question
+                'question_1'               => 'nullable|string',
+                'question_2'               => 'nullable|string',
+                'question_3'               => 'nullable|string',
+                'question_4'               => 'nullable|string',
+                'question_5'               => 'nullable|string',
+
+                'propagandamedia_id'       => 'nullable|integer',
+                'tipo_asistente'           => 'nullable|integer',
+
+                'slug'                     => 'required|string|max:100',
+
+                'cooperativa'              => 'nullable',
+                'rucCooperativa'           => 'nullable|string|max:11',
+                'rolCooperativa'           => 'nullable|string|max:255',
+            ]);
+
+            if ($validator->fails()) {
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Errores de validación',
+                    'errors'  => $validator->errors()
+                ], 422);
+            }
+
+            // =====================================================
+            // EMPRESARIO
+            // VALIDAR POR RUC + NUMERO DNI
+            // =====================================================
+
+            $empresario = Empresario::where('ruc', $request->ruc)
+                ->where('numero_dni', $request->numero_dni)
+                ->first();
+
+            $fechaNacimiento = null;
+
+            if ($request->fecha_nacimiento) {
+
+                try {
+
+                    $fechaNacimiento = Carbon::createFromFormat(
+                        'd/m/Y',
+                        $request->fecha_nacimiento
+                    )->format('Y-m-d');
+                } catch (\Exception $e) {
+
+                    $fechaNacimiento = null;
+                }
+            }
+
+            $dataEmpresario = [
+                'razon_social'           => $request->razon_social,
+                'nombre_comercial'       => $request->nombre_comercial,
+                'sector_economico_id'    => $request->sector_economico_id,
+                'rubro_id'               => $request->rubro_id,
+                'actividad_comercial_id' => $request->actividad_comercial_id,
+                'region_id'              => $request->region_id,
+                'provincia_id'           => $request->provincia_id,
+                'distrito_id'            => $request->distrito_id,
+                'direccion'              => $request->direccion,
+                'tipo_documento_id'      => $request->tipo_documento_id,
+                'apellido_paterno'       => $request->apellido_paterno,
+                'apellido_materno'       => $request->apellido_materno,
+                'nombres'                => $request->nombres,
+                'genero_id'              => $request->genero_id,
+                'discapacidad'           => $request->discapacidad,
+                'celular'                => $request->celular,
+                'correo_electronico'     => $request->correo_electronico,
+                'cargo_empresa_id'       => $request->cargo_empresa_id,
+                'fecha_nacimiento'       => $fechaNacimiento,
+                'edad'                   => $request->edad,
+            ];
+
+            // =====================================================
+            // ACTUALIZAR O CREAR EMPRESARIO
+            // =====================================================
+
+            if ($empresario) {
+
+                // NO CAMBIAR ruc NI numero_dni
+                $empresario->update($dataEmpresario);
+            } else {
+
+                $empresario = Empresario::create(array_merge(
+                    $dataEmpresario,
+                    [
+                        'ruc'         => $request->ruc,
+                        'numero_dni'  => $request->numero_dni,
+                    ]
+                ));
+            }
+
+            // =====================================================
+            // EMPRESARIO ACTIVIDAD
+            // NO DUPLICAR slug + numero_dni
+            // =====================================================
+
+            $empresarioActividad = EmpresarioActividad::where('slug', $request->slug)
+                ->where(
+                    'numero_dni',
+                    $request->numero_dni
+                )
+                ->first();
+
+            if (!$empresarioActividad) {
+
+                EmpresarioActividad::create([
+                    'slug'          => $request->slug,
+                    'empresario_id' => $empresario->id,
+                    'numero_dni'    => $request->numero_dni,
+                ]);
+            }
+
+            // =====================================================
+            // SED QUESTION
+            // VALIDAR slug + documentnumber
+            // =====================================================
+
+            $sedQuestion = SedQuestion::where(
+                'slug',
+                $request->slug
+            )
+                ->where(
+                    'documentnumber',
+                    $request->numero_dni
+                )
+                ->first();
+
+            $dataSedQuestion = [
+                'question_1'         => $request->question_1,
+                'question_2'         => $request->question_2,
+                'question_3'         => $request->question_3,
+                'question_4'         => $request->question_4,
+                'question_5'         => $request->question_5,
+                'propagandamedia_id' => $request->propagandamedia_id,
+                'tipo_asistente'     => $request->tipo_asistente,
+                'cooperativa'        => $request->cooperativa,
+                'rucCooperativa'     => $request->rucCooperativa,
+                'rolCooperativa'     => $request->rolCooperativa,
+            ];
+
+            // =====================================================
+            // ACTUALIZAR O CREAR SED QUESTION
+            // =====================================================
+
+            if ($sedQuestion) {
+
+                // NO CAMBIAR slug NI documentnumber
+                $sedQuestion->update($dataSedQuestion);
+            } else {
+
+                $sedQuestion = SedQuestion::create(array_merge(
+                    $dataSedQuestion,
+                    [
+                        'documentnumber' => $request->numero_dni,
+                        'slug'           => $request->slug,
+                    ]
+                ));
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Registro guardado correctamente',
+                'data'    => [
+                    'empresario_id'  => $empresario->id,
+                    'sedquestion_id' => $sedQuestion->id,
+                ]
+            ]);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al registrar',
+                'error'   => $e->getMessage()
             ], 500);
         }
     }

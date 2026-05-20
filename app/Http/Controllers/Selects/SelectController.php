@@ -788,7 +788,23 @@ class SelectController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    public function getTipoActividadesPnte()
+    {
+        $types = TipoActividad::orderBy('name')
+            ->get();
 
+        $data = $types->map(function ($item) {
+
+            return [
+                'label' => $item->name,
+                'value' => $item->id,
+            ];
+        });
+
+        return response()->json([
+            'data' => $data
+        ]);
+    }
 
     public function getTipoActividades()
     {
@@ -834,5 +850,25 @@ class SelectController extends Controller
         return response()->json([
             'data' => $data,
         ]);
+    }
+
+    public function getUsersPnte()
+    {
+        $users = User::where('active', 1)->orderBy('name', 'asc')->get();
+
+        $data = $users->map(function ($item) {
+            $label = strtoupper(trim(
+                $item->name . ' ' . $item->lastname . ' ' . ($item->middlename ?? '')
+            ));
+
+            return [
+                'label' => $label,
+                'value' => $item->id,
+            ];
+        });
+
+        $sortedData = $data->sortBy('label')->values();
+
+        return response()->json(['data' => $sortedData, 'status' => 200]);
     }
 }
