@@ -212,14 +212,14 @@ CREATE TABLE preguntas(
 
 
 
-ALTER TABLE actividades_pnte
-ADD COLUMN resultados TEXT
-AFTER reprogramado_por_id;
+-- ALTER TABLE actividades_pnte
+-- ADD COLUMN resultados TEXT
+-- AFTER reprogramado_por_id;
 
 
-ALTER TABLE actividades_pnte
-ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 0
-AFTER resultados;
+-- ALTER TABLE actividades_pnte
+-- ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 0
+-- AFTER resultados;
 
 
 
