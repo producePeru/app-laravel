@@ -540,3 +540,23 @@ WHERE NOT EXISTS (
             AND e.numero_dni = u.documentnumber
         )
 );
+
+
+
+ALTER TABLE sedquestions
+ADD COLUMN propagandamedia_id BIGINT UNSIGNED NULL
+AFTER slug,
+ADD CONSTRAINT fk_sedquestions_propagandamedia
+FOREIGN KEY (propagandamedia_id)
+REFERENCES propagandamedia(id)
+ON DELETE SET NULL;
+
+
+
+ALTER TABLE sedquestions
+ADD COLUMN tipo_asistente TINYINT UNSIGNED NULL
+AFTER propagandamedia_id;
+
+
+* EN LA TABLA sedquestions event_id NO OBLIGATORIO
+
