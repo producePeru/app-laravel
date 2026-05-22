@@ -51,54 +51,39 @@ class SedController extends Controller
 
             foreach ($payload['questions'] as $q) {
 
-                // =====================================================
-                // VALIDACIONES
-                // =====================================================
-
-                if (empty($q['label'])) {
-                    continue;
-                }
-
-                if (empty($q['type'])) {
+                if (empty($q['label']) || empty($q['type'])) {
                     continue;
                 }
 
                 // =====================================================
-                // BUSCAR PREGUNTA
-                // SI label + type EXISTE => reutiliza
-                // SI type ES DIFERENTE => crea nueva
+                // GENERAR MODEL ÚNICO
+                // IGNORAR EL MODEL QUE VIENE EN EL PAYLOAD
                 // =====================================================
 
-                $question = Question::where(
-                    'label',
-                    trim($q['label'])
-                )
-                    ->where(
-                        'type',
-                        trim($q['type'])
-                    )
-                    ->first();
+                do {
+
+                    $nextId = (Question::max('id') ?? 0) + 1;
+
+                    $model = 'question_' . $nextId;
+
+                    $existsModel = Question::where(
+                        'model',
+                        $model
+                    )->exists();
+                } while ($existsModel);
 
                 // =====================================================
                 // CREAR PREGUNTA
                 // =====================================================
 
-                if (!$question) {
-
-                    $nextId = (Question::max('id') ?? 0) + 1;
-
-                    $model = !empty($q['model'])
-                        ? $q['model']
-                        : "question_" . $nextId;
-
-                    $question = Question::create([
-                        'tableName' => $tableName,
-                        'label'     => trim($q['label']),
-                        'type'      => trim($q['type']),
-                        'model'     => $model,
-                        'required'  => !empty($q['required']) ? 1 : 0
-                    ]);
-                }
+                $question = Question::create([
+                    'tableName' => $tableName,
+                    'label'     => trim($q['label']),
+                    'type'      => trim($q['type']),
+                    'model'     => $model,
+                    'required'  => !empty($q['required']) ? 1 : 0,
+                    'visible'   => 1
+                ]);
 
                 // =====================================================
                 // OPCIONES
@@ -108,21 +93,34 @@ class SedController extends Controller
 
                     foreach ($q['options'] as $index => $opt) {
 
-                        if (empty($opt['value'])) {
+                        $label = trim($opt['label'] ?? '');
+
+                        if (!$label) {
                             continue;
                         }
 
-                        QuestionOption::updateOrCreate(
-                            [
-                                'question_id' => $question->id,
-                                'value'       => $opt['value']
-                            ],
-                            [
-                                'label'    => $opt['label'] ?? '',
-                                'status'   => $opt['status'] ?? 1,
-                                'position' => $index + 1
-                            ]
-                        );
+                        // =====================================================
+                        // GENERAR VALUE ÚNICO
+                        // IGNORAR EL VALUE QUE VIENE EN EL PAYLOAD
+                        // =====================================================
+
+                        do {
+
+                            $nextValue = (QuestionOption::max('id') ?? 0) + 1;
+
+                            $valueExists = QuestionOption::where(
+                                'value',
+                                (string) $nextValue
+                            )->exists();
+                        } while ($valueExists);
+
+                        QuestionOption::create([
+                            'question_id' => $question->id,
+                            'value'       => (string) $nextValue,
+                            'label'       => $label,
+                            'status'      => 1,
+
+                        ]);
                     }
                 }
 
@@ -130,15 +128,11 @@ class SedController extends Controller
                 // RELACIÓN SEDSURVEY
                 // =====================================================
 
-                SedSurvey::updateOrCreate(
-                    [
-                        'actividad_pnte_slug' => $payload['slug'],
-                        'question_id'         => $question->id
-                    ],
-                    [
-                        'sed_id' => $actividad->id
-                    ]
-                );
+                SedSurvey::create([
+                    'actividad_pnte_slug' => $payload['slug'],
+                    'question_id'         => $question->id,
+                    'sed_id'              => $actividad->id
+                ]);
             }
 
             DB::commit();
@@ -158,7 +152,7 @@ class SedController extends Controller
             ]);
 
             return response()->json([
-                'status' => 500,
+                'status'  => 500,
                 'message' => 'Ocurrió un error al registrar la encuesta.',
                 'error'   => $e->getMessage()
             ], 500);
