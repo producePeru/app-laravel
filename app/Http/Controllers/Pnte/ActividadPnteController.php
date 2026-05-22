@@ -532,6 +532,7 @@ class ActividadPnteController extends Controller
                 'empresario.region',
                 'empresario.provincia',
                 'empresario.distrito',
+                'empresario.actividadComercial',
                 'empresario.sectorEconomico',
                 'empresario.rubro',
                 'empresario.tipoDocumento',
@@ -602,9 +603,13 @@ class ActividadPnteController extends Controller
 
                     'actividad_comercial_id' => $e?->actividad_comercial_id,
 
-                    'actividad_comercial_nombre' => ! empty($e?->actividad_comercial_nombre)
-                        ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8')
-                        : null,
+                    'actividad_comercial_nombre' => !empty($e?->actividadComercial?->name)
+                        ? mb_strtoupper($e->actividadComercial->name, 'UTF-8')
+                        : (
+                            !empty($e?->actividad_comercial_nombre)
+                            ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8')
+                            : null
+                        ),
 
                     'region_id' => $e?->region_id,
                     'region_nombre' => $e?->region?->name,

@@ -29,7 +29,7 @@ Route::controller(SedAsistentesController::class)->group(function () {
 
     Route::post('sed-asistentes/{slug}', 'exportList');
 
-    Route::post('sed-asistentes-cooperativas/{slug}', 'exportListCooperativas');
+    Route::post('sed-asistentes-con-preguntas/{slug}', 'sedAsistentesPreguntas');    // actualizado 2025/05/21
 
     Route::post('get-sed-answers', 'exportSedAnswers');
 });
