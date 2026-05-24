@@ -547,3 +547,111 @@ ALTER TABLE actividades_pnte
 ADD COLUMN description TEXT NULL AFTER horario,
 ADD COLUMN nameUser VARCHAR(255) NULL AFTER description,
 ADD COLUMN link VARCHAR(255) NULL AFTER nameUser;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+INSERT INTO actividades_pnte (
+    unidad,
+    mes,
+    fechas,
+    cantidad_dias,
+    tipo_actividad_id,
+    nombre_actividad_id,
+    tema,
+    region,
+    provincia,
+    distrito,
+    lugar,
+    entidad_organizadora,
+    entidad_aliada,
+    representante_id,
+    requiere_pasaje,
+    monto_gasto,
+    mypes_beneficiadas,
+    modalidad_id,
+    total_participantes,
+    total_asesorias,
+    total_formalizaciones,
+    slug,
+    cancelado,
+    cancelado_por_id,
+    reprogramado,
+    reprogramado_por_id,
+    resultados,
+    activo,
+    registrado_por_id,
+    actualizado_por_id,
+    horario,
+    descripcion,
+    nombre_asesor,
+    link
+)
+SELECT
+    1 AS unidad,
+    NULL AS mes,
+    JSON_ARRAY(dateStart, dateEnd) AS fechas,
+    NULL AS cantidad_dias,
+    3 AS tipo_actividad_id,
+    8 AS nombre_actividad_id,
+    title AS tema,
+    city_id AS region,
+    province_id AS provincia,
+    district_id AS distrito,
+    place AS lugar,
+    organiza AS entidad_organizadora,
+    NULL AS entidad_aliada,
+    NULL AS representante_id,
+    NULL AS requiere_pasaje,
+    NULL AS monto_gasto,
+    numMypes AS mypes_beneficiadas,
+    NULL AS modalidad_id,
+    NULL AS total_participantes,
+    NULL AS total_asesorias,
+    NULL AS total_formalizaciones,
+
+    CONCAT(
+        LOWER(REPLACE(REPLACE(title, ' ', '-'), '/', '-')),
+        '-',
+        id
+    ) AS slug,
+
+    canceled AS cancelado,
+    NULL AS cancelado_por_id,
+    rescheduled AS reprogramado,
+    NULL AS reprogramado_por_id,
+    resultado AS resultados,
+    NULL AS activo,
+    user_id AS registrado_por_id,
+    NULL AS actualizado_por_id,
+    NULL AS horario,
+    description AS descripcion,
+    nameUser AS nombre_asesor,
+    link
+FROM events
+WHERE id_pnte = 1;
+
+
+**********************************
+
+UPDATE actividades_pnte
+SET mes = MONTH(
+    JSON_UNQUOTE(
+        JSON_EXTRACT(fechas, '$[0]')
+    )
+);
