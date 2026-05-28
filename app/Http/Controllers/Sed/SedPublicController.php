@@ -607,108 +607,91 @@ class SedPublicController extends Controller
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
     public function saveSurvey(Request $request)
     {
         DB::beginTransaction();
 
         try {
 
-            $documentNumber = $request->input('documentnumber');
-            $slug = $request->input('slug');
-            $ruc = $request->input('ruc');
+            $payload = $request->all();
 
-            $empresarioActividad = EmpresarioActividad::where('slug', $slug)
-                ->where('numero_dni', $documentNumber)
-                ->first();
+            // =====================================================
+            // VALIDAR DATOS
+            // =====================================================
 
-            // ❌ No registrado
-            if (!$empresarioActividad) {
+            if (empty($payload['slug'])) {
+
                 return response()->json([
-                    'status' => 403,
-                    'message' => 'No puedes continuar ya que no te registraste a este evento.'
-                ]);
+                    'status' => 422,
+                    'message' => 'El slug es requerido'
+                ], 422);
             }
 
-            // ❌ Sin asistencia
-            if (is_null($empresarioActividad->fecha_asistencia)) {
+            if (empty($payload['documentnumber'])) {
+
                 return response()->json([
-                    'status' => 403,
-                    'message' => 'No puedes completar el formulario por falta de asistencia.'
-                ]);
+                    'status' => 422,
+                    'message' => 'El documentnumber es requerido'
+                ], 422);
             }
 
-            // ─────────────────────────────────────────────
-            // 2. RECORRER QUESTIONS
-            // ─────────────────────────────────────────────
+            $dni  = $payload['documentnumber'];
+            $slug = $payload['slug'];
 
-            foreach ($request->all() as $key => $value) {
+            // =====================================================
+            // VALIDAR DUPLICADOS
+            // =====================================================
 
-                // Ignorar campos base
-                if (in_array($key, ['documentnumber', 'slug', 'ruc'])) {
-                    continue;
-                }
+            $exists = sedQuestionAnswer::where('dni', $dni)
+                ->where('slug_sed', $slug)
+                ->exists();
 
-                // Solo procesar question_X
+            if ($exists) {
+
+                return response()->json([
+                    'status' => 409,
+                    'message' => 'La encuesta ya fue registrada'
+                ], 409);
+            }
+
+            // =====================================================
+            // GUARDAR RESPUESTAS
+            // =====================================================
+
+            foreach ($payload as $key => $value) {
+
+                // Solo questions
                 if (!str_starts_with($key, 'question_')) {
                     continue;
                 }
 
-                // Obtener ID
-                $questionId = str_replace('question_', '', $key);
+                // question_50 => questions_50
+                $question = str_replace('question_', 'questions_', $key);
 
-                // Buscar question
-                $question = Question::with('options')
-                    ->find($questionId);
+                // Convertir array a JSON
+                $answer = is_array($value)
+                    ? json_encode($value, JSON_UNESCAPED_UNICODE)
+                    : $value;
 
-                if (!$question) {
-                    continue;
-                }
-
-                $answerText = null;
-
-                // ─────────────────────────────────────────
-                // CHECKBOX / RADIO / SELECTION
-                // ─────────────────────────────────────────
-
-                if (
-                    in_array($question->type, [
-                        'checkbox-multiple',
-                        'Selection',
-                        'radio'
-                    ])
-                ) {
-
-                    // Checkbox múltiple
-                    if (is_array($value)) {
-
-                        $labels = QuestionOption::whereIn('value', $value)
-                            ->pluck('label')
-                            ->toArray();
-
-                        $answerText = implode(', ', $labels);
-                    } else {
-
-                        $option = QuestionOption::where('value', $value)
-                            ->first();
-
-                        $answerText = $option?->label;
-                    }
-                } else {
-
-                    // Texto normal
-                    $answerText = $value;
-                }
-
-                // ─────────────────────────────────────────
-                // GUARDAR RESPUESTA
-                // ─────────────────────────────────────────
-
-                SedQuestionAnswer::create([
-                    'dni' => $documentNumber,
-                    'ruc' => $ruc,
-                    'slug_sed' => $slug,
-                    'question' => $question->label,
-                    'answer' => $answerText,
+                sedQuestionAnswer::create([
+                    'dni'       => $dni,
+                    'slug_sed'  => $slug,
+                    'ruc'       => null,
+                    'sed_id'    => null,
+                    'question'  => $question,
+                    'answer'    => $answer,
+                    'order'     => (int) filter_var($key, FILTER_SANITIZE_NUMBER_INT)
                 ]);
             }
 
@@ -716,19 +699,48 @@ class SedPublicController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Respuestas guardadas correctamente.'
+                'message' => 'Encuesta guardada correctamente'
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $th) {
 
             DB::rollBack();
 
             return response()->json([
                 'status' => 500,
-                'message' => 'Error al guardar respuestas.',
-                'error' => $e->getMessage()
+                'message' => $th->getMessage()
             ], 500);
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function participantConsultation(Request $request)
     {
