@@ -100,7 +100,7 @@ return [
             ]
         ],
 
-        'digitalizacion' => [    // digitalizacion
+        'digitalizacion' => [    // digitalizacion.pnte@gmail.com
             'transport'  => env('MAIL_MAILER', 'smtp'),
             'host'       => env('MAIL_HOST', 'smtp.hostinger.com'),
             'port'       => env('MAIL_PORT', 465),

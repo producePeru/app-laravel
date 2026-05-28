@@ -117,7 +117,9 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     // SED
     // Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // VUETIFY FORM UGSE EventsUgseController sed
     // Route::post('participant-info',                 [UgsePostulanteController::class, 'isRegistered']);             // VUETIFY FORM UGSE EventsUgseController sed
-    // Route::put('register-attendance',               [UgsePostulanteController::class, 'registerAttendance']);       // registra la fecha y hora de asistencia
+    // Route::put('register-attendance',               [UgsePostulanteController::class, 'registerAttendance']); 
+
+    Route::get('cde-by-region/{id}', [CdeController::class, 'byRegion']); // registra la fecha y hora de asistencia
 
 });
 
@@ -404,6 +406,11 @@ Route::group(['prefix' => 'config', 'namespace' => 'App\Http\Controllers', 'midd
     Route::put('addressCde/{id}', [CdeController::class, 'addressCde']);
     Route::put('cde/{id}', [CdeController::class, 'updateCde']);
     Route::post('cde', [CdeController::class, 'storeCde']);
+
+    //NUEVO PEDIDO DE BRIGITTE
+    Route::post('register-cde', [CdeController::class, 'registerCde']);
+    Route::get('list-cdes', [CdeController::class, 'listCdes']);
+    Route::put('update-cde/{id}', [CdeController::class, 'update']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
