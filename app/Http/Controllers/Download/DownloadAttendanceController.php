@@ -152,6 +152,15 @@ class DownloadAttendanceController extends Controller
                     );
                 })
 
+                // ✅ FILTRO PNTE
+                ->when($request->filled('pnte'), function ($q) use ($request) {
+
+                    $q->where(
+                        'tipo_actividad_id',
+                        $request->input('pnte')
+                    );
+                })
+
                 // ✅ FILTRO ASESOR
                 ->when(
                     $request->filled('asesor') &&
