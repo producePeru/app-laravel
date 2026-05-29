@@ -161,16 +161,7 @@ HAVING COUNT(*) > 1
 ORDER BY total DESC;
 
 
-CREATE TABLE empresario_actividad (
-    id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    actividad_id     BIGINT UNSIGNED NULL,
-    slug             VARCHAR(255)    NULL,
-    empresario_id    BIGINT UNSIGNED NULL,
-    numero_dni       VARCHAR(12)     NULL,
-    fecha_asistencia DATETIME        NULL,
-    created_at       TIMESTAMP       NULL DEFAULT NULL,
-    updated_at       TIMESTAMP       NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 
 INSERT INTO empresario_actividad (
@@ -190,14 +181,9 @@ SELECT
 FROM ugo_postulantes p;
 
 
-ALTER TABLE empresarios 
-ADD COLUMN actividad_comercial_nombre VARCHAR(255) NULL 
-AFTER actividad_comercial_id;
 
 
-ALTER TABLE empresario_actividad
-ADD COLUMN personal_asesoria TINYINT(1) DEFAULT NULL AFTER fecha_asistencia,
-ADD COLUMN personal_formalizacion TINYINT(1) DEFAULT NULL AFTER personal_asesoria;
+
 
 
 
@@ -300,3 +286,111 @@ ADD COLUMN slug_sed VARCHAR(100) NULL
 AFTER sed_id;
 
 
+
+
+
+
+
+
+-- RESETEA EL CONTADOR DE LA TABLA A 1       *******************************************
+SET @nuevo_id = 0;
+
+UPDATE actividades_pnte
+SET id = (@nuevo_id := @nuevo_id + 1)
+ORDER BY id;
+
+************************************************************************ SETEAMOS EL SED
+INSERT INTO actividades_pnte (
+    unidad,
+    mes,
+    fechas,
+    cantidad_dias,
+    tipo_actividad_id,
+    nombre_actividad_id,
+    tema,
+    region,
+    provincia,
+    distrito,
+    lugar,
+    entidad_organizadora,
+    entidad_aliada,
+    representante_id,
+    requiere_pasaje,
+    monto_gasto,
+    mypes_beneficiadas,
+    modalidad_id,
+    total_participantes,
+    total_asesorias,
+    total_formalizaciones,
+    slug,
+    cancelado,
+    cancelado_por_id,
+    reprogramado,
+    reprogramado_por_id,
+    resultados,
+    activo,
+    registrado_por_id,
+    actualizado_por_id,
+    horario,
+    descripcion,
+    nombre_asesor,
+    link,
+    created_at,
+    updated_at
+)
+SELECT
+    2 AS unidad,
+    1 AS mes,
+    dates AS fechas,
+    1 AS cantidad_dias,
+    7 AS tipo_actividad_id,
+    16 AS nombre_actividad_id,
+    title AS tema,
+    city_id AS region,
+    province_id AS provincia,
+    district_id AS distrito,
+    place AS lugar,
+    'PNTE' AS entidad_organizadora,
+    NULL AS entidad_aliada,
+    126 AS representante_id,
+    0 AS requiere_pasaje,
+    NULL AS monto_gasto,
+    metaMypes AS mypes_beneficiadas,
+    modality_id,
+    NULL AS total_participantes,
+    NULL AS total_asesorias,
+    NULL AS total_formalizaciones,
+    slug,
+    cancelado,
+    NULL AS cancelado_por_id,
+    reprogramado,
+    NULL AS reprogramado_por_id,
+    resultados,
+    1 AS activo,
+    126 AS registrado_por_id,
+    NULL AS actualizado_por_id,
+    hours AS horario,
+    NULL AS descripcion,
+    NULL AS nombre_asesor,
+    NULL AS link,
+    NOW() AS created_at,
+    NOW() AS updated_at
+FROM fairs
+WHERE fairtype_id = 1;
+
+
+
+-- ACTUALIZAR COLUMNA mes SED *************************************
+UPDATE actividades_pnte
+SET mes = MONTH(
+    JSON_UNQUOTE(
+        JSON_EXTRACT(fechas, '$[0]')
+    )
+)
+WHERE tipo_actividad_id = 7;
+
+
+-- CONSULTAR LOS DISTINTOS ************************************
+SELECT DISTINCT fairtype_id
+FROM fairs
+ORDER BY fairtype_id;
