@@ -104,6 +104,8 @@ class DownloadFormalizationsController extends Controller
                             default => 'PREFIERO NO ESPECIFICAR',
                         },
 
+                        'emp_cuidadora' => $advisory->people->persona_cuidadora ? strtoupper($advisory->people->persona_cuidadora) : null,
+
                         'emp_soons' => match (trim(strtolower($advisory->people->hasSoon ?? ''))) {
                             'si' => 'SI',
                             'no' => 'NO',
@@ -112,6 +114,7 @@ class DownloadFormalizationsController extends Controller
                         },
 
                         'emp_phone'             => $advisory->people->phone,
+                        'emp_etnia'             => $advisory->people->etnia->name ?? null,
                         'emp_email'             => isset($advisory->people->email) ? strtolower($advisory->people->email) : '-',
                         'supervisor'            => 'MILIAN MELENDEZ ALEJANDRIA',
                         'city'                  => $advisory->city->name ?? null,
@@ -219,6 +222,8 @@ class DownloadFormalizationsController extends Controller
                             default => 'PREFIERO NO ESPECIFICAR',
                         },
 
+                        'emp_cuidadora' => $f10->people->persona_cuidadora ? strtoupper($f10->people->persona_cuidadora) : null,
+
                         'emp_soons' => match (trim(strtolower($f10->people->hasSoon ?? ''))) {
                             'si' => 'SI',
                             'no' => 'NO',
@@ -227,6 +232,7 @@ class DownloadFormalizationsController extends Controller
                         },
 
                         'emp_phone'             => $f10->people->phone,
+                        'emp_etnia'             => $f10->people->etnia->name ?? null,
                         'emp_email'             => $f10->people->email ? strtolower($f10->people->email) : '-',
 
                         'type_formalization'    => 'PPNN 10',
@@ -334,6 +340,8 @@ class DownloadFormalizationsController extends Controller
                             default => 'PREFIERO NO ESPECIFICAR',
                         },
 
+                        'emp_cuidadora' => $f20->people->persona_cuidadora ? strtoupper($f20->people->persona_cuidadora) : null,
+
                         'emp_soons' => match (trim(strtolower($f20->people->hasSoon ?? ''))) {
                             'si' => 'SI',
                             'no' => 'NO',
@@ -342,6 +350,7 @@ class DownloadFormalizationsController extends Controller
                         },
 
                         'emp_phone'             => $f20->people->phone,
+                        'emp_etnia'             => $f20->people->etnia->name ?? null,
                         'emp_email'             => $f20->people->email ? strtolower($f20->people->email) : '-',
 
                         'type_formalization'    => 'PPJJ 20',

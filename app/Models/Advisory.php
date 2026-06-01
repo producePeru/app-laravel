@@ -126,6 +126,10 @@ class Advisory extends Model
         return $this->hasOne(AsesoriaCooperativa::class,  'advisory_id', 'id');
     }
 
+    public function etnia()
+    {
+        return $this->hasOne(Etnia::class,  'people.etnia_id', 'etnia.id');
+    }
 
     // DESCARGAR EXCEL DE ASESORIAS
     public function scopeDescargaExcelAsesorias($query, $filters)
@@ -215,10 +219,11 @@ class Advisory extends Model
             'district:id,name',
             'economicsector:id,name',
             'modality:id,name',
-            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email',
+            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email,etnia_id,persona_cuidadora',
             'people.gender:id,name',
             'people.pais:id,name',
             'people.typedocument:id,avr',
+            'people.etnia:id,name',
             'province:id,name',
             'sede',
             'theme:id,name',
@@ -281,9 +286,10 @@ class Advisory extends Model
             'district:id,name',
             'economicsector:id,name',
             'modality:id,name',
-            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email',
+            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email,etnia_id,persona_cuidadora',
             'people.gender:id,name',
             'people.pais:id,name',
+            'people.etnia:id,name',
             'people.typedocument:id,avr',
             'province:id,name',
             'sede',

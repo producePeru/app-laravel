@@ -75,18 +75,43 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:G1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');    // azul
-        $sheet->getStyle('H1:S1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('833c0c');    // marron
-        $sheet->getStyle('T1:AB1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('375623');   // verde
-        $sheet->getStyle('AC1:AD1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('305496');  // azul
+        // Azul marino
+        $sheet->getStyle('A1:G1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('002060');
 
+        // Marrón
+        $sheet->getStyle('H1:U1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('833C0C');
 
-        $sheet->getStyle('A1:AD1')->getFont()->setBold(true);                                                                                       // negrita
-        $sheet->getStyle('A1:AD1')->getFont()->getColor()->setARGB('FFFFFF');                                                                       // color fuente
+        // Verde militar
+        $sheet->getStyle('V1:AE1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('375623');
 
+        // Negro
+        $sheet->getStyle('AF1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('000000');
 
-        $sheet->getStyle('A1:AD1')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A1:AD1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        // Fuente blanca y negrita
+        $sheet->getStyle('A1:AF1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AF1')->getFont()->getColor()->setARGB('FFFFFF');
+
+        // Ajuste de texto y centrado vertical
+        $sheet->getStyle('A1:AF1')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:AF1')->getAlignment()->setVertical(
+            \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+        );
     }
 
 
@@ -110,8 +135,10 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             'Nombres del Solicitante (socio o Gte General)',
             'Género',
             'Tiene alguna Discapacidad ? (SI / NO)',
+            'Nombre y apellido de la Persona cuidadora',
             '¿Tiene hijos?  (SI / NO)',
             'Celular',
+            '¿Con qué cultura o etnia te identificas?',
             'Correo electrónico',
 
             'Tipo formalización',
