@@ -449,6 +449,8 @@ class PersonController extends Controller
             'gender_id',
             'sick',
             'hasSoon',
+            'etnia_id',
+            'persona_cuidadora'
         ];
         $payload = Arr::only($data, $FIELDS);
 
@@ -496,7 +498,9 @@ class PersonController extends Controller
                     'address',
                     'typedocument_id',
                     'gender_id',
-                    'user_id'
+                    'user_id',
+                    'etnia_id',
+                    'persona_cuidadora',
                 )->first();
 
             if ($person) {

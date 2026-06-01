@@ -121,6 +121,11 @@ class Formalization10 extends Model
         return $this->belongsTo('App\Models\SupervisorUser', 'user_id', 'supervisado_id');
     }
 
+    public function etnia()
+    {
+        return $this->hasOne(Etnia::class,  'people.etnia_id', 'etnia.id');
+    }
+
     // DESCARGAR EXCEL DE FORMALIZACIONES CON RUC 10
     public function scopeAllFormalizations10($query, $filters)
     {
@@ -186,8 +191,9 @@ class Formalization10 extends Model
             'district:id,name',
             'economicsector:id,name',
             'modality:id,name',
-            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email',
+            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email,etnia_id,persona_cuidadora',
             'people.typedocument:id,avr',
+            'people.etnia:id,name',
             'province:id,name',
             'sede',
             'user',
