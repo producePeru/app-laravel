@@ -27,6 +27,7 @@ return [
     //     'https://fiesta-del-cafe.soporte-pnte.com',
     //     'https://seguimiento-capacitaciones.soporte-pnte.com',
     //     'https://cde.soporte-pnte.com',
+    //     'https://tareitas.soporte-pnte.com',
     // ],
 
     'allowed_origins_patterns' => [],
