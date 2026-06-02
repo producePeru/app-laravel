@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Sed;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActividadPnte;
 use App\Models\Fair;
 use App\Models\Question;
 use App\Models\QuestionOption;
@@ -23,57 +24,115 @@ class SedController extends Controller
 
             $tableName = $payload['table'] ?? 'sed';
 
-            // 1. Obtener SED
-            $fair = Fair::where('slug', $payload['slug'])->firstOrFail();
-            $sedId = $fair->id;
+            // =====================================================
+            // VALIDAR SLUG
+            // =====================================================
+
+            if (empty($payload['slug'])) {
+
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'El slug es requerido'
+                ], 422);
+            }
+
+            // =====================================================
+            // OBTENER ACTIVIDAD
+            // =====================================================
+
+            $actividad = ActividadPnte::where(
+                'slug',
+                $payload['slug']
+            )->firstOrFail();
+
+            // =====================================================
+            // RECORRER PREGUNTAS
+            // =====================================================
 
             foreach ($payload['questions'] as $q) {
 
-                // 2. Buscar pregunta por label
-                $question = Question::where('label', $q['label'])->first();
-
-                if (!$question) {
-
-                    // generar model único
-                    $nextId = Question::max('id') + 1;
-                    $model = "question_" . $nextId;
-
-                    $question = Question::create([
-                        // 'tableName' => 'sed',
-                        'tableName' => $tableName,
-                        'label' => $q['label'],
-                        'type' => $q['type'],
-                        'model' => $model,
-                        'required'  => $q['required'] ? 1 : 0
-                    ]);
+                if (empty($q['label']) || empty($q['type'])) {
+                    continue;
                 }
 
-                // 3. Opciones
+                // =====================================================
+                // GENERAR MODEL ÚNICO
+                // IGNORAR EL MODEL QUE VIENE EN EL PAYLOAD
+                // =====================================================
+
+                do {
+
+                    $nextId = (Question::max('id') ?? 0) + 1;
+
+                    $model = 'question_' . $nextId;
+
+                    $existsModel = Question::where(
+                        'model',
+                        $model
+                    )->exists();
+                } while ($existsModel);
+
+                // =====================================================
+                // CREAR PREGUNTA
+                // =====================================================
+
+                $question = Question::create([
+                    'tableName' => $tableName,
+                    'label'     => trim($q['label']),
+                    'type'      => trim($q['type']),
+                    'model'     => $model,
+                    'required'  => !empty($q['required']) ? 1 : 0,
+                    'visible'   => 1
+                ]);
+
+                // =====================================================
+                // OPCIONES
+                // =====================================================
+
                 if (!empty($q['options'])) {
 
-                    foreach ($q['options'] as $opt) {
+                    foreach ($q['options'] as $index => $opt) {
 
-                        QuestionOption::updateOrCreate(
-                            [
-                                'question_id' => $question->id,
-                                'value' => $opt['value']
-                            ],
-                            [
-                                'label' => $opt['label'],
-                                'status' => $opt['status'] ?? 1
-                            ]
-                        );
+                        $label = trim($opt['label'] ?? '');
+
+                        if (!$label) {
+                            continue;
+                        }
+
+                        // =====================================================
+                        // GENERAR VALUE ÚNICO
+                        // IGNORAR EL VALUE QUE VIENE EN EL PAYLOAD
+                        // =====================================================
+
+                        do {
+
+                            $nextValue = (QuestionOption::max('id') ?? 0) + 1;
+
+                            $valueExists = QuestionOption::where(
+                                'value',
+                                (string) $nextValue
+                            )->exists();
+                        } while ($valueExists);
+
+                        QuestionOption::create([
+                            'question_id' => $question->id,
+                            'value'       => (string) $nextValue,
+                            'label'       => $label,
+                            'status'      => 1,
+
+                        ]);
                     }
                 }
 
-                // 4. Relación SedSurvey (sin title)
-                SedSurvey::updateOrCreate(
-                    [
-                        'sed_id' => $sedId,
-                        'question_id' => $question->id
-                    ],
-                    []
-                );
+                // =====================================================
+                // RELACIÓN SEDSURVEY
+                // =====================================================
+
+                SedSurvey::create([
+                    'actividad_pnte_slug' => $payload['slug'],
+                    'question_id'         => $question->id,
+                    'sed_id'              => $actividad->id
+                ]);
             }
 
             DB::commit();
@@ -88,14 +147,14 @@ class SedController extends Controller
 
             Log::error('Error registrando encuesta SED', [
                 'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
+                'line'  => $e->getLine(),
+                'file'  => $e->getFile()
             ]);
 
             return response()->json([
-                'status' => 500,
+                'status'  => 500,
                 'message' => 'Ocurrió un error al registrar la encuesta.',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
@@ -107,48 +166,65 @@ class SedController extends Controller
             // 👇 default seguro
             $table = $request->input('table', 'sed');
 
-            $fair = Fair::where('slug', $slug)->firstOrFail();
+            // ✅ AHORA USA ActividadPnte
+            $actividad = ActividadPnte::where(
+                'slug',
+                $slug
+            )->firstOrFail();
 
-            $questions = SedSurvey::where('sed_id', $fair->id)
+            // ✅ BUSCAR POR actividad_pnte_slug
+            $questions = SedSurvey::where(
+                'actividad_pnte_slug',
+                $actividad->slug
+            )
                 ->with(['question.options'])
                 ->get()
                 ->map(function ($item) use ($table) {
 
                     $q = $item->question;
 
-                    if (!$q || $q->tableName !== $table) {
+                    if (
+                        !$q ||
+                        $q->tableName !== $table
+                    ) {
                         return null;
                     }
 
                     return [
-                        'id' => $q->id,
-                        'type' => $q->type,
-                        'label' => $q->label,
-                        'model' => $q->model,
+                        'id'       => $q->id,
+                        'type'     => $q->type,
+                        'label'    => $q->label,
+                        'model'    => $q->model,
                         'required' => (bool) $q->required,
-                        'md' => 12,
-                        'options' => $q->options->map(fn($opt) => [
-                            'label' => $opt->label,
-                            'value' => $opt->value
-                        ])->values()
+                        'md'       => 12,
+
+                        'options'  => $q->options
+                            ->map(fn($opt) => [
+                                'label' => $opt->label,
+                                'value' => $opt->value
+                            ])
+                            ->values()
                     ];
                 })
                 ->filter()
                 ->values();
 
             return response()->json([
-                'status' => 200,
+                'status'    => 200,
                 'questions' => $questions
             ]);
         } catch (\Throwable $e) {
 
-            Log::error('Error obteniendo encuesta SED', [
-                'error' => $e->getMessage()
-            ]);
+            Log::error(
+                'Error obteniendo encuesta SED',
+                [
+                    'error' => $e->getMessage()
+                ]
+            );
 
             return response()->json([
-                'error' => $e->getMessage(),
-                'status' => 500,
+                'error'   => $e->getMessage(),
+                'status'  => 500,
                 'message' => 'Error al obtener la encuesta'
             ], 500);
         }

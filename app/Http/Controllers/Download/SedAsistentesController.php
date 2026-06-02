@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Download;
 
+use App\Exports\ActividadReporteExport;
 use App\Http\Controllers\Controller;
 use App\Models\Fair;
 use App\Models\SedAsistente;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Maatwebsite\Excel\Facades\Excel;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
@@ -251,201 +253,6 @@ class SedAsistentesController extends Controller
         return $options[$question][$value] ?? '-';
     }
 
-
-    public function exportListCooperativas(Request $request, $slug)
-    {
-        try {
-            $fair = Fair::where('slug', $slug)->firstOrFail();
-
-            $filters = $request->query();
-            $includeSurvey = $request->boolean('encuesta');
-
-            // 🔹 QUERY PRINCIPAL
-            $query = SedAsistente::where('sed_id', $fair->id)
-                ->where('removed', 0)
-                ->whereHas('postulante')
-                ->with([
-                    'postulante.company:id,ruc,socialReason',
-                    'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
-                    'postulante.businessman.gender:id,name',
-                    'postulante.typedocument:id,avr',
-                    'postulante.economicsector',
-                    'postulante.category',
-                    'postulante.comercialactivity',
-                    'postulante.city',
-                    'postulante.province',
-                    'postulante.district',
-                    'postulante.howKnowEvent',
-                    'postulante.sedQuestion' => function ($q) use ($fair) {
-                        $q->where('event_id', $fair->id);
-                    }
-                ])
-                ->orderBy('id', 'desc');
-
-            // 🔍 FILTROS
-            if (!empty($filters['name'])) {
-                $query->whereHas('postulante', function ($q) use ($filters) {
-                    $q->where('ruc', 'like', '%' . $filters['name'] . '%')
-                        ->orWhere('documentnumber', 'like', '%' . $filters['name'] . '%');
-                });
-            }
-
-            if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
-                $query->whereBetween('created_at', [
-                    Carbon::parse($filters['dateStart'])->startOfDay(),
-                    Carbon::parse($filters['dateEnd'])->endOfDay()
-                ]);
-            }
-
-            $asistencias = $query->get();
-
-            // 🔥 RESPUESTAS (FIX ORDEN)
-            $questions = collect();
-            $answersGrouped = collect();
-
-            if ($includeSurvey) {
-                $answers = sedQuestionAnswer::where('sed_id', $fair->id)->get();
-
-                // ✅ SOLO ESTO CAMBIA (orden correcto)
-                $questions = $answers
-                    ->sortBy('order')
-                    ->pluck('question')
-                    ->unique()
-                    ->values();
-
-                // (opcional pero recomendado)
-                $answersGrouped = $answers
-                    ->sortBy('order')
-                    ->groupBy('dni');
-            }
-
-            // 🔥 MAPEO
-            $rows = $asistencias->map(function ($item, $index) use ($fair, $includeSurvey, $questions, $answersGrouped) {
-
-                $roles = [
-                    'd' => 'DIRIGENTE',
-                    's' => 'SOCIO',
-                    'm' => 'MIEMBRO',
-                ];
-
-                $p = $item->postulante;
-                if (!$p) return null;
-
-                $rol = $p->sedQuestion?->rolCooperativa;
-
-                $row = [
-                    $index + 1,
-                    mb_strtoupper($fair->title ?? '', 'UTF-8'),
-                    $item->attendance ?? '-',
-                    $p->sedQuestion?->rucCooperativa ?? '-',
-                    mb_strtoupper($p->sedQuestion?->cooperativa ?? '', 'UTF-8') ?? '-',
-                    $roles[$rol] ?? '-',
-
-                    $p->ruc,
-                    mb_strtoupper($p->company?->socialReason ?? $p->socialReason ?? '', 'UTF-8'),
-                    mb_strtoupper($p->comercialName ?? '', 'UTF-8'),
-                    mb_strtoupper($p->economicsector?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->category?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->comercialactivity?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->city?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->province?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->district?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->address ?? '', 'UTF-8'),
-                    $item->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
-
-                    // FIX typedocument
-                    $p->typedocument?->avr
-                        ?? $p->businessman?->typedocument?->avr
-                        ?? '-',
-
-                    $p->businessman?->documentnumber ?? $p->documentnumber ?? '',
-                    mb_strtoupper($p->businessman?->name ?? $p->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->businessman?->lastname ?? $p->lastname ?? '', 'UTF-8'),
-                    mb_strtoupper($p->businessman?->middlename ?? $p->middlename ?? '', 'UTF-8'),
-
-                    $p->businessman
-                        ? ($p->businessman->gender?->name === 'FEMENINO' ? 'F' : 'M')
-                        : ($p->gender_id == 1 ? 'M' : 'F'),
-
-                    $p->sick == 'no' ? 'NO' : 'SI',
-                    $p->phone,
-                    $p->email,
-                    $p->businessman?->birthday ?? $p->birthday,
-                    $p->age ?? null,
-                    mb_strtoupper($p->positionCompany ?? '', 'UTF-8'),
-                    mb_strtoupper($p->howKnowEvent?->name ?? '', 'UTF-8'),
-
-                    $item->created_at
-                        ? Carbon::parse($item->created_at)->format('d/m/Y h:i A')
-                        : '',
-
-                    // 🔹 FIJAS (NO SE TOCAN)
-                    mb_strtoupper($this->getAnswerLabel('question_1', $p->sedQuestion?->question_1) ?? '-', 'UTF-8'),
-                    mb_strtoupper($this->getAnswerLabel('question_2', $p->sedQuestion?->question_2) ?? '-', 'UTF-8'),
-                    mb_strtoupper($this->getAnswerLabel('question_3', $p->sedQuestion?->question_3) ?? '-', 'UTF-8'),
-                    mb_strtoupper($this->getAnswerLabel('question_4', $p->sedQuestion?->question_4) ?? '-', 'UTF-8'),
-                    mb_strtoupper($this->getAnswerLabel('question_5', $p->sedQuestion?->question_5) ?? '-', 'UTF-8'),
-                ];
-
-                // 🔥 DINÁMICAS (igual que ya tenías)
-                if ($includeSurvey) {
-                    $dni = $p->businessman?->documentnumber ?? $p->documentnumber;
-
-                    $participantAnswers = $answersGrouped->get($dni, collect());
-                    $answerMap = $participantAnswers->pluck('answer', 'question');
-
-                    foreach ($questions as $q) {
-                        $row[] = $answerMap[$q] ?? '';
-                    }
-                }
-
-                return $row;
-            })->filter()->values();
-
-            // 📄 TEMPLATE
-            $templatePath = storage_path('app/plantillas/sed_template_cooperativa.xlsx');
-            $spreadsheet = IOFactory::load($templatePath);
-            $sheet = $spreadsheet->getActiveSheet();
-
-            $startRow = 2;
-
-            // 🔥 HEADERS DINÁMICOS
-            if ($includeSurvey && $questions->count() && $rows->count()) {
-                $baseCols = count($rows[0]) - $questions->count();
-                $colIndex = $baseCols + 1;
-
-                foreach ($questions as $q) {
-                    $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
-                    $sheet->setCellValue("{$col}1", $q);
-                    $colIndex++;
-                }
-            }
-
-            // 🔥 DATA
-            foreach ($rows as $i => $row) {
-                $colIndex = 1;
-                foreach ($row as $value) {
-                    $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
-                    $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
-                    $colIndex++;
-                }
-            }
-
-            return new StreamedResponse(function () use ($spreadsheet) {
-                $writer = new Xlsx($spreadsheet);
-                $writer->save('php://output');
-            }, 200, [
-                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="postulantes-feria.xlsx"',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al exportar: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-
     // ESTE ES PARA LA PRUEBAS DEL TESTEO
     public function exportSedAnswers(Request $request)
     {
@@ -555,5 +362,16 @@ class SedAsistentesController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
+    }
+
+
+
+    // **********************************************************************************************
+    public function sedAsistentesPreguntas($slug)
+    {
+        return Excel::download(
+            new ActividadReporteExport($slug),
+            'reporte_' . $slug . '_' . now()->format('Ymd') . '.xlsx'
+        );
     }
 }

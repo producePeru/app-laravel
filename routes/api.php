@@ -123,59 +123,59 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 // nuevos
 
 Route::prefix('advisory')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/advisory.php';
+    require __DIR__ . '/api/advisory.php';
 });
 
 Route::prefix('formalization')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/formalization.php';
+    require __DIR__ . '/api/formalization.php';
 });
 
 Route::prefix('download')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/download.php';
+    require __DIR__ . '/api/download.php';
 });
 
 Route::prefix('page')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/pages.php';
+    require __DIR__ . '/api/pages.php';
 });
 
 Route::prefix('token')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/token.php';
+    require __DIR__ . '/api/token.php';
 });
 
 Route::prefix('events-ugo')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/eventsugo.php';
+    require __DIR__ . '/api/eventsugo.php';
 });
 
 Route::prefix('events-ugse')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/eventsugse.php';
+    require __DIR__ . '/api/eventsugse.php';
 });
 
 Route::prefix('download')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/download.php';
+    require __DIR__ . '/api/download.php';
 });
 
 Route::prefix('questionnaire')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/questionnaire.php';
+    require __DIR__ . '/api/questionnaire.php';
 });
 
 Route::prefix('businessman')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/businessman.php';
+    require __DIR__ . '/api/businessman.php';
 });
 
 Route::prefix('training')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/training.php';
+    require __DIR__ . '/api/training.php';
 });
 
 Route::prefix('email')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/email.php';
+    require __DIR__ . '/api/email.php';
 });
 
 Route::prefix('users')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/users.php';
+    require __DIR__ . '/api/users.php';
 });
 
 Route::prefix('import')->group(function () {
-    require __DIR__.'/api/import.php';
+    require __DIR__ . '/api/import.php';
 });
 
 // Route::prefix('businessman')->middleware('auth:sanctum')->group(function () {
@@ -183,28 +183,28 @@ Route::prefix('import')->group(function () {
 // });
 
 Route::prefix('follow')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/follow.php';
+    require __DIR__ . '/api/follow.php';
 });
 
 Route::prefix('mp')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/mp.php';
+    require __DIR__ . '/api/mp.php';
 });
 
 Route::prefix('mp')->group(function () {
-    require __DIR__.'/api/mp.php';
+    require __DIR__ . '/api/mp.php';
 });
 
 Route::prefix('mp')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/mpAuth.php';
+    require __DIR__ . '/api/mpAuth.php';
 });
 
 // PUBLICAS
 Route::prefix('api')->group(function () {
-    require __DIR__.'/api/apis.php';
+    require __DIR__ . '/api/apis.php';
 });
 
 Route::prefix('events-pnte')->group(function () {
-    require __DIR__.'/api/eventsPnte.php';            // creamos empresarios & empresas
+    require __DIR__ . '/api/eventsPnte.php';            // creamos empresarios & empresas
 });
 
 // Route::prefix('api')->group(function () {
@@ -212,40 +212,40 @@ Route::prefix('events-pnte')->group(function () {
 // });
 
 Route::prefix('public')->group(function () {
-    require __DIR__.'/api/public.php';
+    require __DIR__ . '/api/public.php';
 });
 
 Route::prefix('image')->group(function () {
-    require __DIR__.'/api/image.php';
+    require __DIR__ . '/api/image.php';
 });
 
 Route::prefix('google')->group(function () {
-    require __DIR__.'/api/google.php';
+    require __DIR__ . '/api/google.php';
 });
 
 Route::prefix('purchases-my-peru')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/purchasesmyperu.php';
+    require __DIR__ . '/api/purchasesmyperu.php';
 });
 
 Route::prefix('sed')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/sed.php';
+    require __DIR__ . '/api/sed.php';
 });
 
 Route::prefix('sed')->group(function () {
-    require __DIR__.'/api/sed.php';
+    require __DIR__ . '/api/sed.php';
 });
 
 Route::prefix('ugger')->group(function () {
-    require __DIR__.'/api/ugger.php';
+    require __DIR__ . '/api/ugger.php';
 });
 
 // todos los eventos del PNTE
 Route::prefix('event-pnte')->middleware('auth:sanctum')->group(function () {
-    require __DIR__.'/api/eventpnte.php';
+    require __DIR__ . '/api/eventpnte.php';
 });
 
 Route::prefix('event-pnte-public')->group(function () {
-    require __DIR__.'/api/eventpnte.php';
+    require __DIR__ . '/api/eventpnte.php';
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -544,9 +544,12 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('cp-components', [SelectController::class, 'getCpComponents']);
     Route::get('cp-themes/{idComponent}', [SelectController::class, 'getThemes']);
 
+    Route::get('get-tipo-actividades-pnte', [SelectController::class, 'getTipoActividadesPnte']);
     Route::get('get-tipo-actividades', [SelectController::class, 'getTipoActividades']);
     Route::get('get-tipo-actividades-ugse', [SelectController::class, 'getTipoActividadesUgse']);
     Route::get('get-nombre-actividades/{id}', [SelectController::class, 'getNombreActividades']);
+
+    Route::get('get-users-pnte', [SelectController::class, 'getUsersPnte']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
