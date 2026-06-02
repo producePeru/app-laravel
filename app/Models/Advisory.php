@@ -121,6 +121,15 @@ class Advisory extends Model
         return $this->belongsTo('App\Models\ComercialActivities');
     }
 
+    public function cooperativa()
+    {
+        return $this->hasOne(AsesoriaCooperativa::class,  'advisory_id', 'id');
+    }
+
+    public function etnia()
+    {
+        return $this->hasOne(Etnia::class,  'people.etnia_id', 'etnia.id');
+    }
 
     // DESCARGAR EXCEL DE ASESORIAS
     public function scopeDescargaExcelAsesorias($query, $filters)
@@ -210,14 +219,16 @@ class Advisory extends Model
             'district:id,name',
             'economicsector:id,name',
             'modality:id,name',
-            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email',
+            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email,etnia_id,persona_cuidadora',
             'people.gender:id,name',
             'people.pais:id,name',
             'people.typedocument:id,avr',
+            'people.etnia:id,name',
             'province:id,name',
             'sede',
             'theme:id,name',
             'user:id,name,lastname,middlename',
+            'cooperativa'
         ])->orderBy('created_at', 'desc');
 
         if (!empty($filters['asesor'])) {
@@ -264,5 +275,157 @@ class Advisory extends Model
                     ->orderBy('created_at', 'desc');
             }
         }
+    }
+
+    public function scopeWithAdvisoryCooperativas($query, $filters)
+    {
+        $query = $query->with([
+            'city:id,name',
+            'comercialactivity:id,name',
+            'component:id,name',
+            'district:id,name',
+            'economicsector:id,name',
+            'modality:id,name',
+            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email,etnia_id,persona_cuidadora',
+            'people.gender:id,name',
+            'people.pais:id,name',
+            'people.etnia:id,name',
+            'people.typedocument:id,avr',
+            'province:id,name',
+            'sede',
+            'theme:id,name',
+            'user:id,name,lastname,middlename',
+            'cooperativa'
+        ])
+
+            // ✅ SOLO LISTAR ASESORÍAS QUE TENGAN COOPERATIVA
+            ->whereHas('cooperativa')
+
+            ->orderBy('created_at', 'desc');
+
+        // ─────────────────────────────────────
+        // FILTRO ASESOR
+        // ─────────────────────────────────────
+        if (!empty($filters['asesor'])) {
+
+            $query->where('user_id', $filters['asesor']);
+        }
+
+        // ─────────────────────────────────────
+        // FILTRO PERSONA
+        // ─────────────────────────────────────
+        if (!empty($filters['name'])) {
+
+            $name = trim($filters['name']);
+
+            $query->whereHas('people', function ($q) use ($name) {
+
+                $q->where(function ($sub) use ($name) {
+
+                    $sub->where('documentnumber', 'like', "%{$name}%")
+                        ->orWhere('name', 'like', "%{$name}%")
+                        ->orWhere('lastname', 'like', "%{$name}%")
+                        ->orWhere('middlename', 'like', "%{$name}%")
+                        ->orWhereRaw(
+                            "CONCAT_WS(' ', name, lastname, middlename) LIKE ?",
+                            ["%{$name}%"]
+                        );
+                });
+            });
+        }
+
+        // ─────────────────────────────────────
+        // FILTRO FECHAS
+        // ─────────────────────────────────────
+        if (
+            !empty($filters['dateStart']) &&
+            !empty($filters['dateEnd'])
+        ) {
+
+            $endDate = date(
+                'Y-m-d',
+                strtotime($filters['dateEnd'] . ' +1 day')
+            );
+
+            $query->whereBetween(
+                'created_at',
+                [$filters['dateStart'], $endDate]
+            );
+        }
+
+        // ─────────────────────────────────────
+        // FILTRO AÑO
+        // ─────────────────────────────────────
+        if (!empty($filters['year'])) {
+
+            $query->whereYear(
+                'created_at',
+                $filters['year']
+            );
+        }
+
+        // ─────────────────────────────────────
+        // FILTRO TIPO CDE
+        // ─────────────────────────────────────
+        if (!empty($filters['typeCdes'])) {
+
+            $query->whereHas('sede', function ($q) use ($filters) {
+
+                $q->where(
+                    'cdetype_id',
+                    $filters['typeCdes']
+                );
+            });
+        }
+
+        // ─────────────────────────────────────
+        // FILTRO CAPAS
+        // ─────────────────────────────────────
+        if (!empty($filters['capas'])) {
+
+            if ($filters['capas'] === 'up') {
+
+                $query->whereNotNull('ruc')
+                    ->orderBy('ruc', 'asc');
+            }
+
+            if ($filters['capas'] === 'down') {
+
+                $query->whereNull('ruc')
+                    ->orderBy('created_at', 'desc');
+            }
+        }
+
+        // ─────────────────────────────────────
+        // FILTRO RUC COOPERATIVA
+        // ─────────────────────────────────────
+        if (!empty($filters['ruc_cooperativa'])) {
+
+            $query->whereHas('cooperativa', function ($q) use ($filters) {
+
+                $q->where(
+                    'ruc',
+                    'like',
+                    '%' . $filters['ruc_cooperativa'] . '%'
+                );
+            });
+        }
+
+        // ─────────────────────────────────────
+        // FILTRO NOMBRE COOPERATIVA
+        // ─────────────────────────────────────
+        if (!empty($filters['nombre_cooperativa'])) {
+
+            $query->whereHas('cooperativa', function ($q) use ($filters) {
+
+                $q->where(
+                    'nombre',
+                    'like',
+                    '%' . $filters['nombre_cooperativa'] . '%'
+                );
+            });
+        }
+
+        return $query;
     }
 }

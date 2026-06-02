@@ -32,6 +32,8 @@ class People extends Model
         'hasSoon',
 
         'user_id',              // id quien lo registró
+        'etnia_id',
+        'persona_cuidadora',
         'updated_by'
     ];
 
@@ -135,6 +137,11 @@ class People extends Model
     public function cde()
     {
         return $this->belongsTo(Cde::class, 'cde_id');
+    }
+
+    public function etnia()
+    {
+        return $this->belongsTo(Etnia::class);
     }
 
     public function scopeWithProfileAndRelations($query, $filters)       //super

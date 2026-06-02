@@ -19,7 +19,7 @@ class DownloadExportDiagnosticMP extends Controller
         ];
 
         $questions = MPDiagnostico::with('options')
-            ->where('status', 1)
+            // ->where('status', 1)  ← también comentado
             ->where('type', '!=', 'l')
             ->orderBy('position', 'ASC')
             ->get();

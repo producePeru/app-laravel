@@ -338,12 +338,12 @@ class AttendanceController extends Controller
                 ->where('id', '!=', $id)
                 ->exists();
 
-            if ($exists) {
-                return response()->json([
-                    'status' => 409,
-                    'message' => "Ya existe una actividad con los mismos datos para este asesor.",
-                ]);
-            }
+            // if ($exists) {
+            //     return response()->json([
+            //         'status' => 409,
+            //         'message' => "Ya existe una actividad con los mismos datos para este asesor.",
+            //     ]);
+            // }
 
             $registro = Attendance::findOrFail($id);
 

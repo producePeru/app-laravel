@@ -297,3 +297,49 @@ CREATE TABLE participantes (
         REFERENCES cargo_empresa(id)
         ON DELETE SET NULL
 );
+
+
+
+
+
+
+-- CREATE TABLE advisories_cooperativa (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+--     advisory_id BIGINT UNSIGNED NOT NULL,
+
+--     ruc CHAR(11) NULL,
+--     nombre VARCHAR(255) NULL,
+--     cargo TINYINT UNSIGNED NULL,
+
+--     created_at TIMESTAMP NULL DEFAULT NULL,
+--     updated_at TIMESTAMP NULL DEFAULT NULL,
+
+--     CONSTRAINT fk_advisories_cooperativa_advisory
+--         FOREIGN KEY (advisory_id)
+--         REFERENCES advisories(id)
+--         ON DELETE CASCADE
+-- );
+
+
+
+-- CREATE TABLE etnia (
+--     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL,
+--     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- );
+
+-- INSERT INTO etnia (name, created_at, updated_at) VALUES
+-- ('MESTIZA', NOW(), NOW()),
+-- ('QUECHUA', NOW(), NOW()),
+-- ('AIMARA', NOW(), NOW()),
+-- ('AFROPERUANA', NOW(), NOW()),
+-- ('PUEBLOS AMAZÓNICOS INDÍGENAS', NOW(), NOW());
+
+-- ALTER TABLE people
+-- ADD COLUMN etnia_id BIGINT UNSIGNED NULL AFTER user_id,
+-- ADD COLUMN persona_cuidadora VARCHAR(255) NULL DEFAULT NULL AFTER etnia_id,
+-- ADD CONSTRAINT fk_people_etnia
+--     FOREIGN KEY (etnia_id)
+--     REFERENCES etnia(id);
