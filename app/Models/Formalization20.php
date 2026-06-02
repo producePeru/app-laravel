@@ -236,10 +236,11 @@ class Formalization20 extends Model
             'modality:id,name',
             'mype:id,name,ruc',
             'notary:id,name',
-            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email,etnia_id,persona_cuidadora',
+            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email,etnia_id,persona_cuidadora,lengua_id,lengua_otro',
             'people.typedocument:id,avr',
             'province:id,name',
             'people.etnia:id,name',
+            'people.lengua:id,name',
             'regime',
             'sede',
             'user'

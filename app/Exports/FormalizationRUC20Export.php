@@ -38,24 +38,24 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
     {
         return [
             'A' => 6,
-            'B' => 11,
+            'B' => 15,
             'C' => 27,
             'D' => 14,
             'E' => 14,
             'F' => 14,
-            'G' => 11,
+            'G' => 13,
 
-            'H' => 10,
-            'I' => 14,
+            'H' => 8,
+            'I' => 15,
             'J' => 11,
-            'K' => 15,
-            'L' => 24,
-            'M' => 24,
-            'N' => 24,
+            'K' => 11,
+            'L' => 16,
+            'M' => 22,
+            'N' => 22,
             'O' => 8,
-            'P' => 13,
+            'P' => 8,
             'Q' => 11,
-            'R' => 13,
+            'R' => 14,
 
             'S' => 12,
             'T' => 22,
@@ -113,15 +113,15 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             ->getStartColor()
             ->setARGB('C00000'); // Rojo
 
-        $sheet->getStyle('AN1')
+        $sheet->getStyle('AN1:AO1')
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->setARGB('000000'); // Negro
 
         // Fuente
-        $sheet->getStyle('A1:AN1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AN1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:AO1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AO1')->getFont()->getColor()->setARGB('FFFFFF');
 
         // Alineación
         $sheet->getStyle('A1:AL1')->getAlignment()->setWrapText(true);
@@ -160,6 +160,7 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             '¿Tiene hijos?  (SI / NO)',
             'Celular',
             '¿Con qué cultura o etnia te identificas?',
+            'Lengua Originaria',
             'Correo electrónico',
 
             'Tipo formalización',

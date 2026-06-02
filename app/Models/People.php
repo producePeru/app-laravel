@@ -30,11 +30,13 @@ class People extends Model
         'gender_id',
         'sick',
         'hasSoon',
-
         'user_id',              // id quien lo registró
+        'updated_by',
+
         'etnia_id',
         'persona_cuidadora',
-        'updated_by'
+        'lengua_id',
+        'lengua_otro'
     ];
 
     protected $dates = ['deleted_at'];
@@ -142,6 +144,11 @@ class People extends Model
     public function etnia()
     {
         return $this->belongsTo(Etnia::class);
+    }
+
+    public function lengua()
+    {
+        return $this->belongsTo(Lengua::class);
     }
 
     public function scopeWithProfileAndRelations($query, $filters)       //super
