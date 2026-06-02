@@ -16,6 +16,7 @@ class CdePnte extends Model
         'region_id',
         'provincia_id',
         'distrito_id',
+        'is_mac',
         'direccion',
     ];
 

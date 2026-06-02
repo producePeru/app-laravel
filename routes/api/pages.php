@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Audit\AuditController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Page\PageController;
+use Illuminate\Support\Facades\Route;
 
 Route::controller(PageController::class)->group(function () {
 
@@ -19,10 +19,9 @@ Route::controller(PageController::class)->group(function () {
     Route::put('user-assign-view', 'userAssignView');
 });
 
-
 Route::controller(AuditController::class)->group(function () {
 
     Route::get('audit-logs', 'index');
 });
 
-// page
+// page - privado
