@@ -80,7 +80,8 @@ class DownloadFormalizationsController extends Controller
             $query->chunk(1000, function ($rows) use (&$advisories, &$globalIndex, $user) {
                 foreach ($rows as $advisory) {
                     $advisories[] = [
-                        'index' => ($user->rol == 1) ? $advisory->id : $globalIndex++,
+                        // 'index' => ($user->rol == 1) ? $advisory->id : $globalIndex++,
+                        'index'                 => $globalIndex++,
                         'date'                  => $advisory->created_at->format('d/m/Y'),
                         'asesor'                => strtoupper($advisory->user->name . ' ' . $advisory->user->lastname . ' ' . $advisory->user->middlename),
 
@@ -114,7 +115,10 @@ class DownloadFormalizationsController extends Controller
                         },
 
                         'emp_phone'             => $advisory->people->phone,
+
                         'emp_etnia'             => $advisory->people->etnia->name ?? null,
+                        'lengua_originaria'     => $advisory->people->lengua->id == 7 ? $advisory->people->lengua_otro : $advisory->people->lengua->name ?? null,
+
                         'emp_email'             => isset($advisory->people->email) ? strtolower($advisory->people->email) : '-',
                         'supervisor'            => 'MILIAN MELENDEZ ALEJANDRIA',
                         'city'                  => $advisory->city->name ?? null,
@@ -233,18 +237,16 @@ class DownloadFormalizationsController extends Controller
 
                         'emp_phone'             => $f10->people->phone,
                         'emp_etnia'             => $f10->people->etnia->name ?? null,
+                        'lengua_originaria'     => $f10->people->lengua->id == 7 ? $f10->people->lengua_otro : $f10->people->lengua->name ?? null,
+
                         'emp_email'             => $f10->people->email ? strtolower($f10->people->email) : '-',
-
                         'type_formalization'    => 'PPNN 10',
-
                         'supervisor'            => 'MILIAN MELENDEZ ALEJANDRIA',
-
                         'city'                  => $f10->city->name ?? null,
                         'province'              => $f10->province->name ?? null,
                         'district'              => $f10->district->name ?? null,
                         'address'               => $f10->address ?? null,
                         'ruc'                   => $f10->ruc ?? null,
-
                         'econimic_sector'       => $f10->economicsector->name ?? null,
                         'activity_comercial'    => $f10->comercialactivity->name ?? null,
                         'detail_tramit'         => $f10->detailprocedure->name ?? null,
@@ -351,6 +353,8 @@ class DownloadFormalizationsController extends Controller
 
                         'emp_phone'             => $f20->people->phone,
                         'emp_etnia'             => $f20->people->etnia->name ?? null,
+                        'lengua_originaria'     => $f20->people->lengua->id == 7 ? $f20->people->lengua_otro : $f20->people->lengua->name ?? null,
+
                         'emp_email'             => $f20->people->email ? strtolower($f20->people->email) : '-',
 
                         'type_formalization'    => 'PPJJ 20',

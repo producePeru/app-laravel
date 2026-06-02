@@ -39,17 +39,17 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'F' => 14,
             'G' => 13,
 
-            'H' => 13,
+            'H' => 8,
             'I' => 15,
             'J' => 11,
-            'K' => 27,
-            'L' => 28,
+            'K' => 11,
+            'L' => 16,
             'M' => 22,
             'N' => 22,
-            'O' => 21,
-            'P' => 12,
+            'O' => 8,
+            'P' => 8,
             'Q' => 11,
-            'R' => 20,
+            'R' => 14,
 
             'S' => 14,
             'T' => 14,
@@ -61,7 +61,8 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Z' => 20,
             'AA' => 10,
             'AB' => 15,
-            'AC' => 12
+            'AC' => 12,
+            'AG' => 14,
         ];
     }
 
@@ -80,44 +81,44 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             ->setARGB('002060');
 
         // Naranja
-        $sheet->getStyle('H1:U1')
+        $sheet->getStyle('H1:V1')
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
-            ->setARGB('FFC000');
+            ->setARGB('833c0c');
 
         // Verde
-        $sheet->getStyle('V1:AE1')
+        $sheet->getStyle('W1:AE1')
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->setARGB('00B050');
 
         // Negro
-        $sheet->getStyle('AF1')
+        $sheet->getStyle('AF1:AG1')
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->setARGB('000000');
 
         // Texto blanco para todos los encabezados
-        $sheet->getStyle('A1:AF1')
+        $sheet->getStyle('A1:AG1')
             ->getFont()
             ->getColor()
             ->setARGB('FFFFFF');
 
         // Negrita
-        $sheet->getStyle('A1:AF1')
+        $sheet->getStyle('A1:AG1')
             ->getFont()
             ->setBold(true);
 
         // Ajuste de texto
-        $sheet->getStyle('A1:AF1')
+        $sheet->getStyle('A1:AG1')
             ->getAlignment()
             ->setWrapText(true);
 
         // Centrado vertical
-        $sheet->getStyle('A1:AF1')
+        $sheet->getStyle('A1:AG1')
             ->getAlignment()
             ->setVertical(
                 \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
@@ -149,6 +150,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             '¿Tiene hijos?  (SI / NO)',
             'Telefono',
             '¿Con qué cultura o etnia te identificas?',
+            'Lengua Originaria',
             'Correo electrónico o "NO TIENE"',
 
             'SUPERVISOR',
@@ -192,6 +194,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             '¿Tiene hijos?  (SI / NO)',
             'Telefono',
             '¿Con qué cultura o etnia te identificas?',
+            'Lengua Originaria',
             'Correo electrónico o "NO TIENE"',
 
             'SUPERVISOR',
