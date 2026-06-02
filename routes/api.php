@@ -117,7 +117,9 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
     // SED
     // Route::post('register-participant-ugse',        [UgsePostulanteController::class, 'store']);                    // VUETIFY FORM UGSE EventsUgseController sed
     // Route::post('participant-info',                 [UgsePostulanteController::class, 'isRegistered']);             // VUETIFY FORM UGSE EventsUgseController sed
-    // Route::put('register-attendance',               [UgsePostulanteController::class, 'registerAttendance']);       // registra la fecha y hora de asistencia
+    // Route::put('register-attendance',               [UgsePostulanteController::class, 'registerAttendance']); 
+
+    Route::get('cde-by-region/{id}', [CdeController::class, 'byRegion']); // registra la fecha y hora de asistencia
 
 });
 
@@ -354,6 +356,7 @@ Route::group(['prefix' => 'formalization', 'namespace' => 'App\Http\Controllers'
 
 Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('advisories', [HistorialController::class, 'historialAdvisories']);
+    Route::get('advisories', [HistorialController::class, 'historialAdvisories']);
     Route::get('formalizations-10', [HistorialController::class, 'historialFormalizations10']);
     Route::get('formalizations-20', [HistorialController::class, 'historialFormalizations20']);
 
@@ -361,6 +364,8 @@ Route::group(['prefix' => 'historial', 'namespace' => 'App\Http\Controllers', 'm
     Route::get('advisories/filters', [HistorialController::class, 'filterHistorialAdvisoriesByDates']);                  // 1
     Route::get('formalizations-10/filters', [HistorialController::class, 'filterHistorialFormalizations10ByDates']);
     Route::get('formalizations-20/filters', [HistorialController::class, 'filterHistorialFormalizations20ByDates']);
+
+    Route::get('advisories-cooperativas', [HistorialController::class, 'advisoriesCooperativas']);
 
     // registros-historial
     Route::get('registers/{idPeople}', [HistorialController::class, 'getByPeopleIdRegisters']);
@@ -401,6 +406,11 @@ Route::group(['prefix' => 'config', 'namespace' => 'App\Http\Controllers', 'midd
     Route::put('addressCde/{id}', [CdeController::class, 'addressCde']);
     Route::put('cde/{id}', [CdeController::class, 'updateCde']);
     Route::post('cde', [CdeController::class, 'storeCde']);
+
+    //NUEVO PEDIDO DE BRIGITTE
+    Route::post('register-cde', [CdeController::class, 'registerCde']);
+    Route::get('list-cdes', [CdeController::class, 'listCdes']);
+    Route::put('update-cde/{id}', [CdeController::class, 'update']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {

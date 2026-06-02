@@ -82,18 +82,58 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:G1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');        // azul
-        $sheet->getStyle('H1:R1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('833c0c');
-        $sheet->getStyle('S1:Z1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('375623');
-        $sheet->getStyle('AA1:AH1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('305496');
-        $sheet->getStyle('AI1:AK1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('c00000');
-        $sheet->getStyle('AL1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
+        // Colores de encabezado
+        $sheet->getStyle('A1:G1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('002060'); // Azul marino
 
-        $sheet->getStyle('A1:AL1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AL1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('H1:U1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('833C0C'); // Marrón
 
+        $sheet->getStyle('V1:Z1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('375623'); // Verde militar
+
+        $sheet->getStyle('AA1:AJ1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('305496'); // Azul
+
+        $sheet->getStyle('AK1:AM1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('C00000'); // Rojo
+
+        $sheet->getStyle('AN1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('000000'); // Negro
+
+        // Fuente
+        $sheet->getStyle('A1:AN1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AN1')->getFont()->getColor()->setARGB('FFFFFF');
+
+        // Alineación
         $sheet->getStyle('A1:AL1')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A1:AL1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A1:AL1')->getAlignment()->setVertical(
+            \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+        );
+        $sheet->getStyle('A1:AL1')->getAlignment()->setHorizontal(
+            \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER
+        );
+
+        // Altura del encabezado
+        $sheet->getRowDimension(1)->setRowHeight(30);
     }
 
     public function headings(): array
@@ -116,8 +156,10 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'Nombres del Solicitante (socio o Gte General)',
             'Género',
             'Tiene alguna Discapacidad ? (SI / NO)',
+            'Nombre y apellido de la Persona cuidadora',
             '¿Tiene hijos?  (SI / NO)',
             'Celular',
+            '¿Con qué cultura o etnia te identificas?',
             'Correo electrónico',
 
             'Tipo formalización',

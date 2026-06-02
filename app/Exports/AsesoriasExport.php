@@ -39,7 +39,7 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'F' => 14,
             'G' => 13,
 
-            'H' => 21,
+            'H' => 13,
             'I' => 15,
             'J' => 11,
             'K' => 27,
@@ -72,20 +72,56 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:G1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('002060');
-        $sheet->getStyle('H1:S1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('ffc000');
-        // $sheet->getStyle('S1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('bdd6ee');
-        $sheet->getStyle('T1:AB1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('00b050');
-        $sheet->getStyle('AC1:AD1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
+        // Azul marino
+        $sheet->getStyle('A1:G1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('002060');
 
+        // Naranja
+        $sheet->getStyle('H1:U1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('FFC000');
 
-        $sheet->getStyle('I1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('ffc000');
-        $sheet->getStyle('A1:G1')->getFont()->getColor()->setARGB('FFFFFF');
-        $sheet->getStyle('T1:AD1')->getFont()->getColor()->setARGB('FFFFFF');
-        $sheet->getStyle('A1:AD1')->getFont()->setBold(true);
+        // Verde
+        $sheet->getStyle('V1:AE1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('00B050');
 
-        $sheet->getStyle('A1:AD1')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A1:AD1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        // Negro
+        $sheet->getStyle('AF1')
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('000000');
+
+        // Texto blanco para todos los encabezados
+        $sheet->getStyle('A1:AF1')
+            ->getFont()
+            ->getColor()
+            ->setARGB('FFFFFF');
+
+        // Negrita
+        $sheet->getStyle('A1:AF1')
+            ->getFont()
+            ->setBold(true);
+
+        // Ajuste de texto
+        $sheet->getStyle('A1:AF1')
+            ->getAlignment()
+            ->setWrapText(true);
+
+        // Centrado vertical
+        $sheet->getStyle('A1:AF1')
+            ->getAlignment()
+            ->setVertical(
+                \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+            );
     }
 
     public function query()
@@ -109,8 +145,10 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Nombres del Solicitante (socio o Gte General)',
             'Genero',
             'Tiene alguna Discapacidad ? (SI / NO)',
+            'Nombre y apellido de la Persona cuidadora',
             '¿Tiene hijos?  (SI / NO)',
             'Telefono',
+            '¿Con qué cultura o etnia te identificas?',
             'Correo electrónico o "NO TIENE"',
 
             'SUPERVISOR',
@@ -150,8 +188,10 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Nombres del Solicitante (socio o Gte General)',
             'Genero',
             'Tiene alguna Discapacidad ? (SI / NO)',
+            'Nombre y apellido de la Persona cuidadora',
             '¿Tiene hijos?  (SI / NO)',
             'Telefono',
+            '¿Con qué cultura o etnia te identificas?',
             'Correo electrónico o "NO TIENE"',
 
             'SUPERVISOR',

@@ -609,7 +609,7 @@ class FormularioPublicoController extends Controller
         try {
 
             $questions = MPDiagnostico::with(['options'])
-                ->where('status', 1)
+                // ->where('status', 1)
                 ->orderBy('position', 'ASC')
                 ->get()
                 ->map(function ($q) {
@@ -631,7 +631,7 @@ class FormularioPublicoController extends Controller
                         'required' => (bool) $q->required,
 
                         'model' => $q->id,
-                        'status' => true,
+                        'status' => $q->status == 1 ? true : false,
 
                         // 👇 regla fija
                         // 'md' => $q->type === 'l'

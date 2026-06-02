@@ -19,6 +19,8 @@ Route::controller(DownloadFormalizationsController::class)->group(function () {
 
     Route::post('asesories', 'exportAsesories');
 
+    Route::post('asesories-cooperativas', 'exportAsesoriesCooperativas');
+
     Route::post('formalizations-ruc10', 'exportFormalizationsRuc10');
 
     Route::post('formalizations-ruc20', 'exportFormalizationsRuc20');
