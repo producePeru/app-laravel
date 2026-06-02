@@ -215,4 +215,23 @@ class CdeController extends Controller
             'data' => $cdes
         ]);
     }
+
+    public function deleteCde($id)
+    {
+        try {
+            $cde = CdePnte::findOrFail($id);
+            $cde->delete();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'CDE eliminada correctamente.'
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al eliminar la CDE.',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
 }
