@@ -38,7 +38,6 @@ class Empresario extends Model
         'cargo_empresa_id',
         'fecha_nacimiento',
         'edad',
-        'como_entero',
 
         // otros
         'actividad_comercial_nombre'
@@ -58,7 +57,7 @@ class Empresario extends Model
 
     public function actividadComercial(): BelongsTo
     {
-        return $this->belongsTo(ComercialActivities::class, 'actividad_comercial_id');
+        return $this->belongsTo(Activity::class, 'actividad_comercial_id');
     }
 
     public function pais(): BelongsTo

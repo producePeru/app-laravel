@@ -42,8 +42,8 @@ class ActividadPnteController extends Controller
 
         // ✅ Mes: extraer el mes de la fecha más antigua del array
         $fechaMinima = collect($validated['fechas'])
-            ->map(fn ($f) => Carbon::parse($f))
-            ->sortBy(fn ($d) => $d->timestamp)
+            ->map(fn($f) => Carbon::parse($f))
+            ->sortBy(fn($d) => $d->timestamp)
             ->first();
 
         $validated['mes'] = (int) $fechaMinima->format('n'); // 1-12 sin cero
@@ -100,7 +100,7 @@ class ActividadPnteController extends Controller
 
         while (ActividadPnte::where('slug', $slug)->exists()) {
             $count++;
-            $slug = $original.'-'.$count;
+            $slug = $original . '-' . $count;
         }
 
         return $slug;
@@ -110,16 +110,27 @@ class ActividadPnteController extends Controller
     {
         $actividad = ActividadPnte::findOrFail($id);
 
-        // ✅ VALIDAR: solo se puede editar hasta las 23:59 del día de creación
-        $limiteEdicion = Carbon::parse($actividad->created_at)->endOfDay();
+        $user = Auth::user();
 
-        if (Carbon::now()->gt($limiteEdicion)) { // 👈 era $limitEdicion (faltaba la 'e')
-            return response()->json([
-                'status' => 403,
-                'message' => 'No es posible editar esta actividad. El plazo de edición venció el '.
-                    Carbon::parse($actividad->created_at)->format('d/m/Y').' a las 23:59. '.
-                    'Por favor, contacte con su supervisor.',
-            ]);
+        // ✅ SOLO EL ROL 1 PUEDE EDITAR EN CUALQUIER MOMENTO
+        if ($user->rol != 1) {
+
+            // límite hasta las 23:59 del día de creación
+            $limiteEdicion = Carbon::parse(
+                $actividad->created_at
+            )->endOfDay();
+
+            if (Carbon::now()->gt($limiteEdicion)) {
+
+                return response()->json([
+                    'status' => 403,
+                    'message' =>
+                    'No es posible editar esta actividad. El plazo de edición venció el ' .
+                        Carbon::parse($actividad->created_at)
+                        ->format('d/m/Y') .
+                        ' a las 23:59. Por favor, contacte con su supervisor.',
+                ], 403);
+            }
         }
 
         $validated = $request->validate([
@@ -146,18 +157,24 @@ class ActividadPnteController extends Controller
             'horario' => 'nullable|string',
         ]);
 
-        // ✅ Mes: extraer el mes de la fecha más antigua del array
+        // ✅ obtener mes de la fecha mínima
         $fechaMinima = collect($validated['fechas'])
-            ->map(fn ($f) => Carbon::parse($f))
-            ->sortBy(fn ($d) => $d->timestamp)
+            ->map(fn($f) => Carbon::parse($f))
+            ->sortBy(fn($d) => $d->timestamp)
             ->first();
 
         $validated['mes'] = (int) $fechaMinima->format('n');
         $validated['cantidad_dias'] = count($validated['fechas']);
 
         try {
-            DB::transaction(function () use ($actividad, $validated) {
+
+            DB::transaction(function () use (
+                $actividad,
+                $validated
+            ) {
+
                 $validated['actualizado_por_id'] = Auth::id();
+
                 $actividad->update($validated);
             });
 
@@ -175,6 +192,7 @@ class ActividadPnteController extends Controller
                 ]),
             ]);
         } catch (Throwable $e) {
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar la actividad.',
@@ -409,8 +427,8 @@ class ActividadPnteController extends Controller
         ]);
 
         $fechaMinima = collect($validated['fechas'])
-            ->map(fn ($f) => Carbon::parse($f))
-            ->sortBy(fn ($d) => $d->timestamp)
+            ->map(fn($f) => Carbon::parse($f))
+            ->sortBy(fn($d) => $d->timestamp)
             ->first();
 
         try {
@@ -514,6 +532,7 @@ class ActividadPnteController extends Controller
                 'empresario.region',
                 'empresario.provincia',
                 'empresario.distrito',
+                'empresario.actividadComercial',
                 'empresario.sectorEconomico',
                 'empresario.rubro',
                 'empresario.tipoDocumento',
@@ -584,9 +603,13 @@ class ActividadPnteController extends Controller
 
                     'actividad_comercial_id' => $e?->actividad_comercial_id,
 
-                    'actividad_comercial_nombre' => ! empty($e?->actividad_comercial_nombre)
-                        ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8')
-                        : null,
+                    'actividad_comercial_nombre' => !empty($e?->actividadComercial?->name)
+                        ? mb_strtoupper($e->actividadComercial->name, 'UTF-8')
+                        : (
+                            !empty($e?->actividad_comercial_nombre)
+                            ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8')
+                            : null
+                        ),
 
                     'region_id' => $e?->region_id,
                     'region_nombre' => $e?->region?->name,
@@ -623,14 +646,14 @@ class ActividadPnteController extends Controller
                         : null,
 
                     'nombre_completo' => ! empty(trim(
-                        ($e?->apellido_paterno ?? '').' '.
-                            ($e?->apellido_materno ?? '').' '.
+                        ($e?->apellido_paterno ?? '') . ' ' .
+                            ($e?->apellido_materno ?? '') . ' ' .
                             ($e?->nombres ?? '')
                     ))
                         ? mb_strtoupper(
                             trim(
-                                ($e?->apellido_paterno ?? '').' '.
-                                    ($e?->apellido_materno ?? '').' '.
+                                ($e?->apellido_paterno ?? '') . ' ' .
+                                    ($e?->apellido_materno ?? '') . ' ' .
                                     ($e?->nombres ?? '')
                             ),
                             'UTF-8'
@@ -997,7 +1020,6 @@ class ActividadPnteController extends Controller
                     : 'Evento desactivado correctamente',
                 'data' => $actividad,
             ]);
-
         } catch (\Throwable $e) {
             return response()->json([
                 'status' => 500,
