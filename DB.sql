@@ -295,7 +295,7 @@ AFTER sed_id;
 -- RESETEA EL CONTADOR DE LA TABLA A 1       *******************************************
 SET @nuevo_id = 0;
 
-UPDATE actividades_pnte
+UPDATE TABLE_NAME
 SET id = (@nuevo_id := @nuevo_id + 1)
 ORDER BY id;
 
