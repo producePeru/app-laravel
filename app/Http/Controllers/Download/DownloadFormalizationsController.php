@@ -117,7 +117,7 @@ class DownloadFormalizationsController extends Controller
                         'emp_phone'             => $advisory->people->phone,
 
                         'emp_etnia'             => $advisory->people->etnia->name ?? null,
-                        'lengua_originaria'     => $advisory->people->lengua->id == 7 ? $advisory->people->lengua_otro : $advisory->people->lengua->name ?? null,
+                        'lengua_originaria'     => $advisory->people->lengua?->id == 7 ? $advisory->people->lengua_otro : $advisory->people->lengua->name ?? null,
 
                         'emp_email'             => isset($advisory->people->email) ? strtolower($advisory->people->email) : '-',
                         'supervisor'            => 'MILIAN MELENDEZ ALEJANDRIA',
@@ -237,7 +237,7 @@ class DownloadFormalizationsController extends Controller
 
                         'emp_phone'             => $f10->people->phone,
                         'emp_etnia'             => $f10->people->etnia->name ?? null,
-                        'lengua_originaria'     => $f10->people->lengua->id == 7 ? $f10->people->lengua_otro : $f10->people->lengua->name ?? null,
+                        'lengua_originaria'     => $f10->people->lengua?->id == 7 ? $f10->people->lengua_otro : $f10->people->lengua->name ?? null,
 
                         'emp_email'             => $f10->people->email ? strtolower($f10->people->email) : '-',
                         'type_formalization'    => 'PPNN 10',
@@ -353,7 +353,7 @@ class DownloadFormalizationsController extends Controller
 
                         'emp_phone'             => $f20->people->phone,
                         'emp_etnia'             => $f20->people->etnia->name ?? null,
-                        'lengua_originaria'     => $f20->people->lengua->id == 7 ? $f20->people->lengua_otro : $f20->people->lengua->name ?? null,
+                        'lengua_originaria'     => $f20->people->lengua?->id == 7 ? $f20->people->lengua_otro : $f20->people->lengua->name ?? null,
 
                         'emp_email'             => $f20->people->email ? strtolower($f20->people->email) : '-',
 
