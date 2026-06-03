@@ -543,23 +543,23 @@ WHERE NOT EXISTS (
 
 
 
-ALTER TABLE sedquestions
-ADD COLUMN propagandamedia_id BIGINT UNSIGNED NULL
-AFTER slug,
-ADD CONSTRAINT fk_sedquestions_propagandamedia
-FOREIGN KEY (propagandamedia_id)
-REFERENCES propagandamedia(id)
-ON DELETE SET NULL;
+//- ALTER TABLE sedquestions
+//- ADD COLUMN propagandamedia_id BIGINT UNSIGNED NULL
+//- AFTER slug,
+//- ADD CONSTRAINT fk_sedquestions_propagandamedia
+//- FOREIGN KEY (propagandamedia_id)
+//- REFERENCES propagandamedia(id)
+//- ON DELETE SET NULL;
 
 
 
-ALTER TABLE sedquestions
-ADD COLUMN tipo_asistente TINYINT UNSIGNED NULL
-AFTER propagandamedia_id;
+//- ALTER TABLE sedquestions
+//- ADD COLUMN tipo_asistente TINYINT UNSIGNED NULL
+//- AFTER propagandamedia_id;
 
 
-* EN LA TABLA sedquestions event_id NO OBLIGATORIO
-* TABLA sed_questions_answers sed_id  quital Obligatorio
+//- * EN LA TABLA sedquestions event_id NO OBLIGATORIO
+//- * TABLA sed_questions_answers sed_id  quital Obligatorio
 
 
 UPDATE sed_questions_answers sqa
@@ -567,7 +567,7 @@ INNER JOIN fairs f
     ON f.id = sqa.sed_id
 SET sqa.slug_sed = f.slug;
 
-ALTER TABLE actividades_pnte
-ADD COLUMN description TEXT NULL AFTER horario,
-ADD COLUMN nameUser VARCHAR(255) NULL AFTER description,
-ADD COLUMN link VARCHAR(255) NULL AFTER nameUser;
+//- ALTER TABLE actividades_pnte
+//- ADD COLUMN description TEXT NULL AFTER horario,
+//- ADD COLUMN nameUser VARCHAR(255) NULL AFTER description,
+//- ADD COLUMN link VARCHAR(255) NULL AFTER nameUser;
