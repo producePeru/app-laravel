@@ -246,12 +246,12 @@ class AttendanceController extends Controller
             })
             ->exists();
 
-        if ($exists) {
-            return response()->json([
-                'status' => 409,
-                'message' => "Ya existe una actividad registrada con los mismos datos:\n\n• Tipo de actividad\n• Nombre de la actividad\n• Fechas\n• Ubicación\n\nPor favor, verifica la información o comunícate con tu supervisor.",
-            ]);
-        }
+        // if ($exists) {
+        //     return response()->json([
+        //         'status' => 409,
+        //         'message' => "Ya existe una actividad registrada con los mismos datos:\n\n• Tipo de actividad\n• Nombre de la actividad\n• Fechas\n• Ubicación\n\nPor favor, verifica la información o comunícate con tu supervisor.",
+        //     ]);
+        // }
 
         DB::beginTransaction();
 

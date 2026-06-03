@@ -504,6 +504,8 @@ class PersonController extends Controller
                     'user_id',
                     'etnia_id',
                     'persona_cuidadora',
+                    'lengua_id',
+                    'lengua_otro'
                 )->first();
 
             if ($person) {
