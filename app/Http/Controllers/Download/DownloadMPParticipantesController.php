@@ -118,6 +118,9 @@ class DownloadMPParticipantesController extends Controller
 
                     $item->attendance ? '✔' : '✖',
                     $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y H:i:s') : '',
+
+                    $p->ruc_cooperativa ?? null,
+                    $p->social_reason_cooperativa ?? null,
                 ];
             });
 
