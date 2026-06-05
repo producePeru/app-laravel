@@ -29,13 +29,18 @@ class EmpresarioActividad extends Model
             'id'             // ✅ PK de empresarios
         );
     }
-
-    // public function empresario()
-    // {
-    //     return $this->belongsTo(
-    //         Empresario::class,
-    //         'numero_dni', // columna local
-    //         'numero_dni' // columna de empresarios
-    //     );
-    // }
 }
+
+
+
+
+
+
+// public function empresario()
+// {
+//     return $this->belongsTo(
+//         Empresario::class,
+//         'numero_dni', // columna local
+//         'numero_dni' // columna de empresarios
+//     );
+// }

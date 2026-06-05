@@ -34,4 +34,9 @@ class SedQuestion extends Model
         return $this->belongsTo(UgsePostulante::class, 'documentnumber', 'documentnumber')
             ->whereColumn('event_id', 'event_id');
     }
+
+    public function propagandaMedia()
+    {
+        return $this->belongsTo(PropagandaMedia::class, 'propagandamedia_id');
+    }
 }
