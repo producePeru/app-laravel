@@ -13,6 +13,9 @@ use App\Models\District;
 use App\Models\EmpresarioActividad;
 use App\Models\People;
 use App\Models\Province;
+use App\Models\Question;
+use App\Models\SedQuestion;
+use App\Models\sedQuestionAnswer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -1239,5 +1242,469 @@ class DownloadAttendanceController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+
+
+
+
+    // SED 2026 ********************************************************
+
+    public function exportInscritosPorSlugSed($slug)
+    {
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
+
+        // ─────────────────────────────────────────────
+        // EVENTO / ACTIVIDAD
+        // ─────────────────────────────────────────────
+        $actividad = ActividadPnte::with([
+            'tipoActividad:id,name',
+            'nombreActividad:id,name',
+            'regionRel:id,name',
+            'provinciaRel:id,name',
+            'distritoRel:id,name',
+            'representante:id,name,lastname,middlename',
+        ])
+            ->where('slug', $slug)
+            ->first();
+
+        if (!$actividad) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Actividad no encontrada',
+            ], 404);
+        }
+
+        // ─────────────────────────────────────────────
+        // MAPEO ESTÁTICO DE PREGUNTAS FIJAS (question_1 a question_5)
+        // ─────────────────────────────────────────────
+        $fixedQuestionsMap = [
+            'question_1' => [
+                'label' => '¿Cómo planificas el crecimiento de tu negocio usando tecnología?',
+                'options' => [
+                    'sin_interes'          => 'A. No tengo interés en la tecnología; mi negocio depende solo de mi presencia física y el boca a boca.',
+                    'redes_sociales'       => 'B. Uso Facebook o WhatsApp porque otros lo hacen, pero no tengo un plan ni metas de ventas digitales.',
+                    'estrategia_digital'   => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir qué comprar o vender.',
+                    'plan_transformacion'  => 'D. Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
+                ]
+            ],
+            'question_2' => [
+                'label' => '¿Cómo se involucra tu equipo o personal en el uso de herramientas digitales?',
+                'options' => [
+                    'sin_interes'       => 'A. Solo yo tomo las decisiones y no usamos herramientas digitales para coordinar el trabajo.',
+                    'redes_sociales'    => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitación en herramientas de gestión.',
+                    'capacitacion'      => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema común para registrar pedidos y tareas.',
+                    'lideres_digitales' => 'D. Contamos con líderes digitales en el equipo, todos tienen altas competencias digitales y tomamos decisiones basadas en reportes de datos en tiempo real.',
+                ]
+            ],
+            'question_3' => [
+                'label' => '¿Con qué herramientas tecnológicas y seguridad cuenta tu negocio para operar?',
+                'options' => [
+                    'celular'                  => 'A. Solo tengo un celular básico para llamadas y no confío en los pagos digitales ni en internet.',
+                    'internet_basico'          => 'B. Tengo internet básico y uso computadoras personales para tareas simples (Word/Excel básico) sin protocolos de seguridad.',
+                    'internet_alta_velocidad'  => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi información con contraseñas y respaldos frecuentes.',
+                    'nube'                     => 'D. Uso servicios en la nube (Cloud), mi infraestructura está integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
+                ]
+            ],
+            'question_4' => [
+                'label' => '¿Cómo llevas el control de tus inventarios, producción y contabilidad?',
+                'options' => [
+                    'anotado'   => 'A. Todo lo anoto en cuadernos o lo tengo en la memoria; a veces pierdo el control de lo que falta.',
+                    'excel'     => 'B. Registro mis ventas en Excel al final del día, pero mi inventario y contabilidad los llevo por separado o en físico.',
+                    'software'  => 'C. Uso un software o App específica para controlar mi stock, mis ventas y emitir comprobantes electrónicos de forma automática.',
+                    'integrado' => 'D. Mi sistema está totalmente integrado: me avisa automáticamente cuando queda poco stock y genera reportes contables y de producción sin errores.',
+                ]
+            ],
+            'question_5' => [
+                'label' => '¿Cómo te encuentran los clientes nuevos?',
+                'options' => [
+                    'local'     => 'A. Solo me encuentran si pasan por mi local; no guardo datos de contacto de quienes me compran.',
+                    'excel'     => 'B. Respondo consultas por Facebook o WhatsApp, pero no tengo un catálogo digital ni analizo si los clientes están satisfechos.',
+                    'software'  => 'C. Tengo presencia en Google Maps, uso catálogos digitales y acepto múltiples pagos (Yape, Plin, POS). Mido la satisfacción de mis clientes.',
+                    'integrado' => 'D. Tengo una tienda online o CRM donde el cliente compra directamente y utilizo sus datos para enviarles ofertas personalizadas.',
+                ]
+            ]
+        ];
+
+        // ─────────────────────────────────────────────
+        // PRE-CARGAR SedQuestions indexadas por documentnumber
+        // ─────────────────────────────────────────────
+        $sedQuestions = SedQuestion::with('propagandaMedia:id,name')
+            ->where('slug', $slug)
+            ->get()
+            ->keyBy('documentnumber');
+
+        // ─────────────────────────────────────────────
+        // PRE-CARGAR SedQuestionAnswers agrupadas por DNI
+        // ─────────────────────────────────────────────
+        $sedAnswers = sedQuestionAnswer::where('slug_sed', $slug)
+            ->orderBy('dni')
+            ->get()
+            ->groupBy('dni');
+
+        // ─────────────────────────────────────────────
+        // CARGAR Questions con opciones
+        // ─────────────────────────────────────────────
+        $questions = Question::with(['options' => function ($q) {
+            $q->orderBy('position');
+        }])
+            ->orderBy('position')
+            ->get()
+            ->keyBy('model');
+
+        // ─────────────────────────────────────────────
+        // COLUMNAS DINÁMICAS
+        // ─────────────────────────────────────────────
+        $dynamicColumns = sedQuestionAnswer::where('slug_sed', $slug)
+            ->distinct()
+            ->pluck('question')
+            ->sortBy(function ($modelIdentifier) use ($questions) {
+                $normalized = preg_replace('/^questions_/', 'question_', $modelIdentifier);
+                return $questions->get($normalized)?->position ?? 9999;
+            })
+            ->values();
+
+        // ─────────────────────────────────────────────
+        // QUERY INSCRITOS
+        // ─────────────────────────────────────────────
+        $query = EmpresarioActividad::with([
+            'empresario' => function ($q) {
+                $q->select([
+                    'id',
+                    'ruc',
+                    'razon_social',
+                    'nombre_comercial',
+                    'sector_economico_id',
+                    'rubro_id',
+                    'actividad_comercial_nombre',
+                    'region_id',
+                    'provincia_id',
+                    'distrito_id',
+                    'direccion',
+                    'pais_id',
+                    'tipo_documento_id',
+                    'numero_dni',
+                    'apellido_paterno',
+                    'apellido_materno',
+                    'nombres',
+                    'genero_id',
+                    'discapacidad',
+                    'celular',
+                    'correo_electronico',
+                    'cargo_empresa_id',
+                    'fecha_nacimiento',
+                    'edad',
+                ]);
+            },
+            'empresario.tipoDocumento:id,avr',
+            'empresario.pais:id,name',
+            'empresario.genero:id,avr',
+            'empresario.region:id,name',
+            'empresario.provincia:id,name',
+            'empresario.distrito:id,name',
+            'empresario.sectorEconomico:id,name',
+            'empresario.rubro:id,name',
+            'empresario.cargoEmpresa:id,name',
+        ])
+            ->where('slug', $slug)
+            ->orderByDesc('created_at');
+
+        // ─────────────────────────────────────────────
+        // TEMPLATE EXCEL
+        // ─────────────────────────────────────────────
+        $templatePath = storage_path('app/plantillas/sed_lista_registrados_template.xlsx');
+
+        if (!file_exists($templatePath)) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Plantilla no encontrada',
+            ], 404);
+        }
+
+        $spreadsheet = IOFactory::load($templatePath);
+        $sheet       = $spreadsheet->getActiveSheet();
+
+        // ─────────────────────────────────────────────
+        // HEADERS EN FILA 2 (Fijos y Dinámicos)
+        // ─────────────────────────────────────────────
+        // Definición de las celdas asignadas a las 5 preguntas fijas de SedQuestion
+        $sheet->setCellValue('AI2', $fixedQuestionsMap['question_1']['label']);
+        $sheet->setCellValue('AJ2', $fixedQuestionsMap['question_2']['label']);
+        $sheet->setCellValue('AK2', $fixedQuestionsMap['question_3']['label']);
+        $sheet->setCellValue('AL2', $fixedQuestionsMap['question_4']['label']);
+        $sheet->setCellValue('AM2', $fixedQuestionsMap['question_5']['label']);
+
+        // Habilitar ajuste de texto automático para las cabeceras fijas
+        foreach (['AI2', 'AJ2', 'AK2', 'AL2', 'AM2'] as $cell) {
+            $sheet->getStyle($cell)->getAlignment()->setWrapText(true);
+        }
+
+        // Configuración de las columnas dinámicas (comienzan a partir de AN)
+        $firstDynamicCol = 'AN';
+        $headerCol = $firstDynamicCol;
+        foreach ($dynamicColumns as $modelIdentifier) {
+            $normalizedModel = preg_replace('/^questions_/', 'question_', $modelIdentifier);
+            $question        = $questions->get($normalizedModel);
+            $headerLabel     = $question?->label ?? $modelIdentifier;
+            $sheet->setCellValue("{$headerCol}2", $headerLabel);
+            $headerCol++;
+        }
+
+        // ─────────────────────────────────────────────
+        // CONTROL DE FILAS Y CHUNK PROCESAMIENTO
+        // ─────────────────────────────────────────────
+        $row   = 3;
+        $index = 1;
+
+        $query->chunk(1000, function ($items) use (
+            &$row,
+            &$index,
+            $sheet,
+            $actividad,
+            $sedQuestions,
+            $sedAnswers,
+            $dynamicColumns,
+            $questions,
+            $firstDynamicCol,
+            $fixedQuestionsMap
+        ) {
+            foreach ($items as $item) {
+                $e  = $item->empresario;
+                $sq = $sedQuestions->get($e->numero_dni);
+                $col = 'D';
+
+                // NRO
+                $sheet->setCellValue("{$col}{$row}", $index++);
+                $col++;
+
+                // FECHAS
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    collect($actividad->fechas ?? [])
+                        ->map(fn($f) => Carbon::parse($f)->format('d/m/Y'))
+                        ->implode(' - ')
+                );
+                $col++;
+
+                // TIPO ACTIVIDAD
+                $sheet->setCellValue("{$col}{$row}", $actividad->tipoActividad?->name);
+                $col++;
+
+                // NOMBRE ACTIVIDAD
+                $sheet->setCellValue("{$col}{$row}", $actividad->nombreActividad?->name);
+                $col++;
+
+                // TEMA
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($actividad->tema ?? '', 'UTF-8'));
+                $col++;
+
+                // REGION (actividad)
+                $sheet->setCellValue("{$col}{$row}", $actividad->regionRel?->name);
+                $col++;
+
+                // PROVINCIA (actividad)
+                $sheet->setCellValue("{$col}{$row}", $actividad->provinciaRel?->name);
+                $col++;
+
+                // DISTRITO (actividad)
+                $sheet->setCellValue("{$col}{$row}", $actividad->distritoRel?->name);
+                $col++;
+
+                // LUGAR
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($actividad->lugar ?? '', 'UTF-8'));
+                $col++;
+
+                // REPRESENTANTE
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        trim(
+                            ($actividad->representante?->name      ?? '') . ' ' .
+                                ($actividad->representante?->lastname  ?? '') . ' ' .
+                                ($actividad->representante?->middlename ?? '')
+                        ),
+                        'UTF-8'
+                    )
+                );
+                $col++;
+
+                // TIPO DOCUMENTO
+                $sheet->setCellValue("{$col}{$row}", $e->tipoDocumento?->avr);
+                $col++;
+
+                // NRO DOCUMENTO
+                $sheet->setCellValue("{$col}{$row}", $e->numero_dni);
+                $col++;
+
+                // PAIS
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->pais?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // APELLIDOS
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(trim(($e->apellido_paterno ?? '') . ' ' . ($e->apellido_materno ?? '')), 'UTF-8')
+                );
+                $col++;
+
+                // NOMBRES
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombres ?? '', 'UTF-8'));
+                $col++;
+
+                // GENERO
+                $sheet->setCellValue("{$col}{$row}", $e->genero?->avr);
+                $col++;
+
+                // DISCAPACIDAD
+                $sheet->setCellValue("{$col}{$row}", $e->discapacidad ? 'SI' : 'NO');
+                $col++;
+
+                // RUC
+                $sheet->setCellValue("{$col}{$row}", $e->ruc);
+                $col++;
+
+                // REGION (empresario)
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->region?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // PROVINCIA (empresario)
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->provincia?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // DISTRITO (empresario)
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->distrito?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // SECTOR ECONOMICO
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // RUBRO
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->rubro?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // CELULAR
+                $sheet->setCellValue("{$col}{$row}", $e->celular);
+                $col++;
+
+                // CORREO
+                $sheet->setCellValue("{$col}{$row}", $e->correo_electronico);
+                $col++;
+
+                // FECHA NACIMIENTO
+                $sheet->setCellValue("{$col}{$row}", $e->fecha_nacimiento ? Carbon::parse($e->fecha_nacimiento)->format('d/m/Y') : '');
+                $col++;
+
+                // EDAD
+                $sheet->setCellValue("{$col}{$row}", $e->edad ?? '');
+                $col++;
+
+                // CARGO EN LA EMPRESA
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->cargoEmpresa?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // CÓMO SE ENTERÓ DEL EVENTO
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($sq?->propagandaMedia?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // HORA REGISTRO
+                $sheet->setCellValue("{$col}{$row}", $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y H:i:s') : '');
+                $col++;
+
+                // FECHA ASISTENCIA
+                $sheet->setCellValue("{$col}{$row}", $item->fecha_asistencia ?: 'x');
+                $col++;
+
+                // ── CONTENIDO PREGUNTAS FIJAS (Traducción de Keys a Labels) ──
+                $q1Val = $sq?->question_1;
+                $sheet->setCellValue("{$col}{$row}", $fixedQuestionsMap['question_1']['options'][$q1Val] ?? $q1Val ?? '');
+                $col++;
+
+                $q2Val = $sq?->question_2;
+                $sheet->setCellValue("{$col}{$row}", $fixedQuestionsMap['question_2']['options'][$q2Val] ?? $q2Val ?? '');
+                $col++;
+
+                $q3Val = $sq?->question_3;
+                $sheet->setCellValue("{$col}{$row}", $fixedQuestionsMap['question_3']['options'][$q3Val] ?? $q3Val ?? '');
+                $col++;
+
+                $q4Val = $sq?->question_4;
+                $sheet->setCellValue("{$col}{$row}", $fixedQuestionsMap['question_4']['options'][$q4Val] ?? $q4Val ?? '');
+                $col++;
+
+                $q5Val = $sq?->question_5;
+                $sheet->setCellValue("{$col}{$row}", $fixedQuestionsMap['question_5']['options'][$q5Val] ?? $q5Val ?? '');
+                $col++;
+
+                // Aplicar ajuste de línea (Wrap Text) a las celdas del bloque fijo
+                foreach (['AI', 'AJ', 'AK', 'AL', 'AM'] as $c) {
+                    $sheet->getStyle("{$c}{$row}")->getAlignment()->setWrapText(true);
+                }
+
+                // ─────────────────────────────────────────────
+                // CONTENIDO PREGUNTAS DINÁMICAS
+                // ─────────────────────────────────────────────
+                $answersIndexed = $sedAnswers
+                    ->get($e->numero_dni, collect())
+                    ->keyBy('question');
+
+                $dynCol = $firstDynamicCol;
+                foreach ($dynamicColumns as $modelIdentifier) {
+                    $normalizedModel = preg_replace('/^questions_/', 'question_', $modelIdentifier);
+
+                    $question = $questions->get($normalizedModel);
+                    $answer   = $answersIndexed->get($modelIdentifier);
+                    $rawValue = $answer?->answer ?? null;
+
+                    if ($rawValue === null || $rawValue === '') {
+                        $cellValue = '';
+                    } elseif ($question && in_array($question->type, ['radio', 'checkbox-multiple', 'select'])) {
+                        $decoded        = json_decode($rawValue, true);
+                        $selectedValues = (json_last_error() === JSON_ERROR_NONE && is_array($decoded))
+                            ? array_map('strval', $decoded)
+                            : [strval($rawValue)];
+
+                        $optionMap = $question->options
+                            ->mapWithKeys(fn($opt) => [strval($opt->value) => $opt->label]);
+
+                        $lines = [];
+                        foreach ($selectedValues as $val) {
+                            $label   = $optionMap->get(strval($val));
+                            $lines[] = '- ' . ($label ?? $val);
+                        }
+
+                        $cellValue = implode("\n", $lines);
+                    } else {
+                        $cellValue = $rawValue;
+                    }
+
+                    $sheet->setCellValue("{$dynCol}{$row}", $cellValue);
+
+                    if (str_contains($cellValue, "\n")) {
+                        $sheet->getStyle("{$dynCol}{$row}")
+                            ->getAlignment()
+                            ->setWrapText(true);
+                    }
+
+                    $dynCol++;
+                }
+
+                $row++;
+            }
+        });
+
+        // ─────────────────────────────────────────────
+        // DESCARGA STREAMED RESPONSE
+        // ─────────────────────────────────────────────
+        return new StreamedResponse(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->setPreCalculateFormulas(false);
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="lista-inscritos-ugo.xlsx"',
+            'Cache-Control'       => 'max-age=0',
+        ]);
     }
 }

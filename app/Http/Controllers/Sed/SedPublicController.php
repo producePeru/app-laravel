@@ -59,6 +59,7 @@ class SedPublicController extends Controller
                         'type' => $q->type,
                         'label' => $q->label,
                         'model' => $q->model,
+                        'position' => $q->position,
                         // 'model' => $q->model,
                         'required' => (bool) $q->required,
                         'md' => 12,
@@ -101,48 +102,82 @@ class SedPublicController extends Controller
 
     public function isRegisterThisUser(Request $request)
     {
-        $documentNumber = $request->input('documentNumber');
-        $slug = $request->input('slug');
+        $request->validate([
+            'documentNumber' => 'required|string',
+            'slug' => 'required|string',
+        ]);
 
-        // 1. Buscar registro en EmpresarioActividad
-        $registro = EmpresarioActividad::where('numero_dni', $documentNumber)
+        $documentNumber = trim($request->input('documentNumber'));
+        $slug = trim($request->input('slug'));
+
+        // =====================================================
+        // BUSCAR REGISTRO EN LA ACTIVIDAD
+        // =====================================================
+
+        $registro = EmpresarioActividad::select(
+            'id',
+            'slug',
+            'numero_dni',
+            'fecha_asistencia'
+        )
             ->where('slug', $slug)
+            ->where('numero_dni', $documentNumber)
             ->first();
 
-        // 2. No existe registro
+        // =====================================================
+        // NO ESTÁ REGISTRADO EN EL EVENTO
+        // =====================================================
+
         if (!$registro) {
+
             return response()->json([
                 'status' => 404,
-                'message' => 'Para hacer el test debió haber estado registrado previamente en la actividad.'
-            ], 404);
+                'message' => 'No se encuentra registrado para este evento.'
+            ]);
         }
 
-        // 3. Existe pero no tiene asistencia
-        if (is_null($registro->fecha_asistencia)) {
+        // =====================================================
+        // NO TIENE ASISTENCIA REGISTRADA
+        // =====================================================
+
+        if (empty($registro->fecha_asistencia)) {
+
             return response()->json([
                 'status' => 403,
-                'message' => 'No puedes completar el test porque no se registró tu asistencia.'
-            ], 403);
+                'message' => 'Tu asistencia aún no ha sido registrada. Comunícate con el responsable del evento para que registre tu asistencia y puedas continuar con la encuesta.'
+            ]);
         }
 
-        // 4. Traer datos del empresario
+        // =====================================================
+        // DATOS DEL EMPRESARIO
+        // =====================================================
+
         $empresario = Empresario::select(
             'id',
+            'ruc',
+            'numero_dni',
             'apellido_paterno',
             'apellido_materno',
             'nombres',
-            'ruc'
+            'correo_electronico',
+            'celular'
         )
             ->where('numero_dni', $documentNumber)
             ->first();
 
+        // =====================================================
+        // AUTORIZADO
+        // =====================================================
+
         return response()->json([
             'status' => 200,
-            'message' => 'Usuario autorizado para el test.',
-            'empresario' => $empresario,
-            'registro' => [
-                'slug' => $registro->slug,
-                'fecha_asistencia' => $registro->fecha_asistencia,
+            'message' => 'Usuario autorizado para completar la encuesta.',
+            'data' => [
+                'empresario' => $empresario,
+                'registro' => [
+                    'slug' => $registro->slug,
+                    'fecha_asistencia' => $registro->fecha_asistencia,
+                ]
             ]
         ]);
     }
@@ -608,16 +643,6 @@ class SedPublicController extends Controller
     }
 
 
-
-
-
-
-
-
-
-
-
-
     public function saveSurvey(Request $request)
     {
         DB::beginTransaction();
@@ -650,19 +675,31 @@ class SedPublicController extends Controller
             $slug = $payload['slug'];
 
             // =====================================================
-            // VALIDAR DUPLICADOS
+            // VALIDAR DUPLICADOS (A NIVEL DE PREGUNTAS)
             // =====================================================
 
-            $exists = sedQuestionAnswer::where('dni', $dni)
-                ->where('slug_sed', $slug)
-                ->exists();
+            // Filtramos las preguntas que vienen en el payload para la verificación
+            $questionsInPayload = [];
+            foreach ($payload as $key => $value) {
+                if (str_starts_with($key, 'question_')) {
+                    $questionsInPayload[] = str_replace('question_', 'questions_', $key);
+                }
+            }
 
-            if ($exists) {
+            if (!empty($questionsInPayload)) {
+                // Contamos cuántas de las preguntas enviadas ya existen para este DNI y Slug
+                $existingQuestionsCount = sedQuestionAnswer::where('dni', $dni)
+                    ->where('slug_sed', $slug)
+                    ->whereIn('question', $questionsInPayload)
+                    ->count();
 
-                return response()->json([
-                    'status' => 409,
-                    'message' => 'La encuesta ya fue registrada'
-                ], 409);
+                // SI TODAS las preguntas enviadas ya existen, significa que no hay nada nuevo que registrar
+                if ($existingQuestionsCount === count($questionsInPayload)) {
+                    return response()->json([
+                        'status' => 409,
+                        'message' => 'La encuesta ya fue registrada anteriormente. Gracias por su participación.'
+                    ]);
+                }
             }
 
             // =====================================================
@@ -679,11 +716,22 @@ class SedPublicController extends Controller
                 // question_50 => questions_50
                 $question = str_replace('question_', 'questions_', $key);
 
+                // NO SE PERMITE ACTUALIZAR: Si la pregunta ya existe en la BD, la saltamos
+                $questionExists = sedQuestionAnswer::where('dni', $dni)
+                    ->where('slug_sed', $slug)
+                    ->where('question', $question)
+                    ->exists();
+
+                if ($questionExists) {
+                    continue;
+                }
+
                 // Convertir array a JSON
                 $answer = is_array($value)
                     ? json_encode($value, JSON_UNESCAPED_UNICODE)
                     : $value;
 
+                // SI ES NUEVA: Se registra correctamente
                 sedQuestionAnswer::create([
                     'dni'       => $dni,
                     'slug_sed'  => $slug,
@@ -711,35 +759,6 @@ class SedPublicController extends Controller
             ], 500);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     public function participantConsultation(Request $request)
