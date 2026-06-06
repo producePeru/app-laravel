@@ -21,7 +21,6 @@ use App\Http\Controllers\Download\DownloadFairParticipantsController;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
 use App\Http\Controllers\Download\DownloadNotariesController;
 use App\Http\Controllers\Download\DownloadOthersController;
-use App\Http\Controllers\Download\SedAsistentesController;
 use App\Http\Controllers\Drive\DriveController;
 use App\Http\Controllers\Email\EmailController;
 use App\Http\Controllers\Event\EventsController;
@@ -121,12 +120,6 @@ Route::group(['prefix' => 'public', 'namespace' => 'App\Http\Controllers'], func
 
     Route::get('cde-by-region/{id}', [CdeController::class, 'byRegion']); // registra la fecha y hora de asistencia
 
-});
-
-// EVENTOS SR CARLOS   'middleware' => ['restrict.ip']
-Route::group(['prefix' => 'pnte', 'namespace' => 'App\Http\Controllers'], function () {
-    Route::get('dots', [EventsController::class, 'getEventsDots']);
-    Route::get('events-day', [EventsController::class, 'getEventsByDate']);
 });
 
 // nuevos
@@ -246,6 +239,15 @@ Route::prefix('sed')->group(function () {
 
 Route::prefix('ugger')->group(function () {
     require __DIR__ . '/api/ugger.php';
+});
+
+// todos los eventos del PNTE
+Route::prefix('event-pnte')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/eventpnte.php';
+});
+
+Route::prefix('event-pnte-public')->group(function () {
+    require __DIR__ . '/api/eventpnte.php';
 });
 
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -382,7 +384,7 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::get('fair-participants/{slug}', [DownloadFairParticipantsController::class, 'exportFairParticipants']);
     Route::post('digital-routes', [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
 
-    Route::post('attendance-ugo', [DownloadAttendanceController::class, 'exportAttendance']);
+    Route::post('list-events', [DownloadAttendanceController::class, 'exportAttendance']);
     // Route::get('attendance/{slug}',                     [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
     // Route::get('attendance-mercado/{slug}',             [DownloadAttendanceController::class, 'exportFortaleceTuMercado']);         // lista de ventos ugo Fortalece tu Mercado
     Route::post('list-ugo-by-components-id/{id}', [DownloadAttendanceController::class, 'exportAttendanceByComponentsId']);         // lista de ventos ugo Fortalece tu Mercado
@@ -392,8 +394,8 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('notaries', [DownloadNotariesController::class, 'exportNotaries']);
     Route::post('cdes', [DownloadCdesController::class, 'exportCdes']);
     Route::post('events', [DownloadEventsController::class, 'exportEvents']);
-    // Route::post('sed-asistentes/{slug}',        [SedAsistentesController::class, 'exportList']);                 // asistentes de sed
 
+    Route::post('export-todos-inscritos', [DownloadAttendanceController::class, 'exportInscritos']);
 });
 
 // Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
@@ -551,6 +553,13 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('sector-priorizado', [SelectController::class, 'getSectorPriorizado']);
     Route::get('cp-components', [SelectController::class, 'getCpComponents']);
     Route::get('cp-themes/{idComponent}', [SelectController::class, 'getThemes']);
+
+    Route::get('get-tipo-actividades-pnte', [SelectController::class, 'getTipoActividadesPnte']);
+    Route::get('get-tipo-actividades', [SelectController::class, 'getTipoActividades']);
+    Route::get('get-tipo-actividades-ugse', [SelectController::class, 'getTipoActividadesUgse']);
+    Route::get('get-nombre-actividades/{id}', [SelectController::class, 'getNombreActividades']);
+
+    Route::get('get-users-pnte', [SelectController::class, 'getUsersPnte']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
@@ -597,7 +606,6 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
 
     Route::put('update-obs', [EventsController::class, 'updateObs']);
 
-
     // eventos sra dianita & Fernando Somocursio*** v2
     Route::post('reserve-room', [RoomController::class, 'store']);
     Route::get('rooms', [RoomController::class, 'getByMonth']);
@@ -607,8 +615,6 @@ Route::group(['prefix' => 'event', 'namespace' => 'App\Http\Controllers', 'middl
     // Route::post('to-attendance/{id}',           [AttendanceController::class, 'createEventoToAttendance']);
     // Route::post('delete/{id}',                  [EventsController::class, 'destroy']);
     Route::put('update-obs/{id}', [EventsController::class, 'updateObservation']);
-
-    Route::put('aprobar/{tabla}/{row_id}', [EventsController::class, 'aprobarEvento']);
 });
 
 Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function () {
@@ -670,7 +676,7 @@ Route::group(['prefix' => 'attendance', 'namespace' => 'App\Http\Controllers', '
     Route::post('migrate-events', [AttendanceController::class, 'migrateEvents']);        // migra los eventos de UGO al calendario sr Carlos
     Route::put('event-finally/{id}', [AttendanceController::class, 'eventFinally']);        // migra los eventos de UGO al calendario sr Carlos
 
-    Route::put('update-values-select', [AttendanceController::class, 'updateValuesSelect']);
+    // Route::put('update-values-select', [AttendanceController::class, 'updateValuesSelect']);
     Route::post('email-create-activity', [AttendanceController::class, 'sendAttendanceMail']);        // migra los eventos de UGO al calendario sr Carlos
     Route::get('events-by-region', [AttendanceController::class, 'eventsByRegion']);        // migra los eventos de UGO al calendario sr Carlos
 

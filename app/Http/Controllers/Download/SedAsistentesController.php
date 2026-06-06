@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Download;
 
+use App\Exports\ActividadReporteExport;
 use App\Http\Controllers\Controller;
 use App\Models\Fair;
 use App\Models\SedAsistente;
@@ -11,16 +12,10 @@ use App\Models\UgsePostulante;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SedAsistentesController extends Controller
 {
@@ -50,7 +45,7 @@ class SedAsistentesController extends Controller
                     'postulante.howKnowEvent',
                     'postulante.sedQuestion' => function ($q) use ($fair) {
                         $q->where('event_id', $fair->id);
-                    }
+                    },
                 ])
                 ->orderBy('id', 'desc');
 
@@ -68,12 +63,12 @@ class SedAsistentesController extends Controller
                     ->sortBy('order')
                     ->pluck('question')
                     ->unique()
-                    ->reject(fn($q) => in_array($q, [
+                    ->reject(fn ($q) => in_array($q, [
                         'question_1',
                         'question_2',
                         'question_3',
                         'question_4',
-                        'question_5'
+                        'question_5',
                     ]))
                     ->values();
 
@@ -86,7 +81,9 @@ class SedAsistentesController extends Controller
             $rows = $asistencias->map(function ($item, $index) use ($fair, $includeSurvey, $questions, $answersGrouped) {
 
                 $p = $item->postulante;
-                if (!$p) return null;
+                if (! $p) {
+                    return null;
+                }
 
                 $dni = $p->businessman?->documentnumber ?? $p->documentnumber;
 
@@ -184,7 +181,7 @@ class SedAsistentesController extends Controller
                 $colIndex = 1;
                 foreach ($row as $value) {
                     $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
-                    $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
+                    $sheet->setCellValue("{$col}".($startRow + $i), $value);
                     $colIndex++;
                 }
             }
@@ -193,16 +190,15 @@ class SedAsistentesController extends Controller
                 $writer = new Xlsx($spreadsheet);
                 $writer->save('php://output');
             }, 200, [
-                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'Content-Disposition' => 'attachment; filename="postulantes-feria.xlsx"',
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error al exportar: ' . $e->getMessage()
+                'message' => 'Error al exportar: '.$e->getMessage(),
             ], 500);
         }
     }
-
 
     private function getQuestionOptions()
     {
@@ -251,221 +247,12 @@ class SedAsistentesController extends Controller
         return $options[$question][$value] ?? '-';
     }
 
-
-    public function exportListCooperativas(Request $request, $slug)
-    {
-        try {
-            $fair = Fair::where('slug', $slug)->firstOrFail();
-
-            $filters = $request->query();
-            $includeSurvey = $request->boolean('encuesta');
-
-            // 🔹 QUERY PRINCIPAL
-            $query = SedAsistente::where('sed_id', $fair->id)
-                ->where('removed', 0)
-                ->whereHas('postulante')
-                ->with([
-                    'postulante.company:id,ruc,socialReason',
-                    'postulante.businessman:id,typedocument_id,documentnumber,name,lastname,middlename,birthday,gender_id',
-                    'postulante.businessman.gender:id,name',
-                    'postulante.typedocument:id,avr',
-                    'postulante.economicsector',
-                    'postulante.category',
-                    'postulante.comercialactivity',
-                    'postulante.city',
-                    'postulante.province',
-                    'postulante.district',
-                    'postulante.howKnowEvent',
-                    'postulante.sedQuestion' => function ($q) use ($fair) {
-                        $q->where('event_id', $fair->id);
-                    }
-                ])
-                ->orderBy('id', 'desc');
-
-            // 🔍 FILTROS
-            if (!empty($filters['name'])) {
-                $query->whereHas('postulante', function ($q) use ($filters) {
-                    $q->where('ruc', 'like', '%' . $filters['name'] . '%')
-                        ->orWhere('documentnumber', 'like', '%' . $filters['name'] . '%');
-                });
-            }
-
-            if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
-                $query->whereBetween('created_at', [
-                    Carbon::parse($filters['dateStart'])->startOfDay(),
-                    Carbon::parse($filters['dateEnd'])->endOfDay()
-                ]);
-            }
-
-            $asistencias = $query->get();
-
-            // 🔥 RESPUESTAS (FIX ORDEN)
-            $questions = collect();
-            $answersGrouped = collect();
-
-            if ($includeSurvey) {
-                $answers = sedQuestionAnswer::where('sed_id', $fair->id)->get();
-
-                // ✅ SOLO ESTO CAMBIA (orden correcto)
-                $questions = $answers
-                    ->sortBy('order')
-                    ->pluck('question')
-                    ->unique()
-                    ->values();
-
-                // (opcional pero recomendado)
-                $answersGrouped = $answers
-                    ->sortBy('order')
-                    ->groupBy('dni');
-            }
-
-            // 🔥 MAPEO
-            $rows = $asistencias->map(function ($item, $index) use ($fair, $includeSurvey, $questions, $answersGrouped) {
-
-                $roles = [
-                    'd' => 'DIRIGENTE',
-                    's' => 'SOCIO',
-                    'm' => 'MIEMBRO',
-                ];
-
-                $p = $item->postulante;
-                if (!$p) return null;
-
-                $rol = $p->sedQuestion?->rolCooperativa;
-
-                $row = [
-                    $index + 1,
-                    mb_strtoupper($fair->title ?? '', 'UTF-8'),
-                    $item->attendance ?? '-',
-                    $p->sedQuestion?->rucCooperativa ?? '-',
-                    mb_strtoupper($p->sedQuestion?->cooperativa ?? '', 'UTF-8') ?? '-',
-                    $roles[$rol] ?? '-',
-
-                    $p->ruc,
-                    mb_strtoupper($p->company?->socialReason ?? $p->socialReason ?? '', 'UTF-8'),
-                    mb_strtoupper($p->comercialName ?? '', 'UTF-8'),
-                    mb_strtoupper($p->economicsector?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->category?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->comercialactivity?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->city?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->province?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->district?->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->address ?? '', 'UTF-8'),
-                    $item->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
-
-                    // FIX typedocument
-                    $p->typedocument?->avr
-                        ?? $p->businessman?->typedocument?->avr
-                        ?? '-',
-
-                    $p->businessman?->documentnumber ?? $p->documentnumber ?? '',
-                    mb_strtoupper($p->businessman?->name ?? $p->name ?? '', 'UTF-8'),
-                    mb_strtoupper($p->businessman?->lastname ?? $p->lastname ?? '', 'UTF-8'),
-                    mb_strtoupper($p->businessman?->middlename ?? $p->middlename ?? '', 'UTF-8'),
-
-                    $p->businessman
-                        ? ($p->businessman->gender?->name === 'FEMENINO' ? 'F' : 'M')
-                        : ($p->gender_id == 1 ? 'M' : 'F'),
-
-                    $p->sick == 'no' ? 'NO' : 'SI',
-                    $p->phone,
-                    $p->email,
-                    $p->businessman?->birthday ?? $p->birthday,
-                    $p->age ?? null,
-                    mb_strtoupper($p->positionCompany ?? '', 'UTF-8'),
-                    mb_strtoupper($p->howKnowEvent?->name ?? '', 'UTF-8'),
-
-                    $item->created_at
-                        ? Carbon::parse($item->created_at)->format('d/m/Y h:i A')
-                        : '',
-
-                    // 🔹 FIJAS (NO SE TOCAN)
-                    mb_strtoupper($this->getAnswerLabel('question_1', $p->sedQuestion?->question_1) ?? '-', 'UTF-8'),
-                    mb_strtoupper($this->getAnswerLabel('question_2', $p->sedQuestion?->question_2) ?? '-', 'UTF-8'),
-                    mb_strtoupper($this->getAnswerLabel('question_3', $p->sedQuestion?->question_3) ?? '-', 'UTF-8'),
-                    mb_strtoupper($this->getAnswerLabel('question_4', $p->sedQuestion?->question_4) ?? '-', 'UTF-8'),
-                    mb_strtoupper($this->getAnswerLabel('question_5', $p->sedQuestion?->question_5) ?? '-', 'UTF-8'),
-                ];
-
-                // 🔥 DINÁMICAS (igual que ya tenías)
-                if ($includeSurvey) {
-                    $dni = $p->businessman?->documentnumber ?? $p->documentnumber;
-
-                    $participantAnswers = $answersGrouped->get($dni, collect());
-                    $answerMap = $participantAnswers->pluck('answer', 'question');
-
-                    foreach ($questions as $q) {
-                        $row[] = $answerMap[$q] ?? '';
-                    }
-                }
-
-                return $row;
-            })->filter()->values();
-
-            // 📄 TEMPLATE
-            $templatePath = storage_path('app/plantillas/sed_template_cooperativa.xlsx');
-            $spreadsheet = IOFactory::load($templatePath);
-            $sheet = $spreadsheet->getActiveSheet();
-
-            $startRow = 2;
-
-            // 🔥 HEADERS DINÁMICOS
-            if ($includeSurvey && $questions->count() && $rows->count()) {
-                $baseCols = count($rows[0]) - $questions->count();
-                $colIndex = $baseCols + 1;
-
-                foreach ($questions as $q) {
-                    $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
-
-                    // MAYÚSCULAS
-                    $sheet->setCellValue("{$col}1", mb_strtoupper($q, 'UTF-8'));
-
-                    // WRAP TEXT
-                    $sheet->getStyle("{$col}1")->getAlignment()->setWrapText(true);
-
-                    // Alineación vertical (opcional)
-                    $sheet->getStyle("{$col}1")->getAlignment()->setVertical(
-                        \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
-                    );
-
-                    // 👉 ANCHO FIJO
-                    $sheet->getColumnDimension($col)->setWidth(40);
-
-                    $colIndex++;
-                }
-            }
-
-            // 🔥 DATA
-            foreach ($rows as $i => $row) {
-                $colIndex = 1;
-                foreach ($row as $value) {
-                    $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
-                    $sheet->setCellValue("{$col}" . ($startRow + $i), $value);
-                    $colIndex++;
-                }
-            }
-
-            return new StreamedResponse(function () use ($spreadsheet) {
-                $writer = new Xlsx($spreadsheet);
-                $writer->save('php://output');
-            }, 200, [
-                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="postulantes-feria.xlsx"',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al exportar: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-
     // ESTE ES PARA LA PRUEBAS DEL TESTEO
     public function exportSedAnswers(Request $request)
     {
         try {
             $request->validate([
-                'slug' => 'required|string'
+                'slug' => 'required|string',
             ]);
 
             // 1️⃣ Buscar evento
@@ -476,7 +263,7 @@ class SedAsistentesController extends Controller
             $asistentes = SedAsistente::where('sed_id', $fair->id)->get();
 
             // 3️⃣ Traer respuestas de encuesta
-            $answers   = sedQuestionAnswer::where('sed_id', $fair->id)->get();
+            $answers = sedQuestionAnswer::where('sed_id', $fair->id)->get();
             $questions = $answers->pluck('question')->unique()->values();
 
             // Agrupar respuestas por dni
@@ -497,7 +284,6 @@ class SedAsistentesController extends Controller
                     'gender',
                 ]);
 
-
                 if (is_null($asistente->mype_id)) {
                     // Si mype_id es NULL, buscamos solo por DNI
                     $postulante = $queryPostulante->where('documentnumber', $asistente->dni)->first();
@@ -514,43 +300,43 @@ class SedAsistentesController extends Controller
 
                 // Respuestas dinámicas del participante
                 $participantAnswers = $answersGrouped->get($asistente->dni, collect());
-                $answerMap          = $participantAnswers->pluck('answer', 'question');
+                $answerMap = $participantAnswers->pluck('answer', 'question');
 
                 $base = [
-                    'TIPO ASISTENTE'      => $asistente->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
-                    'RUC'                 => $postulante->ruc ?? '',
-                    'RAZÓN SOCIAL'        => $postulante->socialReason ?? '',
-                    'NOMBRE COMERCIAL'    => $postulante->comercialName ?? '',
-                    'SECTOR ECONÓMICO'    => $postulante->economicsector->name ?? '',
-                    'RUBRO'               => $postulante->category->name ?? '',
+                    'TIPO ASISTENTE' => $asistente->typeAsistente == 1 ? 'REPRESENTANTE' : 'INVITADO',
+                    'RUC' => $postulante->ruc ?? '',
+                    'RAZÓN SOCIAL' => $postulante->socialReason ?? '',
+                    'NOMBRE COMERCIAL' => $postulante->comercialName ?? '',
+                    'SECTOR ECONÓMICO' => $postulante->economicsector->name ?? '',
+                    'RUBRO' => $postulante->category->name ?? '',
                     'ACTIVIDAD COMERCIAL' => $postulante->comercialactivity->name ?? '',
-                    'REGIÓN'              => $postulante->city->name ?? '',
-                    'PROVINCIA'           => $postulante->province->name ?? '',
-                    'DISTRITO'            => $postulante->district->name ?? '',
-                    'DIRECCIÓN'           => $postulante->address ?? '',
-                    'TIPO DOC'            => $postulante->typedocument->avr ?? '',
-                    'DNI'                 => $asistente->dni,
-                    'NOMBRE'              => $postulante ? strtoupper(trim(
-                        $postulante->name . ' ' . $postulante->lastname . ' ' . $postulante->middlename
+                    'REGIÓN' => $postulante->city->name ?? '',
+                    'PROVINCIA' => $postulante->province->name ?? '',
+                    'DISTRITO' => $postulante->district->name ?? '',
+                    'DIRECCIÓN' => $postulante->address ?? '',
+                    'TIPO DOC' => $postulante->typedocument->avr ?? '',
+                    'DNI' => $asistente->dni,
+                    'NOMBRE' => $postulante ? strtoupper(trim(
+                        $postulante->name.' '.$postulante->lastname.' '.$postulante->middlename
                     )) : '',
-                    'GÉNERO'              => $postulante->gender->avr ?? '',
-                    'DISCAPACIDAD'        => $postulante->sick ?? '',
-                    'TELÉFONO'            => $postulante->phone ?? '',
-                    'EMAIL'               => $postulante->email ?? '',
-                    'CARGO'               => $postulante->positionCompany ?? '',
-                    'FECHA CUMPLEAÑOS'    => $postulante->birthday ?? '',
-                    'PREGUNTA 1'          => $sedQuestion->question_1 ?? '',
-                    'PREGUNTA 2'          => $sedQuestion->question_2 ?? '',
-                    'PREGUNTA 3'          => $sedQuestion->question_3 ?? '',
-                    'PREGUNTA 4'          => $sedQuestion->question_4 ?? '',
-                    'PREGUNTA 5'          => $sedQuestion->question_5 ?? '',
+                    'GÉNERO' => $postulante->gender->avr ?? '',
+                    'DISCAPACIDAD' => $postulante->sick ?? '',
+                    'TELÉFONO' => $postulante->phone ?? '',
+                    'EMAIL' => $postulante->email ?? '',
+                    'CARGO' => $postulante->positionCompany ?? '',
+                    'FECHA CUMPLEAÑOS' => $postulante->birthday ?? '',
+                    'PREGUNTA 1' => $sedQuestion->question_1 ?? '',
+                    'PREGUNTA 2' => $sedQuestion->question_2 ?? '',
+                    'PREGUNTA 3' => $sedQuestion->question_3 ?? '',
+                    'PREGUNTA 4' => $sedQuestion->question_4 ?? '',
+                    'PREGUNTA 5' => $sedQuestion->question_5 ?? '',
                 ];
 
                 return $base + $answerMap->toArray();
             });
 
             // 5️⃣ Generar y descargar
-            $filename = 'respuestas_' . $fair->slug . '_' . now()->format('Ymd_His') . '.xlsx';
+            $filename = 'respuestas_'.$fair->slug.'_'.now()->format('Ymd_His').'.xlsx';
 
             return \Maatwebsite\Excel\Facades\Excel::download(
                 new \App\Exports\SedAnswersExport($rows, $questions, $fair),
@@ -560,14 +346,23 @@ class SedAsistentesController extends Controller
 
             Log::error('Error exportando respuestas SED', [
                 'error' => $e->getMessage(),
-                'line'  => $e->getLine(),
+                'line' => $e->getLine(),
             ]);
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error al exportar',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    // **********************************************************************************************
+    public function sedAsistentesPreguntas($slug)
+    {
+        return Excel::download(
+            new ActividadReporteExport($slug),
+            'reporte_'.$slug.'_'.now()->format('Ymd').'.xlsx'
+        );
     }
 }

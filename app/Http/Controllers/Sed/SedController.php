@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Sed;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActividadPnte;
 use App\Models\Fair;
 use App\Models\Question;
 use App\Models\QuestionOption;
@@ -102,65 +103,62 @@ class SedController extends Controller
 
     public function storeSedSurvey(Request $request)
     {
+        $request->validate([
+            'slug' => 'required|string|exists:actividades_pnte,slug',
+            'questions' => 'required|array|min:1',
+            'questions.*.label' => 'required|string',
+            'questions.*.type' => 'required|string',
+            'questions.*.required' => 'nullable|boolean',
+            'questions.*.md' => 'nullable|integer',
+            'questions.*.visible' => 'nullable|integer', // Se agrega validación para visible
+            'questions.*.options' => 'nullable|array',
+            'questions.*.position' => 'nullable|integer',
+        ]);
+
         DB::beginTransaction();
 
         try {
-
             $payload = $request->all();
-
             $tableName = $payload['table'] ?? 'sed';
 
-            // ─────────────────────────────────────
-            // OBTENER SED
-            // ─────────────────────────────────────
-            $fair = Fair::where('slug', $payload['slug'])
-                ->firstOrFail();
-
-            $sedId = $fair->id;
-
-            // ─────────────────────────────────────
-            // RECORRER PREGUNTAS
-            // ─────────────────────────────────────
             foreach ($payload['questions'] as $q) {
-
-                // ─────────────────────────────────────
-                // SIEMPRE CREAR NUEVA PREGUNTA
-                // ─────────────────────────────────────
-                $nextId = (Question::max('id') ?? 0) + 1;
-
-                $model = "question_" . $nextId;
 
                 $question = Question::create([
                     'tableName' => $tableName,
-                    'label'     => $q['label'],
-                    'type'      => $q['type'],
-                    'model'     => $model,
-                    'required'  => !empty($q['required']) ? 1 : 0,
-                    'visible'   => 1
+                    'label' => trim($q['label']),
+                    'type' => trim($q['type']),
+                    'model' => '',
+                    'required' => ! empty($q['required']) ? 1 : 0,
+                    'visible' => $q['visible'] ?? 1, // Si existe lo asigna (incluso si es 0), si no, por defecto es 1
+                    'position' => $q['position'] ?? null,
                 ]);
 
-                // ─────────────────────────────────────
-                // REGISTRAR OPCIONES
-                // ─────────────────────────────────────
-                if (!empty($q['options'])) {
+                $question->update([
+                    'model' => 'question_'.$question->id,
+                ]);
 
-                    foreach ($q['options'] as $opt) {
+                if (! empty($q['options']) && is_array($q['options'])) {
+
+                    foreach ($q['options'] as $index => $opt) {
+
+                        $label = trim($opt['label'] ?? '');
+
+                        if (! $label) {
+                            continue;
+                        }
 
                         QuestionOption::create([
                             'question_id' => $question->id,
-                            'value'       => $opt['value'],
-                            'label'       => $opt['label'],
-                            'status'      => $opt['status'] ?? 1
+                            'value' => (string) ($index + 1),
+                            'label' => $label,
+                            'status' => 1,
                         ]);
                     }
                 }
 
-                // ─────────────────────────────────────
-                // RELACIONAR CON SED
-                // ─────────────────────────────────────
                 SedSurvey::create([
-                    'sed_id'      => $sedId,
-                    'question_id' => $question->id
+                    'actividad_pnte_slug' => $payload['slug'],
+                    'question_id' => $question->id,
                 ]);
             }
 
@@ -168,7 +166,7 @@ class SedController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Encuesta registrada correctamente'
+                'message' => 'Encuesta registrada correctamente',
             ]);
         } catch (\Throwable $e) {
 
@@ -176,14 +174,14 @@ class SedController extends Controller
 
             Log::error('Error registrando encuesta SED', [
                 'error' => $e->getMessage(),
-                'line'  => $e->getLine(),
-                'file'  => $e->getFile()
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
             ]);
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Ocurrió un error al registrar la encuesta.',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -195,16 +193,27 @@ class SedController extends Controller
             // 👇 default seguro
             $table = $request->input('table', 'sed');
 
-            $fair = Fair::where('slug', $slug)->firstOrFail();
+            // ✅ AHORA USA ActividadPnte
+            $actividad = ActividadPnte::where(
+                'slug',
+                $slug
+            )->firstOrFail();
 
-            $questions = SedSurvey::where('sed_id', $fair->id)
+            // ✅ BUSCAR POR actividad_pnte_slug
+            $questions = SedSurvey::where(
+                'actividad_pnte_slug',
+                $actividad->slug
+            )
                 ->with(['question.options'])
                 ->get()
                 ->map(function ($item) use ($table) {
 
                     $q = $item->question;
 
-                    if (!$q || $q->tableName !== $table) {
+                    if (
+                        ! $q ||
+                        $q->tableName !== $table
+                    ) {
                         return null;
                     }
 
@@ -215,10 +224,13 @@ class SedController extends Controller
                         'model' => $q->model,
                         'required' => (bool) $q->required,
                         'md' => 12,
-                        'options' => $q->options->map(fn($opt) => [
-                            'label' => $opt->label,
-                            'value' => $opt->value
-                        ])->values()
+
+                        'options' => $q->options
+                            ->map(fn ($opt) => [
+                                'label' => $opt->label,
+                                'value' => $opt->value,
+                            ])
+                            ->values(),
                     ];
                 })
                 ->filter()
@@ -226,18 +238,21 @@ class SedController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'questions' => $questions
+                'questions' => $questions,
             ]);
         } catch (\Throwable $e) {
 
-            Log::error('Error obteniendo encuesta SED', [
-                'error' => $e->getMessage()
-            ]);
+            Log::error(
+                'Error obteniendo encuesta SED',
+                [
+                    'error' => $e->getMessage(),
+                ]
+            );
 
             return response()->json([
                 'error' => $e->getMessage(),
                 'status' => 500,
-                'message' => 'Error al obtener la encuesta'
+                'message' => 'Error al obtener la encuesta',
             ], 500);
         }
     }
@@ -255,7 +270,7 @@ class SedController extends Controller
                 'required' => 'required|boolean',
                 'options' => 'nullable|array',
                 'options.*.label' => 'required|string',
-                'options.*.value' => 'required|string'
+                'options.*.value' => 'required|string',
             ]);
 
             // 1️⃣ Buscar pregunta
@@ -266,7 +281,7 @@ class SedController extends Controller
                 'type' => $data['type'],
                 'label' => $data['label'],
                 'model' => $data['model'],
-                'required' => $data['required']
+                'required' => $data['required'],
             ]);
 
             // 3️⃣ Manejar opciones
@@ -280,7 +295,7 @@ class SedController extends Controller
 
                     // actualizar
                     $existingOptions[$opt['value']]->update([
-                        'label' => $opt['label']
+                        'label' => $opt['label'],
                     ]);
                 } else {
 
@@ -288,7 +303,7 @@ class SedController extends Controller
                     QuestionOption::create([
                         'question_id' => $question->id,
                         'label' => $opt['label'],
-                        'value' => $opt['value']
+                        'value' => $opt['value'],
                     ]);
                 }
             }
@@ -302,19 +317,19 @@ class SedController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Pregunta actualizada correctamente'
+                'message' => 'Pregunta actualizada correctamente',
             ]);
         } catch (\Throwable $e) {
 
             DB::rollBack();
 
             Log::error('Error actualizando pregunta SED', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'status' => 500,
-                'message' => 'Error al actualizar la pregunta'
+                'message' => 'Error al actualizar la pregunta',
             ], 500);
         }
     }
@@ -329,17 +344,17 @@ class SedController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Pregunta eliminada correctamente'
+                'message' => 'Pregunta eliminada correctamente',
             ]);
         } catch (\Throwable $e) {
 
             Log::error('Error eliminando pregunta SED', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'status' => 500,
-                'message' => 'Error al eliminar la pregunta'
+                'message' => 'Error al eliminar la pregunta',
             ], 500);
         }
     }
@@ -351,14 +366,14 @@ class SedController extends Controller
         try {
 
             $data = $request->validate([
-                'slug'                    => 'required|string',
-                'values.slug'             => 'required|string',
-                'values.questions'        => 'required|array',
-                'values.questions.*.id'   => 'nullable|integer',
+                'slug' => 'required|string',
+                'values.slug' => 'required|string',
+                'values.questions' => 'required|array',
+                'values.questions.*.id' => 'nullable|integer',
                 'values.questions.*.type' => 'required|string',
-                'values.questions.*.label'    => 'required|string',
+                'values.questions.*.label' => 'required|string',
                 'values.questions.*.required' => 'required|boolean',
-                'values.questions.*.options'  => 'nullable|array',
+                'values.questions.*.options' => 'nullable|array',
                 'values.questions.*.options.*.label' => 'required|string',
                 'values.questions.*.options.*.value' => 'required',
             ]);
@@ -369,22 +384,22 @@ class SedController extends Controller
             foreach ($data['values']['questions'] as $q) {
 
                 // 2️⃣ ¿Tiene ID? → Editar, sino → Crear
-                if (!empty($q['id'])) {
+                if (! empty($q['id'])) {
 
                     // --- EDITAR ---
                     $question = Question::with('options')->findOrFail($q['id']);
 
                     $question->update([
-                        'type'     => $q['type'],
-                        'label'    => $q['label'],
+                        'type' => $q['type'],
+                        'label' => $q['label'],
                         'required' => $q['required'] ? 1 : 0,
                     ]);
 
                     // Sincronizar opciones
-                    if (!empty($q['options'])) {
+                    if (! empty($q['options'])) {
 
                         $existingOptions = $question->options->keyBy('value');
-                        $payloadValues   = collect($q['options'])->pluck('value')->map(fn($v) => (string) $v)->toArray();
+                        $payloadValues = collect($q['options'])->pluck('value')->map(fn ($v) => (string) $v)->toArray();
 
                         foreach ($q['options'] as $opt) {
                             $strValue = (string) $opt['value'];
@@ -394,8 +409,8 @@ class SedController extends Controller
                             } else {
                                 QuestionOption::create([
                                     'question_id' => $question->id,
-                                    'label'       => $opt['label'],
-                                    'value'       => $strValue
+                                    'label' => $opt['label'],
+                                    'value' => $strValue,
                                 ]);
                             }
                         }
@@ -409,25 +424,25 @@ class SedController extends Controller
 
                     // --- CREAR ---
                     $nextId = (Question::max('id') ?? 0) + 1;
-                    $model  = 'question_' . $nextId;
+                    $model = 'question_'.$nextId;
 
                     $question = Question::create([
-                        'type'      => $q['type'],
-                        'label'     => $q['label'],
-                        'model'     => $model,
-                        'required'  => $q['required'] ? 1 : 0,
+                        'type' => $q['type'],
+                        'label' => $q['label'],
+                        'model' => $model,
+                        'required' => $q['required'] ? 1 : 0,
                         'tableName' => 'sed',
                     ]);
 
                     // Crear opciones
-                    if (!empty($q['options'])) {
+                    if (! empty($q['options'])) {
                         foreach ($q['options'] as $opt) {
                             $nextOptId = (QuestionOption::max('id') ?? 0) + 1;
 
                             QuestionOption::create([
                                 'question_id' => $question->id,
-                                'label'       => $opt['label'],
-                                'value'       => 'option_' . $nextOptId
+                                'label' => $opt['label'],
+                                'value' => 'option_'.$nextOptId,
                             ]);
                         }
                     }
@@ -435,8 +450,8 @@ class SedController extends Controller
                     // Guardar en SedSurvey
                     SedSurvey::updateOrCreate(
                         [
-                            'sed_id'      => $fair->id,
-                            'question_id' => $question->id
+                            'sed_id' => $fair->id,
+                            'question_id' => $question->id,
                         ],
                         []
                     );
@@ -446,8 +461,8 @@ class SedController extends Controller
             DB::commit();
 
             return response()->json([
-                'status'  => 200,
-                'message' => 'Encuesta guardada correctamente'
+                'status' => 200,
+                'message' => 'Encuesta guardada correctamente',
             ]);
         } catch (\Throwable $e) {
 
@@ -455,14 +470,14 @@ class SedController extends Controller
 
             Log::error('Error guardando encuesta SED', [
                 'error' => $e->getMessage(),
-                'line'  => $e->getLine(),
-                'file'  => $e->getFile()
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
             ]);
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error al guardar la encuesta',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
