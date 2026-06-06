@@ -1,41 +1,13 @@
 <?php
 
-/**
- * INSTRUCCIONES DE USO
- * --------------------
- * 1. Coloca este archivo en app/Exports/ActividadReporteExport.php
- * 2. Instala la dependencia: composer require maatwebsite/excel
- * 3. En tu Controller:
- *
- *      use App\Exports\ActividadReporteExport;
- *      use Maatwebsite\Excel\Facades\Excel;
- *
- *      public function descargarExcel(Request $request, $slug)
- *      {
- *          return Excel::download(
- *              new ActividadReporteExport($slug),
- *              'reporte_actividad_' . $slug . '_' . now()->format('Ymd_His') . '.xlsx'
- *          );
- *      }
- *
- * RENDIMIENTO
- * -----------
- * - Todo lo que puede precargarse se carga UNA SOLA VEZ en el constructor:
- *     · La ActividadPnte del slug
- *     · Todas las SedQuestion del slug  (indexadas por documentnumber)
- *     · Todos los sedQuestionAnswer del slug (indexados por dni → [question => answer])
- *     · Todos los PropagandaMedia (lookup simple)
- * - El map() solo hace lookups en memoria ($this->xxxCache[key]), CERO queries extra.
- * - WithChunkReading: la query principal se ejecuta en bloques de 500 filas.
- * - ShouldQueue: generación en background (quitar si no usas colas).
- */
-
 namespace App\Exports;
 
 use App\Models\ActividadPnte;
 use App\Models\SedQuestion;
 use App\Models\sedQuestionAnswer;
 use App\Models\PropagandaMedia;
+use App\Models\Question;
+use App\Models\QuestionOption;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -74,10 +46,39 @@ class ActividadReporteExport implements
     // ── Caches precargados en el constructor ─────────────────────────────────
     protected ActividadPnte $actividad;
     protected string        $fechasStr        = '';
-    protected array         $dynamicQuestions = [];  // ['¿Pregunta X?' , ...]  en orden
-    protected array         $sedCache         = [];  // [documentnumber => SedQuestion]
-    protected array         $dynAnswersCache  = [];  // [documentnumber => [question => answer]]
-    protected array         $mediaCache       = [];  // [id => name]
+
+    /**
+     * Preguntas dinámicas en orden:
+     * [
+     *   'questions_0'  => 'Label de la pregunta 0',
+     *   'questions_54' => 'Label de la pregunta 54',
+     * ]
+     */
+    protected array $dynamicQuestions = [];
+
+    protected array $sedCache         = [];  // [documentnumber => SedQuestion]
+    protected array $dynAnswersCache  = [];  // [documentnumber => [questionKey => answer]]
+    protected array $mediaCache       = [];  // [id => name]
+
+    /**
+     * Cache de opciones por question_id:
+     * [
+     *   42 => [
+     *     '181' => 'Opción A',
+     *     '184' => 'Opción B',
+     *   ]
+     * ]
+     */
+    protected array $questionOptionsCache = [];
+
+    /**
+     * Mapeo de questionKey → question_id del modelo Question:
+     * [
+     *   'questions_0'  => 7,
+     *   'questions_54' => 12,
+     * ]
+     */
+    protected array $questionKeyToId = [];
 
     // ── Opciones de respuesta para preguntas SED fijas ───────────────────────
     protected array $questionOptions = [
@@ -88,16 +89,16 @@ class ActividadReporteExport implements
             'plan_transformacion' => 'D. Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
         ],
         'question_2' => [
-            'sin_interes'     => 'A. Solo yo tomo las decisiones y no usamos herramientas digitales para coordinar el trabajo.',
-            'redes_sociales'  => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitación en herramientas de gestión.',
-            'capacitacion'    => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema común para registrar pedidos y tareas.',
+            'sin_interes'       => 'A. Solo yo tomo las decisiones y no usamos herramientas digitales para coordinar el trabajo.',
+            'redes_sociales'    => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitación en herramientas de gestión.',
+            'capacitacion'      => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema común para registrar pedidos y tareas.',
             'lideres_digitales' => 'D. Contamos con líderes digitales en el equipo, todos tienen altas competencias digitales y tomamos decisiones basadas en reportes de datos en tiempo real.',
         ],
         'question_3' => [
-            'celular'               => 'A. Solo tengo un celular básico para llamadas y no confío en los pagos digitales ni en internet.',
-            'internet_basico'       => 'B. Tengo internet básico y uso computadoras personales para tareas simples (Word/Excel básico) sin protocolos de seguridad.',
+            'celular'                 => 'A. Solo tengo un celular básico para llamadas y no confío en los pagos digitales ni en internet.',
+            'internet_basico'         => 'B. Tengo internet básico y uso computadoras personales para tareas simples (Word/Excel básico) sin protocolos de seguridad.',
             'internet_alta_velocidad' => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi información con contraseñas y respaldos frecuentes.',
-            'nube'                  => 'D. Uso servicios en la nube (Cloud), mi infraestructura está integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
+            'nube'                    => 'D. Uso servicios en la nube (Cloud), mi infraestructura está integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
         ],
         'question_4' => [
             'anotado'   => 'A. Todo lo anoto en cuadernos o lo tengo en la memoria; a veces pierdo el control de lo que falta.',
@@ -138,32 +139,102 @@ class ActividadReporteExport implements
                 $this->sedCache[$sq->documentnumber] = $sq;
             });
 
-        // 3) Todos los sedQuestionAnswer del slug (1 query)
-        //    Estructura: [dni => [question => answer]]
-        //    También construye la lista ordenada de preguntas dinámicas.
+        // 3) Construir cache de preguntas dinámicas:
+        //    a) Obtener los questionKeys únicos en orden desde sed_questions_answers
+        //    b) Resolver los labels desde Question via SedSurvey
         $seenQuestions = [];
+        $orderedKeys   = [];
+
         sedQuestionAnswer::where('slug_sed', $slug)
             ->orderBy('order')
             ->get()
-            ->each(function ($row) use (&$seenQuestions) {
+            ->each(function ($row) use (&$seenQuestions, &$orderedKeys) {
                 // índice principal por DNI
                 $this->dynAnswersCache[$row->dni][$row->question] = $row->answer;
 
-                // índice secundario por RUC (para cuando el DNI no coincide)
+                // índice secundario por RUC
                 if ($row->ruc) {
                     $this->dynAnswersCache['ruc:' . $row->ruc][$row->question] = $row->answer;
                 }
 
                 if (!isset($seenQuestions[$row->question])) {
                     $seenQuestions[$row->question] = true;
-                    $this->dynamicQuestions[] = $row->question;
+                    $orderedKeys[] = $row->question;
                 }
             });
+
+        // 3b) Resolver labels y opciones de cada questionKey desde Question/QuestionOption
+        //     La relación: questionKey tiene formato "questions_{id}"
+        //     donde {id} es el question_id en SedSurvey / Question->id
+        $this->buildDynamicQuestionsCache($orderedKeys);
 
         // 4) PropagandaMedia (1 query)
         PropagandaMedia::all()->each(function ($m) {
             $this->mediaCache[$m->id] = $m->name;
         });
+    }
+
+    /**
+     * Construye:
+     *  - $this->dynamicQuestions  : [ questionKey => Question->label ]
+     *  - $this->questionKeyToId   : [ questionKey => question_id ]
+     *  - $this->questionOptionsCache: [ question_id => [ value => label ] ]
+     *
+     * El formato del questionKey es "questions_{id}" donde {id} es Question->id.
+     */
+    protected function buildDynamicQuestionsCache(array $orderedKeys): void
+    {
+        if (empty($orderedKeys)) {
+            return;
+        }
+
+        // Extraer los IDs numéricos de los keys (e.g. "questions_54" → 54)
+        $questionIds = [];
+        foreach ($orderedKeys as $key) {
+            if (preg_match('/^questions_(\d+)$/', $key, $m)) {
+                $questionIds[] = (int) $m[1];
+            }
+        }
+
+        if (empty($questionIds)) {
+            // Fallback: guardar el key tal cual si no sigue el patrón esperado
+            foreach ($orderedKeys as $key) {
+                $this->dynamicQuestions[$key] = $key;
+            }
+            return;
+        }
+
+        // Una sola query para traer todas las Question con sus opciones
+        $questions = Question::with('options')
+            ->whereIn('id', $questionIds)
+            ->get()
+            ->keyBy('id');
+
+        // Construir caches en el orden original de $orderedKeys
+        foreach ($orderedKeys as $key) {
+            if (preg_match('/^questions_(\d+)$/', $key, $m)) {
+                $id       = (int) $m[1];
+                $question = $questions->get($id);
+
+                // Label del header
+                $this->dynamicQuestions[$key] = ($key === 'questions_0')
+                    ? 'NÚMERO DE TRABAJADORES'
+                    : ($question?->label ?? $key);
+
+                // Mapeo question_id para resolver respuestas
+                $this->questionKeyToId[$key] = $id;
+
+                // Cache de opciones: [value => label]
+                if ($question && $question->options->isNotEmpty()) {
+                    $this->questionOptionsCache[$id] = $question->options
+                        ->pluck('label', 'value')
+                        ->toArray();
+                }
+            } else {
+                // Key que no sigue el patrón: guardar tal cual
+                $this->dynamicQuestions[$key] = $key;
+            }
+        }
     }
 
     // ── Chunk size ───────────────────────────────────────────────────────────
@@ -235,10 +306,11 @@ class ActividadReporteExport implements
             '¿CÓMO TE ENCUENTRAN LOS CLIENTES NUEVOS? / ¿Pregunta 5?',
         ];
 
-        return array_merge($fixed, $this->dynamicQuestions);
+        // Las preguntas dinámicas ahora muestran Question->label
+        return array_merge($fixed, array_values($this->dynamicQuestions));
     }
 
-    // ── Mapeo de cada fila (solo lookups en memoria, CERO queries) ───────────
+    // ── Mapeo de cada fila ────────────────────────────────────────────────────
     public function map($ea): array
     {
         $this->rowIndex++;
@@ -261,7 +333,7 @@ class ActividadReporteExport implements
             default => '',
         };
 
-        // Preguntas SED fijas → resolver etiqueta desde options
+        // Preguntas SED fijas
         $sedFijas = [
             $this->resolveSedAnswer('question_1', $sed?->question_1),
             $this->resolveSedAnswer('question_2', $sed?->question_2),
@@ -270,15 +342,15 @@ class ActividadReporteExport implements
             $this->resolveSedAnswer('question_5', $sed?->question_5),
         ];
 
-        // Respuestas dinámicas desde cache
-        // Primero intenta por DNI, luego por RUC como fallback
+        // Respuestas dinámicas: primero por DNI, luego por RUC
         $answerMap = $this->dynAnswersCache[$emp?->numero_dni]
             ?? $this->dynAnswersCache['ruc:' . ($emp?->ruc ?? '')]
             ?? [];
 
+        // Para cada pregunta dinámica, resolver el/los label(s) de la respuesta
         $dynamicAnswers = array_map(
-            fn($q) => $answerMap[$q] ?? '',
-            $this->dynamicQuestions
+            fn($questionKey) => $this->resolveDynamicAnswer($questionKey, $answerMap[$questionKey] ?? null),
+            array_keys($this->dynamicQuestions)
         );
 
         // PropagandaMedia desde cache
@@ -342,13 +414,8 @@ class ActividadReporteExport implements
 
         $sheet->getRowDimension(1)->setRowHeight(50);
 
-        // Rangos de color por grupo
-        // Cols  1–8  : Info (azul)
-        // Cols  9–33 : Empresa (naranja)
-        // Cols 34–38 : SED fijas (verde)
-        // Cols 39–N  : SED dinámicas (morado)
-        $this->styleRange($sheet, 'A1',                    $this->colLetter(8)  . '1', self::COLOR_INFO);
-        $this->styleRange($sheet, $this->colLetter(9) . '1', $this->colLetter(33) . '1', self::COLOR_EMPRESA);
+        $this->styleRange($sheet, 'A1',                     $this->colLetter(8)  . '1', self::COLOR_INFO);
+        $this->styleRange($sheet, $this->colLetter(9) . '1',  $this->colLetter(33) . '1', self::COLOR_EMPRESA);
         $this->styleRange($sheet, $this->colLetter(34) . '1', $this->colLetter(38) . '1', self::COLOR_SED_FIXED);
 
         if (!empty($this->dynamicQuestions)) {
@@ -356,7 +423,6 @@ class ActividadReporteExport implements
             $this->styleRange($sheet, $this->colLetter(39) . '1', $this->colLetter($dynEnd) . '1', self::COLOR_SED_DYN);
         }
 
-        // Body
         if ($highestRow > 1) {
             $bodyRange = "A2:{$lastCol}{$highestRow}";
 
@@ -431,9 +497,8 @@ class ActividadReporteExport implements
             'AL' => 80,
         ];
 
-        // SED dinámicas
-        foreach ($this->dynamicQuestions as $i => $_) {
-            $col = $this->colLetter(39 + $i);
+        foreach (array_values($this->dynamicQuestions) as $i => $_) {
+            $col = $this->colLetter(39 + $i);  // int + int → OK
             $widths[$col] = 38;
         }
 
@@ -443,9 +508,53 @@ class ActividadReporteExport implements
     // ── Helpers privados ──────────────────────────────────────────────────────
 
     /**
+     * Resuelve la respuesta de una pregunta dinámica al label legible.
+     *
+     * El valor almacenado puede ser:
+     *   - Un valor simple: "1-5"  → busca en QuestionOption->value
+     *   - Un JSON array:  '["181","184","185"]' → resuelve cada ID y une con ", "
+     *   - null / ''      → retorna ''
+     */
+    private function resolveDynamicAnswer(string $questionKey, mixed $rawAnswer): string
+    {
+        if ($rawAnswer === null || $rawAnswer === '') {
+            return '';
+        }
+
+        $questionId = $this->questionKeyToId[$questionKey] ?? null;
+
+        // Intentar decodificar como JSON array
+        $decoded = json_decode($rawAnswer, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            // Respuesta múltiple: ["181","184","185"]
+            $labels = array_map(
+                fn($val) => $this->resolveOptionLabel($questionId, (string) $val),
+                $decoded
+            );
+
+            return implode("\n", array_map(fn($l) => '- ' . $l, array_filter($labels)));
+        }
+
+        // Respuesta simple: "1-5" o cualquier string
+        return $this->resolveOptionLabel($questionId, (string) $rawAnswer);
+    }
+
+    /**
+     * Busca el label de una opción dado el question_id y el value.
+     * Si no encuentra el label en el cache, devuelve el value crudo.
+     */
+    private function resolveOptionLabel(?int $questionId, string $value): string
+    {
+        if ($questionId === null) {
+            return $value;
+        }
+
+        return $this->questionOptionsCache[$questionId][$value] ?? $value;
+    }
+
+    /**
      * Resuelve la etiqueta completa de una respuesta SED fija.
-     * Si la key pertenece al mapa de opciones la expande; si no, devuelve el valor crudo
-     * (para el caso ['no','si','personal'] que son literales directos).
      */
     private function resolveSedAnswer(string $questionKey, ?string $value): string
     {

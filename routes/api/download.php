@@ -49,6 +49,8 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
     Route::get('attendance-mercado/{slug}', 'exportFortaleceTuMercado');
 
     Route::POST('export-inscritos-por-slug/{slug}', 'exportInscritosPorSlug');
+
+    Route::POST('export-inscritos-por-slug-sed/{slug}', 'exportInscritosPorSlugSed');
 });
 
 Route::controller(ActividadesUgoController::class)->group(function () {

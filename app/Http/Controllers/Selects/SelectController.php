@@ -374,7 +374,9 @@ class SelectController extends Controller
 
     public function getAsesores()
     {
-        $asesores = User::where('rol', 2)->get();
+        $asesores = User::where('rol', 2)
+            ->where('active', 1)
+            ->get();
 
         $data = $asesores->map(function ($item) {
             $label = strtoupper(trim(
@@ -389,7 +391,10 @@ class SelectController extends Controller
 
         $sortedData = $data->sortBy('label')->values();
 
-        return response()->json(['data' => $sortedData, 'status' => 200]);
+        return response()->json([
+            'data' => $sortedData,
+            'status' => 200
+        ]);
     }
 
     // Lista de asesores para el reporte

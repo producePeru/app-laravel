@@ -1,70 +1,3 @@
-
-
-
-
-
-CREATE TABLE preguntas(
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    event_id BIGINT UNSIGNED NOT NULL,
-    label VARCHAR(255) NOT NULL,
-    type ENUM('text', 'select', 'multiple', 'rating') NOT NULL,
-    `order` TINYINT UNSIGNED NOT NULL DEFAULT 0,
-    required TINYINT(1) NOT NULL DEFAULT 1,
-    created_at TIMESTAMP NULL DEFAULT NULL,
-    updated_at TIMESTAMP NULL DEFAULT NULL,
-
-    CONSTRAINT questions_event_id_foreign
-        FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- ALTER TABLE actividades_pnte
--- ADD COLUMN resultados TEXT
--- AFTER reprogramado_por_id;
-
-
--- ALTER TABLE actividades_pnte
--- ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 0
--- AFTER resultados;
-
-
-
 INSERT INTO actividades_pnte (
     unidad,
     mes,
@@ -125,40 +58,6 @@ FROM attendancelist;
 
 
 
--- CREATE TABLE sectores_economicos (
---     id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
---     name        VARCHAR(150)    NOT NULL,
---     created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
---     updated_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
--- );
-
--- CREATE TABLE rubros (
---     id                   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
---     name                 VARCHAR(150)    NOT NULL,
---     created_at           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
---     updated_at           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
--- );
-
--- CREATE TABLE actividades_comerciales (
---     id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
---     name       VARCHAR(150)  NOT NULL,
---     rubro_id   INT UNSIGNED  NOT NULL,
---     created_at TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
---     CONSTRAINT fk_actividades_comerciales_rubro
---         FOREIGN KEY (rubro_id)
---         REFERENCES rubros(id)
---         ON DELETE RESTRICT
---         ON UPDATE CASCADE
--- );
-
--- CREATE TABLE cargo_empresa (
---     id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
---     name       VARCHAR(150)  NOT NULL,
---     created_at TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
--- );
 
 CREATE TABLE tareas (
     id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -173,95 +72,18 @@ CREATE TABLE tareas (
 
 
 
-CREATE TABLE empresarios (
-    id                     BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-    -- Datos de la empresa
-    ruc                    CHAR(11)        NULL,
-    razon_social           VARCHAR(255)    NULL,
-    nombre_comercial       VARCHAR(255)    NULL,
-    sector_economico_id    BIGINT UNSIGNED NULL,
-    rubro_id               BIGINT UNSIGNED NULL,
-    actividad_comercial_id BIGINT UNSIGNED NULL,
-    pais_id                BIGINT UNSIGNED NULL,
-    region_id              BIGINT UNSIGNED NULL,
-    provincia_id           BIGINT UNSIGNED NULL,
-    distrito_id            BIGINT UNSIGNED NULL,
-    direccion              VARCHAR(255)    NULL,
-
-    -- Datos personales
-    tipo_documento_id      BIGINT UNSIGNED NOT NULL,
-    numero_dni             VARCHAR(12)     NOT NULL,
-    apellido_paterno       VARCHAR(255)    NOT NULL,
-    apellido_materno       VARCHAR(255)    NULL,
-    nombres                VARCHAR(255)    NOT NULL,
-    genero_id              BIGINT UNSIGNED NULL,
-    discapacidad           TINYINT(1)      NULL DEFAULT 0,
-    celular                CHAR(9)         NULL,
-    correo_electronico     VARCHAR(255)    NULL,
-    cargo_empresa_id       BIGINT UNSIGNED NULL,
-    fecha_nacimiento       DATE            NULL,
-    edad                   CHAR(3)         NULL,
-    -- como_entero            BIGINT UNSIGNED NULL,
-
-    created_at             TIMESTAMP       NULL DEFAULT NULL,
-    updated_at             TIMESTAMP       NULL DEFAULT NULL,
-
-    KEY empresarios_sector_economico_id_foreign    (sector_economico_id),
-    KEY empresarios_rubro_id_foreign               (rubro_id),
-    KEY empresarios_actividad_comercial_id_foreign (actividad_comercial_id),
-    KEY empresarios_pais_id_foreign                (pais_id),
-    KEY empresarios_region_id_foreign              (region_id),
-    KEY empresarios_provincia_id_foreign           (provincia_id),
-    KEY empresarios_distrito_id_foreign            (distrito_id),
-    KEY empresarios_tipo_documento_id_foreign      (tipo_documento_id),
-    KEY empresarios_genero_id_foreign              (genero_id),
-    KEY empresarios_cargo_empresa_id_foreign       (cargo_empresa_id),
-    -- KEY empresarios_como_entero_foreign            (como_entero)  -- 👈 sin coma al final
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
-ALTER TABLE empresarios
-    ADD CONSTRAINT empresarios_sector_economico_id_foreign
-        FOREIGN KEY (sector_economico_id)    REFERENCES economicsectors (id),
-
-    -- ADD CONSTRAINT empresarios_rubro_id_foreign
-    --     FOREIGN KEY (rubro_id)               REFERENCES categories (id), ** falla
-
-    ADD CONSTRAINT empresarios_actividad_comercial_id_foreign
-        FOREIGN KEY (actividad_comercial_id) REFERENCES activities (id),
-
-    ADD CONSTRAINT empresarios_region_id_foreign
-        FOREIGN KEY (region_id)              REFERENCES cities (id),
-
-    ADD CONSTRAINT empresarios_provincia_id_foreign
-        FOREIGN KEY (provincia_id)           REFERENCES provinces (id),
-
-    ADD CONSTRAINT empresarios_distrito_id_foreign
-        FOREIGN KEY (distrito_id)            REFERENCES districts (id),
-
-    ADD CONSTRAINT empresarios_tipo_documento_id_foreign
-        FOREIGN KEY (tipo_documento_id)      REFERENCES typedocuments (id),
-
-    ADD CONSTRAINT empresarios_genero_id_foreign
-        FOREIGN KEY (genero_id)              REFERENCES genders (id),
-
-    ADD CONSTRAINT empresarios_cargo_empresa_id_foreign
-        FOREIGN KEY (cargo_empresa_id)       REFERENCES role_company (id);
 
 
 
--- ALTER TABLE empresarios
---     ADD COLUMN como_entero BIGINT UNSIGNED NULL AFTER edad,
---     ADD CONSTRAINT empresarios_como_entero_foreign
---         FOREIGN KEY (como_entero) REFERENCES propagandamedia (id);
 
 
--- ALTER TABLE empresarios
---     ADD COLUMN pais_id BIGINT UNSIGNED NULL AFTER actividad_comercial_id,
---     ADD CONSTRAINT empresarios_pais_id_foreign
---         FOREIGN KEY (pais_id) REFERENCES countries (id);
+
+
+
+
+
+
+
 
 
 
@@ -350,16 +172,7 @@ HAVING COUNT(*) > 1
 ORDER BY total DESC;
 
 
-CREATE TABLE empresario_actividad (
-    id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    actividad_id     BIGINT UNSIGNED NULL,
-    slug             VARCHAR(255)    NULL,
-    empresario_id    BIGINT UNSIGNED NULL,
-    numero_dni       VARCHAR(12)     NULL,
-    fecha_asistencia DATETIME        NULL,
-    created_at       TIMESTAMP       NULL DEFAULT NULL,
-    updated_at       TIMESTAMP       NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 
 INSERT INTO empresario_actividad (
@@ -379,14 +192,9 @@ SELECT
 FROM ugo_postulantes p;
 
 
-ALTER TABLE empresarios 
-ADD COLUMN actividad_comercial_nombre VARCHAR(255) NULL 
-AFTER actividad_comercial_id;
 
 
-ALTER TABLE empresario_actividad
-ADD COLUMN personal_asesoria TINYINT(1) DEFAULT NULL AFTER fecha_asistencia,
-ADD COLUMN personal_formalizacion TINYINT(1) DEFAULT NULL AFTER personal_asesoria;
+
 
 
 
@@ -489,3 +297,111 @@ ADD COLUMN slug_sed VARCHAR(100) NULL
 AFTER sed_id;
 
 
+
+
+
+
+
+
+-- RESETEA EL CONTADOR DE LA TABLA A 1       *******************************************
+SET @nuevo_id = 0;
+
+UPDATE TABLE_NAME
+SET id = (@nuevo_id := @nuevo_id + 1)
+ORDER BY id;
+
+************************************************************************ SETEAMOS EL SED
+INSERT INTO actividades_pnte (
+    unidad,
+    mes,
+    fechas,
+    cantidad_dias,
+    tipo_actividad_id,
+    nombre_actividad_id,
+    tema,
+    region,
+    provincia,
+    distrito,
+    lugar,
+    entidad_organizadora,
+    entidad_aliada,
+    representante_id,
+    requiere_pasaje,
+    monto_gasto,
+    mypes_beneficiadas,
+    modalidad_id,
+    total_participantes,
+    total_asesorias,
+    total_formalizaciones,
+    slug,
+    cancelado,
+    cancelado_por_id,
+    reprogramado,
+    reprogramado_por_id,
+    resultados,
+    activo,
+    registrado_por_id,
+    actualizado_por_id,
+    horario,
+    descripcion,
+    nombre_asesor,
+    link,
+    created_at,
+    updated_at
+)
+SELECT
+    2 AS unidad,
+    1 AS mes,
+    dates AS fechas,
+    1 AS cantidad_dias,
+    7 AS tipo_actividad_id,
+    16 AS nombre_actividad_id,
+    title AS tema,
+    city_id AS region,
+    province_id AS provincia,
+    district_id AS distrito,
+    place AS lugar,
+    'PNTE' AS entidad_organizadora,
+    NULL AS entidad_aliada,
+    126 AS representante_id,
+    0 AS requiere_pasaje,
+    NULL AS monto_gasto,
+    metaMypes AS mypes_beneficiadas,
+    modality_id,
+    NULL AS total_participantes,
+    NULL AS total_asesorias,
+    NULL AS total_formalizaciones,
+    slug,
+    cancelado,
+    NULL AS cancelado_por_id,
+    reprogramado,
+    NULL AS reprogramado_por_id,
+    resultados,
+    1 AS activo,
+    126 AS registrado_por_id,
+    NULL AS actualizado_por_id,
+    hours AS horario,
+    NULL AS descripcion,
+    NULL AS nombre_asesor,
+    NULL AS link,
+    NOW() AS created_at,
+    NOW() AS updated_at
+FROM fairs
+WHERE fairtype_id = 1;
+
+
+
+-- ACTUALIZAR COLUMNA mes SED *************************************
+UPDATE actividades_pnte
+SET mes = MONTH(
+    JSON_UNQUOTE(
+        JSON_EXTRACT(fechas, '$[0]')
+    )
+)
+WHERE tipo_actividad_id = 7;
+
+
+-- CONSULTAR LOS DISTINTOS ************************************
+SELECT DISTINCT fairtype_id
+FROM fairs
+ORDER BY fairtype_id;
