@@ -413,6 +413,7 @@ Route::group(['prefix' => 'config', 'namespace' => 'App\Http\Controllers', 'midd
     Route::post('register-cde', [CdeController::class, 'registerCde']);
     Route::get('list-cdes', [CdeController::class, 'listCdes']);
     Route::put('update-cde/{id}', [CdeController::class, 'update']);
+    Route::delete('delete-cde/{id}', [CdeController::class, 'deleteCde']);
 });
 
 Route::group(['prefix' => 'notary', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {

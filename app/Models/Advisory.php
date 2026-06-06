@@ -131,6 +131,11 @@ class Advisory extends Model
         return $this->hasOne(Etnia::class,  'people.etnia_id', 'etnia.id');
     }
 
+    public function lengua()
+    {
+        return $this->hasOne(Lengua::class, 'people.lengua_id', 'lengua.id');
+    }
+
     // DESCARGAR EXCEL DE ASESORIAS
     public function scopeDescargaExcelAsesorias($query, $filters)
     {
@@ -219,11 +224,12 @@ class Advisory extends Model
             'district:id,name',
             'economicsector:id,name',
             'modality:id,name',
-            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email,etnia_id,persona_cuidadora',
+            'people:id,documentnumber,birthday,lastname,middlename,name,gender_id,country_id,typedocument_id,sick,hasSoon,phone,email,etnia_id,persona_cuidadora,lengua_id,lengua_otro',
             'people.gender:id,name',
             'people.pais:id,name',
             'people.typedocument:id,avr',
             'people.etnia:id,name',
+            'people.lengua:id,name',
             'province:id,name',
             'sede',
             'theme:id,name',

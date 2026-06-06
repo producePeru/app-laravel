@@ -276,6 +276,9 @@ class FormularioPublicoController extends Controller
             // 1. VALIDACIÓN
             // =======================================================
             $request->validate([
+                'ruc_cooperativa'       => 'nullable|string|max:11',
+                'razon_social_cooperativa' => 'nullable|string|max:255',
+
                 'ruc'                   => 'nullable|string|max:11',
                 'social_reason'         => 'nullable|string|max:255',
                 'economic_sector_id'    => 'nullable|exists:economicsectors,id',
