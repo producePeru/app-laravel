@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Token;
+use App\Models\User;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use GuzzleHttp\Client;
-use PhpParser\Node\Stmt\Return_;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Token;
-use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -28,55 +26,16 @@ class AuthController extends Controller
         }
 
         return [
-            "role_id" => $roleUser->role_id,
+            'role_id' => $roleUser->role_id,
             'user_id' => $user_id,
-            'user_dni' => $roleUser->dniuser
+            'user_dni' => $roleUser->dniuser,
         ];
     }
-
-    // public function login(Request $request)
-    // {
-    //     $request->validate([
-    //         'login' => 'required', // Puede ser email o dni
-    //         'password' => 'required',
-    //     ]);
-
-    //     // Determinar el tipo de login: email o dni
-    //     $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'dni';
-
-    //     $credentials = [
-    //         $loginType => $request->login,
-    //         'password' => $request->password,
-    //     ];
-
-    //     // return $credentials;
-
-    //     try {
-    //         if (Auth::attempt($credentials)) {
-    //             $user = Auth::user();
-    //             $token = $user->createToken('AuthToken')->plainTextToken;
-    //             $profile = $user->profile->only(['id', 'name', 'lastname', 'middlename', 'documentnumber', 'user_id', 'cde_id', 'notary_id']);
-    //             $role = $user->roles;
-    //             $email = $user->email;
-
-    //             // Construir un array con las vistas decodificadas
-    //             $views = $user->views->map(function ($view) {
-    //                 return json_decode($view->views, true);
-    //             })->flatten();
-
-    //             return response()->json(['token' => $token, 'profile' => $profile, 'email' => $email, 'role' => $role, 'views' => $views], 200);
-    //         }
-
-    //         return response()->json(['message' => 'Credenciales incorrectas'], 401);
-    //     } catch (\Exception $e) {
-    //         // Manejar cualquier excepción
-    //         return response()->json(['message' => 'Ocurrió un error durante el inicio de sesión', 'error' => $e->getMessage()], 500);
-    //     }
-    // }
 
     public function login(Request $request)
     {
         try {
+
             $request->validate([
                 'login' => 'required|string',
                 'password' => 'required|string',
@@ -85,48 +44,62 @@ class AuthController extends Controller
             $login = $request->login;
 
             $user = filter_var($login, FILTER_VALIDATE_EMAIL)
-                ? User::where('email', $login)->first()
-                : User::where('dni', $login)->first();
+                ? User::with(['role', 'cde'])
+                    ->where('email', $login)
+                    ->first()
+                : User::with(['role', 'cde'])
+                    ->where('dni', $login)
+                    ->first();
 
-            if (!$user || !Hash::check($request->password, $user->password)) {
+            if (! $user || ! Hash::check($request->password, $user->password)) {
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Credenciales inválidas.'
+                    'message' => 'Credenciales inválidas.',
                 ], 401);
             }
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            // Cargar y procesar vistas
-            $views = $user->views->map(function ($view) {
-                return json_decode($view->views, true);
-            })->flatten(1);
-
-            // Construir profile con user_id
-            $profile = $user->toArray();
-            $profile['user_id'] = $user->id;
-
             return response()->json([
                 'success' => true,
                 'message' => 'Inicio de sesión exitoso.',
-                'profile' => $profile, // ✅ ahora sí incluye user_id
+
                 'token' => $token,
-                'views' => $views,
-                'role' => [[
-                    'id' => 5,
-                    'name' => 'Super'
-                ]]
+
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'lastname' => $user->lastname,
+                    'middlename' => $user->middlename,
+                    'email' => $user->email,
+                    'personalemail' => $user->personalemail,
+                    'rol' => $user->rol,
+
+                    'cde' => $user->cde
+                        ? [
+                            'id' => $user->cde->id,
+                            'name' => $user->cde->name,
+                        ]
+                        : null,
+                ],
+
+                'role_name' => $user->role?->name,
+
+                'role_modules' => $user->role?->modules ?? [],
+
             ]);
+
         } catch (\Exception $e) {
+
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error en el login.',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
+
         }
     }
-
-
 
     public function logout(Request $request)
     {
@@ -145,11 +118,11 @@ class AuthController extends Controller
 
             $tokenRecord = Token::where('status', 1)->first();
 
-            if (!$tokenRecord) {
+            if (! $tokenRecord) {
                 return response()->json(['status' => 404, 'error' => 'Token no encontrado o inactivo']);
             }
 
-            $client = new Client();
+            $client = new Client;
             $response = $client->request('GET', $apiUrl, [
                 'headers' => [
                     'Authorization' => $tokenRecord->token,
@@ -161,6 +134,7 @@ class AuthController extends Controller
 
             if ($data) {
                 $tokenRecord->increment('count');
+
                 return response()->json(['data' => $data, 'status' => 200]);
             } else {
                 return response()->json(['status' => 403, 'error' => 'No se encontró el DNI']);
@@ -172,14 +146,13 @@ class AuthController extends Controller
 
             if ($e->getCode() == 429) {
                 return response()->json(['status' => 429, 'message' => 'Ha superado el límite de solicitudes permitidas. Por favor, inténtalo el próximo mes.']);
-            } else if ($e->getCode() == 401) {
+            } elseif ($e->getCode() == 401) {
                 return response()->json(['status' => 401, 'message' => 'Token Incorrecto']);
             } else {
                 return response()->json(['error' => $e->getMessage()]);
             }
         }
     }
-
 
     public function dniDataUser($type, $num)
     {
@@ -208,13 +181,13 @@ class AuthController extends Controller
         $request->validate([
             'current_password' => 'required|string',
             'password' => 'required|string|confirmed|min:8',
-            'dni' => 'required|string'
+            'dni' => 'required|string',
         ]);
 
         if ($user_dni == $request->dni) {
             $user = Auth::user();
 
-            if (!Hash::check($request->current_password, $user->password)) {
+            if (! Hash::check($request->current_password, $user->password)) {
                 return response()->json(['message' => 'La contraseña actual no es válida'], 400);
             }
 

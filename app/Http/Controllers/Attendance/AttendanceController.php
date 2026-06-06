@@ -809,49 +809,6 @@ class AttendanceController extends Controller
         ]);
     }
 
-    public function updateValuesSelect(Request $request)
-    {
-        $request->validate([
-            'slug' => 'required|string',
-            'rowId' => 'required|integer',
-            'column' => 'required|string|in:is_asesoria,was_formalizado',
-            'value' => 'nullable|in:s,n',
-        ]);
-
-        // 1️⃣ Buscar evento por slug
-        $attendance = Attendance::where('slug', $request->slug)->first();
-
-        if (! $attendance) {
-            return response()->json([
-                'message' => 'Evento no encontrado',
-            ], 404);
-        }
-
-        // 2️⃣ Buscar postulante dentro de ese evento
-        $row = AttendanceList::where('id', $request->rowId)
-            ->where('attendancelist_id', $attendance->id)
-            ->first();
-
-        if (! $row) {
-            return response()->json([
-                'message' => 'Registro no encontrado para este evento',
-            ], 404);
-        }
-
-        // 3️⃣ Actualizar columna dinámica
-        $row->{$request->column} = $request->value;
-        $row->save();
-
-        return response()->json([
-            'message' => 'Actualizado correctamente',
-            'data' => [
-                'id' => $row->id,
-                'column' => $request->column,
-                'value' => $request->value,
-            ],
-        ], 200);
-    }
-
     public function sendAttendanceMail(Request $request)
     {
         $mailer = 'notificaciones';

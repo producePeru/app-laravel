@@ -44,8 +44,10 @@ use App\Models\CyberwowLeader;
 use App\Models\Fair;
 use App\Models\FairType;
 use App\Models\MPCapacitador;
+use App\Models\NombreActividad;
 use App\Models\PropagandaMedia;
 use App\Models\RoleCompany;
+use App\Models\TipoActividad;
 use App\Models\TrainingDimension;
 use App\Models\TrainingMeta;
 use App\Models\TrainingSpecialist;
@@ -372,7 +374,9 @@ class SelectController extends Controller
 
     public function getAsesores()
     {
-        $asesores = User::where('rol', 2)->get();
+        $asesores = User::where('rol', 2)
+            ->where('active', 1)
+            ->get();
 
         $data = $asesores->map(function ($item) {
             $label = strtoupper(trim(
@@ -387,7 +391,10 @@ class SelectController extends Controller
 
         $sortedData = $data->sortBy('label')->values();
 
-        return response()->json(['data' => $sortedData, 'status' => 200]);
+        return response()->json([
+            'data' => $sortedData,
+            'status' => 200
+        ]);
     }
 
     // Lista de asesores para el reporte
@@ -784,5 +791,89 @@ class SelectController extends Controller
         });
 
         return response()->json(['data' => $data]);
+    }
+
+    public function getTipoActividadesPnte()
+    {
+        $types = TipoActividad::orderBy('name')
+            ->get();
+
+        $data = $types->map(function ($item) {
+
+            return [
+                'label' => $item->name,
+                'value' => $item->id,
+            ];
+        });
+
+        return response()->json([
+            'data' => $data
+        ]);
+    }
+
+    public function getTipoActividades()
+    {
+        // Filtrar por unidad = 1
+        $types = TipoActividad::where('unidad', 1)->get();
+
+        $data = $types->sortBy('name')->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id,
+            ];
+        })->values();
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getTipoActividadesUgse()
+    {
+        // Filtrar por unidad = 2
+        $types = TipoActividad::where('unidad', 2)->get();
+
+        $data = $types->sortBy('name')->map(function ($item) {
+            return [
+                'label' => $item->name,
+                'value' => $item->id,
+            ];
+        })->values();
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getNombreActividades($id)
+    {
+        $districts = NombreActividad::where('tipo_actividad_id', $id)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $data = $districts->map(fn($item) => [
+            'label' => $item->name,
+            'value' => $item->id,
+        ])->values();
+
+        return response()->json([
+            'data' => $data,
+        ]);
+    }
+
+    public function getUsersPnte()
+    {
+        $users = User::where('active', 1)->orderBy('name', 'asc')->get();
+
+        $data = $users->map(function ($item) {
+            $label = strtoupper(trim(
+                $item->name . ' ' . $item->lastname . ' ' . ($item->middlename ?? '')
+            ));
+
+            return [
+                'label' => $label,
+                'value' => $item->id,
+            ];
+        });
+
+        $sortedData = $data->sortBy('label')->values();
+
+        return response()->json(['data' => $sortedData, 'status' => 200]);
     }
 }
