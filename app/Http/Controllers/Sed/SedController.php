@@ -16,80 +16,41 @@ class SedController extends Controller
 {
     public function storeSedSurvey(Request $request)
     {
+        $request->validate([
+            'slug' => 'required|string|exists:actividades_pnte,slug',
+            'questions' => 'required|array|min:1',
+            'questions.*.label' => 'required|string',
+            'questions.*.type' => 'required|string',
+            'questions.*.required' => 'nullable|boolean',
+            'questions.*.md' => 'nullable|integer',
+            'questions.*.visible' => 'nullable|integer', // Se agrega validación para visible
+            'questions.*.options' => 'nullable|array',
+            'questions.*.position' => 'nullable|integer',
+        ]);
+
         DB::beginTransaction();
 
         try {
-
             $payload = $request->all();
-
             $tableName = $payload['table'] ?? 'sed';
 
-            // =====================================================
-            // VALIDAR SLUG
-            // =====================================================
-
-            if (empty($payload['slug'])) {
-
-                return response()->json([
-                    'status' => 422,
-                    'message' => 'El slug es requerido'
-                ], 422);
-            }
-
-            // =====================================================
-            // OBTENER ACTIVIDAD
-            // =====================================================
-
-            $actividad = ActividadPnte::where(
-                'slug',
-                $payload['slug']
-            )->firstOrFail();
-
-            // =====================================================
-            // RECORRER PREGUNTAS
-            // =====================================================
-
             foreach ($payload['questions'] as $q) {
-
-                if (empty($q['label']) || empty($q['type'])) {
-                    continue;
-                }
-
-                // =====================================================
-                // GENERAR MODEL ÚNICO
-                // IGNORAR EL MODEL QUE VIENE EN EL PAYLOAD
-                // =====================================================
-
-                do {
-
-                    $nextId = (Question::max('id') ?? 0) + 1;
-
-                    $model = 'question_' . $nextId;
-
-                    $existsModel = Question::where(
-                        'model',
-                        $model
-                    )->exists();
-                } while ($existsModel);
-
-                // =====================================================
-                // CREAR PREGUNTA
-                // =====================================================
 
                 $question = Question::create([
                     'tableName' => $tableName,
                     'label'     => trim($q['label']),
                     'type'      => trim($q['type']),
-                    'model'     => $model,
+                    'model'     => '',
                     'required'  => !empty($q['required']) ? 1 : 0,
-                    'visible'   => 1
+                    'visible'   => $q['visible'] ?? 1, // Si existe lo asigna (incluso si es 0), si no, por defecto es 1
+                    'position'  => $q['position'] ?? null,
                 ]);
 
-                // =====================================================
-                // OPCIONES
-                // =====================================================
+                $question->update([
+                    'model' => 'question_' . $question->id
+                ]);
 
-                if (!empty($q['options'])) {
+                if (!empty($q['options']) && is_array($q['options'])) {
 
                     foreach ($q['options'] as $index => $opt) {
 
@@ -99,46 +60,25 @@ class SedController extends Controller
                             continue;
                         }
 
-                        // =====================================================
-                        // GENERAR VALUE ÚNICO
-                        // IGNORAR EL VALUE QUE VIENE EN EL PAYLOAD
-                        // =====================================================
-
-                        do {
-
-                            $nextValue = (QuestionOption::max('id') ?? 0) + 1;
-
-                            $valueExists = QuestionOption::where(
-                                'value',
-                                (string) $nextValue
-                            )->exists();
-                        } while ($valueExists);
-
                         QuestionOption::create([
                             'question_id' => $question->id,
-                            'value'       => (string) $nextValue,
+                            'value'       => (string) ($index + 1),
                             'label'       => $label,
                             'status'      => 1,
-
                         ]);
                     }
                 }
 
-                // =====================================================
-                // RELACIÓN SEDSURVEY
-                // =====================================================
-
                 SedSurvey::create([
                     'actividad_pnte_slug' => $payload['slug'],
                     'question_id'         => $question->id,
-                    'sed_id'              => $actividad->id
                 ]);
             }
 
             DB::commit();
 
             return response()->json([
-                'status' => 200,
+                'status'  => 200,
                 'message' => 'Encuesta registrada correctamente'
             ]);
         } catch (\Throwable $e) {
@@ -148,7 +88,7 @@ class SedController extends Controller
             Log::error('Error registrando encuesta SED', [
                 'error' => $e->getMessage(),
                 'line'  => $e->getLine(),
-                'file'  => $e->getFile()
+                'file'  => $e->getFile(),
             ]);
 
             return response()->json([

@@ -129,7 +129,7 @@ class ActividadPnteController extends Controller
                         Carbon::parse($actividad->created_at)
                         ->format('d/m/Y') .
                         ' a las 23:59. Por favor, contacte con su supervisor.',
-                ], 403);
+                ]);
             }
         }
 
@@ -792,56 +792,71 @@ class ActividadPnteController extends Controller
 
     public function actualizarTotalParticipantes(Request $request): JsonResponse
     {
-        // ✅ unidad puede venir: 1, 2 o 3
-        $request->validate([
-            'unidad' => 'nullable|integer|in:1,2,3',
-        ]);
+        try {
 
-        // ✅ SI ENVÍA UNIDAD → FILTRA
-        // ✅ SI NO ENVÍA → TRAE TODOS
-        $actividades = ActividadPnte::when(
-            $request->filled('unidad'),
-            function ($q) use ($request) {
-
-                $q->where(
-                    'unidad',
-                    $request->input('unidad')
-                );
-            }
-        )->get();
-
-        foreach ($actividades as $actividad) {
-
-            $total = EmpresarioActividad::where(
-                'slug',
-                $actividad->slug
-            )->count();
-
-            $totalAsesorias = EmpresarioActividad::where(
-                'slug',
-                $actividad->slug
-            )
-                ->where('personal_asesoria', 1)
-                ->count();
-
-            $totalFormalizaciones = EmpresarioActividad::where(
-                'slug',
-                $actividad->slug
-            )
-                ->where('personal_formalizacion', 1)
-                ->count();
-
-            $actividad->update([
-                'total_participantes' => $total,
-                'total_asesorias' => $totalAsesorias,
-                'total_formalizaciones' => $totalFormalizaciones,
+            $request->validate([
+                'unidad' => 'nullable|integer|in:1,2,3',
             ]);
-        }
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Total de participantes, asesorías y formalizaciones actualizado correctamente.',
-        ]);
+            $user = auth()->user();
+
+            $actividades = ActividadPnte::when(
+                $request->filled('unidad'),
+                function ($q) use ($request) {
+                    $q->where('unidad', $request->input('unidad'));
+                }
+            )
+                ->when(
+                    $user->rol == 2,
+                    function ($q) use ($user) {
+                        $q->where('representante_id', $user->id);
+                    }
+                )
+                ->orderByDesc('id')
+                ->limit(200)
+                ->get();
+
+            foreach ($actividades as $actividad) {
+
+                $total = EmpresarioActividad::where(
+                    'slug',
+                    $actividad->slug
+                )->count();
+
+                $totalAsesorias = EmpresarioActividad::where(
+                    'slug',
+                    $actividad->slug
+                )
+                    ->where('personal_asesoria', 1)
+                    ->count();
+
+                $totalFormalizaciones = EmpresarioActividad::where(
+                    'slug',
+                    $actividad->slug
+                )
+                    ->where('personal_formalizacion', 1)
+                    ->count();
+
+                $actividad->update([
+                    'total_participantes'   => $total,
+                    'total_asesorias'       => $totalAsesorias,
+                    'total_formalizaciones' => $totalFormalizaciones,
+                ]);
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Totales actualizados correctamente.',
+                'procesados' => $actividades->count(),
+            ]);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al actualizar los totales.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function storeOrUpdateDescripcion(Request $request)
