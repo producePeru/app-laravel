@@ -145,6 +145,7 @@ class CdeController extends Controller
             'provincia_id' => 'required|exists:provinces,id',
             'distrito_id' => 'required|exists:districts,id',
             'direccion' => 'nullable|string|max:100',
+            'is_mac' => 'nullable|boolean',
         ]);
 
         $cde = CdePnte::create($validated);
@@ -183,6 +184,7 @@ class CdeController extends Controller
             'provincia_id' => 'required|exists:provinces,id',
             'distrito_id' => 'required|exists:districts,id',
             'direccion' => 'nullable|string|max:100',
+            'is_mac' => 'nullable|boolean',
         ]);
 
         $cde->update($validated);
@@ -212,5 +214,24 @@ class CdeController extends Controller
             'success' => true,
             'data' => $cdes
         ]);
+    }
+
+    public function deleteCde($id)
+    {
+        try {
+            $cde = CdePnte::findOrFail($id);
+            $cde->delete();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'CDE eliminada correctamente.'
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al eliminar la CDE.',
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 }

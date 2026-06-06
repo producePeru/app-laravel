@@ -4,18 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CdePnte extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'cde_pnte';
+
 
     protected $fillable = [
         'nombre',
         'region_id',
         'provincia_id',
         'distrito_id',
+        'is_mac',
         'direccion',
     ];
 

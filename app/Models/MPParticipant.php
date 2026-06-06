@@ -36,7 +36,10 @@ class MPParticipant extends Model
         'email',
         'role_company_id',
         'obs_ruc',
-        'obs_dni'
+        'obs_dni',
+
+        'ruc_cooperativa',
+        'razon_social_cooperativa'
     ];
 
     public function rubro()

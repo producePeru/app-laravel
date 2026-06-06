@@ -44,19 +44,19 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             'D' => 14,
             'E' => 14,
             'F' => 14,
-            'G' => 18,
+            'G' => 13,
 
-            'H' => 11,
+            'H' => 8,
             'I' => 15,
             'J' => 11,
-            'K' => 19,
-            'L' => 28,
+            'K' => 11,
+            'L' => 16,
             'M' => 22,
-            'N' => 21,
-            'O' => 11,
-            'P' => 7,
+            'N' => 22,
+            'O' => 8,
+            'P' => 8,
             'Q' => 11,
-            'R' => 11,
+            'R' => 14,
 
             'S' => 14,
             'T' => 14,
@@ -83,33 +83,33 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             ->setARGB('002060');
 
         // Marrón
-        $sheet->getStyle('H1:U1')
+        $sheet->getStyle('H1:V1')
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->setARGB('833C0C');
 
         // Verde militar
-        $sheet->getStyle('V1:AE1')
+        $sheet->getStyle('W1:AE1')
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->setARGB('375623');
 
         // Negro
-        $sheet->getStyle('AF1')
+        $sheet->getStyle('AF1:AG1')
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->setARGB('000000');
 
         // Fuente blanca y negrita
-        $sheet->getStyle('A1:AF1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AF1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:AG1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AG1')->getFont()->getColor()->setARGB('FFFFFF');
 
         // Ajuste de texto y centrado vertical
-        $sheet->getStyle('A1:AF1')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A1:AF1')->getAlignment()->setVertical(
+        $sheet->getStyle('A1:AG1')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:AG1')->getAlignment()->setVertical(
             \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
         );
     }
@@ -139,6 +139,7 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             '¿Tiene hijos?  (SI / NO)',
             'Celular',
             '¿Con qué cultura o etnia te identificas?',
+            'Lengua Originaria',
             'Correo electrónico',
 
             'Tipo formalización',

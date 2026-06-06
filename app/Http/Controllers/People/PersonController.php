@@ -449,8 +449,11 @@ class PersonController extends Controller
             'gender_id',
             'sick',
             'hasSoon',
+
             'etnia_id',
-            'persona_cuidadora'
+            'lengua_id',
+            'persona_cuidadora',
+            'lengua_otro'
         ];
         $payload = Arr::only($data, $FIELDS);
 
@@ -501,6 +504,8 @@ class PersonController extends Controller
                     'user_id',
                     'etnia_id',
                     'persona_cuidadora',
+                    'lengua_id',
+                    'lengua_otro'
                 )->first();
 
             if ($person) {
