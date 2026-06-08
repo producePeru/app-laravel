@@ -96,7 +96,7 @@ class Attendance extends Model
     public function scopeSearch($query, $search)
     {
         if ($search) {
-            return $query->where('title', 'like', '%' . $search . '%');
+            return $query->where('title', 'like', '%'.$search.'%');
         }
 
         return $query;
@@ -125,23 +125,23 @@ class Attendance extends Model
             ]);
 
         // 🔍 NOMBRE
-        if (!empty($filters['name'])) {
-            $query->where('theme', 'like', '%' . $filters['name'] . '%');
+        if (! empty($filters['name'])) {
+            $query->where('theme', 'like', '%'.$filters['name'].'%');
         }
 
         // 👤 ASESOR
-        if (!empty($filters['asesor'])) {
+        if (! empty($filters['asesor'])) {
             $query->where('asesorId', $filters['asesor']);
         }
 
         // 🏢 MODALIDAD
-        if (!empty($filters['modalidad'])) {
+        if (! empty($filters['modalidad'])) {
             $modalidad = $filters['modalidad'] === 'presencial' ? 'p' : 'v';
             $query->where('modality', $modalidad);
         }
 
         // 📅 AÑO (DESDE dates JSON)
-        if (!empty($filters['year'])) {
+        if (! empty($filters['year'])) {
 
             $year = $filters['year'];
 
@@ -160,15 +160,15 @@ class Attendance extends Model
         }
 
         // 📅 FECHA EXACTA
-        if (!empty($filters['date'])) {
+        if (! empty($filters['date'])) {
             $query->whereJsonContains('dates', $filters['date']);
         }
 
         // 📅 RANGO (dateStart / dateEnd desde payload)
-        if (!empty($filters['dateStart']) && !empty($filters['dateEnd'])) {
+        if (! empty($filters['dateStart']) && ! empty($filters['dateEnd'])) {
 
             $start = \Carbon\Carbon::createFromFormat('Y/m/d', $filters['dateStart'])->format('Y-m-d');
-            $end   = \Carbon\Carbon::createFromFormat('Y/m/d', $filters['dateEnd'])->format('Y-m-d');
+            $end = \Carbon\Carbon::createFromFormat('Y/m/d', $filters['dateEnd'])->format('Y-m-d');
 
             $query->where(function ($q) use ($start, $end) {
 
@@ -182,20 +182,20 @@ class Attendance extends Model
         }
 
         // 🌎 UBICACIÓN
-        if (!empty($filters['city'])) {
+        if (! empty($filters['city'])) {
             $query->where('city_id', $filters['city']);
         }
 
-        if (!empty($filters['province'])) {
+        if (! empty($filters['province'])) {
             $query->where('province_id', $filters['province']);
         }
 
-        if (!empty($filters['district'])) {
+        if (! empty($filters['district'])) {
             $query->where('district_id', $filters['district']);
         }
 
         // 🚦 STATUS (USANDO dates)
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
 
             $today = \Carbon\Carbon::today()->toDateString();
 
@@ -228,7 +228,7 @@ class Attendance extends Model
         }
 
         // 🔽 ORDEN
-        if (!empty($filters['orderby'])) {
+        if (! empty($filters['orderby'])) {
 
             switch ($filters['orderby']) {
                 case 1:

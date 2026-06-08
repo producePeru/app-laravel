@@ -13,6 +13,7 @@ use App\Http\Controllers\Download\DownloadMPParticipantesController;
 use App\Http\Controllers\Download\DownloadTemplateUgoActividadesController;
 use App\Http\Controllers\Download\QuestionnarieController;
 use App\Http\Controllers\Download\SedAsistentesController;
+use App\Http\Controllers\Pnte\ActividadPnteController;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(DownloadFormalizationsController::class)->group(function () {
@@ -30,7 +31,7 @@ Route::controller(SedAsistentesController::class)->group(function () {
 
     Route::post('sed-asistentes/{slug}', 'exportList');
 
-    Route::post('sed-asistentes-cooperativas/{slug}', 'exportListCooperativas');
+    Route::post('sed-asistentes-con-preguntas/{slug}', 'sedAsistentesPreguntas');    // actualizado 2025/05/21
 
     Route::post('get-sed-answers', 'exportSedAnswers');
 });
@@ -40,26 +41,24 @@ Route::controller(CyberWowParticipantesController::class)->group(function () {
     Route::post('cyber-wow-participants/{slug}', 'exportList');
 });
 
-
 Route::controller(QuestionnarieController::class)->group(function () {
 
     Route::post('questions-answers-advisors-formalizations', 'questionsAnswersAdvisorsFormalizations');
 });
 
-
 Route::controller(DownloadAttendanceController::class)->group(function () {
 
     Route::get('attendance-mercado/{slug}', 'exportFortaleceTuMercado');
 
-    Route::post('attendance/{slug}', 'exportRegistrantsUgoEvents');
-});
+    Route::POST('export-inscritos-por-slug/{slug}', 'exportInscritosPorSlug');
 
+    Route::POST('export-inscritos-por-slug-sed/{slug}', 'exportInscritosPorSlugSed');
+});
 
 Route::controller(ActividadesUgoController::class)->group(function () {
 
     Route::post('all-activities-the-year', 'allActivitiesTheYear');
 });
-
 
 Route::controller(CyberWowCarpetaLiderController::class)->group(function () {
 
@@ -72,7 +71,6 @@ Route::controller(DownloadTemplateUgoActividadesController::class)->group(functi
 
     Route::get('download-ugo-activities', 'downloadUgoActividades');
 });
-
 
 Route::controller(DownloadLiderAsesorController::class)->group(function () {
 
@@ -101,6 +99,11 @@ Route::controller(DownloadExportDiagnosticMP::class)->group(function () {
 Route::controller(DownloadComprasPeruController::class)->group(function () {
 
     Route::post('cp-registros/export', 'exportExcel');
+});
+
+Route::controller(ActividadPnteController::class)->group(function () {
+
+    Route::post('pantilla-para-inscritos', 'descargarPantillaInscritos');
 });
 
 // download

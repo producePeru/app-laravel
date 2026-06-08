@@ -13,7 +13,7 @@ class SedSurvey extends Model
 
     protected $fillable = [
         'sed_id',
-        'title',
+        'actividad_pnte_slug',
         'question_id'
     ];
 
