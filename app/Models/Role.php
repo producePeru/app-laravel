@@ -9,12 +9,16 @@ class Role extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $table = 'roles';
 
-    protected $hidden = ['pivot', 'created_at', 'updated_at'];
+    protected $fillable = ['name', 'modules'];
+
+    protected $casts = [
+        'modules' => 'array',
+    ];
 
     public function users()
     {
-        return $this->belongsToMany(User::class);
+        return $this->hasMany(User::class, 'role_id');
     }
 }

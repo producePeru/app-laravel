@@ -15,6 +15,7 @@ class sedQuestionAnswer extends Model
         'dni',
         'ruc',
         'sed_id',
+        'slug_sed',
         'question',
         'answer',
         'order'
