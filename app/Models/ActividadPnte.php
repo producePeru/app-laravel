@@ -43,6 +43,10 @@ class ActividadPnte extends Model
         'actualizado_por_id',
         'horario',
         'activo',
+        'link',
+
+        'componente_id',
+        'trainer_id'
     ];
 
     protected $casts = [
@@ -110,5 +114,10 @@ class ActividadPnte extends Model
     public function empresariosActividad()
     {
         return $this->hasMany(EmpresarioActividad::class, 'slug', 'slug');
+    }
+
+    public function tainnerPp093(): BelongsTo
+    {
+        return $this->belongsTo(PpCapacitador::class, 'trainer_id');
     }
 }

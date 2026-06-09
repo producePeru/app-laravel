@@ -45,6 +45,7 @@ use App\Models\Fair;
 use App\Models\FairType;
 use App\Models\MPCapacitador;
 use App\Models\NombreActividad;
+use App\Models\PpCapacitador;
 use App\Models\PropagandaMedia;
 use App\Models\RoleCompany;
 use App\Models\TipoActividad;
@@ -875,5 +876,19 @@ class SelectController extends Controller
         $sortedData = $data->sortBy('label')->values();
 
         return response()->json(['data' => $sortedData, 'status' => 200]);
+    }
+
+    public function getCapacitadoresPP093()
+    {
+        $types = PpCapacitador::orderBy('nombres_apellidos', 'asc')->get();
+
+        $data = $types->map(function ($item) {
+            return [
+                'label' => $item->nombres_apellidos,
+                'value' => $item->id
+            ];
+        });
+
+        return response()->json(['data' => $data]);
     }
 }
