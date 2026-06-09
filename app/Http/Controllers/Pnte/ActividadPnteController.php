@@ -23,36 +23,65 @@ class ActividadPnteController extends Controller
             'unidad' => 'required|integer|in:1,2,3,4,5',
             'fechas' => 'required|array|min:1',
             'fechas.*' => 'required|date_format:Y-m-d',
+
             'tipo_actividad_id' => 'required|exists:tipo_actividad,id',
             'nombre_actividad_id' => 'required|exists:nombre_actividad,id',
+
             'tema' => 'nullable|string|max:255',
+
             'region' => 'required|exists:cities,id',
             'provincia' => 'required|exists:provinces,id',
             'distrito' => 'required|exists:districts,id',
+
             'lugar' => 'nullable|string|max:255',
+
             'entidad_organizadora' => 'nullable|string|max:255',
             'entidad_aliada' => 'nullable|string|max:255',
+
             'representante_id' => 'nullable|exists:users,id',
+
             'requiere_pasaje' => 'required|boolean',
             'monto_gasto' => 'nullable|max:255',
+
             'mypes_beneficiadas' => 'nullable|integer|min:0',
+
             'modalidad_id' => 'nullable|exists:modalities,id',
+
             'horario' => 'nullable|string',
+
+            'link' => 'nullable|string',
+
+            'componente_id' => 'nullable|exists:pp_capacitadores,id',
+            'trainer_id' => 'nullable|exists:pp_capacitadores,id',
         ]);
 
-        // ✅ Mes: extraer el mes de la fecha más antigua del array
+
+        $validated['representante_id'] =
+            $validated['representante_id'] ?? Auth::id();
+
+        // =====================================================
+        // OBTENER MES DE LA FECHA MÁS ANTIGUA
+        // =====================================================
+
         $fechaMinima = collect($validated['fechas'])
             ->map(fn($f) => Carbon::parse($f))
             ->sortBy(fn($d) => $d->timestamp)
             ->first();
 
-        $validated['mes'] = (int) $fechaMinima->format('n'); // 1-12 sin cero
-        $validated['cantidad_dias'] = count($validated['fechas']);     // bonus: setear cantidad_dias
+        $validated['mes'] = (int) $fechaMinima->format('n');
+
+        // =====================================================
+        // CANTIDAD DE DÍAS
+        // =====================================================
+
+        $validated['cantidad_dias'] = count($validated['fechas']);
 
         try {
+
             $actividad = DB::transaction(function () use ($validated) {
 
                 $validated['slug'] = $this->generateUniqueSlug($validated);
+
                 $validated['registrado_por_id'] = Auth::id();
 
                 return ActividadPnte::create($validated);
@@ -73,7 +102,7 @@ class ActividadPnteController extends Controller
             ]);
         } catch (Throwable $e) {
             return response()->json([
-                'success' => false,
+                'status' => 500,
                 'message' => 'Error al registrar la actividad.',
                 'error' => $e->getMessage(),
             ], 500);
@@ -233,6 +262,7 @@ class ActividadPnteController extends Controller
             'distritoRel:id,name',
             'representante:id,name,lastname,middlename',
             'modalidad:id,name',
+            'tainnerPp093:id,nombres_apellidos'
         ])
             ->select([
                 'id',
@@ -266,6 +296,11 @@ class ActividadPnteController extends Controller
                 'actualizado_por_id',
                 'horario',
                 'activo',
+
+                'link',
+                'componente_id',
+                'trainer_id',
+
                 'created_at',
             ])
 

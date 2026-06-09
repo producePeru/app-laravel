@@ -200,6 +200,10 @@ Route::prefix('mp')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/mpAuth.php';
 });
 
+Route::prefix('pp093')->middleware('auth:sanctum')->group(function () {
+    require __DIR__ . '/api/pp093.php';
+});
+
 // PUBLICAS
 Route::prefix('api')->group(function () {
     require __DIR__ . '/api/apis.php';
@@ -561,6 +565,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('get-nombre-actividades/{id}', [SelectController::class, 'getNombreActividades']);
 
     Route::get('get-users-pnte', [SelectController::class, 'getUsersPnte']);
+    Route::get('get-tainers-pp093', [SelectController::class, 'getCapacitadoresPP093']);
 });
 
 // Route::group(['prefix' => 'automatic', 'namespace' => 'App\Http\Controllers'], function() {
