@@ -51,7 +51,7 @@ class ActividadPnteController extends Controller
 
             'link' => 'nullable|string',
 
-            'componente_id' => 'nullable|exists:pp_capacitadores,id',
+            'componente_id' => 'nullable',
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
         ]);
 

@@ -13,3 +13,20 @@ Route::controller(PpCapacitadorController::class)->group(function () {
 });
 
 // pp093 
+
+
+Route::controller(PpCapacitadorController::class)->group(function () {
+
+    Route::GET('is-register/{ruc}/{dni}', 'isRegisterPlataforma');
+});
+
+
+Route::controller(ActividadPublicPnteController::class)->group(function () {
+    
+    Route::POST('register-mype', 'registerBusinessManPP093');
+});
+
+// pp093-public
+
+
+    

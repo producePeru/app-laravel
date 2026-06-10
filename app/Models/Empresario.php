@@ -40,7 +40,11 @@ class Empresario extends Model
         'edad',
 
         // otros
-        'actividad_comercial_nombre'
+        'actividad_comercial_nombre',
+        'tipo_empresa_id',
+        'f_inicio_act',
+        'venta_anual',
+        'medio_entero'
     ];
 
     // ─── RELACIONES ───────────────────────────────────────────────

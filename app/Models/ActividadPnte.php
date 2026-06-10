@@ -120,4 +120,9 @@ class ActividadPnte extends Model
     {
         return $this->belongsTo(PpCapacitador::class, 'trainer_id');
     }
+
+    public function sedDescripcion()
+    {
+        return $this->hasOne(SedDescripcion::class, 'slug_actividad_pnte', 'slug');
+    }
 }
