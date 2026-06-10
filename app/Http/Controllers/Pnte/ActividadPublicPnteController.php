@@ -537,7 +537,8 @@ class ActividadPublicPnteController extends Controller
                 'data'    => [
                     'id'         => $empresario->id,
                     'numero_dni' => $empresario->numero_dni,
-                    'ruc'        => $empresario->ruc
+                    'ruc'        => $empresario->ruc,
+                    'celular'    => $empresario->celular
                 ]
             ], $statusCode);
         } catch (\Exception $e) {
@@ -554,5 +555,10 @@ class ActividadPublicPnteController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function checkToCoursePp093(Request $request)
+    {
+
     }
 }
