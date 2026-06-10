@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Pnte;
 
 use App\Http\Controllers\Controller;
+use App\Models\Empresario;
 use App\Models\PpCapacitador;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class PpCapacitadorController extends Controller
 {
@@ -93,5 +96,44 @@ class PpCapacitadorController extends Controller
             'message' => 'Capacitador actualizado correctamente.',
             'data' => $capacitador
         ]);
+    }
+
+
+
+    public function isRegisterPlataforma($ruc, $dni)
+    {
+        try {
+            $empresario = \App\Models\Empresario::select([
+                'numero_dni',
+                'apellido_paterno',
+                'apellido_materno',
+                'nombres'
+            ])
+                ->where('ruc', $ruc)
+                ->where('numero_dni', $dni)
+                ->first();
+
+            if (!$empresario) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'Empresario no encontrado con el RUC y DNI proporcionados.',
+                ]);
+            }
+
+            return response()->json([
+                'status' => 200,
+                'data'   => $empresario
+            ], 200);
+        } catch (Exception $e) {
+            Log::error("Error en isRegisterPlataforma: " . $e->getMessage(), [
+                'ruc' => $ruc,
+                'dni' => $dni,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Ocurrió un error interno en el servidor al procesar la solicitud.',
+            ], 500);
+        }
     }
 }

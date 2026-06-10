@@ -9,6 +9,8 @@ use App\Models\EmpresarioActividad;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ActividadPublicPnteController extends Controller
 {
@@ -349,7 +351,7 @@ class ActividadPublicPnteController extends Controller
         ];
 
         $unidadIds = collect($offices)
-            ->map(fn ($o) => $unidadMap[strtoupper(trim($o))] ?? null)
+            ->map(fn($o) => $unidadMap[strtoupper(trim($o))] ?? null)
             ->filter()
             ->values()
             ->toArray();
@@ -364,8 +366,8 @@ class ActividadPublicPnteController extends Controller
         ])
             ->where('activo', 1) // 🔥 SOLO ACTIVOS
             ->whereJsonContains('fechas', $dateSelected)
-            ->when(! empty($city), fn ($q) => $q->where('region', $city))
-            ->when(! empty($unidadIds), fn ($q) => $q->whereIn('unidad', $unidadIds))
+            ->when(! empty($city), fn($q) => $q->where('region', $city))
+            ->when(! empty($unidadIds), fn($q) => $q->whereIn('unidad', $unidadIds))
             ->get();
 
         $formatted = $actividades->map(function ($actividad) use ($dateSelected) {
@@ -419,5 +421,138 @@ class ActividadPublicPnteController extends Controller
             'status' => 200,
             'data' => $formatted,
         ]);
+    }
+
+
+
+
+    // 🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩 
+
+    public function registerBusinessManPP093(Request $request)
+    {
+        // 1. Validación estricta del Payload entrante
+        $request->validate([
+            'ruc'                        => 'nullable|string|max:11',
+            'numero_dni'                 => 'required|string|max:12',
+            'razon_social'               => 'nullable|string|max:255',
+            'nombre_comercial'           => 'nullable|string|max:255',
+            'sector_economico_id'        => 'nullable|integer',
+            'rubro_id'                   => 'nullable|integer',
+            'actividad_comercial_nombre' => 'nullable|string|max:255',
+            'region_id'                  => 'nullable|integer',
+            'provincia_id'               => 'nullable|integer',
+            'distrito_id'                => 'nullable|integer',
+            'direccion'                  => 'nullable|string|max:255',
+            'tipo_documento_id'          => 'nullable|integer',
+            'apellido_paterno'           => 'required|string|max:100',
+            'apellido_materno'           => 'required|string|max:100',
+            'nombres'                    => 'required|string|max:100',
+            'genero_id'                  => 'nullable|integer',
+            'discapacidad'               => 'nullable|boolean',
+            'celular'                    => 'nullable|string|max:20',
+            'correo_electronico'         => 'nullable|email|max:150',
+            'pais_id'                    => 'nullable|integer',
+            'fecha_nacimiento'           => 'nullable|string', // Se valida como string para formatear
+            'f_inicio_act'               => 'nullable|string', // Se valida como string para formatear
+            'venta_anual'                => 'nullable|integer|between:1,9',
+            'medio_entero'               => 'nullable|integer|between:1,8',
+            'tipo_empresa_id'            => 'nullable|integer|between:1,7',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // 2. Formatear fechas de 'dd/mm/yyyy' a 'yyyy-mm-dd' para MySQL
+            $fechaNacimiento = null;
+            if ($request->filled('fecha_nacimiento')) {
+                $fechaNacimiento = Carbon::createFromFormat('d/m/Y', $request->fecha_nacimiento)->format('Y-m-d');
+            }
+
+            $fechaInicioAct = null;
+            if ($request->filled('f_inicio_act')) {
+                $fechaInicioAct = Carbon::createFromFormat('d/m/Y', $request->f_inicio_act)->format('Y-m-d');
+            }
+
+            // 3. Calcular la edad automáticamente si se envió la fecha de nacimiento
+            $edad = null;
+            if ($fechaNacimiento) {
+                $edad = Carbon::parse($fechaNacimiento)->age;
+            }
+
+            // 4. Evitar duplicados: Buscar si ya existe por RUC y DNI (o solo DNI si el RUC es null)
+            $empresario = Empresario::where('numero_dni', $request->numero_dni)
+                ->when($request->ruc, function ($query, $ruc) {
+                    return $query->where('ruc', $ruc);
+                })
+                ->first();
+
+            // Mapeo ordenado de la data del payload
+            $dataEmpresario = [
+                'razon_social'               => $request->razon_social,
+                'nombre_comercial'           => $request->nombre_comercial,
+                'sector_economico_id'        => $request->sector_economico_id,
+                'rubro_id'                   => $request->rubro_id,
+                'actividad_comercial_nombre' => $request->actividad_comercial_nombre,
+                'region_id'                  => $request->region_id,
+                'provincia_id'               => $request->provincia_id,
+                'distrito_id'                => $request->distrito_id,
+                'direccion'                  => $request->direccion,
+                'tipo_documento_id'          => $request->tipo_documento_id,
+                'apellido_paterno'           => $request->apellido_paterno,
+                'apellido_materno'           => $request->apellido_materno,
+                'nombres'                    => $request->nombres,
+                'genero_id'                  => $request->genero_id,
+                'discapacidad'               => $request->discapacidad ?? 0,
+                'celular'                    => $request->celular,
+                'correo_electronico'         => $request->correo_electronico,
+                'pais_id'                    => $request->pais_id,
+                'fecha_nacimiento'           => $fechaNacimiento,
+                'edad'                       => $edad,
+                'f_inicio_act'               => $fechaInicioAct,
+                'venta_anual'                => $request->venta_anual,
+                'medio_entero'               => $request->medio_entero,
+                'tipo_empresa_id'            => $request->tipo_empresa_id,
+            ];
+
+            if ($empresario) {
+                // Si ya existe, actualizamos su información con los nuevos datos enviados
+                $empresario->update($dataEmpresario);
+                $statusCode = 200;
+                $message = 'Datos del empresario actualizados correctamente.';
+            } else {
+                // Si no existe, incluimos las llaves primarias de identidad y creamos el registro
+                $dataEmpresario['ruc'] = $request->ruc;
+                $dataEmpresario['numero_dni'] = $request->numero_dni;
+
+                $empresario = Empresario::create($dataEmpresario);
+                $statusCode = 201;
+                $message = 'Empresario registrado exitosamente.';
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => $statusCode,
+                'message' => $message,
+                'data'    => [
+                    'id'         => $empresario->id,
+                    'numero_dni' => $empresario->numero_dni,
+                    'ruc'        => $empresario->ruc
+                ]
+            ], $statusCode);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error("Error en registerBusinessManPP093: " . $e->getMessage(), [
+                'payload' => $request->all(),
+                'trace'   => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Ocurrió un problema en el servidor al procesar el registro.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 }
