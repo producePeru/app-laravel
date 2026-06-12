@@ -557,8 +557,98 @@ class ActividadPublicPnteController extends Controller
         }
     }
 
+
     public function checkToCoursePp093(Request $request)
     {
+        // 1. Validación del Payload Completo y su Arreglo Anidado
+        $request->validate([
+            'empresario_id'                      => 'required|integer',
+            'numero_dni'                         => 'required|string|max:12',
+            'ruc'                                => 'nullable|string|max:11',
+            'actividades'                        => 'required|array|min:1',
+            'actividades.*.actividad_id'         => 'required|integer',
+            'actividades.*.slug'                 => 'required|string',
+            'actividades.*.fecha_seleccionada'   => 'required|date_format:Y-m-d',
+            'actividades.*.horario_inicio'       => 'required|string',
+            'actividades.*.horario_fin'          => 'required|string',
+        ]);
 
+        try {
+            DB::beginTransaction();
+
+            $empresarioId = $request->empresario_id;
+            $numeroDni    = $request->numero_dni;
+
+            // 2. Iteramos cada una de las actividades enviadas
+            foreach ($request->actividades as $act) {
+
+                // 🔥 VALIDACIÓN ULTRA ESPECÍFICA: Comprobamos si ya existe EXACTAMENTE la misma inscripción
+                $alreadyRegisteredExact = EmpresarioActividad::where('actividad_id', $act['actividad_id'])
+                    ->where('empresario_id', $empresarioId)
+                    ->where('numero_dni', $numeroDni)
+                    ->where('fecha_seleccionada', $act['fecha_seleccionada'])
+                    ->where('horario_inicio', $act['horario_inicio'])
+                    ->where('horario_fin', $act['horario_fin'])
+                    ->exists();
+
+                if ($alreadyRegisteredExact) {
+                    DB::rollBack();
+
+                    // Formateamos la fecha para que el mensaje sea amigable (Ej: 10/06/2026)
+                    $fechaAmigable = date('d/m/Y', strtotime($act['fecha_seleccionada']));
+
+                    return response()->json([
+                        'status'  => 422,
+                        'message' => "Ya te encuentras registrado en esta capacitación para el día {$fechaAmigable} en el horario de {$act['horario_inicio']} a {$act['horario_fin']}.",
+                    ]);
+                }
+
+                // Comprobamos la existencia del curso base
+                $actividad = ActividadPnte::find($act['actividad_id']);
+
+                if (!$actividad) {
+                    DB::rollBack();
+                    return response()->json([
+                        'status'  => 404,
+                        'message' => "La capacitación con ID {$act['actividad_id']} no existe o ha sido dada de baja.",
+                    ], 404);
+                }
+
+                // 3. Si no existía duplicidad exacta, el registro se crea con normalidad
+                // (Incluso si repite actividad_id pero cambia la fecha o la hora)
+                EmpresarioActividad::create([
+                    'actividad_id'       => $act['actividad_id'],
+                    'slug'               => $act['slug'],
+                    'empresario_id'      => $empresarioId,
+                    'numero_dni'         => $numeroDni,
+                    'fecha_seleccionada' => $act['fecha_seleccionada'],
+                    'horario_inicio'     => $act['horario_inicio'],
+                    'horario_fin'        => $act['horario_fin'],
+                    'fecha_asistencia'   => null,
+                ]);
+
+                $actividad->increment('total_participantes');
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Inscripciones procesadas correctamente de manera masiva y exitosa.',
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error("Error masivo en checkToCoursePp093: " . $e->getMessage(), [
+                'payload' => $request->all(),
+                'trace'   => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Ocurrió un error inesperado en el servidor al procesar las matrículas.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 }
