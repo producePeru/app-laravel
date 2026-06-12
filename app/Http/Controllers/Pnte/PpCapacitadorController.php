@@ -103,11 +103,12 @@ class PpCapacitadorController extends Controller
     public function isRegisterPlataforma($ruc, $dni)
     {
         try {
+            // 🌟 Modificado para traer únicamente id, ruc, numero_dni y celular
             $empresario = \App\Models\Empresario::select([
+                'id',
+                'ruc',
                 'numero_dni',
-                'apellido_paterno',
-                'apellido_materno',
-                'nombres'
+                'celular'
             ])
                 ->where('ruc', $ruc)
                 ->where('numero_dni', $dni)
@@ -117,19 +118,20 @@ class PpCapacitadorController extends Controller
                 return response()->json([
                     'status'  => 404,
                     'message' => 'Empresario no encontrado con el RUC y DNI proporcionados.',
-                ]);
+                ]); // Nota: Si deseas consistencia de HTTP status codes, podrías agregar , 404 al final
             }
 
             return response()->json([
                 'status' => 200,
                 'data'   => $empresario
             ], 200);
-        } catch (Exception $e) {
+        } catch (\Exception $e) { // Agregada la barra invertida '\' por si no tienes el 'use Exception;' arriba
             Log::error("Error en isRegisterPlataforma: " . $e->getMessage(), [
-                'ruc' => $ruc,
-                'dni' => $dni,
+                'ruc'   => $ruc,
+                'dni'   => $dni,
                 'trace' => $e->getTraceAsString()
             ]);
+
             return response()->json([
                 'status'  => 500,
                 'message' => 'Ocurrió un error interno en el servidor al procesar la solicitud.',

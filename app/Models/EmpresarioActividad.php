@@ -19,6 +19,11 @@ class EmpresarioActividad extends Model
         'fecha_asistencia',
         'personal_asesoria',
         'personal_formalizacion',
+
+        // ─── NUEVOS CAMPOS DE HORARIO AGREGADOS ───
+        'fecha_seleccionada',
+        'horario_inicio',
+        'horario_fin',
     ];
 
     public function empresario()

@@ -51,6 +51,7 @@ class ActividadPnte extends Model
 
     protected $casts = [
         'fechas' => 'array',
+        'horario' => 'array',
         'requiere_pasaje' => 'boolean',
     ];
 

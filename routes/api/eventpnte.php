@@ -8,6 +8,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::POST('store', 'store');
 
+    Route::POST('store-pp093', 'pp093Store');
+
     Route::PUT('update/{id}', 'update');
 
     Route::GET('index', 'index');
@@ -17,6 +19,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
     Route::PUT('cancelar/{id}', 'cancelar');
 
     Route::GET('inscritos/{slug}', 'inscritosPorSlug');
+
+    Route::GET('inscritos-pp093/{slug}', 'inscritosPP093PorSlug');
 
     Route::PUT('update-values-select', 'updateValuesSelect');
 

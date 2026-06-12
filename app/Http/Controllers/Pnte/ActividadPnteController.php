@@ -1078,4 +1078,301 @@ class ActividadPnteController extends Controller
             ], 500);
         }
     }
+
+
+
+    // create para los pp093
+
+    public function pp093Store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'unidad' => 'required|integer|in:1,2,3,4,5',
+
+            // Se cambió el origen: ahora 'horario' es el requerido
+            'horario' => 'required|array|min:1',
+            'horario.*.id' => 'required',
+            'horario.*.fecha' => 'required|date_format:Y-m-d',
+            'horario.*.horaInicio' => 'required|string',
+            'horario.*.horaFin' => 'required|string',
+
+            'tipo_actividad_id' => 'required|exists:tipo_actividad,id',
+            'nombre_actividad_id' => 'required|exists:nombre_actividad,id',
+
+            'tema' => 'nullable|string|max:255',
+
+            'region' => 'required|exists:cities,id',
+            'provincia' => 'required|exists:provinces,id',
+            'distrito' => 'required|exists:districts,id',
+
+            'lugar' => 'nullable|string|max:255',
+
+            'entidad_organizadora' => 'nullable|string|max:255',
+            'entidad_aliada' => 'nullable|string|max:255',
+
+            'representante_id' => 'nullable|exists:users,id',
+
+            'requiere_pasaje' => 'required|boolean',
+            'monto_gasto' => 'nullable|max:255',
+
+            'mypes_beneficiadas' => 'nullable|integer|min:0',
+
+            'modalidad_id' => 'nullable|exists:modalities,id',
+            'link' => 'nullable|string',
+
+            'componente_id' => 'nullable',
+            'trainer_id' => 'nullable|exists:pp_capacitadores,id',
+        ]);
+
+        // Asignar representante por defecto si no viene
+        $validated['representante_id'] = $validated['representante_id'] ?? Auth::id();
+
+        // =====================================================
+        // EXTRAER LAS FECHAS DESDE EL ARRAY DE HORARIO
+        // =====================================================
+        $fechasExtraidas = collect($validated['horario'])->pluck('fecha')->unique()->toArray();
+        $validated['fechas'] = array_values($fechasExtraidas); // Guardar el array limpio de fechas
+
+        // =====================================================
+        // OBTENER MES DE LA FECHA MÁS ANTIGUA
+        // =====================================================
+        $fechaMinima = collect($validated['fechas'])
+            ->map(fn($f) => Carbon::parse($f))
+            ->sortBy(fn($d) => $d->timestamp)
+            ->first();
+
+        $validated['mes'] = (int) $fechaMinima->format('n');
+
+        // =====================================================
+        // CANTIDAD DE DÍAS
+        // =====================================================
+        $validated['cantidad_dias'] = count($validated['fechas']);
+
+        try {
+            $actividad = DB::transaction(function () use ($validated) {
+                $validated['slug'] = $this->generateUniqueSlug($validated);
+                $validated['registrado_por_id'] = Auth::id();
+
+                return ActividadPnte::create($validated);
+            });
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Actividad registrada correctamente.',
+                'data' => $actividad->load([
+                    'tipoActividad',
+                    'nombreActividad',
+                    'regionRel',
+                    'provinciaRel',
+                    'distritoRel',
+                    'representante',
+                    'modalidad',
+                ]),
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al registrar la actividad.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    // LISTA DE INSCRITOS MODIFICADA PARA PP093
+
+    public function inscritosPP093PorSlug(Request $request, $slug)
+    {
+        try {
+
+            $perPage = $request->input('pageSize', 10);
+            $search = trim($request->input('name', ''));
+
+            $event = ActividadPnte::select(
+                'id',
+                'slug',
+                'tema',
+                'fechas'
+            )
+                ->where('slug', $slug)
+                ->first();
+
+            $query = EmpresarioActividad::with([
+                'empresario',
+                'empresario.pais',
+                'empresario.region',
+                'empresario.provincia',
+                'empresario.distrito',
+                'empresario.actividadComercial',
+                'empresario.sectorEconomico',
+                'empresario.rubro',
+                'empresario.tipoDocumento',
+                'empresario.genero',
+            ])
+                ->where('slug', $slug)
+
+                // 🔥 BUSCADOR
+                ->when($search, function ($q) use ($search) {
+
+                    $q->whereHas('empresario', function ($emp) use ($search) {
+
+                        $emp->where('ruc', 'LIKE', "%{$search}%")
+
+                            ->orWhere('numero_dni', 'LIKE', "%{$search}%")
+
+                            ->orWhereRaw("
+                        CONCAT(
+                            COALESCE(apellido_paterno, ''),
+                            ' ',
+                            COALESCE(apellido_materno, ''),
+                            ' ',
+                            COALESCE(nombres, '')
+                        ) LIKE ?
+                    ", ["%{$search}%"]);
+                    });
+                })
+
+                ->orderBy('created_at', 'desc');
+
+            $data = $query->paginate($perPage);
+
+            // 🔥 TRANSFORMAR
+            $data->getCollection()->transform(function ($item) {
+
+                $e = $item->empresario;
+
+                return [
+                    'id' => $item->id,
+                    'actividad_id' => $item->actividad_id,
+                    'slug' => $item->slug,
+                    'fecha_asistencia' => $item->fecha_asistencia ? true : false,
+                    'numero_dni' => $item->numero_dni,
+
+                    // 🔥 DATOS EMPRESARIO
+                    'ruc' => $e?->ruc,
+
+                    'razon_social' => ! empty($e?->razon_social)
+                        ? mb_strtoupper($e->razon_social, 'UTF-8')
+                        : null,
+
+                    'nombre_comercial' => ! empty($e?->nombre_comercial)
+                        ? mb_strtoupper($e->nombre_comercial, 'UTF-8')
+                        : null,
+
+                    'sector_economico_id' => $e?->sector_economico_id,
+
+                    'sector_economico_nombre' => ! empty($e?->sectorEconomico?->name)
+                        ? mb_strtoupper($e->sectorEconomico->name, 'UTF-8')
+                        : null,
+
+                    'rubro_id' => $e?->rubro_id,
+
+                    'rubro_nombre' => ! empty($e?->rubro?->name)
+                        ? mb_strtoupper($e->rubro->name, 'UTF-8')
+                        : null,
+
+                    'actividad_comercial_id' => $e?->actividad_comercial_id,
+
+                    'actividad_comercial_nombre' => !empty($e?->actividadComercial?->name)
+                        ? mb_strtoupper($e->actividadComercial->name, 'UTF-8')
+                        : (
+                            !empty($e?->actividad_comercial_nombre)
+                            ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8')
+                            : null
+                        ),
+
+                    'region_id' => $e?->region_id,
+                    'region_nombre' => $e?->region?->name,
+
+                    'provincia_id' => $e?->provincia_id,
+                    'provincia_nombre' => $e?->provincia?->name,
+
+                    'distrito_id' => $e?->distrito_id,
+                    'distrito_nombre' => $e?->distrito?->name,
+
+                    'direccion' => ! empty($e?->direccion)
+                        ? mb_strtoupper($e->direccion, 'UTF-8')
+                        : null,
+
+                    'pais_id' => $e?->pais_id,
+                    'pais_nombre' => $e?->pais?->name,
+
+                    'tipo_documento_id' => $e?->tipo_documento_id,
+
+                    'tipo_documento_nombre' => $e?->tipoDocumento?->avr,
+
+                    'numero_dni_empresario' => $e?->numero_dni,
+
+                    'apellido_paterno' => ! empty($e?->apellido_paterno)
+                        ? mb_strtoupper($e->apellido_paterno, 'UTF-8')
+                        : null,
+
+                    'apellido_materno' => ! empty($e?->apellido_materno)
+                        ? mb_strtoupper($e->apellido_materno, 'UTF-8')
+                        : null,
+
+                    'nombres' => ! empty($e?->nombres)
+                        ? mb_strtoupper($e->nombres, 'UTF-8')
+                        : null,
+
+                    'nombre_completo' => ! empty(trim(
+                        ($e?->apellido_paterno ?? '') . ' ' .
+                            ($e?->apellido_materno ?? '') . ' ' .
+                            ($e?->nombres ?? '')
+                    ))
+                        ? mb_strtoupper(
+                            trim(
+                                ($e?->apellido_paterno ?? '') . ' ' .
+                                    ($e?->apellido_materno ?? '') . ' ' .
+                                    ($e?->nombres ?? '')
+                            ),
+                            'UTF-8'
+                        )
+                        : null,
+
+                    'genero_id' => $e?->genero_id,
+                    'genero_avr' => $e?->genero?->avr,
+
+                    'discapacidad' => $e?->discapacidad,
+
+                    'discapacidad_nombre' => isset($e?->discapacidad)
+                        ? ($e->discapacidad ? 'SI' : 'NO')
+                        : null,
+
+                    'celular' => $e?->celular,
+
+                    'correo_electronico' => $e?->correo_electronico,
+
+                    'cargo_empresa_id' => $e?->cargo_empresa_id,
+
+                    'fecha_nacimiento' => $e?->fecha_nacimiento,
+
+                    'edad' => $e?->edad,
+
+                    'como_entero' => $e?->como_entero,
+
+                    'personal_asesoria' => $item->personal_asesoria,
+
+                    'personal_formalizacion' => $item->personal_formalizacion,
+
+                    // ─── NUEVOS CAMPOS DEL HORARIO AGREGADOS AL RETORNO ───
+                    'fecha_seleccionada' => $item->fecha_seleccionada,
+                    'horario_inicio'     => $item->horario_inicio,
+                    'horario_fin'        => $item->horario_fin,
+                ];
+            });
+
+            return response()->json([
+                'status' => 200,
+                'data' => $data,
+                'event' => $event,
+            ]);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al obtener inscritos',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
