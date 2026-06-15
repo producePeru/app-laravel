@@ -21,21 +21,21 @@
 -- REFERENCES pp_capacitadores(id);
 
 
-ALTER TABLE empresarios 
-ADD COLUMN tipo_empresa_id TINYINT NULL AFTER edad,
-ADD COLUMN f_inicio_act DATE NULL AFTER tipo_empresa_id,
-ADD COLUMN venta_anual TINYINT NULL AFTER f_inicio_act,
-ADD COLUMN medio_entero TINYINT NULL AFTER venta_anual;
+-- ALTER TABLE empresarios 
+-- ADD COLUMN tipo_empresa_id TINYINT NULL AFTER edad,
+-- -- ADD COLUMN f_inicio_act DATE NULL AFTER tipo_empresa_id,
+-- ADD COLUMN venta_anual TINYINT NULL AFTER f_inicio_act,
+-- ADD COLUMN medio_entero TINYINT NULL AFTER venta_anual;
 
 
-ALTER TABLE empresario_actividad 
-ADD COLUMN c_constancia TINYINT(1) NULL DEFAULT NULL AFTER personal_formalizacion,
-ADD CONSTRAINT chk_c_constancia CHECK (c_constancia IN (0, 1));
+-- ALTER TABLE empresario_actividad 
+-- ADD COLUMN c_constancia TINYINT(1) NULL DEFAULT NULL AFTER personal_formalizacion,
+-- ADD CONSTRAINT chk_c_constancia CHECK (c_constancia IN (0, 1));
 
 
-ALTER TABLE empresario_actividad 
-ADD COLUMN fecha_seleccionada DATE NULL AFTER numero_dni,
-ADD COLUMN horario_inicio VARCHAR(10) NULL AFTER fecha_seleccionada,
-ADD COLUMN horario_fin VARCHAR(10) NULL AFTER horario_inicio;
+-- ALTER TABLE empresario_actividad 
+-- ADD COLUMN fecha_seleccionada DATE NULL AFTER numero_dni,
+-- ADD COLUMN horario_inicio VARCHAR(10) NULL AFTER fecha_seleccionada,
+-- ADD COLUMN horario_fin VARCHAR(10) NULL AFTER horario_inicio;
 
 
