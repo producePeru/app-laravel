@@ -430,64 +430,62 @@ class ActividadPublicPnteController extends Controller
 
     public function registerBusinessManPP093(Request $request)
     {
-        // 1. Validación estricta del Payload entrante
         $request->validate([
-            'ruc'                        => 'nullable|string|max:11',
-            'numero_dni'                 => 'required|string|max:12',
-            'razon_social'               => 'nullable|string|max:255',
-            'nombre_comercial'           => 'nullable|string|max:255',
-            'sector_economico_id'        => 'nullable|integer',
-            'rubro_id'                   => 'nullable|integer',
-            'actividad_comercial_nombre' => 'nullable|string|max:255',
-            'region_id'                  => 'nullable|integer',
-            'provincia_id'               => 'nullable|integer',
-            'distrito_id'                => 'nullable|integer',
-            'direccion'                  => 'nullable|string|max:255',
-            'tipo_documento_id'          => 'nullable|integer',
-            'apellido_paterno'           => 'required|string|max:100',
-            'apellido_materno'           => 'required|string|max:100',
-            'nombres'                    => 'required|string|max:100',
-            'genero_id'                  => 'nullable|integer',
-            'discapacidad'               => 'nullable|boolean',
-            'celular'                    => 'nullable|string|max:20',
-            'correo_electronico'         => 'nullable|email|max:150',
-            'pais_id'                    => 'nullable|integer',
-            'fecha_nacimiento'           => 'nullable|string', // Se valida como string para formatear
-            'f_inicio_act'               => 'nullable|string', // Se valida como string para formatear
-            'venta_anual'                => 'nullable|integer|between:1,9',
-            'medio_entero'               => 'nullable|integer|between:1,8',
-            'tipo_empresa_id'            => 'nullable|integer|between:1,7',
+            'ruc'                                => 'required|string|max:11',
+            'razon_social'                       => 'required|string|max:255',
+            'nombre_comercial'                   => 'nullable|string|max:255',
+            'sector_economico_id'                => 'required|integer',
+            'rubro_id'                           => 'required|integer',
+            'actividad_comercial_nombre'         => 'nullable|string',
+            'region_id'                          => 'required|integer',
+            'provincia_id'                       => 'required|integer',
+            'distrito_id'                        => 'required|integer',
+            'direccion'                          => 'required|string|max:500',
+            'tipo_documento_id'                  => 'required|integer',
+            'numero_dni'                         => 'required|string|max:12',
+            'apellido_paterno'                   => 'required|string|max:100',
+            'apellido_materno'                   => 'required|string|max:100',
+            'nombres'                            => 'required|string|max:100',
+            'genero_id'                          => 'required|integer',
+            'discapacidad'                       => 'required|integer|in:0,1',
+            'celular'                            => 'required|string|max:15',
+            'correo_electronico'                 => 'required|email|max:150',
+            'pais_id'                            => 'required|integer',
+            'fecha_nacimiento'                   => 'required|string',
+            'venta_anual'                        => 'required|integer',
+            'medio_entero'                       => 'required|integer',
+            'tipo_empresa_id'                    => 'required|integer',
+
+            // Validamos el array dinámico enviado por el Front
+            'actividades'                        => 'required|array|min:1',
+            'actividades.*.slug'                 => 'required|string',
+            'actividades.*.fecha_seleccionada'   => 'required|date_format:Y-m-d',
+            'actividades.*.horario_inicio'       => 'required|string',
+            'actividades.*.horario_fin'          => 'required|string',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // 2. Formatear fechas de 'dd/mm/yyyy' a 'yyyy-mm-dd' para MySQL
-            $fechaNacimiento = null;
-            if ($request->filled('fecha_nacimiento')) {
-                $fechaNacimiento = Carbon::createFromFormat('d/m/Y', $request->fecha_nacimiento)->format('Y-m-d');
+            $ruc = $request->ruc;
+            $numeroDni = $request->numero_dni;
+
+            // Conversión de fecha de nacimiento a Año-Mes-Día
+            try {
+                $carbonFecha = Carbon::createFromFormat('d/m/Y', $request->fecha_nacimiento);
+                $fechaNacimientoFormatted = $carbonFecha->format('Y-m-d');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json([
+                    'status'  => 422,
+                    'message' => 'El formato de la fecha de nacimiento debe ser Día/Mes/Año.'
+                ], 422);
             }
 
-            $fechaInicioAct = null;
-            if ($request->filled('f_inicio_act')) {
-                $fechaInicioAct = Carbon::createFromFormat('d/m/Y', $request->f_inicio_act)->format('Y-m-d');
-            }
-
-            // 3. Calcular la edad automáticamente si se envió la fecha de nacimiento
-            $edad = null;
-            if ($fechaNacimiento) {
-                $edad = Carbon::parse($fechaNacimiento)->age;
-            }
-
-            // 4. Evitar duplicados: Buscar si ya existe por RUC y DNI (o solo DNI si el RUC es null)
-            $empresario = Empresario::where('numero_dni', $request->numero_dni)
-                ->when($request->ruc, function ($query, $ruc) {
-                    return $query->where('ruc', $ruc);
-                })
-                ->first();
-
-            // Mapeo ordenado de la data del payload
-            $dataEmpresario = [
+            // 1. Unificamos todo el payload entrante mapeado para guardar/comparar
+            $payloadData = [
+                'ruc'                        => $ruc,
+                'numero_dni'                 => $numeroDni,
                 'razon_social'               => $request->razon_social,
                 'nombre_comercial'           => $request->nombre_comercial,
                 'sector_economico_id'        => $request->sector_economico_id,
@@ -502,56 +500,147 @@ class ActividadPublicPnteController extends Controller
                 'apellido_materno'           => $request->apellido_materno,
                 'nombres'                    => $request->nombres,
                 'genero_id'                  => $request->genero_id,
-                'discapacidad'               => $request->discapacidad ?? 0,
+                'discapacidad'               => $request->discapacidad,
                 'celular'                    => $request->celular,
                 'correo_electronico'         => $request->correo_electronico,
                 'pais_id'                    => $request->pais_id,
-                'fecha_nacimiento'           => $fechaNacimiento,
-                'edad'                       => $edad,
-                'f_inicio_act'               => $fechaInicioAct,
+                'fecha_nacimiento'           => $fechaNacimientoFormatted,
+                'edad'                       => $carbonFecha->age,
                 'venta_anual'                => $request->venta_anual,
                 'medio_entero'               => $request->medio_entero,
                 'tipo_empresa_id'            => $request->tipo_empresa_id,
+                // Agregado por si manejas la columna en BD (puedes omitirlo si no existe)
+                'actividad_comercial_id'     => $request->actividad_comercial_id ?? null
             ];
 
-            if ($empresario) {
-                // Si ya existe, actualizamos su información con los nuevos datos enviados
-                $empresario->update($dataEmpresario);
-                $statusCode = 200;
-                $message = 'Datos del empresario actualizados correctamente.';
-            } else {
-                // Si no existe, incluimos las llaves primarias de identidad y creamos el registro
-                $dataEmpresario['ruc'] = $request->ruc;
-                $dataEmpresario['numero_dni'] = $request->numero_dni;
+            // 2. Definimos las columnas que SÍ gatillan un nuevo registro si cambian y tienen valor
+            $columnasEmpresaModificables = [
+                'nombre_comercial',
+                'sector_economico_id',
+                'rubro_id',
+                'actividad_comercial_id',
+                'actividad_comercial_nombre',
+                'region_id',
+                'provincia_id',
+                'distrito_id',
+                'direccion'
+            ];
 
-                $empresario = Empresario::create($dataEmpresario);
-                $statusCode = 201;
-                $message = 'Empresario registrado exitosamente.';
+            $columnasPersonalesModificables = [
+                'discapacidad',
+                'celular',
+                'correo_electronico',
+                'cargo_empresa_id',
+                'venta_anual',
+                'medio_entero'
+            ];
+
+            // Combinamos ambas listas para el bucle de validación estructural
+            $columnasDiscrepantes = array_merge($columnasEmpresaModificables, $columnasPersonalesModificables);
+
+            // Buscar el último registro guardado de este empresario
+            $empresarioExistente = Empresario::where('ruc', $ruc)
+                ->where('numero_dni', $numeroDni)
+                ->latest('id')
+                ->first();
+
+            $empresario = null;
+
+            if ($empresarioExistente) {
+                $forzarNuevoRegistro = false;
+                $camposParaCompletar = [];
+
+                foreach ($payloadData as $columna => $valorEntrada) {
+                    $valorActual = $empresarioExistente->{$columna};
+
+                    // Si pertenece al grupo de columnas que gatillan un nuevo historial
+                    if (in_array($columna, $columnasDiscrepantes)) {
+                        // Condición: Si ya tiene valor almacenado Y el nuevo valor es diferente -> Fuerza Insert
+                        if (!is_null($valorActual) && $valorActual !== '' && $valorActual != $valorEntrada) {
+                            $forzarNuevoRegistro = true;
+                            break;
+                        }
+                    }
+
+                    // Guardamos en memoria por si solo toca completar datos vacíos (en cualquier columna)
+                    if (is_null($valorActual) || $valorActual === '') {
+                        $camposParaCompletar[$columna] = $valorEntrada;
+                    }
+                }
+
+                if ($forzarNuevoRegistro) {
+                    // REGLA: Hubo cambios en variables críticas -> Creamos nueva fila histórica
+                    $empresario = Empresario::create($payloadData);
+                } else {
+                    // REGLA: No hay discrepancias en lo que ya estaba lleno, procedemos a rellenar si habían campos NULL
+                    if (!empty($camposParaCompletar)) {
+                        $empresarioExistente->update($camposParaCompletar);
+                    }
+                    $empresario = $empresarioExistente;
+                }
+            } else {
+                // REGLA: Es la primera vez que se registra este RUC + DNI en el sistema
+                $empresario = Empresario::create($payloadData);
+            }
+
+            $empresarioId = $empresario->id;
+
+            // Procesar matrículas a capacitaciones/actividades
+            foreach ($request->actividades as $act) {
+
+                $actividadBase = ActividadPnte::where('slug', $act['slug'])->first();
+
+                if (!$actividadBase) {
+                    DB::rollBack();
+                    return response()->json([
+                        'status'  => 404,
+                        'message' => "La capacitación con el código slug '{$act['slug']}' no existe en el sistema.",
+                    ], 404);
+                }
+
+                // Evitamos que se duplique exactamente la misma fila en la tabla intermedia
+                $alreadyRegisteredExact = EmpresarioActividad::where('slug', $act['slug'])
+                    ->where('empresario_id', $empresarioId)
+                    ->where('fecha_seleccionada', $act['fecha_seleccionada'])
+                    ->where('horario_inicio', $act['horario_inicio'])
+                    ->where('horario_fin', $act['horario_fin'])
+                    ->exists();
+
+                if ($alreadyRegisteredExact) {
+                    continue;
+                }
+
+                EmpresarioActividad::create([
+                    'actividad_id'       => $actividadBase->id,
+                    'slug'               => $act['slug'],
+                    'empresario_id'      => $empresarioId,
+                    'numero_dni'         => $numeroDni,
+                    'fecha_seleccionada' => $act['fecha_seleccionada'],
+                    'horario_inicio'     => $act['horario_inicio'],
+                    'horario_fin'        => $act['horario_fin'],
+                    'fecha_asistencia'   => null,
+                ]);
+
+                $actividadBase->increment('total_participantes');
             }
 
             DB::commit();
 
             return response()->json([
-                'status'  => $statusCode,
-                'message' => $message,
-                'data'    => [
-                    'id'         => $empresario->id,
-                    'numero_dni' => $empresario->numero_dni,
-                    'ruc'        => $empresario->ruc,
-                    'celular'    => $empresario->celular
-                ]
-            ], $statusCode);
+                'status'     => 200,
+                'message'    => 'Procesado correctamente con reglas de control de historial.',
+                'id'         => $empresarioId,
+                'ruc'        => $ruc,
+                'numero_dni' => $numeroDni,
+                'celular'    => $request->celular
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-
-            Log::error("Error en registerBusinessManPP093: " . $e->getMessage(), [
-                'payload' => $request->all(),
-                'trace'   => $e->getTraceAsString()
-            ]);
+            Log::error("Error masivo en registerBusinessManPP093: " . $e->getMessage());
 
             return response()->json([
                 'status'  => 500,
-                'message' => 'Ocurrió un problema en el servidor al procesar el registro.',
+                'message' => 'Ocurrió un error inesperado en el servidor.',
                 'error'   => $e->getMessage()
             ], 500);
         }

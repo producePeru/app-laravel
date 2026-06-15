@@ -138,30 +138,24 @@ class ActividadPnteController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $actividad = ActividadPnte::findOrFail($id);
-
         $user = Auth::user();
 
         // ✅ SOLO EL ROL 1 PUEDE EDITAR EN CUALQUIER MOMENTO
         if ($user->rol != 1) {
-
             // límite hasta las 23:59 del día de creación
-            $limiteEdicion = Carbon::parse(
-                $actividad->created_at
-            )->endOfDay();
+            $limiteEdicion = Carbon::parse($actividad->created_at)->endOfDay();
 
             if (Carbon::now()->gt($limiteEdicion)) {
-
                 return response()->json([
                     'status' => 403,
-                    'message' =>
-                    'No es posible editar esta actividad. El plazo de edición venció el ' .
-                        Carbon::parse($actividad->created_at)
-                        ->format('d/m/Y') .
+                    'message' => 'No es posible editar esta actividad. El plazo de edición venció el ' .
+                        Carbon::parse($actividad->created_at)->format('d/m/Y') .
                         ' a las 23:59. Por favor, contacte con su supervisor.',
-                ]);
+                ], 403);
             }
         }
 
+        // 🛠️ VALIDACIÓN CORREGIDA Y ACTUALIZADA
         $validated = $request->validate([
             'unidad' => 'required|integer|in:1,2,3,4,5',
             'fechas' => 'required|array|min:1',
@@ -183,10 +177,15 @@ class ActividadPnteController extends Controller
             'total_participantes' => 'nullable|integer|min:0',
             'total_asesorias' => 'nullable|integer|min:0',
             'total_formalizaciones' => 'nullable|integer|min:0',
-            'horario' => 'nullable|string',
+
+            // ✨ Cambiado de string a array para soportar tu estructura estructurada
+            'horario' => 'nullable|array',
+            'link' => 'nullable|string',
+            'componente_id' => 'nullable|integer',
+            'trainer_id' => 'nullable|exists:pp_capacitadores,id',
         ]);
 
-        // ✅ obtener mes de la fecha mínima
+        // ✅ Obtener mes de la fecha mínima de forma segura
         $fechaMinima = collect($validated['fechas'])
             ->map(fn($f) => Carbon::parse($f))
             ->sortBy(fn($d) => $d->timestamp)
@@ -196,13 +195,15 @@ class ActividadPnteController extends Controller
         $validated['cantidad_dias'] = count($validated['fechas']);
 
         try {
-
-            DB::transaction(function () use (
-                $actividad,
-                $validated
-            ) {
-
+            DB::transaction(function () use ($actividad, $validated) {
                 $validated['actualizado_por_id'] = Auth::id();
+
+                // 🌟 CONTROL EXTRA: Si el modelo ActividadPnte NO tiene 'horario' en el $casts como array/json,
+                // lo convertimos a string JSON manualmente antes de persistir para no romper la BD.
+                if (isset($validated['horario']) && is_array($validated['horario'])) {
+                    // Solo activa esta línea si tu modelo ActividadPnte no tiene protegido el cast: protected $casts = ['horario' => 'array'];
+                    // $validated['horario'] = json_encode($validated['horario']);
+                }
 
                 $actividad->update($validated);
             });
@@ -220,9 +221,9 @@ class ActividadPnteController extends Controller
                     'modalidad',
                 ]),
             ]);
-        } catch (Throwable $e) {
-
+        } catch (\Throwable $e) {
             return response()->json([
+                'status' => 500, // Homologado con tu estándar de respuestas
                 'success' => false,
                 'message' => 'Error al actualizar la actividad.',
                 'error' => $e->getMessage(),

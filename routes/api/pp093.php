@@ -19,7 +19,9 @@ Route::controller(PpCapacitadorController::class)->group(function () {
 
 Route::controller(PpCapacitadorController::class)->group(function () {
 
-    Route::GET('is-register/{ruc}/{dni}', 'isRegisterPlataforma');
+    Route::POST('is-register', 'isRegisterPlataforma');
+
+    Route::POST('send-email-trainings', 'enviarCorreoPP093');
 });
 
 

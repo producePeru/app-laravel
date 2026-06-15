@@ -82,11 +82,12 @@ class CapacitacionesPP093Controller extends Controller
         }
     }
 
+
     public function getPublicDataByRucAndDni($ruc, $dni)
     {
         // 1. Definimos explícitamente los campos permitidos y seguros
         $fields = [
-            'id', // Lo incluimos por si lo necesitas para relacionar en el cliente
+            'id',
             'ruc',
             'razon_social',
             'nombre_comercial',
@@ -97,7 +98,6 @@ class CapacitacionesPP093Controller extends Controller
             'provincia_id',
             'distrito_id',
             'direccion',
-
             'pais_id',
             'tipo_documento_id',
             'numero_dni',
@@ -109,7 +109,6 @@ class CapacitacionesPP093Controller extends Controller
             'cargo_empresa_id',
             'fecha_nacimiento',
             'edad',
-
             'actividad_comercial_nombre',
             'tipo_empresa_id',
             'f_inicio_act',
@@ -118,10 +117,11 @@ class CapacitacionesPP093Controller extends Controller
         ];
 
         try {
-            // 2. Buscamos al empresario que coincida con ambos datos
+            // 2. Buscamos al empresario ordenando por el más reciente (Fuerza traer el ÚLTIMO registro similar)
             $empresario = Empresario::select($fields)
                 ->where('ruc', $ruc)
                 ->where('numero_dni', $dni)
+                ->latest('id') // ⚡ Trae la fila con el ID más alto (la última creada)
                 ->first();
 
             // 3. Si no existe, devolvemos un 404 limpio
@@ -132,13 +132,21 @@ class CapacitacionesPP093Controller extends Controller
                 ], 404);
             }
 
-            // 4. Retorno exitoso con la data filtrada
+            // 4. Formateamos la fecha de nacimiento de vuelta a dd/mm/yyyy para tu formulario del Front
+            if ($empresario->fecha_nacimiento) {
+                try {
+                    $empresario->fecha_nacimiento = Carbon::parse($empresario->fecha_nacimiento)->format('d/m/Y');
+                } catch (\Exception $e) {
+                    // Si por alguna razón falla el parseo, mantiene el valor original de la BD
+                }
+            }
+
+            // 5. Retorno exitoso con la data filtrada y actualizada
             return response()->json([
                 'status' => 200,
                 'data'   => $empresario
             ], 200);
         } catch (\Exception $e) {
-            // En producción puedes cambiar esto por Log::error(...)
             return response()->json([
                 'status'  => 500,
                 'message' => 'Ocurrió un error en el servidor al recuperar la información.',
