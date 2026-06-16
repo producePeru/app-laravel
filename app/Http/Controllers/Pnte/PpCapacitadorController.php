@@ -196,16 +196,10 @@ class PpCapacitadorController extends Controller
     protected function enviarCorreoPP093(Request $request)
     {
         try {
-            // Definimos el remitente / configuración de correo que queremos usar (ej: 'digitalizacion')
-            $mailer = 'hostinger';
-
-            // Convertimos todo el contenido del Request actual a un array para enviarlo seguro al Job
+            $mailer = 'pp093';
             $payloadData = $request->all();
-
-            // Despachamos el Job para que procese el envío en segundo plano
             SendConfirmacionActividadesPP093Job::dispatch($payloadData, $mailer);
         } catch (\Exception $e) {
-            // Si hay un error al meter el trabajo a la cola, lo registramos sin romper el flujo principal
             Log::error("Error al despachar el Job de correo para {$request->correo_electronico}: " . $e->getMessage());
         }
     }

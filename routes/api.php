@@ -566,6 +566,7 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('get-tipo-actividades-pnte', [SelectController::class, 'getTipoActividadesPnte']);
     Route::get('get-tipo-actividades', [SelectController::class, 'getTipoActividades']);
     Route::get('get-tipo-actividades-ugse', [SelectController::class, 'getTipoActividadesUgse']);
+    Route::get('get-tipo-actividades-ugseco', [SelectController::class, 'getTipoActividadesUgseco']);
     Route::get('get-nombre-actividades/{id}', [SelectController::class, 'getNombreActividades']);
 
     Route::get('get-users-pnte', [SelectController::class, 'getUsersPnte']);
