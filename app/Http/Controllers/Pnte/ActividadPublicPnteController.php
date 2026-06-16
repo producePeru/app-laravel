@@ -235,7 +235,7 @@ class ActividadPublicPnteController extends Controller
             return response()->json([
                 ['key' => 'dot-ugo', 'dot' => 'blue', 'dates' => []],
                 ['key' => 'dot-ugse', 'dot' => 'red', 'dates' => []],
-                ['key' => 'dot-ugseco', 'dot' => 'green', 'dates' => []],
+                ['key' => 'dot-ugsc', 'dot' => 'green', 'dates' => []],
             ]);
         }
 
@@ -323,7 +323,7 @@ class ActividadPublicPnteController extends Controller
                 'dates' => $redDates,
             ],
             [
-                'key' => 'dot-ugseco',
+                'key' => 'dot-ugsc',
                 'dot' => 'green',
                 'dates' => $greenDates,
             ],
@@ -347,7 +347,7 @@ class ActividadPublicPnteController extends Controller
         $unidadMap = [
             'UGO' => 1,
             'UGSE' => 2,
-            'UGSECO' => 3,
+            'UGSC' => 3,
         ];
 
         $unidadIds = collect($offices)
@@ -377,7 +377,7 @@ class ActividadPublicPnteController extends Controller
             $tipo = match ($unidad) {
                 1 => 'UGO',
                 2 => 'UGSE',
-                3 => 'UGSECO',
+                3 => 'UGSC',
                 default => 'OTRO'
             };
 
