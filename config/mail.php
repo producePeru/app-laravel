@@ -114,7 +114,7 @@ return [
             ]
         ],
 
-        'office365' => [   // capacitaciones_tuempresa@produce.gob.pe                      
+        'pp093' => [   // capacitaciones_tuempresa@produce.gob.pe   **** PP093                   
             'transport' => env('MAIL_MAILER_OFFICE365', 'smtp'),
             'host'      => env('MAIL_HOST_OFFICE365'),
             'port'      => env('MAIL_PORT_OFFICE365'),
