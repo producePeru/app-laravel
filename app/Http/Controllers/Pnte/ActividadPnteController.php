@@ -1184,19 +1184,27 @@ class ActividadPnteController extends Controller
     public function inscritosPP093PorSlug(Request $request, $slug)
     {
         try {
-
             $perPage = $request->input('pageSize', 10);
             $search = trim($request->input('name', ''));
 
-            $event = ActividadPnte::select(
-                'id',
-                'slug',
-                'tema',
-                'fechas'
-            )
+            // 📥 Capturamos los filtros del payload
+            $year = $request->input('year');
+            $dateEvent = $request->input('dateEvent'); // Ejemplo: '2026-06-25'
+
+            // 🔍 1. OBTENER EL EVENTO BASE (Solo por slug)
+            $event = ActividadPnte::select('id', 'slug', 'tema', 'fechas')
                 ->where('slug', $slug)
                 ->first();
 
+            // Si el evento no existe, cortamos el flujo inmediatamente
+            if (!$event) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Actividad no encontrada.'
+                ], 404);
+            }
+
+            // 👥 2. CONSULTA DE INSCRITOS
             $query = EmpresarioActividad::with([
                 'empresario',
                 'empresario.pais',
@@ -1209,18 +1217,20 @@ class ActividadPnteController extends Controller
                 'empresario.tipoDocumento',
                 'empresario.genero',
             ])
-                ->where('slug', $slug)
+                ->where('actividad_id', $event->id)
+                ->where('slug', $slug);
 
-                // 🔥 BUSCADOR
-                ->when($search, function ($q) use ($search) {
+            // 🔥 FILTRAR POR LA FECHA SELECCIONADA EN "EMPRESARIO_ACTIVIDAD"
+            if ($dateEvent) {
+                $query->where('fecha_seleccionada', $dateEvent);
+            }
 
-                    $q->whereHas('empresario', function ($emp) use ($search) {
-
-                        $emp->where('ruc', 'LIKE', "%{$search}%")
-
-                            ->orWhere('numero_dni', 'LIKE', "%{$search}%")
-
-                            ->orWhereRaw("
+            // 🔍 BUSCADOR (RUC, DNI, Nombres)
+            $query->when($search, function ($q) use ($search) {
+                $q->whereHas('empresario', function ($emp) use ($search) {
+                    $emp->where('ruc', 'LIKE', "%{$search}%")
+                        ->orWhere('numero_dni', 'LIKE', "%{$search}%")
+                        ->orWhereRaw("
                         CONCAT(
                             COALESCE(apellido_paterno, ''),
                             ' ',
@@ -1229,16 +1239,14 @@ class ActividadPnteController extends Controller
                             COALESCE(nombres, '')
                         ) LIKE ?
                     ", ["%{$search}%"]);
-                    });
-                })
-
+                });
+            })
                 ->orderBy('created_at', 'desc');
 
             $data = $query->paginate($perPage);
 
-            // 🔥 TRANSFORMAR
+            // 🔥 TRANSFORMAR LA COLECCIÓN (Mismo mapeo tuyo)
             $data->getCollection()->transform(function ($item) {
-
                 $e = $item->empresario;
 
                 return [
@@ -1248,114 +1256,46 @@ class ActividadPnteController extends Controller
                     'fecha_asistencia' => $item->fecha_asistencia ? true : false,
                     'numero_dni' => $item->numero_dni,
 
-                    // 🔥 DATOS EMPRESARIO
+                    // DATOS EMPRESARIO
                     'ruc' => $e?->ruc,
-
-                    'razon_social' => ! empty($e?->razon_social)
-                        ? mb_strtoupper($e->razon_social, 'UTF-8')
-                        : null,
-
-                    'nombre_comercial' => ! empty($e?->nombre_comercial)
-                        ? mb_strtoupper($e->nombre_comercial, 'UTF-8')
-                        : null,
-
+                    'razon_social' => ! empty($e?->razon_social) ? mb_strtoupper($e->razon_social, 'UTF-8') : null,
+                    'nombre_comercial' => ! empty($e?->nombre_comercial) ? mb_strtoupper($e->nombre_comercial, 'UTF-8') : null,
                     'sector_economico_id' => $e?->sector_economico_id,
-
-                    'sector_economico_nombre' => ! empty($e?->sectorEconomico?->name)
-                        ? mb_strtoupper($e->sectorEconomico->name, 'UTF-8')
-                        : null,
-
+                    'sector_economico_nombre' => ! empty($e?->sectorEconomico?->name) ? mb_strtoupper($e->sectorEconomico->name, 'UTF-8') : null,
                     'rubro_id' => $e?->rubro_id,
-
-                    'rubro_nombre' => ! empty($e?->rubro?->name)
-                        ? mb_strtoupper($e->rubro->name, 'UTF-8')
-                        : null,
-
+                    'rubro_nombre' => ! empty($e?->rubro?->name) ? mb_strtoupper($e->rubro->name, 'UTF-8') : null,
                     'actividad_comercial_id' => $e?->actividad_comercial_id,
-
-                    'actividad_comercial_nombre' => !empty($e?->actividadComercial?->name)
-                        ? mb_strtoupper($e->actividadComercial->name, 'UTF-8')
-                        : (
-                            !empty($e?->actividad_comercial_nombre)
-                            ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8')
-                            : null
-                        ),
-
+                    'actividad_comercial_nombre' => !empty($e?->actividadComercial?->name) ? mb_strtoupper($e->actividadComercial->name, 'UTF-8') : (!empty($e?->actividad_comercial_nombre) ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8') : null),
                     'region_id' => $e?->region_id,
                     'region_nombre' => $e?->region?->name,
-
                     'provincia_id' => $e?->provincia_id,
                     'provincia_nombre' => $e?->provincia?->name,
-
                     'distrito_id' => $e?->distrito_id,
                     'distrito_nombre' => $e?->distrito?->name,
-
-                    'direccion' => ! empty($e?->direccion)
-                        ? mb_strtoupper($e->direccion, 'UTF-8')
-                        : null,
-
+                    'direccion' => ! empty($e?->direccion) ? mb_strtoupper($e->direccion, 'UTF-8') : null,
                     'pais_id' => $e?->pais_id,
                     'pais_nombre' => $e?->pais?->name,
-
                     'tipo_documento_id' => $e?->tipo_documento_id,
-
                     'tipo_documento_nombre' => $e?->tipoDocumento?->avr,
-
                     'numero_dni_empresario' => $e?->numero_dni,
-
-                    'apellido_paterno' => ! empty($e?->apellido_paterno)
-                        ? mb_strtoupper($e->apellido_paterno, 'UTF-8')
-                        : null,
-
-                    'apellido_materno' => ! empty($e?->apellido_materno)
-                        ? mb_strtoupper($e->apellido_materno, 'UTF-8')
-                        : null,
-
-                    'nombres' => ! empty($e?->nombres)
-                        ? mb_strtoupper($e->nombres, 'UTF-8')
-                        : null,
-
-                    'nombre_completo' => ! empty(trim(
-                        ($e?->apellido_paterno ?? '') . ' ' .
-                            ($e?->apellido_materno ?? '') . ' ' .
-                            ($e?->nombres ?? '')
-                    ))
-                        ? mb_strtoupper(
-                            trim(
-                                ($e?->apellido_paterno ?? '') . ' ' .
-                                    ($e?->apellido_materno ?? '') . ' ' .
-                                    ($e?->nombres ?? '')
-                            ),
-                            'UTF-8'
-                        )
-                        : null,
-
+                    'apellido_paterno' => ! empty($e?->apellido_paterno) ? mb_strtoupper($e->apellido_paterno, 'UTF-8') : null,
+                    'apellido_materno' => ! empty($e?->apellido_materno) ? mb_strtoupper($e->apellido_materno, 'UTF-8') : null,
+                    'nombres' => ! empty($e?->nombres) ? mb_strtoupper($e->nombres, 'UTF-8') : null,
+                    'nombre_completo' => ! empty(trim(($e?->apellido_paterno ?? '') . ' ' . ($e?->apellido_materno ?? '') . ' ' . ($e?->nombres ?? ''))) ? mb_strtoupper(trim(($e?->apellido_paterno ?? '') . ' ' . ($e?->apellido_materno ?? '') . ' ' . ($e?->nombres ?? '')), 'UTF-8') : null,
                     'genero_id' => $e?->genero_id,
                     'genero_avr' => $e?->genero?->avr,
-
                     'discapacidad' => $e?->discapacidad,
-
-                    'discapacidad_nombre' => isset($e?->discapacidad)
-                        ? ($e->discapacidad ? 'SI' : 'NO')
-                        : null,
-
+                    'discapacidad_nombre' => isset($e?->discapacidad) ? ($e->discapacidad ? 'SI' : 'NO') : null,
                     'celular' => $e?->celular,
-
                     'correo_electronico' => $e?->correo_electronico,
-
                     'cargo_empresa_id' => $e?->cargo_empresa_id,
-
                     'fecha_nacimiento' => $e?->fecha_nacimiento,
-
                     'edad' => $e?->edad,
-
                     'como_entero' => $e?->como_entero,
-
                     'personal_asesoria' => $item->personal_asesoria,
-
                     'personal_formalizacion' => $item->personal_formalizacion,
 
-                    // ─── NUEVOS CAMPOS DEL HORARIO AGREGADOS AL RETORNO ───
+                    // DETALLES DEL HORARIO
                     'fecha_seleccionada' => $item->fecha_seleccionada,
                     'horario_inicio'     => $item->horario_inicio,
                     'horario_fin'        => $item->horario_fin,
@@ -1368,7 +1308,6 @@ class ActividadPnteController extends Controller
                 'event' => $event,
             ]);
         } catch (\Throwable $e) {
-
             return response()->json([
                 'status' => 500,
                 'message' => 'Error al obtener inscritos',
