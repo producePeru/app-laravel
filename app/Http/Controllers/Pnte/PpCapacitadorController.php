@@ -196,8 +196,11 @@ class PpCapacitadorController extends Controller
     protected function enviarCorreoPP093(Request $request)
     {
         try {
-            $mailer = 'pp093';
+
+            $mailer = 'hostinger';
+
             $payloadData = $request->all();
+
             SendConfirmacionActividadesPP093Job::dispatch($payloadData, $mailer);
         } catch (\Exception $e) {
             Log::error("Error al despachar el Job de correo para {$request->correo_electronico}: " . $e->getMessage());
