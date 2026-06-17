@@ -111,7 +111,7 @@ class CapacitacionesPP093Controller extends Controller
             'edad',
             'actividad_comercial_nombre',
             'tipo_empresa_id',
-            'f_inicio_act',
+            // 'f_inicio_act',
             'venta_anual',
             'medio_entero'
         ];
