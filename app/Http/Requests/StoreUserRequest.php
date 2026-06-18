@@ -26,7 +26,7 @@ class StoreUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:100'],
             'lastname' => ['required', 'string', 'max:100'],
             'middlename' => ['nullable', 'string', 'max:100'],
-            'birthday' => ['required', 'date'],
+
             'gender_id' => ['required', 'integer'],
             'office_id' => ['required', 'integer'],
             'cde_id' => ['required', 'integer'],
@@ -42,7 +42,7 @@ class StoreUserRequest extends FormRequest
             'dni.unique' => 'Este DNI ya está registrado.',
             'name.required' => 'El nombre es obligatorio.',
             'lastname.required' => 'El apellido es obligatorio.',
-            'birthday.required' => 'La fecha de nacimiento es obligatoria.',
+            // 'birthday.required' => 'La fecha de nacimiento es obligatoria.',
             'gender_id.required' => 'Debe seleccionar el género.',
             'office_id.required' => 'Debe seleccionar la oficina.',
             'cde_id.required' => 'Debe seleccionar el CDE.',
