@@ -1707,4 +1707,348 @@ class DownloadAttendanceController extends Controller
             'Cache-Control'       => 'max-age=0',
         ]);
     }
+
+    // PP093 ***********************************************************
+
+    public function exportInscritosPorSlugPp093($slug)
+    {
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
+
+        // ─────────────────────────────────────────────
+        // EVENTO
+        // ─────────────────────────────────────────────
+        $actividad = ActividadPnte::with([
+            'tipoActividad:id,name',
+            'nombreActividad:id,name',
+            'regionRel:id,name',
+            'provinciaRel:id,name',
+            'distritoRel:id,name',
+            'representante:id,name,lastname,middlename',
+        ])
+            ->where('slug', $slug)
+            ->first();
+
+        if (! $actividad) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Actividad no encontrada',
+            ], 404);
+        }
+
+        // ─────────────────────────────────────────────
+        // QUERY INSCRITOS
+        // ─────────────────────────────────────────────
+        $query = EmpresarioActividad::with([
+            'empresario' => function ($q) {
+                $q->select([
+                    'id',
+                    'ruc',
+                    'razon_social',
+                    'nombre_comercial',
+                    'sector_economico_id',
+                    'rubro_id',
+                    'actividad_comercial_nombre',
+                    'region_id',
+                    'provincia_id',
+                    'distrito_id',
+                    'direccion',
+                    'pais_id',
+                    'tipo_documento_id',
+                    'numero_dni',
+                    'apellido_paterno',
+                    'apellido_materno',
+                    'nombres',
+                    'genero_id',
+                    'discapacidad',
+                    'celular',
+                    'correo_electronico',
+                ]);
+            },
+
+            'empresario.tipoDocumento:id,avr',
+            'empresario.pais:id,name',
+            'empresario.genero:id,avr',
+            'empresario.region:id,name',
+            'empresario.provincia:id,name',
+            'empresario.distrito:id,name',
+
+            // 🔥 ESTOS FALTABAN
+            'empresario.sectorEconomico:id,name',
+            'empresario.rubro:id,name',
+        ])
+            ->where('slug', $slug)
+            ->orderByDesc('created_at');
+
+        // ─────────────────────────────────────────────
+        // TEMPLATE
+        // ─────────────────────────────────────────────
+        $templatePath = storage_path('app/plantillas/ugo_eventos_lista_registrados_template.xlsx');
+
+        if (! file_exists($templatePath)) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Plantilla no encontrada',
+            ], 404);
+        }
+
+        $spreadsheet = IOFactory::load($templatePath);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // ─────────────────────────────────────────────
+        // START
+        // ─────────────────────────────────────────────
+        $row = 3;
+        $index = 1;
+
+        $query->chunk(1000, function ($items) use (
+            &$row,
+            &$index,
+            $sheet,
+            $actividad
+        ) {
+
+            foreach ($items as $item) {
+
+                $e = $item->empresario;
+
+                $col = 'D';
+
+                // NRO
+                $sheet->setCellValue("{$col}{$row}", $index++);
+                $col++;
+
+                // FECHAS
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    collect($actividad->fechas ?? [])
+                        ->map(fn($f) => Carbon::parse($f)->format('d/m/Y'))
+                        ->implode(' - ')
+                );
+                $col++;
+
+                // TIPO ACTIVIDAD
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->tipoActividad?->name
+                );
+                $col++;
+
+                // NOMBRE ACTIVIDAD
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->nombreActividad?->name
+                );
+                $col++;
+
+                // TEMA
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($actividad->tema ?? '', 'UTF-8')
+                );
+                $col++;
+
+                // REGION
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->regionRel?->name
+                );
+                $col++;
+
+                // PROVINCIA
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->provinciaRel?->name
+                );
+                $col++;
+
+                // DISTRITO
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->distritoRel?->name
+                );
+                $col++;
+
+                // LUGAR
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($actividad->lugar ?? '', 'UTF-8')
+                );
+                $col++;
+
+                // REPRESENTANTE
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        trim(
+                            ($actividad->representante?->name ?? '') . ' ' .
+                                ($actividad->representante?->lastname ?? '') . ' ' .
+                                ($actividad->representante?->middlename ?? '')
+                        ),
+                        'UTF-8'
+                    )
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // TIPO DOCUMENTO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->tipoDocumento?->avr
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // NRO DOCUMENTO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->numero_dni
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // PAIS
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->pais?->name ?? '', 'UTF-8')
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // APELLIDOS
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        trim(
+                            ($e->apellido_paterno ?? '') . ' ' .
+                                ($e->apellido_materno ?? '')
+                        ),
+                        'UTF-8'
+                    )
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // NOMBRES
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->nombres ?? '', 'UTF-8')
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // GENERO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->genero?->avr
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // DISCAPACIDAD
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->discapacidad ? 'SI' : 'NO'
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // RUC
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->ruc
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // REGION
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->region?->name ?? '', 'UTF-8')
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // PROVINCIA
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->provincia?->name ?? '', 'UTF-8')
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // DISTRITO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->distrito?->name ?? '', 'UTF-8')
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // SECTOR ECONOMICO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8')
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // RUBRO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->rubro?->name ?? '', 'UTF-8')
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // CELULAR
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->celular
+                );
+                $col++;
+
+                // ─────────────────────────────────────────────
+                // CORREO
+                // ─────────────────────────────────────────────
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->correo_electronico
+                );
+
+                $row++;
+            }
+        });
+
+        // ─────────────────────────────────────────────
+        // DOWNLOAD
+        // ─────────────────────────────────────────────
+        return new StreamedResponse(function () use ($spreadsheet) {
+
+            $writer = new Xlsx($spreadsheet);
+
+            // 🔥 mejora rendimiento
+            $writer->setPreCalculateFormulas(false);
+
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="lista-inscritos-ugo.xlsx"',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
 }
