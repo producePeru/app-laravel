@@ -45,7 +45,7 @@ class UserController extends Controller
                 'name'       => $data['name'],
                 'lastname'   => $data['lastname'],
                 'middlename' => $data['middlename'] ?? null,
-                'birthday'   => $data['birthday'],
+                // 'birthday'   => $data['birthday'],
                 'gender_id'  => $data['gender_id'],
                 'office_id'  => $data['office_id'],
                 'cde_id'     => $data['cde_id'],
