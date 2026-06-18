@@ -209,8 +209,8 @@ class User extends Authenticatable
 
         if (! empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('dni', 'like', '%'.$filters['name'].'%')
-                    ->orWhere(DB::raw("CONCAT(name, ' ', lastname, ' ', middlename)"), 'like', '%'.$filters['name'].'%');
+                $q->where('dni', 'like', '%' . $filters['name'] . '%')
+                    ->orWhere(DB::raw("CONCAT(name, ' ', lastname, ' ', middlename)"), 'like', '%' . $filters['name'] . '%');
             });
         }
     }

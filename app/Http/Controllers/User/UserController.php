@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
-    public function registerNewUser(StoreUserRequest $request)
+    public function registerNewAsesor(StoreUserRequest $request)
     {
         try {
             $data = $request->validated();
@@ -32,25 +32,31 @@ class UserController extends Controller
             if (User::where('email', $email)->exists()) {
                 return response()->json([
                     'success' => false,
-                    'errors' => ['email' => ['El correo generado ya existe.']],
+                    'errors' => [
+                        'email' => ['El correo generado ya existe.']
+                    ],
                     'status' => 422
-                ]);
+                ], 422);
             }
 
             // Crear usuario
             $user = User::create([
-                'dni' => $data['dni'],
-                'name' => $data['name'],
-                'lastname' => $data['lastname'],
+                'dni'        => $data['dni'],
+                'name'       => $data['name'],
+                'lastname'   => $data['lastname'],
                 'middlename' => $data['middlename'] ?? null,
-                'birthday' => $data['birthday'],
-                'gender_id' => $data['gender_id'],
-                'office_id' => $data['office_id'],
-                'rol' => $data['rol'] ?? null,
-                'cde_id' => $data['cde_id'],
-                'phone' => $data['phone'] ?? null,
-                'email' => $email,
-                'password' => Hash::make($data['dni']),
+                'birthday'   => $data['birthday'],
+                'gender_id'  => $data['gender_id'],
+                'office_id'  => $data['office_id'],
+                'cde_id'     => $data['cde_id'],
+                'phone'      => $data['phone'] ?? null,
+                'email'      => $email,
+                'password'   => Hash::make($data['dni']),
+
+                // Valores fijos
+                'rol'        => 2,
+                'rol_id'     => 2,
+                'active'     => 1,
             ]);
 
             return response()->json([
@@ -58,14 +64,14 @@ class UserController extends Controller
                 'message' => 'Usuario registrado correctamente',
                 'user' => $user,
                 'status' => 200
-            ]);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error inesperado.',
                 'error' => $e->getMessage(),
                 'status' => 500
-            ]);
+            ], 500);
         }
     }
 
@@ -114,12 +120,12 @@ class UserController extends Controller
 
             $permission = getPermission('usuarios-ugo');
 
-            if (!$permission['hasPermission']) {
-                return response()->json([
-                    'message' => 'No tienes permiso para acceder a esta sección',
-                    'status'  => 403
-                ], 403);
-            }
+            // if (!$permission['hasPermission']) {
+            //     return response()->json([
+            //         'message' => 'No tienes permiso para acceder a esta sección',
+            //         'status'  => 403
+            //     ], 403);
+            // }
 
             $filters = [
                 'name' => $request->input('name')
@@ -225,7 +231,7 @@ class UserController extends Controller
         ];
     }
 
-    public function updateUserPnte(UpdateUserRequest $request, $id)
+    public function updateAsesor(UpdateUserRequest $request, $id)
     {
         try {
             $user = User::findOrFail($id);

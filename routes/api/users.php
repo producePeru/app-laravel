@@ -10,9 +10,9 @@ Route::controller(UserController::class)->group(function () {
 
     Route::get('ugo', 'usersUgo');
 
-    Route::post('register-user-pnte', 'registerNewUser');
+    Route::post('register-new-asesor-ugo', 'registerNewAsesor');
 
-    Route::put('update-user-pnte/{idUser}', 'updateUserPnte');
+    Route::put('update-asesor-ugo/{idUser}', 'updateAsesor');
 
     Route::delete('delete-user-pnte/{idUser}', 'deleteUserPnte');
 
