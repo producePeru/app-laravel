@@ -45,9 +45,11 @@
                         <span class="info-label">Horario:</span> {{ $act['horario_inicio'] }} - {{ $act['horario_fin'] }}<br>
                         <span class="info-label">Organiza:</span> {{ $act['entidad_organizadora'] }}<br>
                         <span class="info-label">Lugar / Modalidad:</span> {{ $act['lugar'] }}<br>
+                       
                         @if(!empty($act['link']))
                             <a href="{{ $act['link'] }}" target="_blank" class="btn-link">Unirse a la Sesión / Ver Enlace</a>
                         @endif
+                        
                     </div>
                 </div>
 
@@ -69,7 +71,6 @@
               </p>
           <ul style="list-style: none;">
             <li>✔ Material complementario</li>
-            <li>✔ Grabaciones de las sesiones</li>
             <li>✔ Lecturas y recursos</li>
             <li>✔ Convocatorias y novedades del sector</li>
             <li>✔ Espacios de interacción con otros empresarios</li>

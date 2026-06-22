@@ -1708,9 +1708,11 @@ class DownloadAttendanceController extends Controller
         ]);
     }
 
+
+
     // PP093 ***********************************************************
 
-    public function exportInscritosPorSlugPp093($slug)
+    public function exportInscritosPorSlugPp093(Request $request, $slug)
     {
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
@@ -1778,12 +1780,18 @@ class DownloadAttendanceController extends Controller
             'empresario.rubro:id,name',
         ])
             ->where('slug', $slug)
+
+            // ✅ FILTRO POR FECHA SELECCIONADA (CORREGIDO)
+            ->when($request->filled('dateEvent'), function ($q) use ($request) {
+                $q->where('fecha_seleccionada', $request->input('dateEvent'));
+            })
+
             ->orderByDesc('created_at');
 
         // ─────────────────────────────────────────────
         // TEMPLATE
         // ─────────────────────────────────────────────
-        $templatePath = storage_path('app/plantillas/ugo_eventos_lista_registrados_template.xlsx');
+        $templatePath = storage_path('app/plantillas/ugo_eventos_lista_pp093.xlsx');
 
         if (! file_exists($templatePath)) {
             return response()->json([

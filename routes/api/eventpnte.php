@@ -39,6 +39,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::PUT('update-asistencia-fecha', 'updateAsistenciaFecha');
 
+    Route::get('/evento/acceso', 'registrarAccesoToEmail');
+
     Route::GET('attendance-summary-slug/{slug}', 'attendanceSummaryBySlug');
 });
 
