@@ -1011,6 +1011,22 @@ class ActividadPnteController extends Controller
         }
     }
 
+    public function registrarAccesoToEmail(Request $request)
+    {
+        $registro = EmpresarioActividad::where('slug', $request->slug)
+            ->where('numero_dni', $request->dni)
+            ->firstOrFail();
+
+        $this->updateAsistenciaFecha(new Request([
+            'slug' => $request->slug,
+            'numero_dni' => $request->dni,
+            'check' => true,
+            'date' => now()->format('Y-m-d H:i:s'),
+        ]));
+
+        return redirect()->away($registro->link);
+    }
+
     public function attendanceSummaryBySlug($slug)
     {
         try {
