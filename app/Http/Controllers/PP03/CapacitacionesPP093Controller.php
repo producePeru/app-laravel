@@ -154,4 +154,59 @@ class CapacitacionesPP093Controller extends Controller
             ], 500);
         }
     }
+
+
+    public function getInfoBySlug($slug)
+    {
+        try {
+            // 1. Buscar la actividad por slug con sus relaciones
+            $actividad = ActividadPnte::with([
+                'tainnerPp093:id,nombres_apellidos',
+                'sedDescripcion:id,slug_actividad_pnte,descripcion',
+                'regionRel:id,name',
+                'provinciaRel:id,name',
+                'distritoRel:id,name',
+                'modalidad:id,name'
+            ])
+                ->where('slug', $slug)
+                ->first();
+
+            // 2. Si no se encuentra, devolver un error 404
+            if (! $actividad) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'No se encontró la capacitación con el slug proporcionado.'
+                ], 404);
+            }
+
+            // 3. Mapear y formatear los datos para la respuesta
+            $data = [
+                'id'            => $actividad->id,
+                'tema'          => $actividad->tema,
+                'slug'          => $actividad->slug,
+                'trainer'       => $actividad->tainnerPp093?->nombres_apellidos,
+                'descripcion'   => $actividad->sedDescripcion?->descripcion,
+                'fechas'        => $actividad->fechas, // Se devuelve el array completo de fechas
+                'horario'       => $actividad->horario,
+                'link'          => $actividad->link,
+                'lugar'         => $actividad->lugar,
+                'modalidad'     => $actividad->modalidad?->name,
+                'region'        => $actividad->regionRel?->name,
+                'provincia'     => $actividad->provinciaRel?->name,
+                'distrito'      => $actividad->distritoRel?->name,
+            ];
+
+            // 4. Retornar la respuesta exitosa
+            return response()->json([
+                'status' => 200,
+                'data'   => $data
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Ocurrió un error en el servidor al recuperar la información de la capacitación.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
 }
