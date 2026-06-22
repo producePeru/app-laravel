@@ -32,7 +32,7 @@
             <p class="welcome-text">
                 Hola <strong>{{ $dataUsuario['nombres'] }}</strong>,<br>
               Reciba un cordial saludo del <b>Programa Nacional Tu Empresa</b>.
-                Le recordamos su participación en la capacitación correspondiente al eje de Desarrollo Productivo, según el siguiente detalle:
+                Gracias por completar el formulario. Su información ha sido registrada satisfactoriamente
             </p>
 
             <h3 style="color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Mis Actividades</h3>
