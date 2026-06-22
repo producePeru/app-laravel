@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Page;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\TareaRequest;
+use App\Models\Tarea;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TareaController extends Controller

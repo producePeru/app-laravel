@@ -894,7 +894,9 @@ class FormularioPublicoController extends Controller
             ]);
 
             // 1. Validar que el participante exista
-            $participant = MPParticipant::where('doc_number', $validated['doc_number'])->first();
+            $participant = MPParticipant::where('doc_number', $validated['doc_number'])
+                ->latest('id')
+                ->first();
 
             if (!$participant) {
                 return response()->json([
@@ -904,7 +906,70 @@ class FormularioPublicoController extends Controller
                 ]);
             }
 
-            // 2. Buscar evento por slug
+            // 2. Validar que los campos obligatorios estén completos
+            $camposRequeridos = [
+                'economic_sector_id',
+                'rubro_id',
+                'comercial_activity_id',
+                'city_id',
+                'province_id',
+                'district_id',
+                't_doc_id',
+                'country_id',
+                'date_of_birth',
+                'names',
+                'last_name',
+                'middle_name',
+                'civil_status_id',
+                'gender_id',
+                'phone',
+                'email',
+            ];
+
+            $camposFaltantes = [];
+
+            foreach ($camposRequeridos as $campo) {
+                if (is_null($participant->{$campo}) || $participant->{$campo} === '') {
+                    $camposFaltantes[] = $campo;
+                }
+            }
+
+            if (!empty($camposFaltantes)) {
+                return response()->json([
+                    'status'           => 202,
+                    'success'          => false,
+                    'message'          => 'Tienes datos pendientes por completar.',
+                    'campos_faltantes' => $camposFaltantes,
+                    'data'             => [
+                        'id'                     => $participant->id,
+                        'ruc'                    => $participant->ruc,
+                        'social_reason'          => $participant->social_reason,
+                        'economic_sector_id'     => $participant->economic_sector_id,
+                        'rubro_id'               => $participant->rubro_id,
+                        'comercial_activity_id'  => $participant->comercial_activity_id,
+                        'city_id'                => $participant->city_id,
+                        'province_id'            => $participant->province_id,
+                        'district_id'            => $participant->district_id,
+                        't_doc_id'               => $participant->t_doc_id,
+                        'doc_number'             => $participant->doc_number,
+                        'country_id'             => $participant->country_id,
+                        'date_of_birth'          => $participant->date_of_birth,
+                        'names'                  => $participant->names,
+                        'last_name'              => $participant->last_name,
+                        'middle_name'            => $participant->middle_name,
+                        'civil_status_id'        => $participant->civil_status_id,
+                        'num_soons'              => $participant->num_soons,
+                        'gender_id'              => $participant->gender_id,
+                        'sick'                   => $participant->sick,
+                        'academicdegree_id'      => $participant->academicdegree_id,
+                        'phone'                  => $participant->phone,
+                        'email'                  => $participant->email,
+                        'role_company_id'        => $participant->role_company_id,
+                    ]
+                ]);
+            }
+
+            // 3. Buscar evento por slug
             $event = MPEvent::where('slug', $validated['slug'])
                 ->select('id', 'link')
                 ->first();
@@ -916,7 +981,7 @@ class FormularioPublicoController extends Controller
                 ], 404);
             }
 
-            // 3. Validar que el evento tenga link
+            // 4. Validar que el evento tenga link
             if (!$event->link) {
                 return response()->json([
                     'status'    => 401,
@@ -925,7 +990,7 @@ class FormularioPublicoController extends Controller
                 ]);
             }
 
-            // 4. Retornar link
+            // 5. Retornar link
             return response()->json([
                 'status'    => 200,
                 'success'   => true,
