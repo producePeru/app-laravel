@@ -120,7 +120,7 @@ class FairController extends Controller
             'description' => $item->description ? $item->description : null,
             'description3' => isset($item->description)
                 ? (mb_strlen(strip_tags($item->description)) > 200
-                    ? mb_substr(strip_tags($item->description), 0, 200).'...'
+                    ? mb_substr(strip_tags($item->description), 0, 200) . '...'
                     : strip_tags($item->description))
                 : null,
             'fairtype_id' => $item->fairType->id ?? null,
@@ -147,13 +147,13 @@ class FairController extends Controller
             'msgEndForm' => $item->msgEndForm ? $item->msgEndForm : null,
             'msgEndForm3' => isset($item->msgEndForm)
                 ? (mb_strlen(strip_tags($item->msgEndForm)) > 200
-                    ? mb_substr(strip_tags($item->msgEndForm), 0, 200).'...'
+                    ? mb_substr(strip_tags($item->msgEndForm), 0, 200) . '...'
                     : strip_tags($item->msgEndForm))
                 : null,
             'msgSendEmail' => $item->msgSendEmail ? $item->msgSendEmail : null,
             'msgSendEmail3' => isset($item->msgSendEmail)
                 ? (mb_strlen(strip_tags($item->msgSendEmail)) > 200
-                    ? mb_substr(strip_tags($item->msgSendEmail), 0, 200).'...'
+                    ? mb_substr(strip_tags($item->msgSendEmail), 0, 200) . '...'
                     : strip_tags($item->msgSendEmail))
                 : null,
             'image' => $item->image ? [
@@ -186,7 +186,7 @@ class FairController extends Controller
             $count = 1;
 
             while (Fair::where('slug', $slug)->exists()) {
-                $slug = $originalSlug.'-'.$count;
+                $slug = $originalSlug . '-' . $count;
                 $count++;
             }
 
@@ -202,7 +202,7 @@ class FairController extends Controller
                 'status' => 200,
             ], 201);
         } catch (\Exception $e) {
-            Log::error('Error al crear feria: '.$e->getMessage(), [
+            Log::error('Error al crear feria: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
 
@@ -219,7 +219,7 @@ class FairController extends Controller
 
             $today = Carbon::now();
 
-            // ✅ Buscar actividad por slug
+            // Buscar actividad por slug
             $actividad = ActividadPnte::with([
                 'regionRel:id,name',
                 'provinciaRel:id,name',
@@ -228,99 +228,113 @@ class FairController extends Controller
                 ->where('slug', $slug)
                 ->first();
 
-            if ($actividad) {
-
-                // ✅ Buscar descripción adicional
-                $descripcion = SedDescripcion::where(
-                    'slug_actividad_pnte',
-                    $slug
-                )->first();
-
-                // ✅ fechas puede venir como array o json
-                $fechas = is_array($actividad->fechas)
-                    ? $actividad->fechas
-                    : json_decode($actividad->fechas, true);
-
-                // ✅ Tomar fecha más alejada
-                $fechaFin = collect($fechas)->max();
-
-                // ✅ Validar hasta final del día
-                if (! empty($fechaFin)) {
-
-                    $fechaEvento = Carbon::parse($fechaFin)
-                        ->endOfDay();
-
-                    if ($today->gt($fechaEvento)) {
-
-                        return response()->json([
-                            'data' => [
-                                'title' => '¡Evento Finalizado!',
-
-                                'message' => $descripcion?->mensaje_finalizacion
-                                    ?? '
-                                El evento que estabas buscando ya ha caducado o no se encuentra disponible en este momento. </br>
-                                Pero no te detengas 🚀, </br>
-                                nuevas oportunidades están en camino.</br>
-                                Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos </br>
-                                para seguir fortaleciendo tu emprendimiento.
-                                ',
-
-                                'status' => 404,
-                            ],
-                        ]);
-                    }
-                }
+            if (!$actividad) {
 
                 return response()->json([
-                    'status' => 200,
-
                     'data' => [
-
-                        // ✅ Actividad
-                        'slug' => $actividad->slug,
-
-                        'fechas' => $fechas,
-
-                        'tema' => $actividad->tema,
-
-                        'region' => $actividad->regionRel?->name,
-
-                        'provincia' => $actividad->provinciaRel?->name,
-
-                        'distrito' => $actividad->distritoRel?->name,
-
-                        'lugar' => $actividad->lugar,
-
-                        'horario' => $actividad->horario,
-
-                        // ✅ Descripción
-                        'descripcion' => $descripcion?->descripcion,
-
-                        'mensaje_finalizacion' => $descripcion?->mensaje_finalizacion,
-
-                        'mensaje_correo' => $descripcion?->mensaje_correo,
-
-                        'mensaje_recordatorio' => $descripcion?->mensaje_recordatorio,
+                        'title' => 'No se encontró el evento.',
+                        'message' => 'No existe una actividad con este registro.',
+                        'status' => 404,
                     ],
                 ]);
             }
 
+            // Buscar descripción adicional
+            $descripcion = SedDescripcion::where(
+                'slug_actividad_pnte',
+                $slug
+            )->first();
+
+            /**
+             * EVENTO CANCELADO
+             */
+            if (!is_null($actividad->cancelado) && $actividad->cancelado !== '') {
+
+                return response()->json([
+                    'data' => [
+                        'title' => 'Evento Cancelado',
+                        'message' => $actividad->cancelado,
+                        'status' => 410,
+                        'cancelado' => true,
+                    ],
+                ]);
+            }
+
+            // fechas puede venir como array o json
+            $fechas = is_array($actividad->fechas)
+                ? $actividad->fechas
+                : json_decode($actividad->fechas, true);
+
+            // Tomar la fecha más reciente
+            $fechaFin = collect($fechas)->max();
+
+            /**
+             * EVENTO FINALIZADO
+             */
+            if (!empty($fechaFin)) {
+
+                $fechaEvento = Carbon::parse($fechaFin)
+                    ->endOfDay();
+
+                if ($today->gt($fechaEvento)) {
+
+                    return response()->json([
+                        'data' => [
+                            'title' => '¡Evento Finalizado!',
+                            'message' => $descripcion?->mensaje_finalizacion
+                                ?? '
+                            El evento que estabas buscando ya ha finalizado o no se encuentra disponible en este momento.<br>
+                            Pero no te detengas 🚀,<br>
+                            nuevas oportunidades están en camino.<br>
+                            Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos<br>
+                            para seguir fortaleciendo tu emprendimiento.
+                            ',
+                            'status' => 404,
+                            'finalizado' => true,
+                        ],
+                    ]);
+                }
+            }
+
+            /**
+             * EVENTO DISPONIBLE
+             */
             return response()->json([
+                'status' => 200,
                 'data' => [
-                    'title' => 'No se encontró el evento.',
 
-                    'message' => 'No existe una actividad con este registro.',
+                    'slug' => $actividad->slug,
 
-                    'status' => 404,
+                    'fechas' => $fechas,
+
+                    'tema' => $actividad->tema,
+
+                    'region' => $actividad->regionRel?->name,
+
+                    'provincia' => $actividad->provinciaRel?->name,
+
+                    'distrito' => $actividad->distritoRel?->name,
+
+                    'lugar' => $actividad->lugar,
+
+                    'horario' => $actividad->horario,
+
+                    'descripcion' => $descripcion?->descripcion,
+
+                    'mensaje_finalizacion' => $descripcion?->mensaje_finalizacion,
+
+                    'mensaje_correo' => $descripcion?->mensaje_correo,
+
+                    'mensaje_recordatorio' => $descripcion?->mensaje_recordatorio,
+
+                    'cancelado' => false,
                 ],
             ]);
         } catch (\Exception $e) {
 
             return response()->json([
                 'message' => 'Error al obtener los detalles del evento.',
-
                 'error' => $e->getMessage(),
-
                 'status' => 500,
             ], 500);
         }
@@ -329,35 +343,47 @@ class FairController extends Controller
     public function showEventCount($slug)
     {
         try {
+            // 1. Obtener la fecha de hoy en formato YYYY-MM-DD
+            $today = Carbon::now()->format('Y-m-d');
 
-            $fair = Fair::where('slug', $slug)->first();
+            // 2. Buscar la actividad por slug que contenga la fecha de hoy en su array de 'fechas'
+            $actividad = ActividadPnte::with([
+                'regionRel:id,name',
+                'provinciaRel:id,name',
+                'distritoRel:id,name',
+            ])
+                ->where('slug', $slug)
+                ->whereJsonContains('fechas', $today)
+                ->first();
 
-            if (! $fair) {
+            // 3. Si no se encuentra una actividad para hoy, devolver 404
+            if (!$actividad) {
                 return response()->json([
-                    'message' => 'Feria no encontrada.',
-                    'status' => 404,
-                ], 404);
+                    'message' => 'No se encontró un evento programado para el día de hoy con ese slug.',
+                    'status'  => 404,
+                ]);
             }
 
-            // 🔥 Conteo desde sed_asistencias
-            $total = SedAsistente::where('sed_id', $fair->id)->count();
+            // 4. Formatear los datos para la respuesta
+            $data = [
+                'fechas'    => collect($actividad->fechas)->map(fn($f) => Carbon::parse($f)->format('d/m/Y')),
+                'tema'      => $actividad->tema,
+                'horario'   => $actividad->horario,
+                'region'    => $actividad->regionRel?->name,
+                'provincia' => $actividad->provinciaRel?->name,
+                'distrito'  => $actividad->distritoRel?->name,
+                'lugar'     => $actividad->lugar,
+            ];
 
-            $amountNow = SedAsistente::where('sed_id', $fair->id)
-                ->whereNotNull('attendance')
-                ->count();
-
+            // 5. Devolver la respuesta exitosa
             return response()->json([
-                'data' => [
-                    'total' => $total,
-                    'amountNow' => $amountNow,
-                ],
+                'data'   => $data,
                 'status' => 200,
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error al obtener los datos.',
-                'error' => $e->getMessage(),
-                'status' => 500,
+                'message' => 'Ocurrió un error al buscar el evento.',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
@@ -558,7 +584,7 @@ class FairController extends Controller
                 'img3_url' => $item->mype->img3_path ? asset($item->mype->img3_path) : null,
 
                 'documentnumber' => $item->person->documentnumber,
-                'lastname' => $item->person->lastname.' '.$item->person->middlename,
+                'lastname' => $item->person->lastname . ' ' . $item->person->middlename,
                 // 'middlename' => $item->person->middlename,
                 'name' => $item->person->name,
                 'phone' => $item->person->phone,

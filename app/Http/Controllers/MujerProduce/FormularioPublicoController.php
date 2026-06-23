@@ -1673,6 +1673,9 @@ class FormularioPublicoController extends Controller
         }
     }
 
+    // public function updateParticipant(Request $request)
+    // {
+
     public function showBySlug(string $slug)
     {
         $event = MPEvent::with([

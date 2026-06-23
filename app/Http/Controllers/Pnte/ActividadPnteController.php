@@ -27,7 +27,7 @@ class ActividadPnteController extends Controller
             'tipo_actividad_id' => 'required|exists:tipo_actividad,id',
             'nombre_actividad_id' => 'required|exists:nombre_actividad,id',
 
-            'tema' => 'nullable|string|max:255',
+            'tema' => 'nullable|string',
 
             'region' => 'required|exists:cities,id',
             'provincia' => 'required|exists:provinces,id',
@@ -179,7 +179,7 @@ class ActividadPnteController extends Controller
             'total_formalizaciones' => 'nullable|integer|min:0',
 
             // ✨ Cambiado de string a array para soportar tu estructura estructurada
-            'horario' => 'nullable|array',
+            'horario' => 'nullable',
             'link' => 'nullable|string',
             'componente_id' => 'nullable|integer',
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
@@ -513,7 +513,7 @@ class ActividadPnteController extends Controller
         $actividad = ActividadPnte::findOrFail($id);
 
         $validated = $request->validate([
-            'cancelado' => 'required|string|max:255',
+            'cancelado' => 'required|string',
         ]);
 
         try {

@@ -37,6 +37,8 @@ Route::controller(CapacitacionesPP093Controller::class)->group(function () {
     Route::GET('my-courses-business/{id_usuario}', 'getCoursesByBusinessManPp093');
 
     Route::GET('get-public-data-ruc-dni/{ruc}/{dni}', 'getPublicDataByRucAndDni');
+
+    Route::GET('get-info-by-slug/{slug}', 'getInfoBySlug');
 });
 
 // pp093-public
