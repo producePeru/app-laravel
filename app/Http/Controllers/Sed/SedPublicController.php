@@ -769,48 +769,51 @@ class SedPublicController extends Controller
                 'dni'  => 'required',
             ]);
 
-            $fair = Fair::where('slug', $validatedData['slug'])->first();
+            // 1. Buscar el registro del empresario en la actividad específica.
+            $registro = EmpresarioActividad::with('empresario')
+                ->where('slug', $validatedData['slug'])
+                ->where('numero_dni', $validatedData['dni'])
+                ->first();
 
-            if (!$fair) {
-                return response()->json([
-                    'message' => 'Evento no encontrado',
-                    'status'  => 404
-                ], 404);
-            }
-
-            $postulante = UgsePostulante::where('documentnumber', $validatedData['dni'])->first();
-
-            if (!$postulante) {
+            // 2. Si no se encuentra el registro, significa que no está inscrito.
+            if (!$registro) {
                 return response()->json([
                     'message' => 'no-se-registro',
                     'status'  => 404
                 ]);
             }
 
-            $asistencia = SedAsistente::where('sed_id', $fair->id)
-                ->where('dni', $postulante->documentnumber)
-                ->first();
-
-            if (!$asistencia) {
+            // 3. Si ya tiene una fecha de asistencia, ya marcó su ingreso.
+            if ($registro->fecha_asistencia) {
                 return response()->json([
-                    'message' => 'no-se-registro',
-                    'status'  => 404
-                ], 404);
+                    'data' => [
+                        'participant' => optional($registro->empresario)->nombres . ' ' . optional($registro->empresario)->apellido_paterno,
+                        'status'      => 'ya-estas-en-sala',
+                    ],
+                    'status' => 200,
+                    'message' => 'Este participante ya tiene registrada su asistencia.'
+                ]);
             }
 
-            $nombreCompleto = strtoupper(trim(
-                $postulante->name . ' ' . $postulante->lastname . ' ' . $postulante->middlename
-            ));
+            // 4. Si no tiene asistencia, se registra la fecha y hora actual.
+            $registro->fecha_asistencia = Carbon::now()->format('d/m/Y H:i');
+            $registro->save();
 
-
-            $status = is_null($asistencia->attendance) ? 'asistio' : 'ya-estas-en-sala';
+            // 5. Obtener el nombre del empresario desde la relación.
+            $nombreCompleto = 'Participante'; // Valor por defecto
+            if ($registro->empresario) {
+                $nombreCompleto = strtoupper(trim(
+                    $registro->empresario->nombres . ' ' . $registro->empresario->apellido_paterno . ' ' . $registro->empresario->apellido_materno
+                ));
+            }
 
             return response()->json([
                 'data' => [
                     'participant' => $nombreCompleto,
-                    'status'      => $status,
+                    'status'      => 'asistio',
                 ],
-                'status' => 200
+                'status' => 200,
+                'message' => 'Asistencia registrada con éxito.'
             ]);
         } catch (\Throwable $e) {
             return response()->json([
