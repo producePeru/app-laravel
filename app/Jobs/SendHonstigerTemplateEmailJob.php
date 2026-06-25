@@ -43,7 +43,7 @@ class SendHonstigerTemplateEmailJob implements ShouldQueue
                     $message->cc($this->copias);
                 }
 
-                $message->bcc(['tuempresa_temp265@produce.gob.pe', 'jramosa@produce.gob.pe']);
+                $message->bcc('capacitaciones_tuempresa@produce.gob.pe');
             });
     }
 }

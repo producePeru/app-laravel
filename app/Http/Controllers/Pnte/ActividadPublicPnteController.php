@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\ActividadPnte;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
+use GuzzleHttp\Client;
+use App\Models\Token;
 
 class ActividadPublicPnteController extends Controller
 {
@@ -80,33 +82,43 @@ class ActividadPublicPnteController extends Controller
 
     public function getByRuc(string $ruc): JsonResponse
     {
-        $empresario = Empresario::where('ruc', $ruc)
-            ->select([
-                'ruc',
-                'razon_social',
-                'nombre_comercial',
-                'sector_economico_id',
-                'actividad_comercial_nombre',
-                'rubro_id',
-                'actividad_comercial_id',
-                'region_id',
-                'provincia_id',
-                'distrito_id',
-                'direccion',
-            ])
-            ->first();
+        try {
+            $empresario = Empresario::where('ruc', $ruc)
+                ->select([
+                    'ruc',
+                    'razon_social',
+                    'nombre_comercial',
+                    'sector_economico_id',
+                    'actividad_comercial_nombre',
+                    'rubro_id',
+                    'actividad_comercial_id',
+                    'region_id',
+                    'provincia_id',
+                    'distrito_id',
+                    'direccion',
+                ])
+                ->latest()
+                ->first();
 
-        if (! $empresario) {
+            if ($empresario) {
+                return response()->json([
+                    'status' => 200,
+                    'source' => 'database',
+                    'data' => $empresario,
+                ]);
+            }
             return response()->json([
                 'status' => 404,
-                'message' => 'Empresa no encontrada.',
+                'message' => 'Empresa no encontrada en base de datos.',
             ]);
-        }
+        } catch (\Exception $e) {
 
-        return response()->json([
-            'status' => 200,
-            'data' => $empresario,
-        ]);
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al consultar RUC',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function storeEmpresario(Request $request)
@@ -737,6 +749,127 @@ class ActividadPublicPnteController extends Controller
                 'status'  => 500,
                 'message' => 'Ocurrió un error inesperado en el servidor al procesar las matrículas.',
                 'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // cooperativas ********
+
+    public function storeEmpresarioCooperativa(Request $request)
+    {
+        $request->validate([
+            'slug' => 'required|string',
+            'ruc' => 'nullable|size:11',
+            'numero_dni' => 'required|string|max:12',
+        ]);
+
+        try {
+
+            DB::beginTransaction();
+
+            /**
+             * 1. EMPRESARIO
+             * Se crea SOLO si no existe una fila idéntica
+             */
+            $empresario = Empresario::firstOrCreate(
+                [
+                    'ruc' => $request->ruc,
+                    'numero_dni' => $request->numero_dni,
+
+                    'razon_social' => $request->razon_social,
+                    'nombre_comercial' => $request->nombre_comercial,
+
+                    'sector_economico_id' => $request->sector_economico_id,
+                    'rubro_id' => $request->rubro_id,
+                    'actividad_comercial_id' => $request->actividad_comercial_id,
+
+                    'region_id' => $request->region_id,
+                    'provincia_id' => $request->provincia_id,
+                    'distrito_id' => $request->distrito_id,
+                    'direccion' => $request->direccion,
+
+                    'pais_id' => $request->pais_id,
+                    'tipo_documento_id' => $request->tipo_documento_id,
+
+                    'apellido_paterno' => $request->apellido_paterno,
+                    'apellido_materno' => $request->apellido_materno,
+                    'nombres' => $request->nombres,
+
+                    'genero_id' => $request->genero_id,
+                    'discapacidad' => $request->discapacidad,
+                    'celular' => $request->celular,
+                    'correo_electronico' => $request->correo_electronico,
+
+                    'cargo_empresa_id' => $request->cargo_empresa_id,
+                    'fecha_nacimiento' => $request->fecha_nacimiento,
+                    'edad' => $request->edad,
+
+                    'actividad_comercial_nombre' => $request->actividad_comercial_nombre,
+                    'tipo_empresa_id' => $request->tipo_empresa_id,
+                    'f_inicio_act' => $request->f_inicio_act,
+                    'venta_anual' => $request->venta_anual,
+                    'medio_entero' => $request->medio_entero,
+
+                    'coop_ruc' => $request->coop_ruc,
+                    'coop_razon_social' => $request->coop_razon_social,
+                    'coop_rol' => $request->coop_rol,
+                ]
+            );
+
+            /**
+             * 2. ACTIVIDAD
+             */
+            $actividad = ActividadPnte::where('slug', $request->slug)
+                ->firstOrFail();
+
+            /**
+             * 3. VALIDAR SI YA ESTÁ REGISTRADO EN ACTIVIDAD
+             */
+            $existsActividad = EmpresarioActividad::where('actividad_id', $actividad->id)
+                ->where('empresario_id', $empresario->id)
+                ->exists();
+
+            if ($existsActividad) {
+
+                DB::rollBack();
+
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'El participante ya está registrado en esta actividad.',
+                ]);
+            }
+
+            /**
+             * 4. REGISTRAR RELACIÓN
+             */
+            EmpresarioActividad::create([
+                'actividad_id' => $actividad->id,
+                'slug' => $request->slug,
+                'empresario_id' => $empresario->id,
+                'numero_dni' => $request->numero_dni,
+                'fecha_asistencia' => null,
+            ]);
+
+            /**
+             * 5. CONTADOR
+             */
+            $actividad->increment('total_participantes');
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Registro procesado correctamente.',
+                'empresario_id' => $empresario->id,
+            ]);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error en el servidor',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

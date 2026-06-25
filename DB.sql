@@ -39,3 +39,7 @@
 -- ADD COLUMN horario_fin VARCHAR(10) NULL AFTER horario_inicio;
 
 
+ALTER TABLE empresarios
+ADD COLUMN coop_ruc CHAR(11) NULL AFTER venta_anual,
+ADD COLUMN coop_razon_social VARCHAR(255) NULL AFTER coop_ruc,
+ADD COLUMN coop_rol CHAR(3) NULL AFTER coop_razon_social;
