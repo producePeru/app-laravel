@@ -44,7 +44,11 @@ class Empresario extends Model
         'tipo_empresa_id',
         'f_inicio_act',
         'venta_anual',
-        'medio_entero'
+        'medio_entero',
+
+        'coop_ruc',
+        'coop_razon_social',
+        'coop_rol'
     ];
 
     // ─── RELACIONES ───────────────────────────────────────────────

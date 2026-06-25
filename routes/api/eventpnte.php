@@ -59,6 +59,8 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
     Route::GET('dots', 'getEventsDots');
 
     Route::GET('events-day', 'getEventsByDate');
+
+    Route::POST('registro-cooperativas', 'storeEmpresarioCooperativa');
 });
 
 // event-pnte-public
