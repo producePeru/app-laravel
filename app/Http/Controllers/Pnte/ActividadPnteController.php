@@ -720,6 +720,10 @@ class ActividadPnteController extends Controller
                     'personal_asesoria' => $item->personal_asesoria,
 
                     'personal_formalizacion' => $item->personal_formalizacion,
+
+                    'coop_ruc' => $e?->coop_ruc,
+                    'coop_razon_social' => $e?->coop_razon_social,
+                    'coop_rol' => $e?->coop_rol
                 ];
             });
 
@@ -823,6 +827,23 @@ class ActividadPnteController extends Controller
         return response()->download(
             $path,
             'plantilla_importar_inscritos.xlsx'
+        );
+    }
+
+    // UGSE INSCRITOS
+    public function descargarPantillaInscritosUgsc()
+    {
+        $path = storage_path('app/plantillas/plantilla_ugsc_upload.xlsx');
+
+        if (! file_exists($path)) {
+            return response()->json([
+                'message' => 'Archivo no encontrado',
+            ], 404);
+        }
+
+        return response()->download(
+            $path,
+            'plantilla_ugsc_upload.xlsx'
         );
     }
 

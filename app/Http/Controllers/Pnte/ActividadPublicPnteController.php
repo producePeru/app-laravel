@@ -65,6 +65,7 @@ class ActividadPublicPnteController extends Controller
                 'edad',
                 'pais_id',
             ])
+            ->latest()
             ->first();
 
         if (! $empresario) {
