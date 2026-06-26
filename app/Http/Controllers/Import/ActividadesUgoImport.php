@@ -33,7 +33,6 @@ class ActividadesUgoImport extends Controller
         try {
 
             ini_set('memory_limit', '512M');
-
             set_time_limit(300);
 
             $file        = $request->file('file');
@@ -80,6 +79,13 @@ class ActividadesUgoImport extends Controller
                 $generos = Gender::pluck('id', 'name')
                     ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
 
+                // ─── MAPA ROL COOPERATIVA ─────────────────────────────────────
+                $rolesCooperativa = [
+                    'DIRIGENTE' => 'dir',
+                    'SOCIO'     => 'soc',
+                    'MIEMBRO'   => 'mie',
+                ];
+
                 // ✅ VALIDAR DUPLICADOS EN EL MISMO ARCHIVO
                 $combinacionesEnArchivo = [];
 
@@ -101,17 +107,16 @@ class ActividadesUgoImport extends Controller
                     if (empty($numeroDoc)) {
 
                         $errores[] = [
-                            'fila'   => $filaNum,
-                            'celda'  => 'M' . $filaNum,
-                            'campo'  => 'Número documento',
-                            'valor'  => '',
-                            'error'  => 'Número de documento vacío'
+                            'fila'  => $filaNum,
+                            'celda' => 'M' . $filaNum,
+                            'campo' => 'Número documento',
+                            'valor' => '',
+                            'error' => 'Número de documento vacío'
                         ];
 
                         continue;
                     }
 
-                    // ✅ SI RUC ES NULL SOLO USA DOCUMENTO
                     $clave = ($ruc ?: 'SIN_RUC') . '|' . $numeroDoc;
 
                     if (isset($combinacionesEnArchivo[$clave])) {
@@ -119,11 +124,11 @@ class ActividadesUgoImport extends Controller
                         $filaOriginal = $combinacionesEnArchivo[$clave];
 
                         $errores[] = [
-                            'fila'   => $filaNum,
-                            'celda'  => 'A' . $filaNum,
-                            'campo'  => 'RUC + Documento',
-                            'valor'  => $ruc . ' - ' . $numeroDoc,
-                            'error'  => "Duplicado con fila {$filaOriginal}"
+                            'fila'  => $filaNum,
+                            'celda' => 'A' . $filaNum,
+                            'campo' => 'RUC + Documento',
+                            'valor' => $ruc . ' - ' . $numeroDoc,
+                            'error' => "Duplicado con fila {$filaOriginal}"
                         ];
                     } else {
 
@@ -147,9 +152,9 @@ class ActividadesUgoImport extends Controller
 
                     $filaNum = $index + 2;
 
-                    // ─────────────────────────────────────
+                    // ─────────────────────────────────────────────────────────
                     // MAPEO COLUMNAS
-                    // ─────────────────────────────────────
+                    // ─────────────────────────────────────────────────────────
                     $ruc                   = trim((string)($row['A'] ?? ''));
                     $razonSocial           = trim((string)($row['B'] ?? ''));
                     $nombreComercial       = trim((string)($row['C'] ?? ''));
@@ -173,38 +178,45 @@ class ActividadesUgoImport extends Controller
                     $personalAsesoria      = strtoupper(trim((string)($row['U'] ?? '')));
                     $personalFormalizacion = strtoupper(trim((string)($row['V'] ?? '')));
 
+                    // ─── COLUMNAS COOPERATIVA (W, X, Y) ──────────────────────
+                    $coopRuc         = trim((string)($row['W'] ?? ''));
+                    $coopRazonSocial = trim((string)($row['X'] ?? ''));
+                    $coopRolNombre   = strtoupper(trim((string)($row['Y'] ?? '')));
+
+                    // Resolver el id del rol ('dir', 'soc', 'mie') o null si vacío
+                    $coopRolId = !empty($coopRolNombre)
+                        ? ($rolesCooperativa[$coopRolNombre] ?? null)
+                        : null;
+
                     // ✅ SOLO DOCUMENTO OBLIGATORIO
                     if (empty($numeroDoc)) {
 
                         $errores[] = [
-                            'fila'   => $filaNum,
-                            'celda'  => 'M' . $filaNum,
-                            'campo'  => 'Número documento',
-                            'valor'  => '',
-                            'error'  => 'Número de documento vacío'
+                            'fila'  => $filaNum,
+                            'celda' => 'M' . $filaNum,
+                            'campo' => 'Número documento',
+                            'valor' => '',
+                            'error' => 'Número de documento vacío'
                         ];
 
                         continue;
                     }
 
-                    // ─────────────────────────────────────
+                    // ─────────────────────────────────────────────────────────
                     // RESOLVER IDS
-                    // ─────────────────────────────────────
-                    $sectorId    = $sectores[$sectorNombre]     ?? null;
-                    $rubroId     = $rubros[$rubroNombre]        ?? null;
-                    $paisId      = $paises[$paisNombre]         ?? null;
-                    $regionId    = $ciudades[$regionNombre]     ?? null;
+                    // ─────────────────────────────────────────────────────────
+                    $sectorId    = $sectores[$sectorNombre]      ?? null;
+                    $rubroId     = $rubros[$rubroNombre]         ?? null;
+                    $paisId      = $paises[$paisNombre]          ?? null;
+                    $regionId    = $ciudades[$regionNombre]      ?? null;
                     $provinciaId = $provincias[$provinciaNombre] ?? null;
-                    $distritoId  = $distritos[$distritoNombre]  ?? null;
-                    $tipoDocId   = $tiposDocs[$tipoDocNombre]   ?? null;
-                    $generoId    = $generos[$generoNombre]      ?? null;
+                    $distritoId  = $distritos[$distritoNombre]   ?? null;
+                    $tipoDocId   = $tiposDocs[$tipoDocNombre]    ?? null;
+                    $generoId    = $generos[$generoNombre]       ?? null;
 
-                    // ✅ RUC Y RAZON SOCIAL PUEDEN SER NULL
-                    // NO ALTERAR LOGICA EXISTENTE
-
-                    // ─────────────────────────────────────
+                    // ─────────────────────────────────────────────────────────
                     // BUSCAR EMPRESARIO
-                    // ─────────────────────────────────────
+                    // ─────────────────────────────────────────────────────────
                     $query = Empresario::query();
 
                     if (!empty($ruc)) {
@@ -217,6 +229,9 @@ class ActividadesUgoImport extends Controller
                         ->where('numero_dni', $numeroDoc)
                         ->first();
 
+                    // ─────────────────────────────────────────────────────────
+                    // DATOS EMPRESARIO — incluye cooperativa
+                    // ─────────────────────────────────────────────────────────
                     $datosEmpresario = [
                         'razon_social'               => $razonSocial        ?: null,
                         'nombre_comercial'           => $nombreComercial    ?: null,
@@ -236,12 +251,15 @@ class ActividadesUgoImport extends Controller
                         'discapacidad'               => $discapacidad === 'SI' ? 1 : 0,
                         'celular'                    => $celular            ?: null,
                         'correo_electronico'         => $correo             ?: null,
+                        // ─── COOPERATIVA → va en empresarios ─────────────────
+                        'coop_ruc'                   => $coopRuc            ?: null,
+                        'coop_razon_social'          => $coopRazonSocial    ?: null,
+                        'coop_rol'                   => $coopRolId,
                     ];
 
                     if ($empresario) {
 
                         $empresario->update($datosEmpresario);
-
                         $actualizados++;
                     } else {
 
@@ -256,9 +274,9 @@ class ActividadesUgoImport extends Controller
                         $registrados++;
                     }
 
-                    // ─────────────────────────────────────
+                    // ─────────────────────────────────────────────────────────
                     // EMPRESARIO ACTIVIDAD
-                    // ─────────────────────────────────────
+                    // ─────────────────────────────────────────────────────────
                     EmpresarioActividad::updateOrCreate(
                         [
                             'slug'          => $slug,

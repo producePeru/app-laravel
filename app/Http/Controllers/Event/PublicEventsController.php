@@ -698,7 +698,7 @@ class PublicEventsController extends Controller
                         'description' => $fair->description,
                         'modality' => $fair->modality,
                         'typeFair' => $fair->fairtype_id,
-                        'fecha' => $fair->fecha,
+                        'fecha' => $fair->dates,
                         'place' => $fair->place,
                         'schedule' => $fair->hours
                     ],

@@ -23,11 +23,11 @@ class FairController extends Controller
     public function cyberWowList(Request $request)
     {
         $filters = [
-            'year' => $request->input('year'),
+            'year'      => $request->input('year'),
             'startDate' => $request->input('dateStart'),
-            'endDate' => $request->input('dateEnd'),
-            'name' => $request->input('name'),
-            'orderby' => $request->input('orderby'),
+            'endDate'   => $request->input('dateEnd'),
+            'name'      => $request->input('name'),
+            'orderby'   => $request->input('orderby'),
         ];
 
         $query = Fair::query()->with([
@@ -40,12 +40,12 @@ class FairController extends Controller
         $query->where('fairtype_id', 2);
         $query->withItems($filters);
 
-        $items = $query->paginate(100)->through(function ($item) {
+        $items = $query->latest()->paginate(100)->through(function ($item) {
             return $this->mapItems($item);
         });
 
         return response()->json([
-            'data' => $items,
+            'data'   => $items,
             'status' => 200,
         ]);
     }

@@ -106,6 +106,8 @@ Route::controller(DownloadComprasPeruController::class)->group(function () {
 Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::post('pantilla-para-inscritos', 'descargarPantillaInscritos');
+
+    Route::post('ugsc-pantilla-para-inscritos', 'descargarPantillaInscritosUgsc');
 });
 
 // download

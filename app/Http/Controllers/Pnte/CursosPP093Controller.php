@@ -19,6 +19,7 @@ class CursosPP093Controller extends Controller
             'sedDescripcion:id,slug_actividad_pnte,descripcion'
         ])
             ->where('tipo_actividad_id', 6)
+            ->where('unidad', 2)
             ->get()
             ->filter(function ($activity) use ($today) {
                 // ✅ REGLA 2 y 3: Mostrar si al menos UNA fecha es hoy o futura
