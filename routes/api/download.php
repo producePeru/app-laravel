@@ -55,6 +55,8 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
     Route::POST('export-inscritos-por-slug-sed/{slug}', 'exportInscritosPorSlugSed');
 
     Route::POST('export-inscritos-por-slug-pp093/{slug}', 'exportInscritosPorSlugPp093');
+
+    Route::POST('export-inscritos-por-slug-ugsc/{slug}', 'exportInscritosPorSlugUgsc');
 });
 
 Route::controller(ActividadesUgoController::class)->group(function () {
