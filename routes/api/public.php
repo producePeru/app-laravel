@@ -28,6 +28,8 @@ Route::controller(FairController::class)->group(function () {
     Route::get('event-sed-details/{slug}', 'sedDetailsEvent');
 
     Route::get('message-form-completed/{slug}', 'messageFormCompleted');
+
+    Route::get('wow-success/{slug}', 'messageFormCompletedWow');
 });
 
 
