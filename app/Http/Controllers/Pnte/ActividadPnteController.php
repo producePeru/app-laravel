@@ -1117,6 +1117,28 @@ class ActividadPnteController extends Controller
         }
     }
 
+    public function deleteEvent($id)
+    {
+        try {
+
+            $event = ActividadPnte::findOrFail($id);
+
+            $event->delete();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Evento eliminado correctamente.',
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al eliminar el evento.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
 
     // create para los pp093

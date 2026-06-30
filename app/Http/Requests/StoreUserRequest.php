@@ -31,7 +31,10 @@ class StoreUserRequest extends FormRequest
             'office_id' => ['required', 'integer'],
             'cde_id' => ['required', 'integer'],
             'phone' => ['nullable', 'string', 'max:9'],
-            'rol' => ['nullable'],
+
+
+            'rol' => 'nullable|integer',
+            'rol_id' => 'nullable|integer',
         ];
     }
 

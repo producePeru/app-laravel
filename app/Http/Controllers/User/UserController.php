@@ -23,9 +23,10 @@ class UserController extends Controller
     public function registerNewAsesor(StoreUserRequest $request)
     {
         try {
+
             $data = $request->validated();
 
-            // Generar email basado en la inicial del nombre + apellido
+            // Generar correo
             $email = strtolower(substr($data['name'], 0, 1) . $data['lastname']) . '@pnte.com';
 
             // Validar que el correo no exista
@@ -45,7 +46,6 @@ class UserController extends Controller
                 'name'       => $data['name'],
                 'lastname'   => $data['lastname'],
                 'middlename' => $data['middlename'] ?? null,
-                // 'birthday'   => $data['birthday'],
                 'gender_id'  => $data['gender_id'],
                 'office_id'  => $data['office_id'],
                 'cde_id'     => $data['cde_id'],
@@ -53,9 +53,10 @@ class UserController extends Controller
                 'email'      => $email,
                 'password'   => Hash::make($data['dni']),
 
-                // Valores fijos
-                'rol'        => 2,
-                'rol_id'     => 2,
+                // Si vienen en el payload se usan, de lo contrario se asigna 2
+                'rol'        => $data['rol'] ?? 2,
+                'rol_id'     => $data['rol_id'] ?? 2,
+
                 'active'     => 1,
             ]);
 
@@ -66,6 +67,7 @@ class UserController extends Controller
                 'status' => 200
             ], 200);
         } catch (\Exception $e) {
+
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error inesperado.',
@@ -135,6 +137,44 @@ class UserController extends Controller
                 ->where([
                     'active'    => 1,
                     'office_id' => 1
+                ])
+                ->orderBy('id', 'desc');
+
+            $query->withDataItems($filters);
+
+            $users = $query->paginate(150)->through(function ($user) {
+                return $this->mapEvents($user);
+            });
+
+            return response()->json([
+                'data'   => $users,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'error'   => 'Error al obtener los usuarios',
+                'message' => $e->getMessage(),
+                'status'  => 500,
+                'trace'   => config('app.debug') ? $e->getTrace() : null
+            ], 500);
+        }
+    }
+
+    public function usersUgseco(Request $request)
+    {
+        try {
+
+            $permission = getPermission('usuarios-ugo');
+
+            $filters = [
+                'name' => $request->input('name')
+            ];
+
+            $query = User::with(['pages', 'cde', 'office'])
+                ->where([
+                    'active'    => 1,
+                    'office_id' => 6
                 ])
                 ->orderBy('id', 'desc');
 
