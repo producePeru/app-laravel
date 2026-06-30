@@ -679,4 +679,22 @@ class FairController extends Controller
             ]);
         }
     }
+
+    public function messageFormCompletedWow($slug)
+    {
+        try {
+            $fair = Fair::where('slug', $slug)->firstOrFail();
+
+            return response()->json([
+                'message' => $fair->msgEndForm,
+                'status' => 200,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener el mensaje del formulario.',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ]);
+        }
+    }
 }

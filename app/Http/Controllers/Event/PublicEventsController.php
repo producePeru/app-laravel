@@ -700,7 +700,8 @@ class PublicEventsController extends Controller
                         'typeFair' => $fair->fairtype_id,
                         'fecha' => $fair->dates,
                         'place' => $fair->place,
-                        'schedule' => $fair->hours
+                        'schedule' => $fair->hours,
+                        'msgEnd' => $fair->msgEndForm
                     ],
                     'status' => 200
                 ]);
