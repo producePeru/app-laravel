@@ -393,6 +393,7 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('digital-routes', [DownloadDigitalRouterController::class, 'exportDigitalRouter']);
 
     Route::post('list-events', [DownloadAttendanceController::class, 'exportAttendance']);
+
     // Route::get('attendance/{slug}',                     [DownloadAttendanceController::class, 'exportAttendanceInscriptos']);         // lista de ventos ugo
     // Route::get('attendance-mercado/{slug}',             [DownloadAttendanceController::class, 'exportFortaleceTuMercado']);         // lista de ventos ugo Fortalece tu Mercado
     Route::post('list-ugo-by-components-id/{id}', [DownloadAttendanceController::class, 'exportAttendanceByComponentsId']);         // lista de ventos ugo Fortalece tu Mercado
