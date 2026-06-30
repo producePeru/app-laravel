@@ -10,6 +10,8 @@ Route::controller(UserController::class)->group(function () {
 
     Route::get('ugo', 'usersUgo');
 
+    Route::get('ugseco', 'usersUgseco');
+
     Route::post('register-new-asesor-ugo', 'registerNewAsesor');
 
     Route::put('update-asesor-ugo/{idUser}', 'updateAsesor');

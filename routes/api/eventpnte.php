@@ -26,6 +26,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::PUT('aprobar-evento/{id}', 'aprobarEvento');
 
+    Route::DELETE('delete-event/{id}', 'deleteEvent'); // eliminar actividades UGGER
+
     // para las migraciones
     Route::POST('generar-fechas-attendance', 'generarFechasAttendance');
 
