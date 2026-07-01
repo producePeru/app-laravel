@@ -120,4 +120,9 @@ class MPEvent extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function attendancesPresent()
+    {
+        return $this->hasMany(MPAttendance::class, 'event_id')->where('attendance', 1);
+    }
 }

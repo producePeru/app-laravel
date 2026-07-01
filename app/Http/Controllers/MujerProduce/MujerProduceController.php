@@ -258,7 +258,7 @@ class MujerProduceController extends Controller
         $query = MpEvent::query();
 
         $query->withItems($filters)
-            ->withCount('attendances')
+            ->withCount(['attendances', 'attendancesPresent'])
             ->orderBy('date', 'DESC');
 
         $items = $query->paginate(100)->through(function ($item) {
@@ -278,7 +278,9 @@ class MujerProduceController extends Controller
             'title'             => $item->title,
             'slug'              => $item->slug,
             'city_id'           => $item->city->id ?? null,
-            'city_name'         => $item->city->name ?? '🏷 VIRTUAL',
+            'city_name'         => $item->city?->name
+                ? '📌 ' . $item->city->name
+                : '🖥 VIRTUAL',
             'place'             => $item->place ?? 'Plataforma Virtual',
             'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
             'date'              => $item->date,
@@ -293,6 +295,7 @@ class MujerProduceController extends Controller
             'modality_id'       => $item->modality_id,
             'training_time'     => $item->training_time,
             'count'             => $item->attendances_count,
+            'count_present'     => $item->attendances_present_count,   // total con attendance = 1
 
             'link'              => $item->link,
             'aliado'            => $item->aliado,

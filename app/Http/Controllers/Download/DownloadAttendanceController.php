@@ -11,6 +11,7 @@ use App\Models\AttendanceList;
 use App\Models\City;
 use App\Models\District;
 use App\Models\EmpresarioActividad;
+use App\Models\MPAttendance;
 use App\Models\People;
 use App\Models\Province;
 use App\Models\Question;
@@ -1245,6 +1246,195 @@ class DownloadAttendanceController extends Controller
     }
 
 
+    // todos los inscritos de mujer produce
+
+    public function exportInscritosMujerProduce(Request $request)
+    {
+        $year      = $request->input('year');
+        $startDate = $request->input('startDate');
+        $endDate   = $request->input('endDate');
+
+        $filename = 'inscritos_mujer_produce_' . now()->format('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-Type'              => 'text/csv',
+            'Content-Disposition'       => "attachment; filename=\"{$filename}\"",
+            'Cache-Control'             => 'no-store, no-cache',
+            'X-Accel-Buffering'         => 'no',
+        ];
+
+        $callback = function () use ($year, $startDate, $endDate) {
+            $handle = fopen('php://output', 'w');
+
+            // BOM para Excel (UTF-8)
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // Cabeceras del CSV
+            fputcsv($handle, [
+                // Evento
+                '#',
+                'Título del Evento',
+                'Fecha del Evento',
+                'Modalidad',
+                'Ciudad del Evento',
+                'Capacitador',
+
+                // Participante
+                'RUC',
+                'RAZÓN SOCIAL',
+                'SECTOR ECONÓMICO',
+                'RUBRO',
+                'ACTIVIDAD COMERCIAL',
+                'REGIÓN',
+                'PROVINCIA',
+                'DISTRITO',
+
+                'TIPO DOCUMENTO',
+                'N°. DOCUMENTO',
+                'APELLIDO PATERNO',
+                'APELLIDO MATERNO',
+                'NOMBRES',
+                'PAÍS NACIMIENTO',
+                'FECHA DE NACIMIENTO',
+                'GÉNERO',
+                '¿TIENE UNA DISCAPACIDAD?',
+                'GRADO ACADÉMICO',
+                'ESTADO CIVIL',
+                'CANTIDAD HIJOS',
+                'NÚMERO DE CELULAR',
+                'CORREO ELECTRÓNICO',
+                'ROL EN EMPRESA',
+
+                // Asistencia
+                'Asistencia',
+            ], ',');
+
+            // Query base sobre MPAttendance (tabla pivote)
+            $query = MPAttendance::query()
+                ->join('mp_eventos as e', 'e.id', '=', 'mp_asistencias.event_id')
+                ->join('mp_participantes as p', 'p.id', '=', 'mp_asistencias.participant_id')
+                // Joins opcionales para lookups
+                ->leftJoin('modalities as mod',       'mod.id',  '=', 'e.modality_id')
+                ->leftJoin('cities as ce',            'ce.id',   '=', 'e.city_id')
+                ->leftJoin('mp_capacitadores as cap', 'cap.id',  '=', 'e.capacitador_id')
+                ->leftJoin('typedocuments as td',    'td.id',   '=', 'p.t_doc_id')
+                ->leftJoin('genders as g',            'g.id',    '=', 'p.gender_id')
+                ->leftJoin('activities as ac',       'ac.id',    '=', 'p.comercial_activity_id')
+                ->leftJoin('countries as co',       'co.id',     '=', 'p.country_id')
+                ->leftJoin('cities as cp',            'cp.id',   '=', 'p.city_id')
+                ->leftJoin('provinces as prov',       'prov.id', '=', 'p.province_id')
+                ->leftJoin('districts as dist',       'dist.id', '=', 'p.district_id')
+                ->leftJoin('economicsectors as es',  'es.id',   '=', 'p.economic_sector_id')
+                ->leftJoin('categories as cat',       'cat.id',  '=', 'p.rubro_id')
+                ->leftJoin('academicdegree as ad',  'ad.id',   '=', 'p.academicdegree_id')
+                ->leftJoin('civilstatus as cs',    'cs.id',   '=', 'p.civil_status_id')
+                ->leftJoin('role_company as rc',    'rc.id',   '=', 'p.role_company_id')
+                ->select([
+                    // Evento
+                    'e.id          as event_id',
+                    'e.title       as event_title',
+                    'e.date        as event_date',
+                    'mod.name      as modality',
+                    'ce.name       as event_city',
+                    'cap.name      as capacitador',
+                    // Participante
+                    'p.id          as participant_id',
+                    'p.ruc',
+                    'ac.name       as activities',
+                    'co.name       as countries',
+                    'p.social_reason',
+                    'p.names',
+                    'p.last_name',
+                    'p.middle_name',
+                    'p.sick',
+                    'p.num_soons',
+                    'td.name       as type_document',
+                    'p.doc_number',
+                    'g.name        as gender',
+                    'p.date_of_birth',
+                    'p.phone',
+                    'p.email',
+                    'cp.name       as participant_city',
+                    'prov.name     as province',
+                    'dist.name     as district',
+                    'es.name       as economic_sector',
+                    'cat.name      as rubro',
+                    'ad.name       as academic_degree',
+                    'cs.name       as civil_status',
+                    'rc.name       as role_company',
+                    // Asistencia
+                    'mp_asistencias.attendance',
+                ]);
+
+            // Filtros de fecha sobre el evento
+            if ($startDate && $endDate) {
+                $query->whereBetween('e.date', [$startDate, $endDate]);
+            }
+
+            if ($year) {
+                $query->whereYear('e.date', $year);
+            }
+
+            // Soft-delete: excluir eventos eliminados
+            $query->whereNull('e.deleted_at');
+
+            $index = 1;
+            $lastEventId = null;
+
+            // Chunk para no reventar la memoria
+            $query->orderBy('e.date', 'desc')->orderBy('e.id')->orderBy('p.id')
+                ->chunk(500, function ($rows) use ($handle, &$index, &$lastEventId) {
+                    foreach ($rows as $row) {
+
+                        // Solo incrementa cuando cambia el evento
+                        if ($lastEventId !== null && $lastEventId !== $row->event_id) {
+                            $index++;
+                        }
+                        $lastEventId = $row->event_id;
+
+                        fputcsv($handle, [
+                            $index,
+                            $row->event_title,
+                            $row->event_date,
+                            $row->modality,
+                            $row->event_city,
+                            $row->capacitador,
+
+                            $row->ruc,
+                            $row->social_reason,
+                            $row->economic_sector,
+                            $row->rubro,
+                            $row->activities,
+                            $row->participant_city,
+                            $row->province,
+                            $row->district,
+
+                            $row->type_document,
+                            $row->doc_number,
+                            $row->last_name,
+                            $row->middle_name,
+                            $row->names,
+                            $row->countries,
+                            $row->date_of_birth,
+                            $row->gender,
+                            $row->sick,
+                            $row->academic_degree,
+                            $row->civil_status,
+                            $row->num_soons,
+                            $row->phone,
+                            $row->email,
+                            $row->role_company,
+                            $row->attendance == 1 ? '✔️' : '-',
+                        ], ',');
+                    }
+                });
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
 
 
 
@@ -1377,7 +1567,7 @@ class DownloadAttendanceController extends Controller
                     'nombre_comercial',
                     'sector_economico_id',
                     'rubro_id',
-                    'actividad_comercial_nombre',
+                    'actividad_comercial_id',
                     'region_id',
                     'provincia_id',
                     'distrito_id',
@@ -1406,6 +1596,7 @@ class DownloadAttendanceController extends Controller
             'empresario.sectorEconomico:id,name',
             'empresario.rubro:id,name',
             'empresario.cargoEmpresa:id,name',
+            'empresario.actividadComercial:id,name'
         ])
             ->where('slug', $slug)
             ->orderByDesc('created_at');
@@ -1429,14 +1620,14 @@ class DownloadAttendanceController extends Controller
         // HEADERS EN FILA 2 (Fijos y Dinámicos)
         // ─────────────────────────────────────────────
         // Definición de las celdas asignadas a las 5 preguntas fijas de SedQuestion
-        $sheet->setCellValue('AI2', $fixedQuestionsMap['question_1']['label']);
-        $sheet->setCellValue('AJ2', $fixedQuestionsMap['question_2']['label']);
-        $sheet->setCellValue('AK2', $fixedQuestionsMap['question_3']['label']);
-        $sheet->setCellValue('AL2', $fixedQuestionsMap['question_4']['label']);
-        $sheet->setCellValue('AM2', $fixedQuestionsMap['question_5']['label']);
+        $sheet->setCellValue('AL2', $fixedQuestionsMap['question_1']['label']);
+        $sheet->setCellValue('AM2', $fixedQuestionsMap['question_2']['label']);
+        $sheet->setCellValue('AN2', $fixedQuestionsMap['question_3']['label']);
+        $sheet->setCellValue('AO2', $fixedQuestionsMap['question_4']['label']);
+        $sheet->setCellValue('AP2', $fixedQuestionsMap['question_5']['label']);
 
         // Habilitar ajuste de texto automático para las cabeceras fijas
-        foreach (['AI2', 'AJ2', 'AK2', 'AL2', 'AM2'] as $cell) {
+        foreach (['AL2', 'AM2', 'AN2', 'AO2', 'AP2'] as $cell) {
             $sheet->getStyle($cell)->getAlignment()->setWrapText(true);
         }
 
@@ -1529,6 +1720,48 @@ class DownloadAttendanceController extends Controller
                 );
                 $col++;
 
+                // RUC
+                $sheet->setCellValue("{$col}{$row}", $e->ruc);
+                $col++;
+
+                // Razon social 
+                $sheet->setCellValue("{$col}{$row}", $e->razon_social);
+                $col++;
+
+                // nombre comercial
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombre_comercial?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // SECTOR ECONOMICO
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // RUBRO
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->rubro?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // actividad comercial
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->actividadComercial?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // REGION (empresario)
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->region?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // PROVINCIA (empresario)
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->provincia?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // DISTRITO (empresario)
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->distrito?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // dirección
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->direccion ?? '', 'UTF-8'));
+                $col++;
+
+                // *****************
+
                 // TIPO DOCUMENTO
                 $sheet->setCellValue("{$col}{$row}", $e->tipoDocumento?->avr);
                 $col++;
@@ -1537,14 +1770,17 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", $e->numero_dni);
                 $col++;
 
-                // PAIS
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->pais?->name ?? '', 'UTF-8'));
-                $col++;
-
-                // APELLIDOS
+                // APELLIDO paterno
                 $sheet->setCellValue(
                     "{$col}{$row}",
-                    mb_strtoupper(trim(($e->apellido_paterno ?? '') . ' ' . ($e->apellido_materno ?? '')), 'UTF-8')
+                    mb_strtoupper(trim(($e->apellido_paterno ?? '')), 'UTF-8')
+                );
+                $col++;
+
+                // APELLIDO materno
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(trim(($e->apellido_materno ?? '')), 'UTF-8')
                 );
                 $col++;
 
@@ -1560,36 +1796,16 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", $e->discapacidad ? 'SI' : 'NO');
                 $col++;
 
-                // RUC
-                $sheet->setCellValue("{$col}{$row}", $e->ruc);
-                $col++;
-
-                // REGION (empresario)
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->region?->name ?? '', 'UTF-8'));
-                $col++;
-
-                // PROVINCIA (empresario)
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->provincia?->name ?? '', 'UTF-8'));
-                $col++;
-
-                // DISTRITO (empresario)
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->distrito?->name ?? '', 'UTF-8'));
-                $col++;
-
-                // SECTOR ECONOMICO
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8'));
-                $col++;
-
-                // RUBRO
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->rubro?->name ?? '', 'UTF-8'));
-                $col++;
-
                 // CELULAR
                 $sheet->setCellValue("{$col}{$row}", $e->celular);
                 $col++;
 
                 // CORREO
                 $sheet->setCellValue("{$col}{$row}", $e->correo_electronico);
+                $col++;
+
+                // CARGO EN LA EMPRESA
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->cargoEmpresa?->name ?? '', 'UTF-8'));
                 $col++;
 
                 // FECHA NACIMIENTO
@@ -1600,9 +1816,9 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", $e->edad ?? '');
                 $col++;
 
-                // CARGO EN LA EMPRESA
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->cargoEmpresa?->name ?? '', 'UTF-8'));
-                $col++;
+                // // PAIS
+                // $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->pais?->name ?? '', 'UTF-8'));
+                // $col++;
 
                 // CÓMO SE ENTERÓ DEL EVENTO
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($sq?->propagandaMedia?->name ?? '', 'UTF-8'));
@@ -1638,7 +1854,7 @@ class DownloadAttendanceController extends Controller
                 $col++;
 
                 // Aplicar ajuste de línea (Wrap Text) a las celdas del bloque fijo
-                foreach (['AI', 'AJ', 'AK', 'AL', 'AM'] as $c) {
+                foreach (['AL', 'AM', 'AN', 'AO', 'AP'] as $c) {
                     $sheet->getStyle("{$c}{$row}")->getAlignment()->setWrapText(true);
                 }
 

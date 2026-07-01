@@ -405,6 +405,8 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('events', [DownloadEventsController::class, 'exportEvents']);
 
     Route::post('export-todos-inscritos', [DownloadAttendanceController::class, 'exportInscritos']);
+
+    Route::post('export-todos-inscritos-mujer-produce', [DownloadAttendanceController::class, 'exportInscritosMujerProduce']);
 });
 
 // Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {

@@ -219,6 +219,9 @@ class FairController extends Controller
 
             $today = Carbon::now();
 
+            // Si viene mode=ugger se omite la validación de vencimiento
+            $ignoreExpiration = $request->query('mode') === 'ugger';
+
             // Buscar actividad por slug
             $actividad = ActividadPnte::with([
                 'regionRel:id,name',
@@ -232,9 +235,9 @@ class FairController extends Controller
 
                 return response()->json([
                     'data' => [
-                        'title' => 'No se encontró el evento.',
+                        'title'   => 'No se encontró el evento.',
                         'message' => 'No existe una actividad con este registro.',
-                        'status' => 404,
+                        'status'  => 404,
                     ],
                 ]);
             }
@@ -252,15 +255,15 @@ class FairController extends Controller
 
                 return response()->json([
                     'data' => [
-                        'title' => 'Evento Cancelado',
-                        'message' => $actividad->cancelado,
-                        'status' => 410,
-                        'cancelado' => true,
+                        'title'      => 'Evento Cancelado',
+                        'message'    => $actividad->cancelado,
+                        'status'     => 410,
+                        'cancelado'  => true,
                     ],
                 ]);
             }
 
-            // fechas puede venir como array o json
+            // Fechas puede venir como array o JSON
             $fechas = is_array($actividad->fechas)
                 ? $actividad->fechas
                 : json_decode($actividad->fechas, true);
@@ -270,11 +273,11 @@ class FairController extends Controller
 
             /**
              * EVENTO FINALIZADO
+             * Se omite esta validación cuando mode=ugger
              */
-            if (!empty($fechaFin)) {
+            if (!empty($fechaFin) && !$ignoreExpiration) {
 
-                $fechaEvento = Carbon::parse($fechaFin)
-                    ->endOfDay();
+                $fechaEvento = Carbon::parse($fechaFin)->endOfDay();
 
                 if ($today->gt($fechaEvento)) {
 
