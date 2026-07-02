@@ -297,101 +297,69 @@ class ActividadPnteController extends Controller
                 'actualizado_por_id',
                 'horario',
                 'activo',
-
                 'link',
                 'componente_id',
                 'trainer_id',
-
                 'created_at',
             ])
 
-            // ✅ FILTRO UNIDAD
-            // si viene unidad filtra
-            // si no viene lista todos
-            ->when(
-                $request->filled('unidad'),
-                function ($q) use ($request) {
-
-                    $q->where(
-                        'unidad',
-                        $request->input('unidad')
-                    );
-                }
-            )
-
             // ✅ FILTRO POR ROL
+            // rol 1 y 3 → ven todo
+            // rol 2     → solo sus actividades
+            // cualquier otro → no ve nada
+            ->when(in_array($user->rol, [1, 3]), function ($q) {
+                // sin restricción
+            })
             ->when($user->rol == 2, function ($q) use ($user) {
-
                 $q->where('representante_id', $user->id);
             })
+            ->when(!in_array($user->rol, [1, 2, 3]), function ($q) {
+                $q->whereRaw('1 = 0');
+            })
 
-            // ✅ FILTRO: asesor
-            ->when($request->filled('asesor'), function ($q) use ($request) {
+            // ✅ FILTRO UNIDAD
+            ->when($request->filled('unidad'), function ($q) use ($request) {
+                $q->where('unidad', $request->input('unidad'));
+            })
 
-                $q->where(
-                    'representante_id',
-                    $request->input('asesor')
-                );
+            // ✅ FILTRO: asesor — solo aplica si NO es rol 2
+            ->when($request->filled('asesor') && $user->rol != 2, function ($q) use ($request) {
+                $q->where('representante_id', $request->input('asesor'));
             })
 
             // ✅ FILTRO: pnte
             ->when($request->filled('pnte'), function ($q) use ($request) {
-
-                $q->where(
-                    'tipo_actividad_id',
-                    $request->input('pnte')
-                );
+                $q->where('tipo_actividad_id', $request->input('pnte'));
             })
 
             // ✅ FILTRO: tipo_actividad_id
             ->when($request->filled('tipo_actividad_id'), function ($q) use ($request) {
-
-                $q->where(
-                    'tipo_actividad_id',
-                    $request->input('tipo_actividad_id')
-                );
+                $q->where('tipo_actividad_id', $request->input('tipo_actividad_id'));
             })
 
             // ✅ FILTRO: year
             ->when($request->filled('year'), function ($q) use ($request) {
-
                 $year = $request->input('year');
-
-                $q->where(
-                    'fechas',
-                    'LIKE',
-                    "%{$year}%"
-                );
+                $q->where('fechas', 'LIKE', "%{$year}%");
             })
 
             // ✅ FILTRO: tema
             ->when($request->filled('name'), function ($q) use ($request) {
-
                 $name = trim($request->input('name'));
-
                 $q->where('tema', 'LIKE', "%{$name}%");
             })
 
             // ✅ FILTRO: rangeDate
             ->when($request->filled('rangeDate'), function ($q) use ($request) {
-
                 [$from, $to] = $request->input('rangeDate');
 
                 $current = \Carbon\Carbon::parse($from);
-
-                $end = \Carbon\Carbon::parse($to);
+                $end     = \Carbon\Carbon::parse($to);
 
                 $q->where(function ($query) use ($current, $end) {
-
                     while ($current->lte($end)) {
-
                         $fecha = $current->format('Y-m-d');
-
-                        $query->orWhereJsonContains(
-                            'fechas',
-                            $fecha
-                        );
-
+                        $query->orWhereJsonContains('fechas', $fecha);
                         $current->addDay();
                     }
                 });
@@ -399,11 +367,7 @@ class ActividadPnteController extends Controller
 
             // ✅ FILTRO: city → region
             ->when($request->filled('city'), function ($q) use ($request) {
-
-                $q->where(
-                    'region',
-                    $request->input('city')
-                );
+                $q->where('region', $request->input('city'));
             })
 
             // ✅ ORDENAR POR FECHA MÁS RECIENTE
@@ -424,22 +388,22 @@ class ActividadPnteController extends Controller
             );
 
         return response()->json([
-            'status' => 200,
+            'status'  => 200,
             'message' => 'Actividades obtenidas correctamente.',
-            'data' => [
-                'current_page' => $actividades->currentPage(),
-                'data' => $actividades->items(),
-                'first_page_url' => $actividades->url(1),
-                'from' => $actividades->firstItem(),
-                'last_page' => $actividades->lastPage(),
-                'last_page_url' => $actividades->url($actividades->lastPage()),
-                'links' => $actividades->linkCollection()->toArray(),
-                'next_page_url' => $actividades->nextPageUrl(),
-                'path' => $actividades->path(),
-                'per_page' => $actividades->perPage(),
-                'prev_page_url' => $actividades->previousPageUrl(),
-                'to' => $actividades->lastItem(),
-                'total' => $actividades->total(),
+            'data'    => [
+                'current_page'    => $actividades->currentPage(),
+                'data'            => $actividades->items(),
+                'first_page_url'  => $actividades->url(1),
+                'from'            => $actividades->firstItem(),
+                'last_page'       => $actividades->lastPage(),
+                'last_page_url'   => $actividades->url($actividades->lastPage()),
+                'links'           => $actividades->linkCollection()->toArray(),
+                'next_page_url'   => $actividades->nextPageUrl(),
+                'path'            => $actividades->path(),
+                'per_page'        => $actividades->perPage(),
+                'prev_page_url'   => $actividades->previousPageUrl(),
+                'to'              => $actividades->lastItem(),
+                'total'           => $actividades->total(),
             ],
         ]);
     }
