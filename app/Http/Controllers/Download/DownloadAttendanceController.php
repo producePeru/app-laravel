@@ -1473,10 +1473,10 @@ class DownloadAttendanceController extends Controller
             'question_1' => [
                 'label' => '¿Cómo planificas el crecimiento de tu negocio usando tecnología?',
                 'options' => [
-                    'sin_interes'          => 'A. No tengo interés en la tecnología; mi negocio depende solo de mi presencia física y el boca a boca.',
-                    'redes_sociales'       => 'B. Uso Facebook o WhatsApp porque otros lo hacen, pero no tengo un plan ni metas de ventas digitales.',
-                    'estrategia_digital'   => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir qué comprar o vender.',
-                    'plan_transformacion'  => 'D. Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
+                    'sin_interes'         => 'A. No tengo interés en la tecnología; mi negocio depende solo de mi presencia física y el boca a boca.',
+                    'redes_sociales'      => 'B. Uso Facebook o WhatsApp porque otros lo hacen, pero no tengo un plan ni metas de ventas digitales.',
+                    'estrategia_digital'  => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir qué comprar o vender.',
+                    'plan_transformacion' => 'D. Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
                 ]
             ],
             'question_2' => [
@@ -1491,10 +1491,10 @@ class DownloadAttendanceController extends Controller
             'question_3' => [
                 'label' => '¿Con qué herramientas tecnológicas y seguridad cuenta tu negocio para operar?',
                 'options' => [
-                    'celular'                  => 'A. Solo tengo un celular básico para llamadas y no confío en los pagos digitales ni en internet.',
-                    'internet_basico'          => 'B. Tengo internet básico y uso computadoras personales para tareas simples (Word/Excel básico) sin protocolos de seguridad.',
-                    'internet_alta_velocidad'  => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi información con contraseñas y respaldos frecuentes.',
-                    'nube'                     => 'D. Uso servicios en la nube (Cloud), mi infraestructura está integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
+                    'celular'                 => 'A. Solo tengo un celular básico para llamadas y no confío en los pagos digitales ni en internet.',
+                    'internet_basico'         => 'B. Tengo internet básico y uso computadoras personales para tareas simples (Word/Excel básico) sin protocolos de seguridad.',
+                    'internet_alta_velocidad' => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi información con contraseñas y respaldos frecuentes.',
+                    'nube'                    => 'D. Uso servicios en la nube (Cloud), mi infraestructura está integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
                 ]
             ],
             'question_4' => [
@@ -1514,7 +1514,7 @@ class DownloadAttendanceController extends Controller
                     'software'  => 'C. Tengo presencia en Google Maps, uso catálogos digitales y acepto múltiples pagos (Yape, Plin, POS). Mido la satisfacción de mis clientes.',
                     'integrado' => 'D. Tengo una tienda online o CRM donde el cliente compra directamente y utilizo sus datos para enviarles ofertas personalizadas.',
                 ]
-            ]
+            ],
         ];
 
         // ─────────────────────────────────────────────
@@ -1596,7 +1596,7 @@ class DownloadAttendanceController extends Controller
             'empresario.sectorEconomico:id,name',
             'empresario.rubro:id,name',
             'empresario.cargoEmpresa:id,name',
-            'empresario.actividadComercial:id,name'
+            'empresario.actividadComercial:id,name',
         ])
             ->where('slug', $slug)
             ->orderByDesc('created_at');
@@ -1617,29 +1617,30 @@ class DownloadAttendanceController extends Controller
         $sheet       = $spreadsheet->getActiveSheet();
 
         // ─────────────────────────────────────────────
-        // HEADERS EN FILA 2 (Fijos y Dinámicos)
+        // HEADERS FIJOS EN FILA 2 (AM → AQ)
+        // AM=39, AN=40, AO=41, AP=42, AQ=43
         // ─────────────────────────────────────────────
-        // Definición de las celdas asignadas a las 5 preguntas fijas de SedQuestion
-        $sheet->setCellValue('AL2', $fixedQuestionsMap['question_1']['label']);
-        $sheet->setCellValue('AM2', $fixedQuestionsMap['question_2']['label']);
-        $sheet->setCellValue('AN2', $fixedQuestionsMap['question_3']['label']);
-        $sheet->setCellValue('AO2', $fixedQuestionsMap['question_4']['label']);
-        $sheet->setCellValue('AP2', $fixedQuestionsMap['question_5']['label']);
+        $sheet->setCellValue('AM2', $fixedQuestionsMap['question_1']['label']);
+        $sheet->setCellValue('AN2', $fixedQuestionsMap['question_2']['label']);
+        $sheet->setCellValue('AO2', $fixedQuestionsMap['question_3']['label']);
+        $sheet->setCellValue('AP2', $fixedQuestionsMap['question_4']['label']);
+        $sheet->setCellValue('AQ2', $fixedQuestionsMap['question_5']['label']);
 
-        // Habilitar ajuste de texto automático para las cabeceras fijas
-        foreach (['AL2', 'AM2', 'AN2', 'AO2', 'AP2'] as $cell) {
+        foreach (['AM2', 'AN2', 'AO2', 'AP2', 'AQ2'] as $cell) {
             $sheet->getStyle($cell)->getAlignment()->setWrapText(true);
         }
 
-        // Configuración de las columnas dinámicas (comienzan a partir de AN)
-        $firstDynamicCol = 'AN';
-        $headerCol = $firstDynamicCol;
-        foreach ($dynamicColumns as $modelIdentifier) {
+        // ─────────────────────────────────────────────
+        // HEADERS DINÁMICOS EN FILA 2 (desde AR = índice 44)
+        // ─────────────────────────────────────────────
+        $dynStartColIndex = 44; // AR
+        foreach ($dynamicColumns as $i => $modelIdentifier) {
             $normalizedModel = preg_replace('/^questions_/', 'question_', $modelIdentifier);
             $question        = $questions->get($normalizedModel);
             $headerLabel     = $question?->label ?? $modelIdentifier;
-            $sheet->setCellValue("{$headerCol}2", $headerLabel);
-            $headerCol++;
+            $colLetter       = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($dynStartColIndex + $i);
+            $sheet->setCellValue("{$colLetter}2", $headerLabel);
+            $sheet->getStyle("{$colLetter}2")->getAlignment()->setWrapText(true);
         }
 
         // ─────────────────────────────────────────────
@@ -1657,12 +1658,12 @@ class DownloadAttendanceController extends Controller
             $sedAnswers,
             $dynamicColumns,
             $questions,
-            $firstDynamicCol,
-            $fixedQuestionsMap
+            $fixedQuestionsMap,
+            $dynStartColIndex
         ) {
             foreach ($items as $item) {
-                $e  = $item->empresario;
-                $sq = $sedQuestions->get($e->numero_dni);
+                $e   = $item->empresario;
+                $sq  = $sedQuestions->get($e->numero_dni);
                 $col = 'D';
 
                 // NRO
@@ -1711,8 +1712,8 @@ class DownloadAttendanceController extends Controller
                     "{$col}{$row}",
                     mb_strtoupper(
                         trim(
-                            ($actividad->representante?->name      ?? '') . ' ' .
-                                ($actividad->representante?->lastname  ?? '') . ' ' .
+                            ($actividad->representante?->name       ?? '') . ' ' .
+                                ($actividad->representante?->lastname   ?? '') . ' ' .
                                 ($actividad->representante?->middlename ?? '')
                         ),
                         'UTF-8'
@@ -1724,15 +1725,15 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", $e->ruc);
                 $col++;
 
-                // Razon social 
-                $sheet->setCellValue("{$col}{$row}", $e->razon_social);
+                // RAZÓN SOCIAL
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->razon_social ?? '', 'UTF-8'));
                 $col++;
 
-                // nombre comercial
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombre_comercial?->name ?? '', 'UTF-8'));
+                // NOMBRE COMERCIAL
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombre_comercial ?? '', 'UTF-8'));
                 $col++;
 
-                // SECTOR ECONOMICO
+                // SECTOR ECONÓMICO
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8'));
                 $col++;
 
@@ -1740,7 +1741,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->rubro?->name ?? '', 'UTF-8'));
                 $col++;
 
-                // actividad comercial
+                // ACTIVIDAD COMERCIAL
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->actividadComercial?->name ?? '', 'UTF-8'));
                 $col++;
 
@@ -1756,11 +1757,9 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->distrito?->name ?? '', 'UTF-8'));
                 $col++;
 
-                // dirección
+                // DIRECCIÓN
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->direccion ?? '', 'UTF-8'));
                 $col++;
-
-                // *****************
 
                 // TIPO DOCUMENTO
                 $sheet->setCellValue("{$col}{$row}", $e->tipoDocumento?->avr);
@@ -1770,25 +1769,19 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", $e->numero_dni);
                 $col++;
 
-                // APELLIDO paterno
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper(trim(($e->apellido_paterno ?? '')), 'UTF-8')
-                );
+                // APELLIDO PATERNO
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim($e->apellido_paterno ?? ''), 'UTF-8'));
                 $col++;
 
-                // APELLIDO materno
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper(trim(($e->apellido_materno ?? '')), 'UTF-8')
-                );
+                // APELLIDO MATERNO
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim($e->apellido_materno ?? ''), 'UTF-8'));
                 $col++;
 
                 // NOMBRES
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombres ?? '', 'UTF-8'));
                 $col++;
 
-                // GENERO
+                // GÉNERO
                 $sheet->setCellValue("{$col}{$row}", $e->genero?->avr);
                 $col++;
 
@@ -1809,65 +1802,65 @@ class DownloadAttendanceController extends Controller
                 $col++;
 
                 // FECHA NACIMIENTO
-                $sheet->setCellValue("{$col}{$row}", $e->fecha_nacimiento ? Carbon::parse($e->fecha_nacimiento)->format('d/m/Y') : '');
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->fecha_nacimiento ? Carbon::parse($e->fecha_nacimiento)->format('d/m/Y') : ''
+                );
                 $col++;
 
                 // EDAD
                 $sheet->setCellValue("{$col}{$row}", $e->edad ?? '');
                 $col++;
 
-                // // PAIS
-                // $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->pais?->name ?? '', 'UTF-8'));
-                // $col++;
-
                 // CÓMO SE ENTERÓ DEL EVENTO
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($sq?->propagandaMedia?->name ?? '', 'UTF-8'));
                 $col++;
 
                 // HORA REGISTRO
-                $sheet->setCellValue("{$col}{$row}", $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y H:i:s') : '');
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y H:i:s') : ''
+                );
                 $col++;
 
                 // FECHA ASISTENCIA
                 $sheet->setCellValue("{$col}{$row}", $item->fecha_asistencia ?: 'x');
                 $col++;
 
-                // ── CONTENIDO PREGUNTAS FIJAS (Traducción de Keys a Labels) ──
+                // ─────────────────────────────────────────────
+                // PREGUNTAS FIJAS: hardcodeadas en AM, AN, AO, AP, AQ
+                // NO usan $col para evitar colisiones
+                // ─────────────────────────────────────────────
                 $q1Val = $sq?->question_1;
-                $sheet->setCellValue("{$col}{$row}", $fixedQuestionsMap['question_1']['options'][$q1Val] ?? $q1Val ?? '');
-                $col++;
+                $sheet->setCellValue("AM{$row}", $fixedQuestionsMap['question_1']['options'][$q1Val] ?? $q1Val ?? '');
 
                 $q2Val = $sq?->question_2;
-                $sheet->setCellValue("{$col}{$row}", $fixedQuestionsMap['question_2']['options'][$q2Val] ?? $q2Val ?? '');
-                $col++;
+                $sheet->setCellValue("AN{$row}", $fixedQuestionsMap['question_2']['options'][$q2Val] ?? $q2Val ?? '');
 
                 $q3Val = $sq?->question_3;
-                $sheet->setCellValue("{$col}{$row}", $fixedQuestionsMap['question_3']['options'][$q3Val] ?? $q3Val ?? '');
-                $col++;
+                $sheet->setCellValue("AO{$row}", $fixedQuestionsMap['question_3']['options'][$q3Val] ?? $q3Val ?? '');
 
                 $q4Val = $sq?->question_4;
-                $sheet->setCellValue("{$col}{$row}", $fixedQuestionsMap['question_4']['options'][$q4Val] ?? $q4Val ?? '');
-                $col++;
+                $sheet->setCellValue("AP{$row}", $fixedQuestionsMap['question_4']['options'][$q4Val] ?? $q4Val ?? '');
 
                 $q5Val = $sq?->question_5;
-                $sheet->setCellValue("{$col}{$row}", $fixedQuestionsMap['question_5']['options'][$q5Val] ?? $q5Val ?? '');
-                $col++;
+                $sheet->setCellValue("AQ{$row}", $fixedQuestionsMap['question_5']['options'][$q5Val] ?? $q5Val ?? '');
 
-                // Aplicar ajuste de línea (Wrap Text) a las celdas del bloque fijo
-                foreach (['AL', 'AM', 'AN', 'AO', 'AP'] as $c) {
+                // Wrap text en celdas fijas
+                foreach (['AM', 'AN', 'AO', 'AP', 'AQ'] as $c) {
                     $sheet->getStyle("{$c}{$row}")->getAlignment()->setWrapText(true);
                 }
 
                 // ─────────────────────────────────────────────
-                // CONTENIDO PREGUNTAS DINÁMICAS
+                // PREGUNTAS DINÁMICAS: desde AR (índice 44) en adelante
                 // ─────────────────────────────────────────────
                 $answersIndexed = $sedAnswers
                     ->get($e->numero_dni, collect())
                     ->keyBy('question');
 
-                $dynCol = $firstDynamicCol;
-                foreach ($dynamicColumns as $modelIdentifier) {
+                foreach ($dynamicColumns as $i => $modelIdentifier) {
                     $normalizedModel = preg_replace('/^questions_/', 'question_', $modelIdentifier);
+                    $dynColLetter    = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($dynStartColIndex + $i);
 
                     $question = $questions->get($normalizedModel);
                     $answer   = $answersIndexed->get($modelIdentifier);
@@ -1895,15 +1888,13 @@ class DownloadAttendanceController extends Controller
                         $cellValue = $rawValue;
                     }
 
-                    $sheet->setCellValue("{$dynCol}{$row}", $cellValue);
+                    $sheet->setCellValue("{$dynColLetter}{$row}", $cellValue);
 
                     if (str_contains($cellValue, "\n")) {
-                        $sheet->getStyle("{$dynCol}{$row}")
+                        $sheet->getStyle("{$dynColLetter}{$row}")
                             ->getAlignment()
                             ->setWrapText(true);
                     }
-
-                    $dynCol++;
                 }
 
                 $row++;

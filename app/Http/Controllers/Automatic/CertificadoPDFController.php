@@ -12,7 +12,7 @@ class CertificadoPDFController extends Controller
     {
         $emails = $request->input('emails');
         $groupedEmails = [];
-        $mailer = 'digitalizacion';      // capacitaciones || office365
+        $mailer = 'capacitaciones';      // capacitaciones || office365 || digitalizacion
 
         // Agrupar destinatarios por archivo PDF
         foreach ($emails as $emailData) {
