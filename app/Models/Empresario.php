@@ -35,6 +35,8 @@ class Empresario extends Model
         'discapacidad',
         'celular',
         'correo_electronico',
+        'academicdegree_id',
+        'role_company_id',
         'cargo_empresa_id',
         'fecha_nacimiento',
         'edad',
@@ -106,5 +108,10 @@ class Empresario extends Model
     public function actividades(): HasMany
     {
         return $this->hasMany(EmpresarioActividad::class, 'empresario_id');
+    }
+
+    public function gradoAcademico(): BelongsTo
+    {
+        return $this->belongsTo(AcademicDegree::class, 'academicdegree_id');
     }
 }

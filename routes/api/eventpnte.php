@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Pnte\ActividadPnteController;
 use App\Http\Controllers\Pnte\ActividadPublicPnteController;
+use App\Http\Controllers\Pnte\PnteTestController;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(ActividadPnteController::class)->group(function () {
@@ -46,7 +47,16 @@ Route::controller(ActividadPnteController::class)->group(function () {
     Route::GET('attendance-summary-slug/{slug}', 'attendanceSummaryBySlug');
 });
 
-// event-pnte
+Route::controller(PnteTestController::class)->group(function () {
+
+    Route::PUT('pp093-save-test', 'saveTest');  // guardar las preguntas desde el Admin
+
+    Route::GET('pp093-get-test-entrada/{slug}', 'getTestEntrada');
+
+    Route::GET('pp093-get-test-salida/{slug}', 'getTestSalida');
+});
+
+// event-pnte 🔒
 
 Route::controller(ActividadPublicPnteController::class)->group(function () {
 
@@ -65,4 +75,20 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
     Route::POST('registro-cooperativas', 'storeEmpresarioCooperativa');
 });
 
-// event-pnte-public
+Route::controller(PnteTestController::class)->group(function () {
+
+    Route::GET('pp093-get-public-test/{slug}', 'getPublicTest');
+
+    Route::GET('pp093-get-public-test-end/{slug}', 'getPublicTestEnd');
+
+    Route::POST('pp093-validate-mype-user', 'validatePublicTest');
+
+    Route::GET('pp093-get-event-info/{slug}', 'getEventInfo');
+
+    Route::POST('pp093-save-public-test', 'savePublicTest');    // PARA LA PRUEBA DE ENTRADA Y SALIDA
+
+    Route::POST('i-want-my-certificate', 'iWantMyCertificate');
+});
+
+
+// event-pnte-public 🌍

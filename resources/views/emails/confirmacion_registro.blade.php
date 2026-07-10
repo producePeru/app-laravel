@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirmación de Registro</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333333; }
+        body { margin: 0; padding: 0; color: #333333; }
         .email-container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .header { background-color: #00a6db; padding: 30px; text-align: center; color: #ffffff; }
         .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
@@ -19,7 +19,7 @@
         .footer { background-color: #f1f5f9; text-align: center; padding: 20px; font-size: 12px; color: #64748b; }
     </style>
 </head>
-<body>
+<body style="background-color: #f4f6f9;">
 
     <div class="email-container">
         <!-- Encabezado -->
@@ -46,8 +46,10 @@
                         <span class="info-label">Organiza:</span> {{ $act['entidad_organizadora'] }}<br>
                         <span class="info-label">Lugar / Modalidad:</span> {{ $act['lugar'] }}<br>
                        
-                        @if(!empty($act['link']))
-                            <a href="{{ $act['link'] }}" target="_blank" class="btn-link">Unirse a la Sesión / Ver Enlace</a>
+                        @if(!empty($act['link_test']))
+                            <a href="{{ $act['link_test'] }}" target="_blank" class="btn-link">
+                                📝 Confirmar Asistencia
+                            </a>
                         @endif
                         
                     </div>
@@ -59,9 +61,9 @@
                         <style>
                             .mensaje-correo a { color: #00a6db; text-decoration: underline; }
                         </style>
-                        <div class="mensaje-correo">
+                        {{-- <div class="mensaje-correo">
                             {!! $act['mensaje_correo'] !!}
-                        </div>
+                        </div> --}}
                     </div>
                 @endif
             @endforeach

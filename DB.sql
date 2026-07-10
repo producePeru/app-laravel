@@ -1,45 +1,52 @@
--- CREATE TABLE pp_capacitadores (
---     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
---     nombres_apellidos VARCHAR(255) NOT NULL,
---     dni VARCHAR(20) NOT NULL UNIQUE,
---     correo VARCHAR(255) NOT NULL,
---     created_at TIMESTAMP NULL DEFAULT NULL,
---     updated_at TIMESTAMP NULL DEFAULT NULL
--- );
+
+
+ALTER TABLE empresarios
+ADD COLUMN academicdegree_id BIGINT UNSIGNED NULL AFTER cargo_empresa_id,
+ADD CONSTRAINT fk_empresarios_academicdegree
+FOREIGN KEY (academicdegree_id)
+REFERENCES academicdegree(id);
 
 
 
 
--- ALTER TABLE actividades_pnte
--- ADD COLUMN componente_id BIGINT UNSIGNED NULL AFTER link,
--- ADD COLUMN trainer_id BIGINT UNSIGNED NULL AFTER componente_id;
+
+ALTER TABLE empresarios
+ADD COLUMN role_company_id BIGINT UNSIGNED NULL AFTER academicdegree_id,
+ADD CONSTRAINT fk_empresarios_role_company
+FOREIGN KEY (role_company_id)
+REFERENCES role_company(id);
 
 
--- ALTER TABLE actividades_pnte
--- ADD CONSTRAINT fk_actividades_pnte_trainer
--- FOREIGN KEY (trainer_id)
--- REFERENCES pp_capacitadores(id);
 
 
--- ALTER TABLE empresarios 
--- ADD COLUMN tipo_empresa_id TINYINT NULL AFTER edad,
--- -- ADD COLUMN f_inicio_act DATE NULL AFTER tipo_empresa_id,
--- ADD COLUMN venta_anual TINYINT NULL AFTER f_inicio_act,
--- ADD COLUMN medio_entero TINYINT NULL AFTER venta_anual;
 
 
--- ALTER TABLE empresario_actividad 
--- ADD COLUMN c_constancia TINYINT(1) NULL DEFAULT NULL AFTER personal_formalizacion,
--- ADD CONSTRAINT chk_c_constancia CHECK (c_constancia IN (0, 1));
+CREATE TABLE pnte_test (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    
+    test_entrada JSON NULL,
+    test_salida JSON NULL,
+    caso_practico TEXT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);
 
 
--- ALTER TABLE empresario_actividad 
--- ADD COLUMN fecha_seleccionada DATE NULL AFTER numero_dni,
--- ADD COLUMN horario_inicio VARCHAR(10) NULL AFTER fecha_seleccionada,
--- ADD COLUMN horario_fin VARCHAR(10) NULL AFTER horario_inicio;
+ALTER TABLE empresario_actividad
+ADD COLUMN test_entrada JSON NULL
+AFTER c_constancia;
 
 
--- ALTER TABLE empresarios
--- ADD COLUMN coop_ruc CHAR(11) NULL AFTER venta_anual,
--- ADD COLUMN coop_razon_social VARCHAR(255) NULL AFTER coop_ruc,
--- ADD COLUMN coop_rol CHAR(3) NULL AFTER coop_razon_social;
+ALTER TABLE empresario_actividad
+ADD COLUMN test_salida JSON NULL AFTER test_entrada,
+ADD COLUMN caso_practico LONGTEXT NULL AFTER test_salida,
+ADD COLUMN ratings JSON NULL AFTER caso_practico,
+ADD COLUMN sugerencias LONGTEXT NULL AFTER ratings;
+
+
+ALTER TABLE empresario_actividad
+ADD COLUMN fecha_te DATETIME NULL AFTER sugerencias,
+ADD COLUMN fecha_ts DATETIME NULL AFTER fecha_te;

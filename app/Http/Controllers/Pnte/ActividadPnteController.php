@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActividadPnte;
 use App\Models\Attendance;
 use App\Models\EmpresarioActividad;
+use App\Models\PntTest;
 use App\Models\SedDescripcion;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -1268,60 +1269,230 @@ class ActividadPnteController extends Controller
 
             $data = $query->paginate($perPage);
 
+            // NUEVO 
+            $pntTest = PntTest::where('slug', $slug)->first();
+
+            $ratingsLabel = [
+                1 => 'Muy insatisfecho',
+                2 => 'Insatisfecho',
+                3 => 'Poco satisfecho',
+                4 => 'Satisfecho',
+                5 => 'Muy satisfecho',
+            ];
+
+            $ratingsQuestions = [
+                'rating_1' => 'Se cumplió con tus expectativas personales 1',
+                'rating_2' => 'Se cumplió con tus expectativas personales 2',
+                'rating_3' => 'Se cumplió con tus expectativas personales 3',
+                'rating_4' => 'Se cumplió con tus expectativas personales 4',
+                'rating_5' => 'Se cumplió con tus expectativas personales 5',
+            ];
+
             // 🔥 TRANSFORMAR LA COLECCIÓN (Mismo mapeo tuyo)
-            $data->getCollection()->transform(function ($item) {
+            $data->getCollection()->transform(function ($item) use ($pntTest, $ratingsLabel, $ratingsQuestions) {
+
                 $e = $item->empresario;
 
+                /*
+                |--------------------------------------------------------------------------
+                | Resolver Test Entrada
+                |--------------------------------------------------------------------------
+                */
+
+                $testEntrada = [];
+
+                if (!empty($item->test_entrada) && !empty($pntTest?->test_entrada)) {
+
+                    foreach ($item->test_entrada as $preguntaKey => $respuestaId) {
+
+                        $numero = (int) str_replace('pregunta_', '', $preguntaKey);
+
+                        $preguntaBD = $pntTest->test_entrada[$numero - 1] ?? null;
+
+                        if (!$preguntaBD) {
+                            continue;
+                        }
+
+                        $respuestaTexto = null;
+
+                        foreach ($preguntaBD['opciones'] as $opcion) {
+                            if ($opcion['id'] == $respuestaId) {
+                                $respuestaTexto = $opcion['texto'];
+                                break;
+                            }
+                        }
+
+                        $testEntrada[] = [
+                            'pregunta' => $preguntaBD['texto'],
+                            'respuesta' => $respuestaTexto,
+                            'respuesta_id' => $respuestaId,
+                            'correcta' => $preguntaBD['correctaId'] == $respuestaId,
+                        ];
+                    }
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Resolver Test Salida
+                |--------------------------------------------------------------------------
+                */
+
+                $testSalida = [];
+
+                if (!empty($item->test_salida) && !empty($pntTest?->test_salida)) {
+
+                    foreach ($item->test_salida as $preguntaKey => $respuestaId) {
+
+                        $numero = (int) str_replace('pregunta_', '', $preguntaKey);
+
+                        $preguntaBD = $pntTest->test_salida[$numero - 1] ?? null;
+
+                        if (!$preguntaBD) {
+                            continue;
+                        }
+
+                        $respuestaTexto = null;
+
+                        foreach ($preguntaBD['opciones'] as $opcion) {
+                            if ($opcion['id'] == $respuestaId) {
+                                $respuestaTexto = $opcion['texto'];
+                                break;
+                            }
+                        }
+
+                        $testSalida[] = [
+                            'pregunta' => $preguntaBD['texto'],
+                            'respuesta' => $respuestaTexto,
+                            'respuesta_id' => $respuestaId,
+                            'correcta' => $preguntaBD['correctaId'] == $respuestaId,
+                        ];
+                    }
+                }
+
+                /*
+                    |--------------------------------------------------------------------------
+                    | Resolver Ratings
+                    |--------------------------------------------------------------------------
+                    */
+
+                $ratings = [];
+
+                if (!empty($item->ratings)) {
+
+                    foreach ($item->ratings as $key => $value) {
+
+                        $ratings[] = [
+                            'pregunta' => $ratingsQuestions[$key] ?? $key,
+                            'valor' => $value,
+                            'respuesta' => $ratingsLabel[$value] ?? null,
+                        ];
+                    }
+                }
+
                 return [
+
                     'id' => $item->id,
                     'actividad_id' => $item->actividad_id,
                     'slug' => $item->slug,
+
                     'fecha_asistencia' => $item->fecha_asistencia ? true : false,
+
                     'numero_dni' => $item->numero_dni,
 
+                    // ==========================
                     // DATOS EMPRESARIO
+                    // ==========================
+
                     'ruc' => $e?->ruc,
-                    'razon_social' => ! empty($e?->razon_social) ? mb_strtoupper($e->razon_social, 'UTF-8') : null,
-                    'nombre_comercial' => ! empty($e?->nombre_comercial) ? mb_strtoupper($e->nombre_comercial, 'UTF-8') : null,
+                    'razon_social' => !empty($e?->razon_social) ? mb_strtoupper($e->razon_social, 'UTF-8') : null,
+                    'nombre_comercial' => !empty($e?->nombre_comercial) ? mb_strtoupper($e->nombre_comercial, 'UTF-8') : null,
                     'sector_economico_id' => $e?->sector_economico_id,
-                    'sector_economico_nombre' => ! empty($e?->sectorEconomico?->name) ? mb_strtoupper($e->sectorEconomico->name, 'UTF-8') : null,
+                    'sector_economico_nombre' => !empty($e?->sectorEconomico?->name) ? mb_strtoupper($e->sectorEconomico->name, 'UTF-8') : null,
                     'rubro_id' => $e?->rubro_id,
-                    'rubro_nombre' => ! empty($e?->rubro?->name) ? mb_strtoupper($e->rubro->name, 'UTF-8') : null,
+                    'rubro_nombre' => !empty($e?->rubro?->name) ? mb_strtoupper($e->rubro->name, 'UTF-8') : null,
                     'actividad_comercial_id' => $e?->actividad_comercial_id,
-                    'actividad_comercial_nombre' => !empty($e?->actividadComercial?->name) ? mb_strtoupper($e->actividadComercial->name, 'UTF-8') : (!empty($e?->actividad_comercial_nombre) ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8') : null),
+                    'actividad_comercial_nombre' => !empty($e?->actividadComercial?->name)
+                        ? mb_strtoupper($e->actividadComercial->name, 'UTF-8')
+                        : (!empty($e?->actividad_comercial_nombre)
+                            ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8')
+                            : null),
+
                     'region_id' => $e?->region_id,
                     'region_nombre' => $e?->region?->name,
                     'provincia_id' => $e?->provincia_id,
                     'provincia_nombre' => $e?->provincia?->name,
                     'distrito_id' => $e?->distrito_id,
                     'distrito_nombre' => $e?->distrito?->name,
-                    'direccion' => ! empty($e?->direccion) ? mb_strtoupper($e->direccion, 'UTF-8') : null,
+
+                    'direccion' => !empty($e?->direccion)
+                        ? mb_strtoupper($e->direccion, 'UTF-8')
+                        : null,
+
                     'pais_id' => $e?->pais_id,
                     'pais_nombre' => $e?->pais?->name,
+
                     'tipo_documento_id' => $e?->tipo_documento_id,
                     'tipo_documento_nombre' => $e?->tipoDocumento?->avr,
+
                     'numero_dni_empresario' => $e?->numero_dni,
-                    'apellido_paterno' => ! empty($e?->apellido_paterno) ? mb_strtoupper($e->apellido_paterno, 'UTF-8') : null,
-                    'apellido_materno' => ! empty($e?->apellido_materno) ? mb_strtoupper($e->apellido_materno, 'UTF-8') : null,
-                    'nombres' => ! empty($e?->nombres) ? mb_strtoupper($e->nombres, 'UTF-8') : null,
-                    'nombre_completo' => ! empty(trim(($e?->apellido_paterno ?? '') . ' ' . ($e?->apellido_materno ?? '') . ' ' . ($e?->nombres ?? ''))) ? mb_strtoupper(trim(($e?->apellido_paterno ?? '') . ' ' . ($e?->apellido_materno ?? '') . ' ' . ($e?->nombres ?? '')), 'UTF-8') : null,
+
+                    'apellido_paterno' => !empty($e?->apellido_paterno)
+                        ? mb_strtoupper($e->apellido_paterno, 'UTF-8')
+                        : null,
+
+                    'apellido_materno' => !empty($e?->apellido_materno)
+                        ? mb_strtoupper($e->apellido_materno, 'UTF-8')
+                        : null,
+
+                    'nombres' => !empty($e?->nombres)
+                        ? mb_strtoupper($e->nombres, 'UTF-8')
+                        : null,
+
+                    'nombre_completo' => !empty(trim(($e?->apellido_paterno ?? '') . ' ' . ($e?->apellido_materno ?? '') . ' ' . ($e?->nombres ?? '')))
+                        ? mb_strtoupper(trim(($e?->apellido_paterno ?? '') . ' ' . ($e?->apellido_materno ?? '') . ' ' . ($e?->nombres ?? '')), 'UTF-8')
+                        : null,
+
                     'genero_id' => $e?->genero_id,
                     'genero_avr' => $e?->genero?->avr,
+
                     'discapacidad' => $e?->discapacidad,
-                    'discapacidad_nombre' => isset($e?->discapacidad) ? ($e->discapacidad ? 'SI' : 'NO') : null,
+                    'discapacidad_nombre' => isset($e?->discapacidad)
+                        ? ($e->discapacidad ? 'SI' : 'NO')
+                        : null,
+
                     'celular' => $e?->celular,
                     'correo_electronico' => $e?->correo_electronico,
+
                     'cargo_empresa_id' => $e?->cargo_empresa_id,
                     'fecha_nacimiento' => $e?->fecha_nacimiento,
                     'edad' => $e?->edad,
                     'como_entero' => $e?->como_entero,
+
                     'personal_asesoria' => $item->personal_asesoria,
                     'personal_formalizacion' => $item->personal_formalizacion,
 
-                    // DETALLES DEL HORARIO
                     'fecha_seleccionada' => $item->fecha_seleccionada,
-                    'horario_inicio'     => $item->horario_inicio,
-                    'horario_fin'        => $item->horario_fin,
+                    'horario_inicio' => $item->horario_inicio,
+                    'horario_fin' => $item->horario_fin,
+
+                    // ==========================
+                    // NUEVOS CAMPOS
+                    // ==========================
+
+                    'c_constancia' => (bool) $item->c_constancia,
+
+                    'fecha_te' => $item->fecha_te,
+                    'fecha_ts' => $item->fecha_ts,
+
+                    'test_entrada' => $testEntrada,
+
+                    'test_salida' => $testSalida,
+
+                    'caso_practico' => $item->caso_practico,
+
+                    'ratings' => $ratings,
+
+                    'sugerencias' => $item->sugerencias,
                 ];
             });
 
