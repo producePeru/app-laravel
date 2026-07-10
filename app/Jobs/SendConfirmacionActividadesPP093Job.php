@@ -53,14 +53,22 @@ class SendConfirmacionActividadesPP093Job implements ShouldQueue
           $sedDescripcion = SedDescripcion::where('slug_actividad_pnte', $actividadBase->slug)->first();
 
           $actividadesDetalle[] = [
+            'id'                   => $actividadBase->id,
+            'slug'                 => $actividadBase->slug,
             'tema'                 => $actividadBase->tema,
             'entidad_organizadora' => $actividadBase->entidad_organizadora ?? 'Plataforma PNTE',
             'lugar'                => $actividadBase->lugar ?? 'Virtual',
-            'link'                 => $actividadBase->link,
-            'fecha_seleccionada'   => date('d/m/Y', strtotime($act['fecha_seleccionada'])),
-            'horario_inicio'       => $act['horario_inicio'],
-            'horario_fin'          => $act['horario_fin'],
-            'mensaje_correo'       => $sedDescripcion->mensaje_correo ?? null, // ← Agregar
+
+            // Nuevo enlace hacia la evaluación
+            'link_test' => sprintf(
+              'https://inscripcion.soporte-pnte.com/pp093-test-entrada/%s?id=%s',
+              $actividadBase->slug
+            ),
+
+            'fecha_seleccionada' => date('d/m/Y', strtotime($act['fecha_seleccionada'])),
+            'horario_inicio'     => $act['horario_inicio'],
+            'horario_fin'        => $act['horario_fin'],
+            'mensaje_correo'     => $sedDescripcion->mensaje_correo ?? null,
           ];
         }
       }

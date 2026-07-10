@@ -113,7 +113,11 @@ class CapacitacionesPP093Controller extends Controller
             'tipo_empresa_id',
             // 'f_inicio_act',
             'venta_anual',
-            'medio_entero'
+            'medio_entero',
+            'academicdegree_id',
+            'role_company_id',
+            'celular',
+            'correo_electronico'
         ];
 
         try {
