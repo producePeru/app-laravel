@@ -66,6 +66,8 @@ class ActividadPublicPnteController extends Controller
                 'pais_id',
                 'role_company_id',
                 'academicdegree_id',
+
+                'venta_anual'
             ])
             ->latest()
             ->first();
@@ -99,6 +101,7 @@ class ActividadPublicPnteController extends Controller
                     'provincia_id',
                     'distrito_id',
                     'direccion',
+                    'tipo_empresa_id'
                 ])
                 ->latest()
                 ->first();
@@ -471,7 +474,7 @@ class ActividadPublicPnteController extends Controller
             'medio_entero'                       => 'required|integer',
             'tipo_empresa_id'                    => 'required|integer',
             'academicdegree_id'                  => 'nullable|integer',
-            'role_company_id'                    => 'nullable|integer',
+            'cargo_empresa_id'                    => 'nullable|integer',
 
             // Validamos el array dinámico enviado por el Front
             'actividades'                        => 'required|array|min:1',
@@ -529,7 +532,7 @@ class ActividadPublicPnteController extends Controller
                 // Agregado por si manejas la columna en BD (puedes omitirlo si no existe)
                 'actividad_comercial_id'     => $request->actividad_comercial_id ?? null,
                 'academicdegree_id'          => $request->academicdegree_id ?? null,
-                'role_company_id'            => $request->role_company_id ?? null,
+                'cargo_empresa_id'            => $request->cargo_empresa_id ?? null,
             ];
 
             // 2. Definimos las columnas que SÍ gatillan un nuevo registro si cambian y tienen valor
@@ -553,7 +556,7 @@ class ActividadPublicPnteController extends Controller
                 'venta_anual',
                 'medio_entero',
                 'academicdegree_id',
-                'role_company_id'
+                'cargo_empresa_id'
             ];
 
             // Combinamos ambas listas para el bucle de validación estructural

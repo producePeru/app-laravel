@@ -46,7 +46,7 @@ class SendConfirmacionActividadesPP093Job implements ShouldQueue
       $actividades = $this->payloadData['actividades'] ?? [];
 
       foreach ($actividades as $act) {
-        $actividadBase = ActividadPnte::where('slug', $act['slug'])->first();
+        $actividadBase = ActividadPnte::find($act['actividad_id']);
 
         if ($actividadBase) {
           // ← Buscar SedDescripcion usando slug_actividad_pnte
@@ -60,10 +60,15 @@ class SendConfirmacionActividadesPP093Job implements ShouldQueue
             'lugar'                => $actividadBase->lugar ?? 'Virtual',
 
             // Nuevo enlace hacia la evaluación
-            'link_test' => sprintf(
-              'https://inscripcion.soporte-pnte.com/pp093-test-entrada/%s?id=%s',
-              $actividadBase->slug
-            ),
+            'link_test' => 'https://inscripcion.soporte-pnte.com/pp093-test-entrada/'
+              . $act['slug']
+              . '?'
+              . http_build_query([
+                'id'        => $act['actividad_id'],
+                'date'      => $act['fecha_seleccionada'],
+                'hourStart' => $act['horario_inicio'],
+                'hourEnd'   => $act['horario_fin'],
+              ]),
 
             'fecha_seleccionada' => date('d/m/Y', strtotime($act['fecha_seleccionada'])),
             'horario_inicio'     => $act['horario_inicio'],

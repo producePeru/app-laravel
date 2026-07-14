@@ -22,6 +22,8 @@ Route::controller(PpCapacitadorController::class)->group(function () {
     Route::POST('is-register', 'isRegisterPlataforma');
 
     Route::POST('send-email-trainings', 'enviarCorreoPP093');
+
+    Route::POST('enviar-correo-finalizado-ts', 'enviarCorreoFinalizadoTestSalida');
 });
 
 

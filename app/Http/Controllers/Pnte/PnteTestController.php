@@ -10,6 +10,7 @@ use App\Models\PntTest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class PnteTestController extends Controller
 {
@@ -137,9 +138,31 @@ class PnteTestController extends Controller
         }
     }
 
-    public function getPublicTest($slug)
+    public function getPublicTest(Request $request, $slug)
     {
         try {
+
+            $request->validate([
+                'date'      => 'required|date',
+                'hourStart' => 'required|date_format:H:i',
+                'hourEnd'   => 'required|date_format:H:i',
+                'type'      => 'required|in:entrada',
+            ]);
+
+            $now = Carbon::now();
+
+            // Fecha y hora límite = date + hourEnd
+            $limit = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                "{$request->date} {$request->hourEnd}"
+            );
+
+            if ($now->greaterThan($limit)) {
+                return response()->json([
+                    'status' => 409,
+                    'message' => 'El tiempo para realizar el test de entrada ha finalizado.'
+                ]);
+            }
 
             $test = PntTest::where('slug', $slug)->first();
 
@@ -155,7 +178,6 @@ class PnteTestController extends Controller
                 ->first();
 
             $fields = collect($test->test_entrada)->map(function ($pregunta, $index) {
-
                 return [
                     'type' => 'radio',
                     'label' => $pregunta['texto'],
@@ -164,7 +186,6 @@ class PnteTestController extends Controller
                     'md' => 12,
                     'visible' => true,
                     'options' => collect($pregunta['opciones'])->map(function ($opcion) {
-
                         return [
                             'label' => $opcion['texto'],
                             'value' => $opcion['id']
@@ -177,9 +198,9 @@ class PnteTestController extends Controller
                 'status' => 200,
                 'message' => 'Información obtenida correctamente.',
                 'data' => [
-                    'slug' => $slug,
-                    'tema' => optional($actividad)->tema,
-                    'link' => optional($actividad)->link,
+                    'slug'   => $slug,
+                    'tema'   => optional($actividad)->tema,
+                    'link'   => optional($actividad)->link,
                     'fields' => $fields
                 ]
             ]);
@@ -195,9 +216,16 @@ class PnteTestController extends Controller
         }
     }
 
-    public function getPublicTestEnd($slug)
+    public function getPublicTestEnd(Request $request, $slug)
     {
         try {
+
+            $request->validate([
+                'date'      => 'required|date',
+                'hourStart' => 'required|date_format:H:i',
+                'hourEnd'   => 'required|date_format:H:i',
+                'type'      => 'required|in:salida',
+            ]);
 
             $test = PntTest::where('slug', $slug)->first();
 
@@ -206,6 +234,17 @@ class PnteTestController extends Controller
                     'status' => 404,
                     'message' => 'No existe un test para el slug indicado.'
                 ], 404);
+            }
+
+            // Validar que el test de salida no haya vencido
+            $now = Carbon::now();
+            $limit = Carbon::parse($request->date)->endOfDay();
+
+            if ($now->greaterThan($limit)) {
+                return response()->json([
+                    'status' => 409,
+                    'message' => 'El tiempo para realizar el test de salida ha finalizado.'
+                ]);
             }
 
             $actividad = ActividadPnte::select('tema', 'link')
@@ -278,6 +317,7 @@ class PnteTestController extends Controller
                         ['label' => 'Muy satisfecho', 'value' => 5],
                     ]
                 ],
+
                 [
                     'type' => 'rating2',
                     'label' => 'La capacitación es útil para mi trabajo',
@@ -293,6 +333,7 @@ class PnteTestController extends Controller
                         ['label' => 'Muy satisfecho', 'value' => 5],
                     ]
                 ],
+
                 [
                     'type' => 'rating2',
                     'label' => 'La calidad de la facilitación me satisface',
@@ -308,6 +349,7 @@ class PnteTestController extends Controller
                         ['label' => 'Muy satisfecho', 'value' => 5],
                     ]
                 ],
+
                 [
                     'type' => 'rating2',
                     'label' => 'La logística de la capacitación me satisface',
@@ -323,6 +365,7 @@ class PnteTestController extends Controller
                         ['label' => 'Muy satisfecho', 'value' => 5],
                     ]
                 ],
+
                 [
                     'type' => 'rating2',
                     'label' => 'Recomendaría la capacitación',
@@ -344,6 +387,7 @@ class PnteTestController extends Controller
                     'label' => 'SUGERENCIAS',
                     'md' => 12
                 ],
+
                 [
                     'type' => 'textarea',
                     'label' => 'Apreciaciones y/o sugerencias de mejora',
@@ -480,7 +524,7 @@ class PnteTestController extends Controller
                 return response()->json([
                     'status' => 404,
                     'message' => 'No se encontró una actividad con el slug indicado.'
-                ], 404);
+                ]);
             }
 
             return response()->json([
@@ -662,6 +706,59 @@ class PnteTestController extends Controller
                 'status' => 500,
                 'message' => 'Ocurrió un error inesperado.',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function checkAsistencia(Request $request)
+    {
+        $request->validate([
+            'empresario_id' => 'required|integer|exists:empresarios,id',
+            'slug'          => 'required|string|exists:empresario_actividad,slug',
+            'date'          => 'required|date_format:Y-m-d',
+            'hourStart'     => 'required|date_format:H:i',
+            'hourEnd'       => 'required|date_format:H:i',
+        ]);
+
+        try {
+            $registro = EmpresarioActividad::where('slug', $request->slug)
+                ->where('empresario_id', $request->empresario_id)
+                ->where('fecha_seleccionada', $request->date)
+                ->where('horario_inicio', $request->hourStart)
+                ->where('horario_fin', $request->hourEnd)
+                ->first();
+
+            if (!$registro) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'No se encontró un registro de inscripción que coincida con los datos proporcionados.',
+                ]);
+            }
+
+            if ($registro->fecha_asistencia) {
+                return response()->json([
+                    'status'  => 409, // Conflict
+                    'message' => 'La asistencia para esta actividad ya fue registrada el ' . $registro->fecha_asistencia,
+                ]);
+            }
+
+            // Guardar la fecha y hora actual en el formato solicitado
+            $registro->fecha_asistencia = now()->format('d/m/Y h:i a');
+            $registro->save();
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Asistencia registrada correctamente.',
+                'data'    => [
+                    'id' => $registro->id,
+                    'fecha_asistencia' => $registro->fecha_asistencia,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Ocurrió un error inesperado al registrar la asistencia.',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
