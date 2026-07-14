@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
+use Illuminate\Support\Facades\Log;
 
 class ActividadPnteController extends Controller
 {
@@ -1013,20 +1014,27 @@ class ActividadPnteController extends Controller
         return redirect()->away($registro->link);
     }
 
-    public function attendanceSummaryBySlug($slug)
+    public function attendanceSummaryBySlug(Request $request, $slug)
     {
         try {
 
-            $total = EmpresarioActividad::where('slug', $slug)
-                ->count();
+            $baseQuery = EmpresarioActividad::where('slug', $slug);
 
-            $asistieron = EmpresarioActividad::where('slug', $slug)
-                ->whereNotNull('fecha_asistencia')
-                ->count();
+            // ✅ FILTRO: year
+            if ($request->filled('year')) {
+                $baseQuery->whereYear('fecha_seleccionada', $request->input('year'));
+            }
 
-            $noAsistieron = EmpresarioActividad::where('slug', $slug)
-                ->whereNull('fecha_asistencia')
-                ->count();
+            // ✅ FILTRO: dateEvent
+            if ($request->filled('dateEvent')) {
+                $baseQuery->whereDate('fecha_seleccionada', $request->input('dateEvent'));
+            }
+
+            $total = $baseQuery->count();
+
+            $asistieron = (clone $baseQuery)->whereNotNull('fecha_asistencia')->count();
+
+            $noAsistieron = (clone $baseQuery)->whereNull('fecha_asistencia')->count();
 
             return response()->json([
                 'status' => 200,
@@ -1211,16 +1219,13 @@ class ActividadPnteController extends Controller
             $perPage = $request->input('pageSize', 10);
             $search = trim($request->input('name', ''));
 
-            // 📥 Capturamos los filtros del payload
             $year = $request->input('year');
-            $dateEvent = $request->input('dateEvent'); // Ejemplo: '2026-06-25'
+            $dateEvent = $request->input('dateEvent');
 
-            // 🔍 1. OBTENER EL EVENTO BASE (Solo por slug)
             $event = ActividadPnte::select('id', 'slug', 'tema', 'fechas')
                 ->where('slug', $slug)
                 ->first();
 
-            // Si el evento no existe, cortamos el flujo inmediatamente
             if (!$event) {
                 return response()->json([
                     'status' => 404,
@@ -1244,7 +1249,6 @@ class ActividadPnteController extends Controller
                 ->where('actividad_id', $event->id)
                 ->where('slug', $slug);
 
-            // 🔥 FILTRAR POR LA FECHA SELECCIONADA EN "EMPRESARIO_ACTIVIDAD"
             if ($dateEvent) {
                 $query->where('fecha_seleccionada', $dateEvent);
             }
@@ -1293,11 +1297,7 @@ class ActividadPnteController extends Controller
 
                 $e = $item->empresario;
 
-                /*
-                |--------------------------------------------------------------------------
-                | Resolver Test Entrada
-                |--------------------------------------------------------------------------
-                */
+                // Resolver Test Entrada
 
                 $testEntrada = [];
 
@@ -1331,21 +1331,18 @@ class ActividadPnteController extends Controller
                     }
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | Resolver Test Salida
-                |--------------------------------------------------------------------------
-                */
+                // Resolver Test Salida
 
                 $testSalida = [];
 
-                if (!empty($item->test_salida) && !empty($pntTest?->test_salida)) {
+                if (!empty($item->test_salida) && !empty($pntTest?->test_entrada)) {
 
                     foreach ($item->test_salida as $preguntaKey => $respuestaId) {
 
                         $numero = (int) str_replace('pregunta_', '', $preguntaKey);
 
-                        $preguntaBD = $pntTest->test_salida[$numero - 1] ?? null;
+                        // 👇 Mismo cambio aquí: banco de preguntas es test_entrada
+                        $preguntaBD = $pntTest->test_entrada[$numero - 1] ?? null;
 
                         if (!$preguntaBD) {
                             continue;
@@ -1369,11 +1366,7 @@ class ActividadPnteController extends Controller
                     }
                 }
 
-                /*
-                    |--------------------------------------------------------------------------
-                    | Resolver Ratings
-                    |--------------------------------------------------------------------------
-                    */
+                /* Resolver Ratings */
 
                 $ratings = [];
 
@@ -1399,9 +1392,7 @@ class ActividadPnteController extends Controller
 
                     'numero_dni' => $item->numero_dni,
 
-                    // ==========================
                     // DATOS EMPRESARIO
-                    // ==========================
 
                     'ruc' => $e?->ruc,
                     'razon_social' => !empty($e?->razon_social) ? mb_strtoupper($e->razon_social, 'UTF-8') : null,
@@ -1475,9 +1466,7 @@ class ActividadPnteController extends Controller
                     'horario_inicio' => $item->horario_inicio,
                     'horario_fin' => $item->horario_fin,
 
-                    // ==========================
                     // NUEVOS CAMPOS
-                    // ==========================
 
                     'c_constancia' => (bool) $item->c_constancia,
 

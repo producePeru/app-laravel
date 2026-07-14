@@ -54,6 +54,8 @@ Route::controller(PnteTestController::class)->group(function () {
     Route::GET('pp093-get-test-entrada/{slug}', 'getTestEntrada');
 
     Route::GET('pp093-get-test-salida/{slug}', 'getTestSalida');
+
+    Route::POST('pp093-check-asistencia', 'checkAsistencia');
 });
 
 // event-pnte 🔒
@@ -88,6 +90,8 @@ Route::controller(PnteTestController::class)->group(function () {
     Route::POST('pp093-save-public-test', 'savePublicTest');    // PARA LA PRUEBA DE ENTRADA Y SALIDA
 
     Route::POST('i-want-my-certificate', 'iWantMyCertificate');
+
+    Route::POST('check-asistencia', 'checkAsistencia');
 });
 
 

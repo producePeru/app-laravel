@@ -13,6 +13,7 @@ use App\Models\District;
 use App\Models\EmpresarioActividad;
 use App\Models\MPAttendance;
 use App\Models\People;
+use App\Models\PntTest;
 use App\Models\Province;
 use App\Models\Question;
 use App\Models\SedQuestion;
@@ -383,9 +384,9 @@ class DownloadAttendanceController extends Controller
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
 
-        // ─────────────────────────────────────────────
+
         // EVENTO
-        // ─────────────────────────────────────────────
+
         $actividad = ActividadPnte::with([
             'tipoActividad:id,name',
             'nombreActividad:id,name',
@@ -404,9 +405,9 @@ class DownloadAttendanceController extends Controller
             ], 404);
         }
 
-        // ─────────────────────────────────────────────
+
         // QUERY INSCRITOS
-        // ─────────────────────────────────────────────
+
         $query = EmpresarioActividad::with([
             'empresario' => function ($q) {
                 $q->select([
@@ -448,9 +449,9 @@ class DownloadAttendanceController extends Controller
             ->where('slug', $slug)
             ->orderByDesc('created_at');
 
-        // ─────────────────────────────────────────────
+
         // TEMPLATE
-        // ─────────────────────────────────────────────
+
         $templatePath = storage_path('app/plantillas/ugo_eventos_lista_registrados_template.xlsx');
 
         if (! file_exists($templatePath)) {
@@ -463,9 +464,9 @@ class DownloadAttendanceController extends Controller
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        // ─────────────────────────────────────────────
+
         // START
-        // ─────────────────────────────────────────────
+
         $row = 3;
         $index = 1;
 
@@ -558,36 +559,36 @@ class DownloadAttendanceController extends Controller
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // TIPO DOCUMENTO
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     $e->tipoDocumento?->avr
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // NRO DOCUMENTO
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     $e->numero_dni
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // PAIS
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     mb_strtoupper($e->pais?->name ?? '', 'UTF-8')
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // APELLIDOS
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     mb_strtoupper(
@@ -600,99 +601,99 @@ class DownloadAttendanceController extends Controller
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // NOMBRES
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     mb_strtoupper($e->nombres ?? '', 'UTF-8')
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // GENERO
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     $e->genero?->avr
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // DISCAPACIDAD
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     $e->discapacidad ? 'SI' : 'NO'
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // RUC
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     $e->ruc
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // REGION
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     mb_strtoupper($e->region?->name ?? '', 'UTF-8')
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // PROVINCIA
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     mb_strtoupper($e->provincia?->name ?? '', 'UTF-8')
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // DISTRITO
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     mb_strtoupper($e->distrito?->name ?? '', 'UTF-8')
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // SECTOR ECONOMICO
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8')
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // RUBRO
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     mb_strtoupper($e->rubro?->name ?? '', 'UTF-8')
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // CELULAR
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     $e->celular
                 );
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // CORREO
-                // ─────────────────────────────────────────────
+
                 $sheet->setCellValue(
                     "{$col}{$row}",
                     $e->correo_electronico
@@ -702,9 +703,9 @@ class DownloadAttendanceController extends Controller
             }
         });
 
-        // ─────────────────────────────────────────────
+
         // DOWNLOAD
-        // ─────────────────────────────────────────────
+
         return new StreamedResponse(function () use ($spreadsheet) {
 
             $writer = new Xlsx($spreadsheet);
@@ -1450,9 +1451,9 @@ class DownloadAttendanceController extends Controller
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
 
-        // ─────────────────────────────────────────────
+
         // EVENTO / ACTIVIDAD
-        // ─────────────────────────────────────────────
+
         $actividad = ActividadPnte::with([
             'tipoActividad:id,name',
             'nombreActividad:id,name',
@@ -1471,9 +1472,9 @@ class DownloadAttendanceController extends Controller
             ], 404);
         }
 
-        // ─────────────────────────────────────────────
+
         // MAPEO ESTÁTICO DE PREGUNTAS FIJAS (question_1 a question_5)
-        // ─────────────────────────────────────────────
+
         $fixedQuestionsMap = [
             'question_1' => [
                 'label' => '¿Cómo planificas el crecimiento de tu negocio usando tecnología?',
@@ -1522,25 +1523,25 @@ class DownloadAttendanceController extends Controller
             ],
         ];
 
-        // ─────────────────────────────────────────────
+
         // PRE-CARGAR SedQuestions indexadas por documentnumber
-        // ─────────────────────────────────────────────
+
         $sedQuestions = SedQuestion::with('propagandaMedia:id,name')
             ->where('slug', $slug)
             ->get()
             ->keyBy('documentnumber');
 
-        // ─────────────────────────────────────────────
+
         // PRE-CARGAR SedQuestionAnswers agrupadas por DNI
-        // ─────────────────────────────────────────────
+
         $sedAnswers = sedQuestionAnswer::where('slug_sed', $slug)
             ->orderBy('dni')
             ->get()
             ->groupBy('dni');
 
-        // ─────────────────────────────────────────────
+
         // CARGAR Questions con opciones
-        // ─────────────────────────────────────────────
+
         $questions = Question::with(['options' => function ($q) {
             $q->orderBy('position');
         }])
@@ -1548,9 +1549,9 @@ class DownloadAttendanceController extends Controller
             ->get()
             ->keyBy('model');
 
-        // ─────────────────────────────────────────────
+
         // COLUMNAS DINÁMICAS
-        // ─────────────────────────────────────────────
+
         $dynamicColumns = sedQuestionAnswer::where('slug_sed', $slug)
             ->distinct()
             ->pluck('question')
@@ -1560,9 +1561,9 @@ class DownloadAttendanceController extends Controller
             })
             ->values();
 
-        // ─────────────────────────────────────────────
+
         // QUERY INSCRITOS
-        // ─────────────────────────────────────────────
+
         $query = EmpresarioActividad::with([
             'empresario' => function ($q) {
                 $q->select([
@@ -1606,9 +1607,9 @@ class DownloadAttendanceController extends Controller
             ->where('slug', $slug)
             ->orderByDesc('created_at');
 
-        // ─────────────────────────────────────────────
+
         // TEMPLATE EXCEL
-        // ─────────────────────────────────────────────
+
         $templatePath = storage_path('app/plantillas/sed_lista_registrados_template.xlsx');
 
         if (!file_exists($templatePath)) {
@@ -1621,10 +1622,10 @@ class DownloadAttendanceController extends Controller
         $spreadsheet = IOFactory::load($templatePath);
         $sheet       = $spreadsheet->getActiveSheet();
 
-        // ─────────────────────────────────────────────
+
         // HEADERS FIJOS EN FILA 2 (AM → AQ)
         // AM=39, AN=40, AO=41, AP=42, AQ=43
-        // ─────────────────────────────────────────────
+
         $sheet->setCellValue('AM2', $fixedQuestionsMap['question_1']['label']);
         $sheet->setCellValue('AN2', $fixedQuestionsMap['question_2']['label']);
         $sheet->setCellValue('AO2', $fixedQuestionsMap['question_3']['label']);
@@ -1635,9 +1636,9 @@ class DownloadAttendanceController extends Controller
             $sheet->getStyle($cell)->getAlignment()->setWrapText(true);
         }
 
-        // ─────────────────────────────────────────────
+
         // HEADERS DINÁMICOS EN FILA 2 (desde AR = índice 44)
-        // ─────────────────────────────────────────────
+
         $dynStartColIndex = 44; // AR
         foreach ($dynamicColumns as $i => $modelIdentifier) {
             $normalizedModel = preg_replace('/^questions_/', 'question_', $modelIdentifier);
@@ -1648,9 +1649,9 @@ class DownloadAttendanceController extends Controller
             $sheet->getStyle("{$colLetter}2")->getAlignment()->setWrapText(true);
         }
 
-        // ─────────────────────────────────────────────
+
         // CONTROL DE FILAS Y CHUNK PROCESAMIENTO
-        // ─────────────────────────────────────────────
+
         $row   = 3;
         $index = 1;
 
@@ -1832,10 +1833,10 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", $item->fecha_asistencia ?: 'x');
                 $col++;
 
-                // ─────────────────────────────────────────────
+
                 // PREGUNTAS FIJAS: hardcodeadas en AM, AN, AO, AP, AQ
                 // NO usan $col para evitar colisiones
-                // ─────────────────────────────────────────────
+
                 $q1Val = $sq?->question_1;
                 $sheet->setCellValue("AM{$row}", $fixedQuestionsMap['question_1']['options'][$q1Val] ?? $q1Val ?? '');
 
@@ -1856,9 +1857,9 @@ class DownloadAttendanceController extends Controller
                     $sheet->getStyle("{$c}{$row}")->getAlignment()->setWrapText(true);
                 }
 
-                // ─────────────────────────────────────────────
+
                 // PREGUNTAS DINÁMICAS: desde AR (índice 44) en adelante
-                // ─────────────────────────────────────────────
+
                 $answersIndexed = $sedAnswers
                     ->get($e->numero_dni, collect())
                     ->keyBy('question');
@@ -1906,9 +1907,9 @@ class DownloadAttendanceController extends Controller
             }
         });
 
-        // ─────────────────────────────────────────────
+
         // DESCARGA STREAMED RESPONSE
-        // ─────────────────────────────────────────────
+
         return new StreamedResponse(function () use ($spreadsheet) {
             $writer = new Xlsx($spreadsheet);
             $writer->setPreCalculateFormulas(false);
@@ -1929,9 +1930,9 @@ class DownloadAttendanceController extends Controller
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
 
-        // ─────────────────────────────────────────────
+
         // EVENTO
-        // ─────────────────────────────────────────────
+
         $actividad = ActividadPnte::with([
             'tipoActividad:id,name',
             'nombreActividad:id,name',
@@ -1950,9 +1951,8 @@ class DownloadAttendanceController extends Controller
             ], 404);
         }
 
-        // ─────────────────────────────────────────────
         // QUERY INSCRITOS
-        // ─────────────────────────────────────────────
+
         $query = EmpresarioActividad::with([
             'empresario' => function ($q) {
                 $q->select([
@@ -2009,9 +2009,9 @@ class DownloadAttendanceController extends Controller
 
             ->orderByDesc('created_at');
 
-        // ─────────────────────────────────────────────
+
         // TEMPLATE
-        // ─────────────────────────────────────────────
+
         $templatePath = storage_path('app/plantillas/plantilla_pp093_inscritos.xlsx');
 
         if (! file_exists($templatePath)) {
@@ -2024,9 +2024,85 @@ class DownloadAttendanceController extends Controller
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        // ─────────────────────────────────────────────
-        // START
-        // ─────────────────────────────────────────────
+        $pntTest = PntTest::where('slug', $slug)->first();
+
+        $bancoPreguntas = $pntTest?->test_entrada ?? [];
+        $totalPreguntasTest = count($bancoPreguntas);
+
+        $ratingsLabel = [
+            1 => 'Muy insatisfecho',
+            2 => 'Insatisfecho',
+            3 => 'Poco satisfecho',
+            4 => 'Satisfecho',
+            5 => 'Muy satisfecho',
+        ];
+
+        $ratingsQuestions = [
+            'rating_1' => 'Se cumplió con tus expectativas personales 1',
+            'rating_2' => 'Se cumplió con tus expectativas personales 2',
+            'rating_3' => 'Se cumplió con tus expectativas personales 3',
+            'rating_4' => 'Se cumplió con tus expectativas personales 4',
+            'rating_5' => 'Se cumplió con tus expectativas personales 5',
+        ];
+        $totalRatings = count($ratingsQuestions);
+
+        // Helper para convertir número de columna a letra (soporta más allá de Z)
+        $colLetter = function (int $index) {
+            return \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index);
+        };
+
+        $lastFixedColIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString('AN'); // 👈 AJUSTA esta letra a la última columna fija real de tu plantilla
+
+        $headerRow = 2;
+        $colIndex = $lastFixedColIndex;
+
+        foreach ($sheet->getMergeCells() as $mergeRange) {
+            $boundaries = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::rangeBoundaries($mergeRange);
+            $rowStart = $boundaries[0][1];
+            $rowEnd   = $boundaries[1][1];
+
+            if ($headerRow >= $rowStart && $headerRow <= $rowEnd) {
+                $sheet->unmergeCells($mergeRange);
+            }
+        }
+
+        // FECHA SELECCIONADA
+        $sheet->setCellValue($colLetter($colIndex) . $headerRow, 'FECHA SELECCIONADA');
+        $colIndex++;
+
+        $sheet->setCellValue($colLetter($colIndex) . $headerRow, 'FECHA ASISTENCIA');
+        $colIndex++;
+
+        // T.E.
+        foreach ($bancoPreguntas as $i => $pregunta) {
+            $texto = $pregunta['texto'] ?? "Pregunta " . ($i + 1);
+            $sheet->setCellValue($colLetter($colIndex) . $headerRow, "[ENTRADA] " . mb_strtoupper($texto, 'UTF-8'));
+            $colIndex++;
+        }
+
+        // T.S.
+        foreach ($bancoPreguntas as $i => $pregunta) {
+            $texto = $pregunta['texto'] ?? "Pregunta " . ($i + 1);
+            $sheet->setCellValue($colLetter($colIndex) . $headerRow, "[SALIDA] " . mb_strtoupper($texto, 'UTF-8'));
+            $colIndex++;
+        }
+
+        // CASO PRÁCTICO
+        $sheet->setCellValue($colLetter($colIndex) . $headerRow, 'CASO PRÁCTICO');
+        $colIndex++;
+
+        // RATINGS
+        foreach ($ratingsQuestions as $key => $label) {
+            $sheet->setCellValue($colLetter($colIndex) . $headerRow, mb_strtoupper($label, 'UTF-8'));
+            $colIndex++;
+        }
+
+        // PROMEDIOS
+        $sheet->setCellValue($colLetter($colIndex) . $headerRow, 'PROMEDIO T.E.');
+        $colIndex++;
+        $sheet->setCellValue($colLetter($colIndex) . $headerRow, 'PROMEDIO T.S.');
+        $colIndex++;
+
         $row = 3;
         $index = 1;
 
@@ -2034,13 +2110,15 @@ class DownloadAttendanceController extends Controller
             &$row,
             &$index,
             $sheet,
-            $actividad
+            $actividad,
+            $bancoPreguntas,
+            $totalPreguntasTest,
+            $ratingsLabel,
+            $ratingsQuestions
         ) {
 
             foreach ($items as $item) {
 
-                // ⚠️ Puede venir null si el empresario fue eliminado o el registro
-                // está incompleto. Igual se lista la fila, con estos campos vacíos.
                 $e = $item->empresario;
 
                 $col = 'D';
@@ -2099,10 +2177,6 @@ class DownloadAttendanceController extends Controller
                     )
                 );
                 $col++;
-
-                // ─────────────────────────────────────────────
-                // DATOS DEL EMPRESARIO (blindados con null-safe / ??)
-                // ─────────────────────────────────────────────
 
                 // RUC
                 $sheet->setCellValue("{$col}{$row}", $e?->ruc ?? '');
@@ -2227,16 +2301,122 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($medioEntero, 'UTF-8'));
                 $col++;
 
-                // 🔥 FIX PRINCIPAL: avanzar a la siguiente fila.
-                // Sin esta línea, TODOS los registros se escribían encima
-                // de la misma fila y el Excel final solo mostraba el último.
+
+                // FECHA SELECCIONADA (dateEvent)
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $item->fecha_seleccionada ? Carbon::parse($item->fecha_seleccionada)->format('d/m/Y') : ''
+                );
+                $col++;
+
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $item->fecha_asistencia ? $item->fecha_asistencia : 'x'
+                );
+                $col++;
+
+                // RESOLVER TEST ENTRADA (respuestas + correctas)
+                $correctasTE = 0;
+                $totalRespondidasTE = 0;
+
+                $respuestasTE = [];
+
+                if (!empty($item->test_entrada) && !empty($bancoPreguntas)) {
+                    foreach ($item->test_entrada as $preguntaKey => $respuestaId) {
+                        $numero = (int) str_replace('pregunta_', '', $preguntaKey);
+                        $preguntaBD = $bancoPreguntas[$numero - 1] ?? null;
+
+                        if (!$preguntaBD) continue;
+
+                        $respuestaTexto = null;
+                        foreach ($preguntaBD['opciones'] as $opcion) {
+                            if ($opcion['id'] == $respuestaId) {
+                                $respuestaTexto = $opcion['texto'];
+                                break;
+                            }
+                        }
+
+                        $esCorrecta = $preguntaBD['correctaId'] == $respuestaId;
+                        $totalRespondidasTE++;
+                        if ($esCorrecta) $correctasTE++;
+
+                        $respuestasTE[$numero - 1] = $respuestaTexto ?? $respuestaId;
+                    }
+                }
+
+                for ($i = 0; $i < $totalPreguntasTest; $i++) {
+                    $sheet->setCellValue("{$col}{$row}", mb_strtoupper($respuestasTE[$i] ?? '', 'UTF-8'));
+                    $col++;
+                }
+
+                $correctasTS = 0;
+                $totalRespondidasTS = 0;
+
+                $respuestasTS = [];
+
+                if (!empty($item->test_salida) && !empty($bancoPreguntas)) {
+                    foreach ($item->test_salida as $preguntaKey => $respuestaId) {
+                        $numero = (int) str_replace('pregunta_', '', $preguntaKey);
+                        $preguntaBD = $bancoPreguntas[$numero - 1] ?? null;
+
+                        if (!$preguntaBD) continue;
+
+                        $respuestaTexto = null;
+                        foreach ($preguntaBD['opciones'] as $opcion) {
+                            if ($opcion['id'] == $respuestaId) {
+                                $respuestaTexto = $opcion['texto'];
+                                break;
+                            }
+                        }
+
+                        $esCorrecta = $preguntaBD['correctaId'] == $respuestaId;
+                        $totalRespondidasTS++;
+                        if ($esCorrecta) $correctasTS++;
+
+                        $respuestasTS[$numero - 1] = $respuestaTexto ?? $respuestaId;
+                    }
+                }
+
+                for ($i = 0; $i < $totalPreguntasTest; $i++) {
+                    $sheet->setCellValue("{$col}{$row}", mb_strtoupper($respuestasTS[$i] ?? '', 'UTF-8'));
+                    $col++;
+                }
+
+                // CASO PRÁCTICO
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($item->caso_practico ?? '', 'UTF-8'));
+                $col++;
+
+                // RATINGS
+                $ratingsItem = $item->ratings ?? [];
+
+                foreach ($ratingsQuestions as $key => $label) {
+                    $valor = $ratingsItem[$key] ?? null;
+                    $respuestaRating = $valor ? ($ratingsLabel[$valor] ?? '') : '';
+                    $sheet->setCellValue("{$col}{$row}", mb_strtoupper($respuestaRating, 'UTF-8'));
+                    $col++;
+                }
+
+                // PROMEDIOS (nota sobre 20)
+                $promedioTE = $totalRespondidasTE > 0
+                    ? round(($correctasTE / $totalRespondidasTE) * 20, 2)
+                    : '';
+
+                $promedioTS = $totalRespondidasTS > 0
+                    ? round(($correctasTS / $totalRespondidasTS) * 20, 2)
+                    : '';
+
+                $sheet->setCellValue("{$col}{$row}", $promedioTE);
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", $promedioTS);
+                $col++;
+
                 $row++;
             }
         });
 
-        // ─────────────────────────────────────────────
+
         // DOWNLOAD
-        // ─────────────────────────────────────────────
         return new StreamedResponse(function () use ($spreadsheet) {
 
             $writer = new Xlsx($spreadsheet);
@@ -2257,9 +2437,9 @@ class DownloadAttendanceController extends Controller
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
 
-        // ─────────────────────────────────────────────
+
         // EVENTO
-        // ─────────────────────────────────────────────
+
         $actividad = ActividadPnte::with([
             'tipoActividad:id,name',
             'nombreActividad:id,name',
@@ -2278,9 +2458,9 @@ class DownloadAttendanceController extends Controller
             ], 404);
         }
 
-        // ─────────────────────────────────────────────
+
         // QUERY INSCRITOS
-        // ─────────────────────────────────────────────
+
         $query = EmpresarioActividad::with([
             'empresario' => function ($q) {
                 $q->select([
@@ -2333,9 +2513,9 @@ class DownloadAttendanceController extends Controller
 
             ->orderByDesc('created_at');
 
-        // ─────────────────────────────────────────────
+
         // TEMPLATE
-        // ─────────────────────────────────────────────
+
         $templatePath = storage_path('app/plantillas/plantilla_ugsc_download.xlsx');
 
         if (! file_exists($templatePath)) {
@@ -2348,9 +2528,9 @@ class DownloadAttendanceController extends Controller
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        // ─────────────────────────────────────────────
+
         // START
-        // ─────────────────────────────────────────────
+
         $row = 3;
         $index = 1;
 
@@ -2522,9 +2702,9 @@ class DownloadAttendanceController extends Controller
             }
         });
 
-        // ─────────────────────────────────────────────
+
         // DOWNLOAD
-        // ─────────────────────────────────────────────
+
         return new StreamedResponse(function () use ($spreadsheet) {
 
             $writer = new Xlsx($spreadsheet);

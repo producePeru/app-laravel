@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Exception;
+use App\Mail\FinalizacionTestSalidaMail;
 
 class PpCapacitadorController extends Controller
 {
@@ -197,13 +198,64 @@ class PpCapacitadorController extends Controller
     {
         try {
 
-            $mailer = 'hostinger';
+            $mailer = 'hostinger3k';
 
             $payloadData = $request->all();
 
             SendConfirmacionActividadesPP093Job::dispatch($payloadData, $mailer);
         } catch (\Exception $e) {
             Log::error("Error al despachar el Job de correo para {$request->correo_electronico}: " . $e->getMessage());
+        }
+    }
+
+    protected function enviarCorreoFinalizadoTestSalida(Request $request)
+    {
+        try {
+
+            $request->validate([
+                'empresario_id' => 'required|integer|exists:empresarios,id',
+            ]);
+
+            $empresario = Empresario::select(
+                'id',
+                'nombres',
+                'apellido_paterno',
+                'apellido_materno',
+                'correo_electronico'
+            )
+                ->find($request->empresario_id);
+
+            if (empty($empresario->correo_electronico)) {
+                Log::warning("El empresario {$request->empresario_id} no tiene correo electrónico registrado.");
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'El empresario no tiene un correo electrónico registrado.'
+                ], 404);
+            }
+
+            Mail::mailer('hostinger3k')
+                ->to($empresario->correo_electronico)
+                ->bcc('capacitaciones_tuempresa@produce.gob.pe')
+                ->send(new FinalizacionTestSalidaMail([
+                    'nombres' => trim(
+                        "{$empresario->nombres} {$empresario->apellido_paterno} {$empresario->apellido_materno}"
+                    ),
+                ]));
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Correo enviado correctamente.'
+            ]);
+        } catch (\Exception $e) {
+
+            Log::error(
+                "Error enviando correo de finalización al empresario {$request->empresario_id}: {$e->getMessage()}"
+            );
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al enviar el correo.'
+            ], 500);
         }
     }
 }

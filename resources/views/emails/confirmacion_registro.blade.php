@@ -56,16 +56,12 @@
                 </div>
 
                 {{-- ← Mensaje personalizado por actividad --}}
-                @if(!empty($act['mensaje_correo']))
-                    <div style="margin-top: -10px; margin-bottom: 20px; padding: 15px; background-color: #eff6ff; border-radius: 4px; font-size: 14px; line-height: 1.6; color: #1e3a8a;">
-                        <style>
-                            .mensaje-correo a { color: #00a6db; text-decoration: underline; }
-                        </style>
-                        {{-- <div class="mensaje-correo">
-                            {!! $act['mensaje_correo'] !!}
-                        </div> --}}
+                {{-- @if(!empty($act['mensaje_correo']))
+                    <div class="mensaje-correo" style="margin-top: -10px; margin-bottom: 20px; padding: 15px; background-color: #eff6ff; border-radius: 4px; font-size: 14px; line-height: 1.6; color: #1e3a8a;">
+                        {!! $act['mensaje_correo'] !!}
                     </div>
-                @endif
+                @endif --}}
+
             @endforeach
 
             <p class="welcome-text" style="margin-top: 25px; margin-bottom: 0;">
