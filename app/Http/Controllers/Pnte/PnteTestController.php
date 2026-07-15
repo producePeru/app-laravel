@@ -86,12 +86,15 @@ class PnteTestController extends Controller
     {
         try {
 
+            $keyGroq = env('KEY_GROQ');
+
             $test = PntTest::where('slug', $slug)->first();
 
             if (!$test) {
                 return response()->json([
                     'status' => 404,
-                    'message' => "No existe un test con el slug '{$slug}'."
+                    'message' => "No existe un test con el slug '{$slug}'.",
+                    'x' => $keyGroq
                 ]);
             }
 
