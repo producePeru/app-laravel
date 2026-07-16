@@ -467,12 +467,16 @@ Route::group(['prefix' => 'supervisores', 'namespace' => 'App\Http\Controllers',
 // CONVENIOS
 Route::group(['prefix' => 'agreement', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
     Route::get('list/{entity}', [AgreementController::class, 'index']);
+    Route::get('list-convenios/{entity}', [AgreementController::class, 'indexUgse']);
+
     Route::get('list/{id}', [AgreementController::class, 'allActionsById']);
     Route::get('list-files/{id}', [AgreementController::class, 'listAllFilesById']);
     Route::delete('delete-acction/{id}', [AgreementController::class, 'deleteActionById']);
     Route::delete('delete/{id}', [AgreementController::class, 'deleteAgreement']);
     Route::delete('delete/file/{id}', [AgreementController::class, 'deleteFileById']);
     Route::post('create', [AgreementController::class, 'store']);
+
+    // convenios UGSE
     Route::post('create-ugse', [AgreementController::class, 'storeUgse']);
     Route::post('create-acction', [AgreementController::class, 'storeAction']);
     Route::post('file', [AgreementController::class, 'upFileAgreement']);
