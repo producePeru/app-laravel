@@ -72,6 +72,84 @@ class AgreementController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    // UGSE - CONVENIOS
+    public function indexUgse(Request $request, $entity)
+    {
+        if (!in_array($entity, ['ugo', 'ugse'])) {
+            return response()->json([
+                'error' => 'Entidad no válida'
+            ], 400);
+        }
+
+        $page       = $request->input('page', 1);
+        $pageSize   = $request->input('pageSize', 10);
+        $year       = $request->input('year');
+        $startDate  = $request->input('startDate');
+        $name       = $request->input('name');
+
+        $query = Agreement::with([
+            'estadoOperatividad',
+            'estadoConvenio',
+            'region',
+            'provincia',
+            'distrito',
+            'acciones',
+            'archivosConvenios',
+        ])
+            ->where('entity', $entity);
+
+        // Buscar por nombre de la entidad aliada
+        if (!empty($name)) {
+            $query->where('alliedEntity', 'like', "%{$name}%");
+        }
+
+        // Filtrar por año
+        if (!empty($year)) {
+            $query->whereYear('startDate', $year);
+        }
+
+        // Filtrar por fecha de inicio
+        if (!empty($startDate)) {
+            $query->whereDate('startDate', date('Y-m-d', strtotime($startDate)));
+        }
+
+        $data = $query
+            ->orderBy('created_at', 'desc')
+            ->paginate($pageSize, ['*'], 'page', $page);
+
+        $data->getCollection()->transform(function ($item) {
+            return [
+                'id'                => $item->id,
+                'city'              => optional($item->region)->name,
+                'city_id'           => optional($item->region)->id,
+                'province'          => optional($item->provincia)->name,
+                'province_id'       => optional($item->provincia)->id,
+                'district'          => optional($item->distrito)->name,
+                'district_id'       => optional($item->distrito)->id,
+                'entity'            => $item->alliedEntity,
+                'startOperations'   => $item->homeOperations,
+                'startDate'         => $item->startDate,
+                'external'          => $item->external,
+                'years'             => $item->years,
+                'endDate'           => $item->endDate,
+                'observations'      => $item->observations,
+                'archivos'          => $item->archivosConvenios,
+                'ruc'               => $item->ruc,
+                'components'        => $item->components,
+                'focal'             => $item->focal,
+                'focalCargo'        => $item->focalCargo,
+                'focalPhone'        => $item->focalPhone,
+                'aliado'            => $item->aliado,
+                'aliadoPhone'       => $item->aliadoPhone,
+                'renovation'        => $item->renovation == 1 ? '✓' : '-'
+            ];
+        });
+
+        return response()->json([
+            'data' => $data
+        ]);
+    }
+
     public function allActionsById($id)
     {
         $data = AgreementActions::where('agreements_id', $id)->get()->makeHidden(['created_at', 'updated_at', 'deleted_at']); //🚩
@@ -512,17 +590,37 @@ class AgreementController extends Controller
         return response()->json(['message' => 'Compromiso registrado', 'status' => 200]);
     }
 
-    public function allCommitments($id)
+    public function allCommitments(Request $request, $id)
     {
-        $commitments = Commitment::with([
+        $page     = $request->input('page', 1);
+        $pageSize = $request->input('pageSize', 10);
+        $year     = $request->input('year');
+        $name     = $request->input('name');
+
+        $query = Commitment::with([
             'profile:id,user_id,name,lastname,middlename',
             'commitments'
         ])
-            ->where('agreement_id', $id)
-            ->orderBy('created_at', 'desc') // Ordenar por los más recientes
-            ->get();
+            ->where('agreement_id', $id);
 
-        return response()->json(['data' => $commitments, 'status' => 200]);
+        // Filtrar por título
+        if (!empty($name)) {
+            $query->where('title', 'like', "%{$name}%");
+        }
+
+        // Filtrar por año de creación
+        if (!empty($year)) {
+            $query->whereYear('created_at', $year);
+        }
+
+        $commitments = $query
+            ->orderBy('created_at', 'desc')
+            ->paginate($pageSize, ['*'], 'page', $page);
+
+        return response()->json([
+            'data' => $commitments,
+            'status' => 200
+        ]);
     }
 
     public function updateCommitment(Request $request, $id)
