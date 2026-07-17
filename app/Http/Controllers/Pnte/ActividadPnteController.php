@@ -1389,6 +1389,7 @@ class ActividadPnteController extends Controller
                     'slug' => $item->slug,
 
                     'fecha_asistencia' => $item->fecha_asistencia ? true : false,
+                    'horario_asistencia' => $item->fecha_asistencia,
 
                     'numero_dni' => $item->numero_dni,
 
