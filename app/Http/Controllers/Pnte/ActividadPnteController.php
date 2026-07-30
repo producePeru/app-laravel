@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use App\Models\EmpresarioActividad;
 use App\Models\PntTest;
 use App\Models\SedDescripcion;
+use App\Services\GoogleMeetCalendarService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -1121,7 +1122,6 @@ class ActividadPnteController extends Controller
         $validated = $request->validate([
             'unidad' => 'required|integer|in:1,2,3,4,5',
 
-            // Se cambió el origen: ahora 'horario' es el requerido
             'horario' => 'required|array|min:1',
             'horario.*.id' => 'required',
             'horario.*.fecha' => 'required|date_format:Y-m-d',
@@ -1156,28 +1156,17 @@ class ActividadPnteController extends Controller
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
         ]);
 
-        // Asignar representante por defecto si no viene
         $validated['representante_id'] = $validated['representante_id'] ?? Auth::id();
 
-        // =====================================================
-        // EXTRAER LAS FECHAS DESDE EL ARRAY DE HORARIO
-        // =====================================================
         $fechasExtraidas = collect($validated['horario'])->pluck('fecha')->unique()->toArray();
-        $validated['fechas'] = array_values($fechasExtraidas); // Guardar el array limpio de fechas
+        $validated['fechas'] = array_values($fechasExtraidas);
 
-        // =====================================================
-        // OBTENER MES DE LA FECHA MÁS ANTIGUA
-        // =====================================================
         $fechaMinima = collect($validated['fechas'])
             ->map(fn($f) => Carbon::parse($f))
             ->sortBy(fn($d) => $d->timestamp)
             ->first();
 
         $validated['mes'] = (int) $fechaMinima->format('n');
-
-        // =====================================================
-        // CANTIDAD DE DÍAS
-        // =====================================================
         $validated['cantidad_dias'] = count($validated['fechas']);
 
         try {
@@ -1188,10 +1177,27 @@ class ActividadPnteController extends Controller
                 return ActividadPnte::create($validated);
             });
 
+            $actividad->load('representante');
+
+            try {
+                $resultado = (new GoogleMeetCalendarService())->crearEventosParaActividad(
+                    $actividad,
+                    $validated['horario'],
+                    $validated['tema'] ?? null
+                );
+
+                // Guardamos el enlace de Meet y el array de horarios con los IDs de Google Calendar
+                $actividad->link    = $resultado['meetLink'];
+                $actividad->horario = $resultado['horarioActualizado'];
+                $actividad->save();
+            } catch (Throwable $eCalendar) {
+                Log::error('Error al agendar en Google Calendar: ' . $eCalendar->getMessage());
+            }
+
             return response()->json([
                 'status' => 200,
                 'message' => 'Actividad registrada correctamente.',
-                'data' => $actividad->load([
+                'data' => $actividad->fresh()->load([
                     'tipoActividad',
                     'nombreActividad',
                     'regionRel',

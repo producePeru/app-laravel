@@ -497,52 +497,31 @@ class DownloadAttendanceController extends Controller
                 $col++;
 
                 // TIPO ACTIVIDAD
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $actividad->tipoActividad?->name
-                );
+                $sheet->setCellValue("{$col}{$row}", $actividad->tipoActividad?->name);
                 $col++;
 
                 // NOMBRE ACTIVIDAD
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $actividad->nombreActividad?->name
-                );
+                $sheet->setCellValue("{$col}{$row}", $actividad->nombreActividad?->name);
                 $col++;
 
                 // TEMA
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper($actividad->tema ?? '', 'UTF-8')
-                );
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($actividad->tema ?? '', 'UTF-8'));
                 $col++;
 
                 // REGION
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $actividad->regionRel?->name
-                );
+                $sheet->setCellValue("{$col}{$row}", $actividad->regionRel?->name);
                 $col++;
 
                 // PROVINCIA
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $actividad->provinciaRel?->name
-                );
+                $sheet->setCellValue("{$col}{$row}", $actividad->provinciaRel?->name);
                 $col++;
 
                 // DISTRITO
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $actividad->distritoRel?->name
-                );
+                $sheet->setCellValue("{$col}{$row}", $actividad->distritoRel?->name);
                 $col++;
 
                 // LUGAR
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper($actividad->lugar ?? '', 'UTF-8')
-                );
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($actividad->lugar ?? '', 'UTF-8'));
                 $col++;
 
                 // REPRESENTANTE
@@ -559,145 +538,96 @@ class DownloadAttendanceController extends Controller
                 );
                 $col++;
 
+                // RUC
+                $sheet->setCellValue("{$col}{$row}", $e?->ruc ?? '');
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->razon_social ?? '', 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->nombre_comercial ?? '', 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->sectorEconomico?->name ?? '', 'UTF-8'));
+                $col++;
+
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->rubro?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // ACTIVIDAD COMERCIAL
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->actividad_comercial_nombre ?? '', 'UTF-8'));
+                $col++;
+
+                // REGION (empresario)
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->region?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // PROVINCIA (empresario)
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->provincia?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // DISTRITO (empresario)
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->distrito?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // DIRECCIÓN
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->direccion ?? '', 'UTF-8'));
+                $col++;
 
                 // TIPO DOCUMENTO
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $e->tipoDocumento?->avr
-                );
+                $sheet->setCellValue("{$col}{$row}", $e?->tipoDocumento?->avr ?? '');
                 $col++;
-
 
                 // NRO DOCUMENTO
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $e->numero_dni
-                );
+                $sheet->setCellValue("{$col}{$row}", $e?->numero_dni ?? '');
                 $col++;
 
-
-                // PAIS
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper($e->pais?->name ?? '', 'UTF-8')
-                );
+                // APELLIDO PATERNO
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim($e?->apellido_paterno ?? ''), 'UTF-8'));
                 $col++;
 
-
-                // APELLIDOS
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper(
-                        trim(
-                            ($e->apellido_paterno ?? '') . ' ' .
-                                ($e->apellido_materno ?? '')
-                        ),
-                        'UTF-8'
-                    )
-                );
+                // APELLIDO MATERNO
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim($e?->apellido_materno ?? ''), 'UTF-8'));
                 $col++;
-
 
                 // NOMBRES
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper($e->nombres ?? '', 'UTF-8')
-                );
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->nombres ?? '', 'UTF-8'));
                 $col++;
 
-
-                // GENERO
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $e->genero?->avr
-                );
+                // GÉNERO
+                $sheet->setCellValue("{$col}{$row}", $e?->genero?->avr ?? '');
                 $col++;
-
 
                 // DISCAPACIDAD
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $e->discapacidad ? 'SI' : 'NO'
-                );
+                $sheet->setCellValue("{$col}{$row}", ($e?->discapacidad) ? 'SI' : 'NO');
                 $col++;
-
-
-                // RUC
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $e->ruc
-                );
-                $col++;
-
-
-                // REGION
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper($e->region?->name ?? '', 'UTF-8')
-                );
-                $col++;
-
-
-                // PROVINCIA
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper($e->provincia?->name ?? '', 'UTF-8')
-                );
-                $col++;
-
-
-                // DISTRITO
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper($e->distrito?->name ?? '', 'UTF-8')
-                );
-                $col++;
-
-
-                // SECTOR ECONOMICO
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8')
-                );
-                $col++;
-
-
-                // RUBRO
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    mb_strtoupper($e->rubro?->name ?? '', 'UTF-8')
-                );
-                $col++;
-
 
                 // CELULAR
+                $sheet->setCellValue("{$col}{$row}", $e?->celular ?? '');
+                $col++;
 
+                // CORREO
+                $sheet->setCellValue("{$col}{$row}", $e?->correo_electronico ?? '');
+                $col++;
+
+                // PAIS
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->pais?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // FECHA NACIMIENTO
                 $sheet->setCellValue(
                     "{$col}{$row}",
-                    $e->celular
+                    $e?->fecha_nacimiento ? Carbon::parse($e->fecha_nacimiento)->format('d/m/Y') : ''
                 );
                 $col++;
 
+                // ¿SE BRINDÓ ASESORÍA AL USUARIO DURANTE LA ACTIVIDAD?
+                $sheet->setCellValue("{$col}{$row}", $item->personal_asesoria == 1 ? 'SI' : '');
+                $col++;
 
-                // CORREO
-
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $e->correo_electronico
-                );
+                // ¿SE FORMALIZO AL USUARIO DURANTE LA ACTIVIDAD?
+                $sheet->setCellValue("{$col}{$row}", $item->personal_formalizacion == 1 ? 'SI' : '');
+                $col++;
 
                 $row++;
             }

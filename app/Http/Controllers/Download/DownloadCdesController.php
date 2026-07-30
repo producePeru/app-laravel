@@ -16,10 +16,10 @@ class DownloadCdesController extends Controller
             $filters = $request->query();
 
             $userRole = getUserRole();
-            $roleIds  = $userRole['role_id'];
-            $userId   = $userRole['user_id'];
+            $roleIds = $userRole['role_id'];
+            $userId = $userRole['user_id'];
 
-            $query = Cde::with('cdetype')->orderBy('created_at', 'desc');;
+            $query = Cde::with('cdetype')->orderBy('created_at', 'desc');
 
             // $query->withCdesAndRelations($filters);
 
@@ -32,13 +32,13 @@ class DownloadCdesController extends Controller
             $query->chunk(1000, function ($rows) use (&$cdes, &$globalIndex) {
                 foreach ($rows as $cde) {
                     $cdes[] = [
-                        'index'     => $globalIndex++,
-                        'name'      => strtoupper($cde->name) ?? null,
-                        'city'      => strtoupper($cde->city) ?? null,
-                        'province'  => strtoupper($cde->province) ?? null,
-                        'district'  => strtoupper($cde->district) ?? null,
-                        'address'   => strtoupper($cde->address) ?? null,
-                        'cdetype'   => $cde->cdetype ? $cde->cdetype->name : "-",
+                        'index' => $globalIndex++,
+                        'name' => strtoupper($cde->name) ?? null,
+                        'city' => strtoupper($cde->city) ?? null,
+                        'province' => strtoupper($cde->province) ?? null,
+                        'district' => strtoupper($cde->district) ?? null,
+                        'address' => strtoupper($cde->address) ?? null,
+                        'cdetype' => $cde->cdetype ? $cde->cdetype->name : '-',
                     ];
                 }
             });
@@ -47,7 +47,7 @@ class DownloadCdesController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Ocurrió un error al generar el reporte.',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
