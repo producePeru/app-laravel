@@ -6,6 +6,7 @@ use App\Http\Controllers\Agreement\CommitmentsController;
 use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\Attendance\EventsUgoController;
 use App\Http\Controllers\Attendance\EventsUgseController;
+use App\Http\Controllers\Google\AuthCapacitacionesController;
 use App\Http\Controllers\Automatic\CertificadoPDFController;
 use App\Http\Controllers\Automatic\EmailSendController;
 use App\Http\Controllers\Automatic\SendMailAyacuchoController;
@@ -718,13 +719,20 @@ Route::group(['prefix' => 'ruta-digital', 'namespace' => 'App\Http\Controllers',
     Route::put('status/{id}', [RutaDigitalController::class, 'status']);
 });
 
-Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
+Route::group(['prefix' => 'google', 'namespace' => 'App\Http\Controllers'], function () {
     Route::post('create-event', [GoogleCalendarController::class, 'createEvent']);
     Route::get('events-pnte/{type}', [GoogleCalendarController::class, 'listEvents']);
     Route::delete('delete-event-pnte/{id}/{type}', [GoogleCalendarController::class, 'deleteEvent']);
 
     Route::post('drive-videos-pnte', [GoogleDriveController::class, 'driveVideosPnte']);
     Route::get('videos-pnte', [GoogleDriveController::class, 'getVideosPnte']);
+});
+
+
+// routes/api.php
+Route::prefix('goo')->group(function () {
+    Route::get('oauth-redirect', [AuthCapacitacionesController::class, 'redirect']);
+    Route::get('oauth-callback', [AuthCapacitacionesController::class, 'callback']);
 });
 
 Route::group(['prefix' => 'restrict', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {

@@ -19,9 +19,9 @@
         .footer { background-color: #f1f5f9; text-align: center; padding: 20px; font-size: 12px; color: #64748b; }
     </style>
 </head>
-<body style="background-color: #f4f6f9;">
+<body>
 
-    <div class="email-container">
+    <div class="email-container" style="border: 1px solid #f1f5f9;">
         <!-- Encabezado -->
         <div class="header">
             <h1>¡Registro Confirmado con Éxito!</h1>
