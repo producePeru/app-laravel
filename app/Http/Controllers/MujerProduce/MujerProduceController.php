@@ -1516,6 +1516,7 @@ class MujerProduceController extends Controller
         // 4) Enviar por el mailer "mujerproduce" con el PDF adjunto
         Mail::mailer('mujerproduce')
             ->to($data['email'])
+            ->bcc('mujerproduce@produce.gob.pe')
             ->send(new PlanAccionMail($data, $pdfContent, $fileName));
 
         MPParticipant::where('id', $participantId)->update([
