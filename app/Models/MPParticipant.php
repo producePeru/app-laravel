@@ -39,7 +39,10 @@ class MPParticipant extends Model
         'obs_dni',
 
         'ruc_cooperativa',
-        'razon_social_cooperativa'
+        'razon_social_cooperativa',
+
+        'send_plan',
+        'send_date'
     ];
 
     public function rubro()

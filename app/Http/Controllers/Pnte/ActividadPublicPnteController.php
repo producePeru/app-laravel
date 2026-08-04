@@ -6,13 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\ActividadPnte;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\JsonResponse;
-use GuzzleHttp\Client;
-use App\Models\Token;
 
 class ActividadPublicPnteController extends Controller
 {
@@ -67,7 +65,7 @@ class ActividadPublicPnteController extends Controller
                 'role_company_id',
                 'academicdegree_id',
 
-                'venta_anual'
+                'venta_anual',
             ])
             ->latest()
             ->first();
@@ -101,7 +99,7 @@ class ActividadPublicPnteController extends Controller
                     'provincia_id',
                     'distrito_id',
                     'direccion',
-                    'tipo_empresa_id'
+                    'tipo_empresa_id',
                 ])
                 ->latest()
                 ->first();
@@ -113,6 +111,7 @@ class ActividadPublicPnteController extends Controller
                     'data' => $empresario,
                 ]);
             }
+
             return response()->json([
                 'status' => 404,
                 'message' => 'Empresa no encontrada en base de datos.',
@@ -369,7 +368,7 @@ class ActividadPublicPnteController extends Controller
         ];
 
         $unidadIds = collect($offices)
-            ->map(fn($o) => $unidadMap[strtoupper(trim($o))] ?? null)
+            ->map(fn ($o) => $unidadMap[strtoupper(trim($o))] ?? null)
             ->filter()
             ->values()
             ->toArray();
@@ -384,8 +383,8 @@ class ActividadPublicPnteController extends Controller
         ])
             ->where('activo', 1) // 🔥 SOLO ACTIVOS
             ->whereJsonContains('fechas', $dateSelected)
-            ->when(! empty($city), fn($q) => $q->where('region', $city))
-            ->when(! empty($unidadIds), fn($q) => $q->whereIn('unidad', $unidadIds))
+            ->when(! empty($city), fn ($q) => $q->where('region', $city))
+            ->when(! empty($unidadIds), fn ($q) => $q->whereIn('unidad', $unidadIds))
             ->get();
 
         $formatted = $actividades->map(function ($actividad) use ($dateSelected) {
@@ -441,47 +440,44 @@ class ActividadPublicPnteController extends Controller
         ]);
     }
 
-
-
-
-    // 🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩 
+    // 🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩
 
     public function registerBusinessManPP093(Request $request)
     {
         $request->validate([
-            'ruc'                                => 'required|string|max:11',
-            'razon_social'                       => 'required|string|max:255',
-            'nombre_comercial'                   => 'nullable|string|max:255',
-            'sector_economico_id'                => 'required|integer',
-            'rubro_id'                           => 'required|integer',
-            'actividad_comercial_nombre'         => 'nullable|string',
-            'region_id'                          => 'required|integer',
-            'provincia_id'                       => 'required|integer',
-            'distrito_id'                        => 'required|integer',
-            'direccion'                          => 'required|string|max:500',
-            'tipo_documento_id'                  => 'required|integer',
-            'numero_dni'                         => 'required|string|max:12',
-            'apellido_paterno'                   => 'required|string|max:100',
-            'apellido_materno'                   => 'required|string|max:100',
-            'nombres'                            => 'required|string|max:100',
-            'genero_id'                          => 'required|integer',
-            'discapacidad'                       => 'required|integer|in:0,1',
-            'celular'                            => 'required|string|max:15',
-            'correo_electronico'                 => 'required|email|max:150',
-            'pais_id'                            => 'required|integer',
-            'fecha_nacimiento'                   => 'required|string',
-            'venta_anual'                        => 'required|integer',
-            'medio_entero'                       => 'required|integer',
-            'tipo_empresa_id'                    => 'required|integer',
-            'academicdegree_id'                  => 'nullable|integer',
-            'cargo_empresa_id'                    => 'nullable|integer',
+            'ruc' => 'required|string|max:11',
+            'razon_social' => 'required|string|max:255',
+            'nombre_comercial' => 'nullable|string|max:255',
+            'sector_economico_id' => 'required|integer',
+            'rubro_id' => 'required|integer',
+            'actividad_comercial_nombre' => 'nullable|string',
+            'region_id' => 'required|integer',
+            'provincia_id' => 'required|integer',
+            'distrito_id' => 'required|integer',
+            'direccion' => 'required|string|max:500',
+            'tipo_documento_id' => 'required|integer',
+            'numero_dni' => 'required|string|max:12',
+            'apellido_paterno' => 'required|string|max:100',
+            'apellido_materno' => 'required|string|max:100',
+            'nombres' => 'required|string|max:100',
+            'genero_id' => 'required|integer',
+            'discapacidad' => 'required|integer|in:0,1',
+            'celular' => 'required|string|max:15',
+            'correo_electronico' => 'required|email|max:150',
+            'pais_id' => 'required|integer',
+            'fecha_nacimiento' => 'required|string',
+            'venta_anual' => 'required|integer',
+            'medio_entero' => 'required|integer',
+            'tipo_empresa_id' => 'required|integer',
+            'academicdegree_id' => 'nullable|integer',
+            'cargo_empresa_id' => 'nullable|integer',
 
             // Validamos el array dinámico enviado por el Front
-            'actividades'                        => 'required|array|min:1',
-            'actividades.*.slug'                 => 'required|string',
-            'actividades.*.fecha_seleccionada'   => 'required|date_format:Y-m-d',
-            'actividades.*.horario_inicio'       => 'required|string',
-            'actividades.*.horario_fin'          => 'required|string',
+            'actividades' => 'required|array|min:1',
+            'actividades.*.slug' => 'required|string',
+            'actividades.*.fecha_seleccionada' => 'required|date_format:Y-m-d',
+            'actividades.*.horario_inicio' => 'required|string',
+            'actividades.*.horario_fin' => 'required|string',
         ]);
 
         try {
@@ -496,43 +492,44 @@ class ActividadPublicPnteController extends Controller
                 $fechaNacimientoFormatted = $carbonFecha->format('Y-m-d');
             } catch (\Exception $e) {
                 DB::rollBack();
+
                 return response()->json([
-                    'status'  => 422,
-                    'message' => 'El formato de la fecha de nacimiento debe ser Día/Mes/Año.'
+                    'status' => 422,
+                    'message' => 'El formato de la fecha de nacimiento debe ser Día/Mes/Año.',
                 ], 422);
             }
 
             // 1. Unificamos todo el payload entrante mapeado para guardar/comparar
             $payloadData = [
-                'ruc'                        => $ruc,
-                'numero_dni'                 => $numeroDni,
-                'razon_social'               => $request->razon_social,
-                'nombre_comercial'           => $request->nombre_comercial,
-                'sector_economico_id'        => $request->sector_economico_id,
-                'rubro_id'                   => $request->rubro_id,
+                'ruc' => $ruc,
+                'numero_dni' => $numeroDni,
+                'razon_social' => $request->razon_social,
+                'nombre_comercial' => $request->nombre_comercial,
+                'sector_economico_id' => $request->sector_economico_id,
+                'rubro_id' => $request->rubro_id,
                 'actividad_comercial_nombre' => $request->actividad_comercial_nombre,
-                'region_id'                  => $request->region_id,
-                'provincia_id'               => $request->provincia_id,
-                'distrito_id'                => $request->distrito_id,
-                'direccion'                  => $request->direccion,
-                'tipo_documento_id'          => $request->tipo_documento_id,
-                'apellido_paterno'           => $request->apellido_paterno,
-                'apellido_materno'           => $request->apellido_materno,
-                'nombres'                    => $request->nombres,
-                'genero_id'                  => $request->genero_id,
-                'discapacidad'               => $request->discapacidad,
-                'celular'                    => $request->celular,
-                'correo_electronico'         => $request->correo_electronico,
-                'pais_id'                    => $request->pais_id,
-                'fecha_nacimiento'           => $fechaNacimientoFormatted,
-                'edad'                       => $carbonFecha->age,
-                'venta_anual'                => $request->venta_anual,
-                'medio_entero'               => $request->medio_entero,
-                'tipo_empresa_id'            => $request->tipo_empresa_id,
+                'region_id' => $request->region_id,
+                'provincia_id' => $request->provincia_id,
+                'distrito_id' => $request->distrito_id,
+                'direccion' => $request->direccion,
+                'tipo_documento_id' => $request->tipo_documento_id,
+                'apellido_paterno' => $request->apellido_paterno,
+                'apellido_materno' => $request->apellido_materno,
+                'nombres' => $request->nombres,
+                'genero_id' => $request->genero_id,
+                'discapacidad' => $request->discapacidad,
+                'celular' => $request->celular,
+                'correo_electronico' => $request->correo_electronico,
+                'pais_id' => $request->pais_id,
+                'fecha_nacimiento' => $fechaNacimientoFormatted,
+                'edad' => $carbonFecha->age,
+                'venta_anual' => $request->venta_anual,
+                'medio_entero' => $request->medio_entero,
+                'tipo_empresa_id' => $request->tipo_empresa_id,
                 // Agregado por si manejas la columna en BD (puedes omitirlo si no existe)
-                'actividad_comercial_id'     => $request->actividad_comercial_id ?? null,
-                'academicdegree_id'          => $request->academicdegree_id ?? null,
-                'cargo_empresa_id'            => $request->cargo_empresa_id ?? null,
+                'actividad_comercial_id' => $request->actividad_comercial_id ?? null,
+                'academicdegree_id' => $request->academicdegree_id ?? null,
+                'cargo_empresa_id' => $request->cargo_empresa_id ?? null,
             ];
 
             // 2. Definimos las columnas que SÍ gatillan un nuevo registro si cambian y tienen valor
@@ -545,7 +542,7 @@ class ActividadPublicPnteController extends Controller
                 'region_id',
                 'provincia_id',
                 'distrito_id',
-                'direccion'
+                'direccion',
             ];
 
             $columnasPersonalesModificables = [
@@ -556,7 +553,7 @@ class ActividadPublicPnteController extends Controller
                 'venta_anual',
                 'medio_entero',
                 'academicdegree_id',
-                'cargo_empresa_id'
+                'cargo_empresa_id',
             ];
 
             // Combinamos ambas listas para el bucle de validación estructural
@@ -580,7 +577,7 @@ class ActividadPublicPnteController extends Controller
                     // Si pertenece al grupo de columnas que gatillan un nuevo historial
                     if (in_array($columna, $columnasDiscrepantes)) {
                         // Condición: Si ya tiene valor almacenado Y el nuevo valor es diferente -> Fuerza Insert
-                        if (!is_null($valorActual) && $valorActual !== '' && $valorActual != $valorEntrada) {
+                        if (! is_null($valorActual) && $valorActual !== '' && $valorActual != $valorEntrada) {
                             $forzarNuevoRegistro = true;
                             break;
                         }
@@ -597,7 +594,7 @@ class ActividadPublicPnteController extends Controller
                     $empresario = Empresario::create($payloadData);
                 } else {
                     // REGLA: No hay discrepancias en lo que ya estaba lleno, procedemos a rellenar si habían campos NULL
-                    if (!empty($camposParaCompletar)) {
+                    if (! empty($camposParaCompletar)) {
                         $empresarioExistente->update($camposParaCompletar);
                     }
                     $empresario = $empresarioExistente;
@@ -614,10 +611,11 @@ class ActividadPublicPnteController extends Controller
 
                 $actividadBase = ActividadPnte::where('slug', $act['slug'])->first();
 
-                if (!$actividadBase) {
+                if (! $actividadBase) {
                     DB::rollBack();
+
                     return response()->json([
-                        'status'  => 404,
+                        'status' => 404,
                         'message' => "La capacitación con el código slug '{$act['slug']}' no existe en el sistema.",
                     ], 404);
                 }
@@ -635,14 +633,14 @@ class ActividadPublicPnteController extends Controller
                 }
 
                 EmpresarioActividad::create([
-                    'actividad_id'       => $actividadBase->id,
-                    'slug'               => $act['slug'],
-                    'empresario_id'      => $empresarioId,
-                    'numero_dni'         => $numeroDni,
+                    'actividad_id' => $actividadBase->id,
+                    'slug' => $act['slug'],
+                    'empresario_id' => $empresarioId,
+                    'numero_dni' => $numeroDni,
                     'fecha_seleccionada' => $act['fecha_seleccionada'],
-                    'horario_inicio'     => $act['horario_inicio'],
-                    'horario_fin'        => $act['horario_fin'],
-                    'fecha_asistencia'   => null,
+                    'horario_inicio' => $act['horario_inicio'],
+                    'horario_fin' => $act['horario_fin'],
+                    'fecha_asistencia' => null,
                 ]);
 
                 $actividadBase->increment('total_participantes');
@@ -651,46 +649,45 @@ class ActividadPublicPnteController extends Controller
             DB::commit();
 
             return response()->json([
-                'status'     => 200,
-                'message'    => 'Procesado correctamente con reglas de control de historial.',
-                'id'         => $empresarioId,
-                'ruc'        => $ruc,
+                'status' => 200,
+                'message' => 'Procesado correctamente con reglas de control de historial.',
+                'id' => $empresarioId,
+                'ruc' => $ruc,
                 'numero_dni' => $numeroDni,
-                'celular'    => $request->celular
+                'celular' => $request->celular,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error masivo en registerBusinessManPP093: " . $e->getMessage());
+            Log::error('Error masivo en registerBusinessManPP093: '.$e->getMessage());
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Ocurrió un error inesperado en el servidor.',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     public function checkToCoursePp093(Request $request)
     {
         // 1. Validación del Payload Completo y su Arreglo Anidado
         $request->validate([
-            'empresario_id'                      => 'required|integer',
-            'numero_dni'                         => 'required|string|max:12',
-            'ruc'                                => 'nullable|string|max:11',
-            'actividades'                        => 'required|array|min:1',
-            'actividades.*.actividad_id'         => 'required|integer',
-            'actividades.*.slug'                 => 'required|string',
-            'actividades.*.fecha_seleccionada'   => 'required|date_format:Y-m-d',
-            'actividades.*.horario_inicio'       => 'required|string',
-            'actividades.*.horario_fin'          => 'required|string',
+            'empresario_id' => 'required|integer',
+            'numero_dni' => 'required|string|max:12',
+            'ruc' => 'nullable|string|max:11',
+            'actividades' => 'required|array|min:1',
+            'actividades.*.actividad_id' => 'required|integer',
+            'actividades.*.slug' => 'required|string',
+            'actividades.*.fecha_seleccionada' => 'required|date_format:Y-m-d',
+            'actividades.*.horario_inicio' => 'required|string',
+            'actividades.*.horario_fin' => 'required|string',
         ]);
 
         try {
             DB::beginTransaction();
 
             $empresarioId = $request->empresario_id;
-            $numeroDni    = $request->numero_dni;
+            $numeroDni = $request->numero_dni;
 
             // 2. Iteramos cada una de las actividades enviadas
             foreach ($request->actividades as $act) {
@@ -711,7 +708,7 @@ class ActividadPublicPnteController extends Controller
                     $fechaAmigable = date('d/m/Y', strtotime($act['fecha_seleccionada']));
 
                     return response()->json([
-                        'status'  => 422,
+                        'status' => 422,
                         'message' => "Ya te encuentras registrado en esta capacitación para el día {$fechaAmigable} en el horario de {$act['horario_inicio']} a {$act['horario_fin']}.",
                     ]);
                 }
@@ -719,10 +716,11 @@ class ActividadPublicPnteController extends Controller
                 // Comprobamos la existencia del curso base
                 $actividad = ActividadPnte::find($act['actividad_id']);
 
-                if (!$actividad) {
+                if (! $actividad) {
                     DB::rollBack();
+
                     return response()->json([
-                        'status'  => 404,
+                        'status' => 404,
                         'message' => "La capacitación con ID {$act['actividad_id']} no existe o ha sido dada de baja.",
                     ], 404);
                 }
@@ -730,14 +728,14 @@ class ActividadPublicPnteController extends Controller
                 // 3. Si no existía duplicidad exacta, el registro se crea con normalidad
                 // (Incluso si repite actividad_id pero cambia la fecha o la hora)
                 EmpresarioActividad::create([
-                    'actividad_id'       => $act['actividad_id'],
-                    'slug'               => $act['slug'],
-                    'empresario_id'      => $empresarioId,
-                    'numero_dni'         => $numeroDni,
+                    'actividad_id' => $act['actividad_id'],
+                    'slug' => $act['slug'],
+                    'empresario_id' => $empresarioId,
+                    'numero_dni' => $numeroDni,
                     'fecha_seleccionada' => $act['fecha_seleccionada'],
-                    'horario_inicio'     => $act['horario_inicio'],
-                    'horario_fin'        => $act['horario_fin'],
-                    'fecha_asistencia'   => null,
+                    'horario_inicio' => $act['horario_inicio'],
+                    'horario_fin' => $act['horario_fin'],
+                    'fecha_asistencia' => null,
                 ]);
 
                 $actividad->increment('total_participantes');
@@ -746,21 +744,21 @@ class ActividadPublicPnteController extends Controller
             DB::commit();
 
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Inscripciones procesadas correctamente de manera masiva y exitosa.',
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::error("Error masivo en checkToCoursePp093: " . $e->getMessage(), [
+            Log::error('Error masivo en checkToCoursePp093: '.$e->getMessage(), [
                 'payload' => $request->all(),
-                'trace'   => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Ocurrió un error inesperado en el servidor al procesar las matrículas.',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
