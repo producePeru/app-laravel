@@ -5,34 +5,29 @@ namespace App\Http\Controllers\Event;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SedQuestionStoreRequest;
 use App\Http\Requests\StoreSedRequest;
-use App\Models\City;
-use App\Models\District;
-use App\Models\Empresa;
-use App\Models\Empresario;
-use App\Models\Fair;
-use App\Models\Mype;
-use App\Models\People;
-use App\Models\Province;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use App\Models\Token;
-use App\Models\UgsePostulante;
-use GuzzleHttp\Client;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-// pdf
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use App\Mail\FairSedInfoMail;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
+use App\Models\Fair;
+use App\Models\Mype;
+use App\Models\People;
 use App\Models\SedQuestion;
-use PDF; // Alias para DomPDF (probablemente registrado en config/app.php como 'PDF')
+use App\Models\Token;
+use App\Models\UgsePostulante;
+use Carbon\Carbon;
+// pdf
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
+use GuzzleHttp\Client;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail; // Alias para DomPDF (probablemente registrado en config/app.php como 'PDF')
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use PDF;
 
 class PublicEventsController extends Controller
 {
@@ -42,7 +37,7 @@ class PublicEventsController extends Controller
 
             $empresa = Mype::where('ruc', $ruc)->first();
 
-            if (!$empresa) {
+            if (! $empresa) {
 
                 $apiUrl = "https://api.decolecta.com/v1/sunat/ruc?numero={$ruc}";
 
@@ -50,7 +45,7 @@ class PublicEventsController extends Controller
                     ->pluck('token')
                     ->toArray();
 
-                $client = new Client();
+                $client = new Client;
 
                 $responseData = null;
 
@@ -67,7 +62,7 @@ class PublicEventsController extends Controller
 
                         $responseData = json_decode($response->getBody(), true);
 
-                        if (!empty($responseData['numero_documento'])) {
+                        if (! empty($responseData['numero_documento'])) {
                             break;
                         }
                     } catch (\Exception $e) {
@@ -75,29 +70,28 @@ class PublicEventsController extends Controller
                     }
                 }
 
-
-                if ($responseData && !empty($responseData['numero_documento'])) {
+                if ($responseData && ! empty($responseData['numero_documento'])) {
                     return response()->json([
                         'status' => 200,
                         'message' => 'Información obtenida',
                         'data' => [
-                            'ruc'                   => $responseData['numero_documento'] ?? null,
-                            'socialReason'          => $responseData['razon_social'] ?? null,
-                            'comercialName'         => $responseData['razon_social'] ?? null,
-                            'economicsector_id'     => null,
-                            'category_id'           => null,
-                            'comercialactivity_id'  => null,
-                            'city_id'               => null,
-                            'address'               => $responseData['direccion'] ?? null,
-                            'estado'                => $responseData['estado'] ?? null,
-                            'condicion'             => $responseData['condicion'],
-                            'data'                  => $responseData
-                        ]
+                            'ruc' => $responseData['numero_documento'] ?? null,
+                            'socialReason' => $responseData['razon_social'] ?? null,
+                            'comercialName' => $responseData['razon_social'] ?? null,
+                            'economicsector_id' => null,
+                            'category_id' => null,
+                            'comercialactivity_id' => null,
+                            'city_id' => null,
+                            'address' => $responseData['direccion'] ?? null,
+                            'estado' => $responseData['estado'] ?? null,
+                            'condicion' => $responseData['condicion'],
+                            'data' => $responseData,
+                        ],
                     ]);
                 } else {
                     return response()->json([
                         'status' => 404,
-                        'message' => 'No se pudo obtener información con los tokens disponibles 404'
+                        'message' => 'No se pudo obtener información con los tokens disponibles 404',
                     ]);
                 }
             } else {
@@ -105,24 +99,24 @@ class PublicEventsController extends Controller
                     'status' => 200,
                     'message' => 'Usuario',
                     'data' => [
-                        'name'                  => $empresa->ruc ?? null,
-                        'socialReason'          => $empresa->socialReason ?? null,
-                        'comercialName'         => $empresa->comercialName ?? null,
-                        'economicsector_id'     => $empresa->economicsector_id,
-                        'category_id'           => $empresa->category_id ?? null,
-                        'comercialactivity_id'  => $empresa->comercialactivity_id ?? null,
-                        'city_id'               => $empresa->city_id ?? null,
-                        'address'               => $empresa->address ?? null,
-                        'estado'                => $empresa->estado ?? null,
-                        'condicion'             => $empresa->condicion ?? null
-                    ]
+                        'name' => $empresa->ruc ?? null,
+                        'socialReason' => $empresa->socialReason ?? null,
+                        'comercialName' => $empresa->comercialName ?? null,
+                        'economicsector_id' => $empresa->economicsector_id,
+                        'category_id' => $empresa->category_id ?? null,
+                        'comercialactivity_id' => $empresa->comercialactivity_id ?? null,
+                        'city_id' => $empresa->city_id ?? null,
+                        'address' => $empresa->address ?? null,
+                        'estado' => $empresa->estado ?? null,
+                        'condicion' => $empresa->condicion ?? null,
+                    ],
                 ]);
             }
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
                 'message' => 'Error al procesar la solicitud',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -132,7 +126,7 @@ class PublicEventsController extends Controller
         try {
             $person = People::where('documentnumber', $dni)->first();
 
-            if (!$person) {
+            if (! $person) {
 
                 $apiUrl = "https://api.decolecta.com/v1/reniec/dni?numero={$dni}";
 
@@ -140,7 +134,7 @@ class PublicEventsController extends Controller
                     ->pluck('token')
                     ->toArray();
 
-                $client = new Client();
+                $client = new Client;
                 $responseData = null;
 
                 foreach ($tokens as $token) {
@@ -155,7 +149,7 @@ class PublicEventsController extends Controller
 
                         $responseData = json_decode($response->getBody(), true);
 
-                        if (!empty($responseData['document_number'])) {
+                        if (! empty($responseData['document_number'])) {
                             break;
                         }
                     } catch (\Exception $e) {
@@ -164,9 +158,7 @@ class PublicEventsController extends Controller
                     }
                 }
 
-
-
-                if ($responseData && !empty($responseData['document_number'])) {
+                if ($responseData && ! empty($responseData['document_number'])) {
                     return response()->json([
                         'status' => 200,
                         'message' => 'Información obtenida',
@@ -178,13 +170,13 @@ class PublicEventsController extends Controller
                             'gender_id' => null,
                             'sick' => null,
                             'phone' => null,
-                            'email' => null
-                        ]
+                            'email' => null,
+                        ],
                     ]);
                 } else {
                     return response()->json([
                         'status' => 404,
-                        'message' => 'No se pudo obtener información con los tokens disponibles'
+                        'message' => 'No se pudo obtener información con los tokens disponibles',
                     ]);
                 }
             } else {
@@ -199,15 +191,15 @@ class PublicEventsController extends Controller
                         'gender_id' => $person->gender_id ?? null,
                         'sick' => $person->sick ?? null,
                         'phone' => $person->phone ?? null,
-                        'email' => $person->email ?? null
-                    ]
+                        'email' => $person->email ?? null,
+                    ],
                 ]);
             }
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Error al procesar la solicitud',
                 'error' => $th->getMessage(),
-                'status' => 500
+                'status' => 500,
             ], 500);
         }
     }
@@ -222,7 +214,6 @@ class PublicEventsController extends Controller
     //             $user = auth()->user();
 
     //             $apiUrl = "https://api.decolecta.com/v1/reniec/dni?numero={$dni}";
-
 
     //             if ($user) {
     //                 $tokens = Token::where('user_id', $user->id)     // Tokens del usuario autenticado
@@ -266,7 +257,6 @@ class PublicEventsController extends Controller
     //                     continue;
     //                 }
     //             }
-
 
     //             if ($responseData && !empty($responseData['document_number'])) {
     //                 return response()->json([
@@ -326,19 +316,19 @@ class PublicEventsController extends Controller
             if ($existingPostulanteExists) {
                 return response()->json([
                     'message' => 'El usuario ya está registrado en este evento.',
-                    'status' => 200
+                    'status' => 200,
                 ]);
             } else {
                 return response()->json([
                     'message' => 'Nuevo participante.',
-                    'status' => 404
+                    'status' => 404,
                 ]);
             }
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error inesperado: ' . $e->getMessage(),
+                'message' => 'Error inesperado: '.$e->getMessage(),
                 'status' => 'error',
-                'code' => 500
+                'code' => 500,
             ], 500);
         }
     }
@@ -356,23 +346,22 @@ class PublicEventsController extends Controller
             if ($existingPostulanteExists) {
                 return response()->json([
                     'message' => 'El usuario ya está registrado en este evento.',
-                    'status' => 200
+                    'status' => 200,
                 ]);
             } else {
                 return response()->json([
                     'message' => 'Usuario Nuevo.',
-                    'status' => 404
+                    'status' => 404,
                 ]);
             }
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error inesperado: ' . $e->getMessage(),
+                'message' => 'Error inesperado: '.$e->getMessage(),
                 'status' => 'error',
-                'code' => 500
+                'code' => 500,
             ], 500);
         }
     }
-
 
     // public function participantRegistrationSed(StoreSedRequest $request)
     // {
@@ -414,7 +403,6 @@ class PublicEventsController extends Controller
     //             ->size(200)
     //             ->margin(10)
     //             ->build();
-
 
     //         $qrBase64 = base64_encode($qrResult->getString());
 
@@ -488,10 +476,10 @@ class PublicEventsController extends Controller
                 $ugsePostulante = UgsePostulante::create($request->all());
                 $alreadyRegistered = false;
 
-                if (!$ugsePostulante) {
+                if (! $ugsePostulante) {
                     return response()->json([
                         'message' => 'Error al registrar al postulante.',
-                        'status' => 500
+                        'status' => 500,
                     ], 500);
                 }
             }
@@ -506,7 +494,7 @@ class PublicEventsController extends Controller
 
             // Generar QR en base64 (documentnumber)
             $qrResult = Builder::create()
-                ->writer(new PngWriter())
+                ->writer(new PngWriter)
                 ->data($ugsePostulante->documentnumber)
                 ->size(200)
                 ->margin(10)
@@ -522,7 +510,7 @@ class PublicEventsController extends Controller
                 'logoDataUri' => $logoDataUri,
             ]);
 
-            $filename = 'entrada_' . Str::random(10) . '.pdf';
+            $filename = 'entrada_'.Str::random(10).'.pdf';
             $filepath = storage_path("app/public/entradas/{$filename}");
             Storage::makeDirectory('public/entradas');
             $pdf->save($filepath);
@@ -549,7 +537,7 @@ class PublicEventsController extends Controller
                 'success' => true,
                 'message' => $msg,
                 'data' => $ugsePostulante,
-                'status' => 200
+                'status' => 200,
             ], 200);
         }
 
@@ -557,22 +545,21 @@ class PublicEventsController extends Controller
         catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'El evento con el slug proporcionado no existe.',
-                'status' => 404
+                'status' => 404,
             ], 404);
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation error',
                 'errors' => $e->errors(),
-                'status' => 422
+                'status' => 422,
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Unexpected error: ' . $e->getMessage(),
-                'status' => 500
+                'message' => 'Unexpected error: '.$e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }
-
 
     // pregunta & respuesta de formalizacion
     public function formalizationsQuestionsAndAnswers(Request $request)
@@ -597,9 +584,9 @@ class PublicEventsController extends Controller
 
             for ($i = 1; $i <= 5; $i++) {
                 $entries[] = [
-                    'user_id'    => $request->user_id,
-                    'question'   => $request->input("question_$i"),
-                    'answer'     => $request->input("answer_$i"),
+                    'user_id' => $request->user_id,
+                    'question' => $request->input("question_$i"),
+                    'answer' => $request->input("answer_$i"),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -609,21 +596,19 @@ class PublicEventsController extends Controller
 
             return response()->json([
                 'message' => 'Preguntas y respuestas registradas correctamente.',
-                'status'  => 200
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
             // Registrar el error para debugging
-            Log::error('Error al registrar preguntas y respuestas: ' . $e->getMessage());
+            Log::error('Error al registrar preguntas y respuestas: '.$e->getMessage());
 
             return response()->json([
                 'message' => 'Ocurrió un error al guardar los datos.',
-                'error'   => $e->getMessage(),
-                'status'  => 500
+                'error' => $e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }
-
-
 
     public function finallyQuestionsExtrasSed(SedQuestionStoreRequest $request)
     {
@@ -636,33 +621,28 @@ class PublicEventsController extends Controller
 
         if ($exists) {
             return response()->json([
-                'message' => 'Ya existe un registro para este evento y documento.'
+                'message' => 'Ya existe un registro para este evento y documento.',
             ], 409); // Conflict
         }
 
         // Crear
         $sedQuestion = SedQuestion::create([
-            'event_id'       => $fair->id,
-            'slug'           => $request->slug,
+            'event_id' => $fair->id,
+            'slug' => $request->slug,
             'documentnumber' => $request->documentnumber,
-            'question_1'     => $request->question_1,
-            'question_2'     => $request->question_2,
-            'question_3'     => $request->question_3,
-            'question_4'     => $request->question_4,
-            'question_5'     => $request->question_5,
+            'question_1' => $request->question_1,
+            'question_2' => $request->question_2,
+            'question_3' => $request->question_3,
+            'question_4' => $request->question_4,
+            'question_5' => $request->question_5,
         ]);
 
         return response()->json([
             'message' => 'Creado correctamente',
-            'data'    => $sedQuestion,
-            'status'  => 200
+            'data' => $sedQuestion,
+            'status' => 200,
         ], 200);
     }
-
-
-
-
-
 
     // preguntamos si el eveento existe
 
@@ -685,8 +665,8 @@ class PublicEventsController extends Controller
                             Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos </br>
                             para seguir fortaleciendo tu emprendimiento.
                             ',
-                            'status' => 404
-                        ]
+                            'status' => 404,
+                        ],
                     ]);
                 }
 
@@ -701,9 +681,9 @@ class PublicEventsController extends Controller
                         'fecha' => $fair->dates,
                         'place' => $fair->place,
                         'schedule' => $fair->hours,
-                        'msgEnd' => $fair->msgEndForm
+                        'msgEnd' => $fair->msgEndForm,
                     ],
-                    'status' => 200
+                    'status' => 200,
                 ]);
             }
 
@@ -711,14 +691,14 @@ class PublicEventsController extends Controller
                 'data' => [
                     'title' => 'No se encontró el evento.',
                     'message' => 'No existe una feria con este registro.',
-                    'status' => 404
-                ]
+                    'status' => 404,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener los detalles del evento.',
                 'error' => $e->getMessage(),
-                'status' => 500
+                'status' => 500,
             ], 500);
         }
     }

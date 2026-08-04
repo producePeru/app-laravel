@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\Mype;
 
-use App\Models\Mype;
-
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Mype;
 use App\Models\Token;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
 
 class MypeController extends Controller
 {
@@ -48,11 +46,11 @@ class MypeController extends Controller
 
                     $tokenRecord = Token::where('status', 1)->first();
 
-                    if (!$tokenRecord) {
+                    if (! $tokenRecord) {
                         return response()->json(['status' => 404, 'message' => 'Token no encontrado o inactivo']);
                     }
 
-                    $client = new Client();
+                    $client = new Client;
                     $response = $client->request('GET', $apiUrl, [
                         'headers' => [
                             'Authorization' => $tokenRecord->token,
@@ -87,7 +85,7 @@ class MypeController extends Controller
                     return response()->json([
                         'error' => 'No se pudo obtener información del MYPE',
                         'status' => 500,
-                        'error' => $e
+                        'error' => $e,
                     ], 500);
                 }
             } else {
@@ -105,12 +103,12 @@ class MypeController extends Controller
         if ($mype) {
             return response()->json([
                 'data' => $mype,
-                'status' => 200
+                'status' => 200,
             ]);
         } else {
             return response()->json([
                 'message' => 'Mype not found',
-                'status' => 404
+                'status' => 404,
             ]);
         }
     }
@@ -119,7 +117,7 @@ class MypeController extends Controller
     {
         $mype = Mype::where('id', $id)->first();
 
-        if (!$mype) {
+        if (! $mype) {
             return response()->json(['message' => 'RUC no encontrado en la tabla'], 404);
         }
 
@@ -155,8 +153,6 @@ class MypeController extends Controller
         return response()->json(['status' => 200, 'message' => 'Mype created successfully']);
     }
 
-
-
     // registrar una mype para que participe en ferias si existe la editas sino la creas
 
     public function registerMype(Request $request)
@@ -173,7 +169,7 @@ class MypeController extends Controller
             $filePDFName = $filePDF->getClientOriginalName();
             $filePDFPath = $filePDF->move(public_path($storagePath), $filePDFName);
             $mype->filePDF_name = $filePDFName;
-            $mype->filePDF_path = 'mypes/' . $filePDFName;
+            $mype->filePDF_path = 'mypes/'.$filePDFName;
         }
 
         // Procesar y guardar logo
@@ -182,7 +178,7 @@ class MypeController extends Controller
             $logoName = $logo->getClientOriginalName();
             $logoPath = $logo->move(public_path($storagePath), $logoName);
             $mype->logo_name = $logoName;
-            $mype->logo_path = 'mypes/' . $logoName;
+            $mype->logo_path = 'mypes/'.$logoName;
         }
 
         // Procesar y guardar img1
@@ -191,7 +187,7 @@ class MypeController extends Controller
             $img1Name = $img1->getClientOriginalName();
             $img1Path = $img1->move(public_path($storagePath), $img1Name);
             $mype->img1_name = $img1Name;
-            $mype->img1_path = 'mypes/' . $img1Name;
+            $mype->img1_path = 'mypes/'.$img1Name;
         }
 
         // Procesar y guardar img2
@@ -200,7 +196,7 @@ class MypeController extends Controller
             $img2Name = $img2->getClientOriginalName();
             $img2Path = $img2->move(public_path($storagePath), $img2Name);
             $mype->img2_name = $img2Name;
-            $mype->img2_path = 'mypes/' . $img2Name;
+            $mype->img2_path = 'mypes/'.$img2Name;
         }
 
         // Procesar y guardar img3
@@ -209,7 +205,7 @@ class MypeController extends Controller
             $img3Name = $img3->getClientOriginalName();
             $img3Path = $img3->move(public_path($storagePath), $img3Name);
             $mype->img3_name = $img3Name;
-            $mype->img3_path = 'mypes/' . $img3Name;
+            $mype->img3_path = 'mypes/'.$img3Name;
         }
 
         $mype->save();
@@ -217,24 +213,22 @@ class MypeController extends Controller
         return response()->json(['message' => 'Mype registrado/actualizado exitosamente.', 'id_mype' => $mype->id, 'status' => 200]);
     }
 
-
-
     // SI EXISTE LO EDITAS SINO LO EDITAS
     public function apiRUC($numeroRUC)
     {
         $mype = Mype::where('ruc', $numeroRUC)->first();
 
-        if (!$mype) {
+        if (! $mype) {
             $apiUrl = "https://api.apis.net.pe/v2/sunat/ruc/full?numero={$numeroRUC}";
 
             try {
                 $tokenRecord = Token::where('status', 1)->first();
 
-                if (!$tokenRecord) {
+                if (! $tokenRecord) {
                     return response()->json(['status' => 404, 'message' => 'Token no encontrado o inactivo']);
                 }
 
-                $client = new Client();
+                $client = new Client;
                 $response = $client->request('GET', $apiUrl, [
                     'headers' => [
                         'Authorization' => $tokenRecord->token,
@@ -255,13 +249,13 @@ class MypeController extends Controller
                         'instagram' => null,
                         'description' => null,
                         'address' => $responseData['direccion'] ?? null,
-                    ]
+                    ],
                 ]);
             } catch (\Exception $e) {
                 return response()->json([
                     'error' => 'No se pudo obtener información del MYPE',
                     'status' => 500,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ], 500);
             }
         } else {
@@ -280,8 +274,8 @@ class MypeController extends Controller
                     'economicsector_id' => $mype->economicsector_id ?? null,
                     'category_id' => $mype->category_id ?? null,
                     'comercialactivity_id' => $mype->comercialactivity_id ?? null,
-                    'city_id' => $mype->city_id ?? null
-                ]
+                    'city_id' => $mype->city_id ?? null,
+                ],
             ]);
         }
     }

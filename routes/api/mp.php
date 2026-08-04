@@ -38,6 +38,8 @@ Route::controller(MujerProduceController::class)->group(function () {
     Route::post('delete-assistant', 'deleteAssistant');
 
     Route::get('detail-share/{idRow}', 'detailShare');
+
+    Route::post('send-email-plan-accion', 'sendPlanAccion');
 });
 
 

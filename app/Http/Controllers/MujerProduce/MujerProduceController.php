@@ -3,21 +3,21 @@
 namespace App\Http\Controllers\MujerProduce;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PlanAccionMail;
 use App\Models\MPAdvice;
 use App\Models\MPAdviceDate;
 use App\Models\MPAttendance;
 use App\Models\MPCapacitador;
 use App\Models\MPDiagnostico;
 use App\Models\MPDiagnosticoOption;
-use App\Models\MPDiagnosticoResponse;
 use App\Models\MPEvent;
 use App\Models\MPParticipant;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 
 class MujerProduceController extends Controller
 {
@@ -28,19 +28,19 @@ class MujerProduceController extends Controller
             // Validación
             $request->validate([
                 'name' => 'required|string|max:255',
-                'dni'  => 'nullable|string|max:20|unique:mp_capacitadores,dni',
+                'dni' => 'nullable|string|max:20|unique:mp_capacitadores,dni',
             ]);
 
             // Registro
             $capacitador = MPCapacitador::create([
                 'name' => $request->name,
-                'dni'  => $request->dni,
+                'dni' => $request->dni,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Capacitador registrado correctamente.',
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
@@ -48,7 +48,7 @@ class MujerProduceController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error de validación.',
-                'errors'  => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
 
@@ -56,7 +56,7 @@ class MujerProduceController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error inesperado.',
-                'error'   => $e->getMessage() // puedes quitar esto en producción
+                'error' => $e->getMessage(), // puedes quitar esto en producción
             ], 500);
         }
     }
@@ -66,16 +66,16 @@ class MujerProduceController extends Controller
         // Buscar capacitador
         $capacitador = MPCapacitador::find($idCapacitador);
 
-        if (!$capacitador) {
+        if (! $capacitador) {
             return response()->json([
                 'message' => 'Capacitador no encontrado',
-                'status'  => 404
+                'status' => 404,
             ], 404);
         }
 
         // Validación básica (ajusta si necesitas más reglas)
         $data = $request->validate([
-            'dni'  => 'nullable',
+            'dni' => 'nullable',
             'name' => 'nullable|string|max:255',
         ]);
 
@@ -84,8 +84,8 @@ class MujerProduceController extends Controller
 
         return response()->json([
             'message' => 'Capacitador actualizado correctamente',
-            'data'    => $capacitador,
-            'status'  => 200
+            'data' => $capacitador,
+            'status' => 200,
         ]);
     }
 
@@ -112,18 +112,17 @@ class MujerProduceController extends Controller
                 'success' => true,
                 'message' => 'Listado obtenido correctamente.',
                 'data' => $capacitadores,
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
 
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error al obtener el listado.',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     // EVENTOS
 
@@ -176,24 +175,24 @@ class MujerProduceController extends Controller
 
             // Validación
             $request->validate([
-                'title'          => 'required|string|max:255',
-                'component'      => 'required|integer|in:1,2,3,4,5',
+                'title' => 'required|string|max:255',
+                'component' => 'required|integer|in:1,2,3,4,5',
                 'capacitador_id' => 'required|exists:mp_capacitadores,id',
-                'city_id'        => 'nullable',
-                'province_id'    => 'nullable',
-                'district_id'    => 'nullable',
-                'modality_id'    => 'required|exists:modalities,id',
-                'place'          => 'nullable|string|max:255',
-                'date'           => 'nullable|date_format:Y-m-d',
+                'city_id' => 'nullable',
+                'province_id' => 'nullable',
+                'district_id' => 'nullable',
+                'modality_id' => 'required|exists:modalities,id',
+                'place' => 'nullable|string|max:255',
+                'date' => 'nullable|date_format:Y-m-d',
                 // 'hours'          => 'nullable|string|max:100',
-                'startDate'      => 'nullable|date_format:Y-m-d',
-                'endDate'        => 'nullable|date_format:Y-m-d',
+                'startDate' => 'nullable|date_format:Y-m-d',
+                'endDate' => 'nullable|date_format:Y-m-d',
                 // 'training_time'  => 'required',
 
-                'link'           => 'nullable',
-                'aliado'         => 'nullable',
-                'hourStart'      => 'nullable',
-                'hourEnd'        => 'nullable'
+                'link' => 'nullable',
+                'aliado' => 'nullable',
+                'hourStart' => 'nullable',
+                'hourEnd' => 'nullable',
             ]);
 
             // Generar slug
@@ -201,46 +200,46 @@ class MujerProduceController extends Controller
 
             // Crear
             $evento = MpEvent::create([
-                'title'          => $request->title,
-                'slug'           => $slug,
-                'component'      => $request->component,
+                'title' => $request->title,
+                'slug' => $slug,
+                'component' => $request->component,
                 'capacitador_id' => $request->capacitador_id,
-                'city_id'        => $request->city_id,
-                'province_id'    => $request->province_id,
-                'district_id'    => $request->district_id,
-                'modality_id'    => $request->modality_id,
-                'place'          => $request->place,
-                'date'           => $request->date,
-                'hours'          => $request->hours,
-                'startDate'      => $request->startDate,
-                'endDate'        => $request->endDate,
+                'city_id' => $request->city_id,
+                'province_id' => $request->province_id,
+                'district_id' => $request->district_id,
+                'modality_id' => $request->modality_id,
+                'place' => $request->place,
+                'date' => $request->date,
+                'hours' => $request->hours,
+                'startDate' => $request->startDate,
+                'endDate' => $request->endDate,
                 // 'training_time'  => $request->training_time,
 
-                'link'           => $request->link,
-                'aliado'         => $request->aliado,
-                'hourStart'      => $request->hourStart,
-                'hourEnd'        => $request->hourEnd
+                'link' => $request->link,
+                'aliado' => $request->aliado,
+                'hourStart' => $request->hourStart,
+                'hourEnd' => $request->hourEnd,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Evento registrado correctamente.',
                 'data' => $evento,
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
                 'success' => false,
                 'message' => 'Error de validación.',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
 
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error inesperado.',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -248,11 +247,11 @@ class MujerProduceController extends Controller
     public function mpIndexEvents(Request $request)
     {
         $filters = [
-            'year'      =>  $request->input('year'),
-            'startDate' =>  $request->input('startDate'),
-            'endDate'   =>  $request->input('endDate'),
-            'name'      =>  $request->input('name'),
-            'orderby'   =>  $request->input('orderby'),
+            'year' => $request->input('year'),
+            'startDate' => $request->input('startDate'),
+            'endDate' => $request->input('endDate'),
+            'name' => $request->input('name'),
+            'orderby' => $request->input('orderby'),
         ];
 
         $query = MpEvent::query();
@@ -266,43 +265,43 @@ class MujerProduceController extends Controller
         });
 
         return response()->json([
-            'data'   => $items,
-            'status' => 200
+            'data' => $items,
+            'status' => 200,
         ]);
     }
 
     private function mapItems($item)
     {
         return [
-            'id'                => $item->id,
-            'title'             => $item->title,
-            'slug'              => $item->slug,
-            'city_id'           => $item->city->id ?? null,
-            'city_name'         => $item->city?->name
+            'id' => $item->id,
+            'title' => $item->title,
+            'slug' => $item->slug,
+            'city_id' => $item->city->id ?? null,
+            'city_name' => $item->city?->name
                 ? '📌 ' . $item->city->name
                 : '🖥 VIRTUAL',
-            'place'             => $item->place ?? 'Plataforma Virtual',
-            'date_format'       => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
-            'date'              => $item->date,
+            'place' => $item->place ?? 'Plataforma Virtual',
+            'date_format' => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
+            'date' => $item->date,
             // 'hours'             => $item->hours,
-            'hourStart'         => $item->hourStart,
-            'hourEnd'           => $item->hourEnd,
+            'hourStart' => $item->hourStart,
+            'hourEnd' => $item->hourEnd,
 
-            'startDate'         => $item->startDate,
-            'endDate'           => $item->endDate,
-            'component'         => $item->component,
-            'capacitador_id'    => $item->capacitador_id,
-            'modality_id'       => $item->modality_id,
-            'training_time'     => $item->training_time,
-            'count'             => $item->attendances_count,
-            'count_present'     => $item->attendances_present_count,   // total con attendance = 1
+            'startDate' => $item->startDate,
+            'endDate' => $item->endDate,
+            'component' => $item->component,
+            'capacitador_id' => $item->capacitador_id,
+            'modality_id' => $item->modality_id,
+            'training_time' => $item->training_time,
+            'count' => $item->attendances_count,
+            'count_present' => $item->attendances_present_count,   // total con attendance = 1
 
-            'link'              => $item->link,
-            'aliado'            => $item->aliado,
-            'province_id'       => $item->province->id ?? null,
-            'province_name'     => $item->province->name ?? null,
-            'district_id'       => $item->district->id ?? null,
-            'district_name'     => $item->district->name ?? null,
+            'link' => $item->link,
+            'aliado' => $item->aliado,
+            'province_id' => $item->province->id ?? null,
+            'province_name' => $item->province->name ?? null,
+            'district_id' => $item->district->id ?? null,
+            'district_name' => $item->district->name ?? null,
 
         ];
     }
@@ -315,17 +314,17 @@ class MujerProduceController extends Controller
 
             // Validación
             $request->validate([
-                'title'          => 'sometimes|string|max:255',
-                'component'      => 'sometimes|integer|in:1,2,3,4,5',
+                'title' => 'sometimes|string|max:255',
+                'component' => 'sometimes|integer|in:1,2,3,4,5',
                 'capacitador_id' => 'sometimes|exists:mp_capacitadores,id',
-                'city_id'        => 'sometimes|exists:cities,id',
-                'modality_id'    => 'sometimes|exists:modalities,id',
-                'place'          => 'nullable|string|max:255',
-                'date'           => 'nullable|date_format:Y-m-d',
-                'hours'          => 'nullable|string|max:100',
-                'startDate'      => 'nullable|date_format:Y-m-d',
-                'endDate'        => 'nullable|date_format:Y-m-d',
-                'training_time'  => 'sometimes|integer'
+                'city_id' => 'sometimes|exists:cities,id',
+                'modality_id' => 'sometimes|exists:modalities,id',
+                'place' => 'nullable|string|max:255',
+                'date' => 'nullable|date_format:Y-m-d',
+                'hours' => 'nullable|string|max:100',
+                'startDate' => 'nullable|date_format:Y-m-d',
+                'endDate' => 'nullable|date_format:Y-m-d',
+                'training_time' => 'sometimes|integer',
             ]);
 
             // NO actualizar slug
@@ -338,27 +337,27 @@ class MujerProduceController extends Controller
                 'success' => true,
                 'message' => 'Evento actualizado correctamente.',
                 'data' => $evento,
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
                 'success' => false,
                 'message' => 'Error de validación.',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
 
             return response()->json([
-                "success" => false,
-                "message" => "Evento no encontrado."
+                'success' => false,
+                'message' => 'Evento no encontrado.',
             ], 404);
         } catch (\Exception $e) {
 
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error al actualizar el evento.',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -375,10 +374,10 @@ class MujerProduceController extends Controller
             // 1. Buscar evento
             $event = MPEvent::where('slug', $slug)->first();
 
-            if (!$event) {
+            if (! $event) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Evento no encontrado'
+                    'status' => 404,
+                    'message' => 'Evento no encontrado',
                 ], 404);
             }
 
@@ -399,12 +398,12 @@ class MujerProduceController extends Controller
 
                     'participant.economicSector',
                     'participant.rubro',
-                    'participant.comercialActivity'
+                    'participant.comercialActivity',
                 ])
                 ->orderBy('created_at', 'DESC');
 
             // 3. Aplicar filtro multicampo
-            if (!empty($filters['search'])) {
+            if (! empty($filters['search'])) {
 
                 $search = $filters['search'];
 
@@ -423,68 +422,67 @@ class MujerProduceController extends Controller
             });
 
             return response()->json([
-                'data'       => $items,
-                'status'     => 200,
-                'eventTitle' => $event->title
+                'data' => $items,
+                'status' => 200,
+                'eventTitle' => $event->title,
             ]);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error al procesar la solicitud',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-
     private function mapAttendance($item)
     {
         return [
-            'id'                => $item->id,
-            'ruc'               => $item->participant->ruc ?? null,
-            'city'              => $item->participant->city->name ?? null,
-            'province'          => $item->participant?->province->name ?? null,
-            'district'          => $item->participant?->dictrict->name ?? null,
-            'socialReason'      => $item->participant?->social_reason ?? null,
-            'roleCompany'       => $item->participant?->roleCompany->name ?? null,
-            'typeDocument'      => $item->participant?->typeDocument->name ?? null,
-            'dni'               => $item->participant->doc_number,
-            'country'           => $item->participant->country->name ?? null,
-            'date_of_birth'     => $item->participant->date_of_birth,
-            'name'              => $item->participant->names,
-            'last_name'         => $item->participant->last_name,
-            'middle_name'       => $item->participant->middle_name,
-            'civilStatus'       => $item->participant->civilStatus->name ?? null,
-            'numSoons'          => $item->participant->num_soons,
-            'gender'            => $item->participant->gender->name ?? null,
-            'sick'              => $item->participant->sick,
-            'degree'            => $item->participant->degree->name ?? null,
-            'phone'             => $item->participant->phone,
-            'email'             => $item->participant->email,
-            'economicSector'    => $item->participant->economicSector->name ?? null,
-            'rubro'             => $item->participant->rubro->name ?? null,
+            'id' => $item->id,
+            'ruc' => $item->participant->ruc ?? null,
+            'city' => $item->participant->city->name ?? null,
+            'province' => $item->participant?->province->name ?? null,
+            'district' => $item->participant?->dictrict->name ?? null,
+            'socialReason' => $item->participant?->social_reason ?? null,
+            'roleCompany' => $item->participant?->roleCompany->name ?? null,
+            'typeDocument' => $item->participant?->typeDocument->name ?? null,
+            'dni' => $item->participant->doc_number,
+            'country' => $item->participant->country->name ?? null,
+            'date_of_birth' => $item->participant->date_of_birth,
+            'name' => $item->participant->names,
+            'last_name' => $item->participant->last_name,
+            'middle_name' => $item->participant->middle_name,
+            'civilStatus' => $item->participant->civilStatus->name ?? null,
+            'numSoons' => $item->participant->num_soons,
+            'gender' => $item->participant->gender->name ?? null,
+            'sick' => $item->participant->sick,
+            'degree' => $item->participant->degree->name ?? null,
+            'phone' => $item->participant->phone,
+            'email' => $item->participant->email,
+            'economicSector' => $item->participant->economicSector->name ?? null,
+            'rubro' => $item->participant->rubro->name ?? null,
             'comercialActivity' => $item->participant->comercialActivity->name ?? null,
-            'event'             => $item->event->component == 1 ? 'GESTIÓN EMPRESARIAL' : 'HABILIDADES PERSONALES',
-            'attendance'        => $item->attendance ? true : false,
-            'obs_dni'           => $item->participant->obs_dni == 1 ? '🚩' : '✔',
-            'obs_ruc'           => is_null($item->participant->ruc) ? ' ' : ($item->participant->obs_ruc == 1 ? '🚩' : '✔'),
-            'created_at'        => $item->created_at->format('d/m/Y H:i:s'),
+            'event' => $item->event->component == 1 ? 'GESTIÓN EMPRESARIAL' : 'HABILIDADES PERSONALES',
+            'attendance' => $item->attendance ? true : false,
+            'obs_dni' => $item->participant->obs_dni == 1 ? '🚩' : '✔',
+            'obs_ruc' => is_null($item->participant->ruc) ? ' ' : ($item->participant->obs_ruc == 1 ? '🚩' : '✔'),
+            'created_at' => $item->created_at->format('d/m/Y H:i:s'),
 
-            'participant_id'        => $item->participant->id,
-            'economic_sector_id'    => $item->participant->economic_sector_id ?? null,
-            'rubro_id'              => $item->participant->rubro_id ?? null,
+            'participant_id' => $item->participant->id,
+            'economic_sector_id' => $item->participant->economic_sector_id ?? null,
+            'rubro_id' => $item->participant->rubro_id ?? null,
             'comercial_activity_id' => $item->participant->comercial_activity_id ?? null,
-            'country_id'            => $item->participant->country_id ?? null,
-            'city_id'               => $item->participant->city_id ?? null,
-            'province_id'           => $item->participant->province_id ?? null,
-            'district_id'           => $item->participant->district_id ?? null,
-            't_doc_id'              => $item->participant->t_doc_id ?? null,
-            'gender_id'             => $item->participant->gender_id ?? null,
-            'sick'                  => $item->participant->sick ?? null,
-            'academicdegree_id'     => $item->participant->academicdegree_id ?? null,
-            'civil_status_id'       => $item->participant->civil_status_id ?? null,
-            'role_company_id'       => $item->participant->role_company_id ?? null,
+            'country_id' => $item->participant->country_id ?? null,
+            'city_id' => $item->participant->city_id ?? null,
+            'province_id' => $item->participant->province_id ?? null,
+            'district_id' => $item->participant->district_id ?? null,
+            't_doc_id' => $item->participant->t_doc_id ?? null,
+            'gender_id' => $item->participant->gender_id ?? null,
+            'sick' => $item->participant->sick ?? null,
+            'academicdegree_id' => $item->participant->academicdegree_id ?? null,
+            'civil_status_id' => $item->participant->civil_status_id ?? null,
+            'role_company_id' => $item->participant->role_company_id ?? null,
         ];
     }
 
@@ -494,10 +492,10 @@ class MujerProduceController extends Controller
 
             // VALIDACIÓN DEL REQUEST
             $request->validate([
-                'label'     => 'required|string|max:250',
-                'type'      => 'required|in:t,o,l',
-                'required'  => 'required|in:s,n',
-                'options'   => 'nullable|array',
+                'label' => 'required|string|max:250',
+                'type' => 'required|in:t,o,l',
+                'required' => 'required|in:s,n',
+                'options' => 'nullable|array',
             ]);
 
             // =====================================================
@@ -518,46 +516,46 @@ class MujerProduceController extends Controller
             // 2. CREAR LA PREGUNTA PRINCIPAL
             // =====================================================
             $question = MPDiagnostico::create([
-                'label'     => $request->label,
-                'type'      => $request->type,
-                'model'     => $model,
-                'required'  => $request->required === 's' ? 1 : 0,
-                'status'    => 1  // siempre activo
+                'label' => $request->label,
+                'type' => $request->type,
+                'model' => $model,
+                'required' => $request->required === 's' ? 1 : 0,
+                'status' => 1,  // siempre activo
             ]);
 
             // =====================================================
             // 3. SI type = 'o', GUARDAR OPCIONES
             // =====================================================
-            if ($request->type === 'o' && !empty($request->options)) {
+            if ($request->type === 'o' && ! empty($request->options)) {
 
                 foreach ($request->options as $opt) {
-                    if (!empty($opt['value'])) {
+                    if (! empty($opt['value'])) {
                         MPDiagnosticoOption::create([
-                            'name'             => $opt['value'],
-                            'diag_pregunta_id' => $question->id
+                            'name' => $opt['value'],
+                            'diag_pregunta_id' => $question->id,
                         ]);
                     }
                 }
             }
 
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Pregunta registrada correctamente',
-                'data'    => $question
+                'data' => $question,
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
-                'status'  => 422,
+                'status' => 422,
                 'message' => 'Error de validación',
-                'errors'  => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno al crear la pregunta',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -570,20 +568,19 @@ class MujerProduceController extends Controller
                 ->get();
 
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Listado de preguntas obtenido correctamente',
-                'data'    => $questions
+                'data' => $questions,
             ], 200);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error al obtener las preguntas diagnósticas',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     public function updateQuestionDiagnostic(Request $request, $id)
     {
@@ -593,25 +590,23 @@ class MujerProduceController extends Controller
             // 0. VALIDACIÓN DEL REQUEST
             // =====================================================
             $request->validate([
-                'label'     => 'required|string|max:250',
-                'type'      => 'required|in:t,o,l',
-                'required'  => 'required|in:s,n',
-                'options'   => 'nullable|array',
+                'label' => 'required|string|max:250',
+                'type' => 'required|in:t,o,l',
+                'required' => 'required|in:s,n',
+                'options' => 'nullable|array',
             ]);
-
 
             // =====================================================
             // 1. BUSCAR LA PREGUNTA
             // =====================================================
             $question = MPDiagnostico::find($id);
 
-            if (!$question) {
+            if (! $question) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Pregunta no encontrada'
+                    'status' => 404,
+                    'message' => 'Pregunta no encontrada',
                 ], 404);
             }
-
 
             // =====================================================
             // 2. SI CAMBIÓ EL LABEL, GENERAR NUEVO MODEL (único)
@@ -630,17 +625,15 @@ class MujerProduceController extends Controller
                 }
             }
 
-
             // =====================================================
             // 3. ACTUALIZAR LA PREGUNTA
             // =====================================================
             $question->update([
-                'label'     => $request->label,
-                'type'      => $request->type,
-                'model'     => $model,
-                'required'  => $request->required === 's' ? 1 : 0,
+                'label' => $request->label,
+                'type' => $request->type,
+                'model' => $model,
+                'required' => $request->required === 's' ? 1 : 0,
             ]);
-
 
             // =====================================================
             // 4. MANEJO DE OPCIONES
@@ -650,37 +643,36 @@ class MujerProduceController extends Controller
             MPDiagnosticoOption::where('diag_pregunta_id', $id)->delete();
 
             // Si el tipo es "o", volver a insertar
-            if ($request->type === 'o' && !empty($request->options)) {
+            if ($request->type === 'o' && ! empty($request->options)) {
 
                 foreach ($request->options as $opt) {
-                    if (!empty($opt['value'])) {
+                    if (! empty($opt['value'])) {
                         MPDiagnosticoOption::create([
-                            'name'             => $opt['value'],
-                            'diag_pregunta_id' => $question->id
+                            'name' => $opt['value'],
+                            'diag_pregunta_id' => $question->id,
                         ]);
                     }
                 }
             }
 
-
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Pregunta actualizada correctamente',
-                'data'    => $question->load('options')
+                'data' => $question->load('options'),
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
-                'status'  => 422,
+                'status' => 422,
                 'message' => 'Error de validación',
-                'errors'  => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno al actualizar la pregunta',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -692,39 +684,39 @@ class MujerProduceController extends Controller
             // Buscar la pregunta
             $question = MPDiagnostico::find($id);
 
-            if (!$question) {
+            if (! $question) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Pregunta no encontrada'
+                    'status' => 404,
+                    'message' => 'Pregunta no encontrada',
                 ], 404);
             }
 
             // Actualizar el estado
             $question->update([
-                'status' => $question->status === 1 ? 0 : 1
+                'status' => $question->status === 1 ? 0 : 1,
             ]);
 
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Estado actualizado correctamente',
-                'data'    => $question
+                'data' => $question,
             ], 200);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error al actualizar el estado',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-
     public function mpIndexParticipantDiagnostic(Request $request)
     {
         $filters = [
-            'name'   => trim($request->input('name')),
+            'name' => trim($request->input('name')),
             'status' => $request->input('status'),
+            'filterResumen' => $request->input('filterResumen'),
         ];
 
         $questions = MPDiagnostico::with('options')
@@ -733,20 +725,50 @@ class MujerProduceController extends Controller
             ->orderBy('position', 'ASC')
             ->get();
 
+        $currentYear = now()->year;
+
         $query = MPParticipant::with([
             'diagnosticoResponses.option',
             'comercialActivity:id,name',
             'rubro:id,name',
-            'economicSector:id,name'
-        ])
-            ->withCount([
-                'attendances as shares' => function ($q) {
-                    $q->where('attendance', 1);
-                }
-            ]);
+            'economicSector:id,name',
+        ])->withCount([
+            // Total general de participaciones (año en curso)
+            'attendances as shares' => function ($q) use ($currentYear) {
+                $q->where('attendance', 1)
+                    ->whereHas('event', function ($eq) use ($currentYear) {
+                        $eq->where(function ($e) use ($currentYear) {
+                            $e->whereYear('date', $currentYear)
+                                ->orWhereYear('created_at', $currentYear);
+                        });
+                    });
+            },
+            // Total en GESTIÓN EMPRESARIAL (component = 1, año en curso)
+            'attendances as gestion_empresarial' => function ($q) use ($currentYear) {
+                $q->where('attendance', 1)
+                    ->whereHas('event', function ($eq) use ($currentYear) {
+                        $eq->where('component', 1)
+                            ->where(function ($e) use ($currentYear) {
+                                $e->whereYear('date', $currentYear)
+                                    ->orWhereYear('created_at', $currentYear);
+                            });
+                    });
+            },
+            // Total en HABILIDADES PERSONALES (component = 2, año en curso)
+            'attendances as habilidades_personales' => function ($q) use ($currentYear) {
+                $q->where('attendance', 1)
+                    ->whereHas('event', function ($eq) use ($currentYear) {
+                        $eq->where('component', 2)
+                            ->where(function ($e) use ($currentYear) {
+                                $e->whereYear('date', $currentYear)
+                                    ->orWhereYear('created_at', $currentYear);
+                            });
+                    });
+            },
+        ]);
 
         // 🔍 BUSCADOR
-        if (!empty($filters['name'])) {
+        if (! empty($filters['name'])) {
             $search = $filters['name'];
 
             $query->where(function ($q) use ($search) {
@@ -760,7 +782,7 @@ class MujerProduceController extends Controller
         }
 
         // 🔥 STATUS (CLAVE)
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
 
             if ($filters['status'] === 'DIAGNÓSTICO COMPLETADOS') {
 
@@ -770,6 +792,28 @@ class MujerProduceController extends Controller
 
                 // ❌ No tiene respuestas
                 $query->whereDoesntHave('diagnosticoResponses');
+            }
+        }
+
+        // 🔥 FILTRO RESUMEN (finalizado / proceso / no_aplica)
+        if (! empty($filters['filterResumen'])) {
+            switch ($filters['filterResumen']) {
+                case 'finalizado':
+                    $query->where('gender_id', 2)
+                        ->havingRaw('habilidades_personales > 1 AND gestion_empresarial > 1');
+                    break;
+
+                case 'proceso':
+                    $query->where('gender_id', 2)
+                        ->havingRaw('
+            (habilidades_personales >= 1 AND gestion_empresarial = 0)
+            OR (habilidades_personales = 0 AND gestion_empresarial >= 1)
+        ');
+                    break;
+
+                case 'no_aplica':
+                    $query->where('gender_id', 1);
+                    break;
             }
         }
 
@@ -797,13 +841,13 @@ class MujerProduceController extends Controller
                 [
                     'questions' => $questions->map(function ($q) {
                         return [
-                            'id'       => $q->id,
-                            'label'    => $q->label,
-                            'model'    => $q->model,
-                            'type'     => $q->type === 't' ? 'text' : 'select',
+                            'id' => $q->id,
+                            'label' => $q->label,
+                            'model' => $q->model,
+                            'type' => $q->type === 't' ? 'text' : 'select',
                             'required' => (bool) $q->required,
-                            'options'  => $q->options->map(fn($opt) => [
-                                'id'    => $opt->id,
+                            'options' => $q->options->map(fn($opt) => [
+                                'id' => $opt->id,
                                 'label' => $opt->name,
                             ]),
                         ];
@@ -823,10 +867,10 @@ class MujerProduceController extends Controller
 
             $questionResponses = $responses->get($question->id);
 
-            if (!$questionResponses || $questionResponses->isEmpty()) {
+            if (! $questionResponses || $questionResponses->isEmpty()) {
                 return [
                     'question_model' => $question->model,
-                    'answer'         => null,
+                    'answer' => null,
                 ];
             }
 
@@ -834,7 +878,7 @@ class MujerProduceController extends Controller
             if ($question->type === 't') {
                 return [
                     'question_model' => $question->model,
-                    'answer'         => $questionResponses->first()->answer_text,
+                    'answer' => $questionResponses->first()->answer_text,
                 ];
             }
 
@@ -846,7 +890,7 @@ class MujerProduceController extends Controller
 
             return [
                 'question_model' => $question->model,
-                'answer'         => $labels->implode(' * '),
+                'answer' => $labels->implode(' * '),
             ];
         });
 
@@ -854,26 +898,34 @@ class MujerProduceController extends Controller
         $lastDiagnosticoAt = $participant->diagnosticoResponses->max('created_at');
 
         return [
-            'participant_id'   => $participant->id,
-            'nombre_completo'  => $participant->names,
-            'apellidos'        => $participant->last_name . ' ' . $participant->middle_name,
+            'participant_id' => $participant->id,
+            'social_reason' => $participant->social_reason,
+            'nombre_completo' => $participant->names,
+            'apellidos' => $participant->last_name . ' ' . $participant->middle_name,
             'fecha_nacimiento' => Carbon::parse($participant->date_of_birth)->format('d/m/Y'),
-            'celular'          => $participant->phone,
-            'tipo_documento'   => optional($participant->typeDocument)->avr,
-            'doc_number'       => $participant->doc_number,
-            'email'            => $participant->email,
-            'ruc'              => $participant->ruc ?? null,
-            'actividad'        => $participant->comercialActivity->name ?? null,
-            'rubro'            => $participant->rubro->name ?? null,
-            'economicSector'   => $participant->economicSector->name ?? null,
-            'shares'           => $participant->shares,
-            'responses'        => $mappedResponses,
-            'registrado'       => $lastDiagnosticoAt
+            'celular' => $participant->phone,
+            'tipo_documento' => optional($participant->typeDocument)->avr,
+            'doc_number' => $participant->doc_number,
+            'email' => $participant->email,
+            'ruc' => $participant->ruc ?? null,
+            'actividad' => $participant->comercialActivity->name ?? null,
+            'rubro' => $participant->rubro->name ?? null,
+            'economicSector' => $participant->economicSector->name ?? null,
+            'shares' => $participant->shares,
+            'responses' => $mappedResponses,
+            'registrado' => $lastDiagnosticoAt
                 ? Carbon::parse($lastDiagnosticoAt)->format('d/m/Y H:i')
                 : null,
+
+            'habilidades_personales' => $participant->habilidades_personales ?? 0,
+            'gestion_empresarial' => $participant->gestion_empresarial ?? 0,
+            'genero' => $participant->gender_id,
+
+            'send_plan' => $participant->send_plan,
+            'send_date' => $participant->send_date ? Carbon::parse($participant->send_date)->format('d/m/Y H:i') : null,
+
         ];
     }
-
 
     public function updateOrder(Request $request)
     {
@@ -890,7 +942,6 @@ class MujerProduceController extends Controller
         return response()->json(['status' => 200]);
     }
 
-
     public function toggleAttendance(Request $request)
     {
         try {
@@ -898,10 +949,10 @@ class MujerProduceController extends Controller
             // 1. Buscar evento por slug
             $event = MPEvent::where('slug', $request->slug)->first();
 
-            if (!$event) {
+            if (! $event) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Evento no encontrado'
+                    'status' => 404,
+                    'message' => 'Evento no encontrado',
                 ], 404);
             }
 
@@ -910,10 +961,10 @@ class MujerProduceController extends Controller
                 ->where('doc_number', $request->doc_number)
                 ->first();
 
-            if (!$participant) {
+            if (! $participant) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Participante no encontrado'
+                    'status' => 404,
+                    'message' => 'Participante no encontrado',
                 ], 404);
             }
 
@@ -928,15 +979,15 @@ class MujerProduceController extends Controller
                 $attendance->save();
             } else {
                 $attendance = MPAttendance::create([
-                    'event_id'       => $event->id,
+                    'event_id' => $event->id,
                     'participant_id' => $participant->id,
-                    'attendance'     => 1,
+                    'attendance' => 1,
                 ]);
             }
 
             return response()->json([
-                'status'     => 200,
-                'message'    => 'Asistencia actualizada correctamente',
+                'status' => 200,
+                'message' => 'Asistencia actualizada correctamente',
                 'attendance' => (bool) $attendance->attendance,
             ]);
         } catch (\Throwable $e) {
@@ -944,13 +995,13 @@ class MujerProduceController extends Controller
             // Log técnico (backend)
             Log::error('Error toggleAttendance', [
                 'error' => $e->getMessage(),
-                'line'  => $e->getLine(),
-                'file'  => $e->getFile(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
             ]);
 
             return response()->json([
-                'status'  => 500,
-                'message' => 'Ocurrió un error al procesar la asistencia'
+                'status' => 500,
+                'message' => 'Ocurrió un error al procesar la asistencia',
             ], 500);
         }
     }
@@ -958,16 +1009,16 @@ class MujerProduceController extends Controller
     public function deleteAssistant(Request $request)
     {
         $request->validate([
-            'event_slug'     => 'required|string',
-            'participant_id' => 'required|integer'
+            'event_slug' => 'required|string',
+            'participant_id' => 'required|integer',
         ]);
 
         // Buscar el evento por slug
         $event = MPEvent::where('slug', $request->event_slug)->first();
 
-        if (!$event) {
+        if (! $event) {
             return response()->json([
-                'message' => 'Evento no encontrado'
+                'message' => 'Evento no encontrado',
             ], 404);
         }
 
@@ -978,13 +1029,13 @@ class MujerProduceController extends Controller
 
         if ($deleted === 0) {
             return response()->json([
-                'message' => 'Asistencia no encontrada'
+                'message' => 'Asistencia no encontrada',
             ], 404);
         }
 
         return response()->json([
             'status' => 200,
-            'message' => 'Asistencia eliminada correctamente'
+            'message' => 'Asistencia eliminada correctamente',
         ]);
     }
 
@@ -994,7 +1045,7 @@ class MujerProduceController extends Controller
 
             $attendances = MPAttendance::with([
                 'event.capacitador:id,name',
-                'event.modality:id,name'
+                'event.modality:id,name',
             ])
                 ->where('participant_id', $id)
                 ->where('attendance', 1)
@@ -1012,9 +1063,9 @@ class MujerProduceController extends Controller
                 $event = $item->event;
 
                 return [
-                    'title'        => $event?->title,
-                    'capacitador'  => $event?->capacitador?->name,
-                    'date'         => $event?->date
+                    'title' => $event?->title,
+                    'capacitador' => $event?->capacitador?->name,
+                    'date' => $event?->date
                         ? \Carbon\Carbon::parse($event->date)->format('d/m/Y')
                         : null,
                     'hourStart' => $event?->hourStart
@@ -1025,10 +1076,10 @@ class MujerProduceController extends Controller
                         ? \Carbon\Carbon::createFromFormat('H:i:s', $event->hourEnd)->format('g:i A')
                         : null,
 
-                    'modalidad'    => $event->modality->name ?? null,
-                    'component'    => match ($event?->component) {
-                        1       => 'GESTIÓN EMPRESARIAL',
-                        2       => 'HABILIDADES PERSONALES',
+                    'modalidad' => $event->modality->name ?? null,
+                    'component' => match ($event?->component) {
+                        1 => 'GESTIÓN EMPRESARIAL',
+                        2 => 'HABILIDADES PERSONALES',
                         default => null,
                     },
 
@@ -1036,26 +1087,24 @@ class MujerProduceController extends Controller
             });
 
             return response()->json([
-                'data'   => $result,
-                'total'  => $result->count(),
+                'data' => $result,
+                'total' => $result->count(),
                 // 👇 CONTADORES CLAROS PARA EL FRONT
                 'totals' => [
-                    'gestion_empresarial'   => $gestion,
+                    'gestion_empresarial' => $gestion,
                     'habilidades_personales' => $habilidades,
                 ],
-                'status' => 200
+                'status' => 200,
             ]);
         } catch (\Throwable $e) {
 
             return response()->json([
                 'message' => 'Error al obtener el detalle de asistencias',
-                'error'   => $e->getMessage(),
-                'status'  => 500
+                'error' => $e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }
-
-
 
     // ASESORIAS PERSONALIZADAS
 
@@ -1064,22 +1113,22 @@ class MujerProduceController extends Controller
         try {
 
             $validated = $request->validate([
-                'title'          => 'required|string|max:255',
-                'description'    => 'nullable|string',
-                'requirements'   => 'nullable|string',
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'requirements' => 'nullable|string',
                 'capacitador_id' => 'required|exists:mp_capacitadores,id',
-                'image_id'       => 'nullable|exists:images,id',
-                'link'           => 'nullable|string',
-                'schedules'      => 'required|array|min:1',
-                'schedules.*.date'      => 'required|date',
+                'image_id' => 'nullable|exists:images,id',
+                'link' => 'nullable|string',
+                'schedules' => 'required|array|min:1',
+                'schedules.*.date' => 'required|date',
                 'schedules.*.startTime' => 'required|date_format:H:i',
-                'schedules.*.endTime'   => 'required|date_format:H:i',
+                'schedules.*.endTime' => 'required|date_format:H:i',
             ]);
 
             foreach ($validated['schedules'] as $index => $schedule) {
                 if ($schedule['endTime'] <= $schedule['startTime']) {
                     return response()->json([
-                        'message' => "La hora final debe ser mayor a la inicial en el registro #" . ($index + 1)
+                        'message' => 'La hora final debe ser mayor a la inicial en el registro #' . ($index + 1),
                     ], 422);
                 }
             }
@@ -1087,23 +1136,23 @@ class MujerProduceController extends Controller
             $advice = DB::transaction(function () use ($validated) {
 
                 $advice = MPAdvice::create([
-                    'title'          => $validated['title'],
-                    'description'    => $validated['description'] ?? null,
-                    'requirements'   => $validated['requirements'] ?? null,
+                    'title' => $validated['title'],
+                    'description' => $validated['description'] ?? null,
+                    'requirements' => $validated['requirements'] ?? null,
                     'capacitador_id' => $validated['capacitador_id'],
-                    'image_id'       => $validated['image_id'] ?? null,
-                    'link'           => $validated['link'] ?? null,
-                    'user_id'        => Auth::id(),
+                    'image_id' => $validated['image_id'] ?? null,
+                    'link' => $validated['link'] ?? null,
+                    'user_id' => Auth::id(),
                 ]);
 
                 $dates = collect($validated['schedules'])->map(function ($schedule) use ($advice) {
                     return [
                         'mp_personalized_advice_id' => $advice->id,
-                        'date'        => $schedule['date'],
-                        'startTime'   => $schedule['startTime'],
-                        'endTime'     => $schedule['endTime'],
-                        'created_at'  => now(),
-                        'updated_at'  => now(),
+                        'date' => $schedule['date'],
+                        'startTime' => $schedule['startTime'],
+                        'endTime' => $schedule['endTime'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ];
                 })->toArray();
 
@@ -1114,25 +1163,24 @@ class MujerProduceController extends Controller
 
             return response()->json([
                 'message' => 'Actividad creada correctamente',
-                'data'    => $advice->load('dates'),
-                'status'  => 200
+                'data' => $advice->load('dates'),
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
 
             return response()->json([
                 'message' => 'Error al crear la actividad',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-
     public function mpIndexAdvice(Request $request)
     {
         $filters = [
-            'date'      => $request->input('date'),
-            'title'     => $request->input('title'),
-            'orderby'   => $request->input('orderby'),
+            'date' => $request->input('date'),
+            'title' => $request->input('title'),
+            'orderby' => $request->input('orderby'),
         ];
 
         $query = MPAdvice::query();
@@ -1141,62 +1189,61 @@ class MujerProduceController extends Controller
         $query->with([
             'capacitador:id,name',
             'image:id,url,name',
-            'dates.participant:id,doc_number,email,last_name,middle_name,names,phone'
+            'dates.participant:id,doc_number,email,last_name,middle_name,names,phone',
         ])
             ->orderBy('id', 'DESC');
-
 
         $items = $query->paginate(100)->through(function ($item) {
             return $this->mapAdviceItems($item);
         });
 
         return response()->json([
-            'data'   => $items,
-            'status' => 200
+            'data' => $items,
+            'status' => 200,
         ]);
     }
 
     private function mapAdviceItems($item)
     {
         return [
-            'id'           => $item->id,
-            'title'        => $item->title,
-            'description'  => $item->description,
+            'id' => $item->id,
+            'title' => $item->title,
+            'description' => $item->description,
             'requirements' => $item->requirements,
 
             'schedules' => $item->dates->map(function ($date) {
 
                 return [
-                    'id'         => $date->id,
-                    'date'       => $date->date,
+                    'id' => $date->id,
+                    'date' => $date->date,
                     'date_format' => Carbon::parse($date->date)->format('d/m/Y'),
-                    'startTime'  => $date->startTime,
-                    'endTime'    => $date->endTime,
+                    'startTime' => $date->startTime,
+                    'endTime' => $date->endTime,
 
-                    'mype_id'    => $date->mype_id,
-                    'attend'    => $date->attend ? true : false,
+                    'mype_id' => $date->mype_id,
+                    'attend' => $date->attend ? true : false,
 
                     // 🔹 Datos del participante si está reservado
                     'participant' => $date->participant ? [
-                        'dni'         => $date->participant->doc_number,
-                        'email'       => $date->participant->email,
-                        'last_name'   => $date->participant->last_name,
+                        'dni' => $date->participant->doc_number,
+                        'email' => $date->participant->email,
+                        'last_name' => $date->participant->last_name,
                         'middle_name' => $date->participant->middle_name,
-                        'names'       => $date->participant->names,
-                        'phone'       => $date->participant->phone,
-                    ] : null
+                        'names' => $date->participant->names,
+                        'phone' => $date->participant->phone,
+                    ] : null,
                 ];
             }),
 
-            'link'             => $item->link,
-            'capacitador_id'   => $item->capacitador_id,
+            'link' => $item->link,
+            'capacitador_id' => $item->capacitador_id,
             'capacitador_name' => $item->capacitador->name ?? null,
 
-            'image_id'   => $item->image_id,
-            'image_url'  => $item->image?->url ? url($item->image->url) : null,
+            'image_id' => $item->image_id,
+            'image_url' => $item->image?->url ? url($item->image->url) : null,
             'image_name' => $item->image->name ?? null,
 
-            'user_id'    => $item->user_id,
+            'user_id' => $item->user_id,
             'created_at' => Carbon::parse($item->creted_at)->format('d/m/Y H:s'),
             'updated_at' => $item->updated_at,
         ];
@@ -1207,25 +1254,25 @@ class MujerProduceController extends Controller
         try {
 
             $validated = $request->validate([
-                'title'          => 'required|string|max:255',
-                'description'    => 'nullable|string',
-                'requirements'   => 'nullable|string',
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'requirements' => 'nullable|string',
                 'capacitador_id' => 'required|exists:mp_capacitadores,id',
-                'image_id'       => 'nullable|exists:images,id',
-                'link'           => 'nullable|string',
+                'image_id' => 'nullable|exists:images,id',
+                'link' => 'nullable|string',
 
-                'schedules'                => 'required|array|min:1',
-                'schedules.*.id'           => 'nullable|integer|exists:mp_advice_dates,id',
-                'schedules.*.date'         => 'required|date',
-                'schedules.*.startTime'    => 'required|date_format:H:i',
-                'schedules.*.endTime'      => 'required|date_format:H:i',
+                'schedules' => 'required|array|min:1',
+                'schedules.*.id' => 'nullable|integer|exists:mp_advice_dates,id',
+                'schedules.*.date' => 'required|date',
+                'schedules.*.startTime' => 'required|date_format:H:i',
+                'schedules.*.endTime' => 'required|date_format:H:i',
             ]);
 
             // 🔹 Validar hora fin > hora inicio
             foreach ($validated['schedules'] as $index => $schedule) {
                 if ($schedule['endTime'] <= $schedule['startTime']) {
                     return response()->json([
-                        'message' => "La hora final debe ser mayor a la inicial en el registro #" . ($index + 1)
+                        'message' => 'La hora final debe ser mayor a la inicial en el registro #' . ($index + 1),
                     ], 422);
                 }
             }
@@ -1236,11 +1283,11 @@ class MujerProduceController extends Controller
 
                 // 🔹 Construir update dinámico
                 $updateData = [
-                    'title'          => $validated['title'],
-                    'description'    => $validated['description'] ?? null,
-                    'requirements'   => $validated['requirements'] ?? null,
+                    'title' => $validated['title'],
+                    'description' => $validated['description'] ?? null,
+                    'requirements' => $validated['requirements'] ?? null,
                     'capacitador_id' => $validated['capacitador_id'],
-                    'link'           => $validated['link'] ?? null,
+                    'link' => $validated['link'] ?? null,
                 ];
 
                 // ✅ Solo actualiza imagen si viene en el request
@@ -1262,7 +1309,7 @@ class MujerProduceController extends Controller
                 // 🔹 Eliminar los que ya no vienen (solo si NO están reservados)
                 $idsToDelete = array_diff($existingIds, $incomingIds);
 
-                if (!empty($idsToDelete)) {
+                if (! empty($idsToDelete)) {
                     MPAdviceDate::whereIn('id', $idsToDelete)
                         ->whereNull('mype_id') // 🔒 no borrar reservados
                         ->delete();
@@ -1276,22 +1323,22 @@ class MujerProduceController extends Controller
                         $dateRecord = MPAdviceDate::find($schedule['id']);
 
                         // 🔒 No permitir modificar si ya está reservado
-                        if (!is_null($dateRecord->mype_id)) {
+                        if (! is_null($dateRecord->mype_id)) {
                             continue;
                         }
 
                         $dateRecord->update([
-                            'date'      => $schedule['date'],
+                            'date' => $schedule['date'],
                             'startTime' => $schedule['startTime'],
-                            'endTime'   => $schedule['endTime'],
+                            'endTime' => $schedule['endTime'],
                         ]);
                     } else {
 
                         MPAdviceDate::create([
                             'mp_personalized_advice_id' => $advice->id,
-                            'date'      => $schedule['date'],
+                            'date' => $schedule['date'],
                             'startTime' => $schedule['startTime'],
-                            'endTime'   => $schedule['endTime'],
+                            'endTime' => $schedule['endTime'],
                         ]);
                     }
                 }
@@ -1301,14 +1348,14 @@ class MujerProduceController extends Controller
 
             return response()->json([
                 'message' => 'Actividad actualizada correctamente',
-                'data'    => $advice->load('dates'),
-                'status'  => 200
+                'data' => $advice->load('dates'),
+                'status' => 200,
             ]);
         } catch (\Exception $e) {
 
             return response()->json([
                 'message' => 'Error al actualizar la actividad',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -1317,10 +1364,10 @@ class MujerProduceController extends Controller
     {
         $adviceDate = MPAdviceDate::find($id);
 
-        if (!$adviceDate) {
+        if (! $adviceDate) {
             return response()->json([
                 'success' => false,
-                'message' => 'Registro no encontrado'
+                'message' => 'Registro no encontrado',
             ], 404);
         }
 
@@ -1330,7 +1377,7 @@ class MujerProduceController extends Controller
 
         return response()->json([
             'status' => 200,
-            'message' => 'actualizado correctamente'
+            'message' => 'actualizado correctamente',
         ], 200);
     }
 
@@ -1338,20 +1385,20 @@ class MujerProduceController extends Controller
     {
         $adviceDate = MPAdviceDate::find($id);
 
-        if (!$adviceDate) {
+        if (! $adviceDate) {
             return response()->json([
                 'success' => false,
-                'message' => 'Registro no encontrado'
+                'message' => 'Registro no encontrado',
             ], 404);
         }
 
-        $adviceDate->attend = !$adviceDate->attend;
+        $adviceDate->attend = ! $adviceDate->attend;
 
         $adviceDate->save();
 
         return response()->json([
             'status' => 200,
-            'message' => 'actualizado correctamente'
+            'message' => 'actualizado correctamente',
         ], 200);
     }
 
@@ -1359,10 +1406,10 @@ class MujerProduceController extends Controller
     {
         $adviceDate = MPEvent::find($id);
 
-        if (!$adviceDate) {
+        if (! $adviceDate) {
             return response()->json([
                 'success' => false,
-                'message' => 'Registro no encontrado'
+                'message' => 'Registro no encontrado',
             ], 404);
         }
 
@@ -1370,7 +1417,115 @@ class MujerProduceController extends Controller
 
         return response()->json([
             'status' => 200,
-            'message' => 'Eliminado correctamente'
+            'message' => 'Eliminado correctamente',
         ], 200);
+    }
+
+
+    // 📧 email
+
+    public function sendPlanAccion(Request $request)
+    {
+        $payload = $request->validate([
+            'id'               => 'required|integer',
+            'nombre_completo'  => 'required|string',
+            'apellidos'        => 'required|string',
+            'email'            => 'required|email',
+            'celular'          => 'nullable|string',
+            'ruc'              => 'nullable|string',
+            'razon_social'     => 'nullable|string',
+        ]);
+
+        $participantId = $payload['id'];
+
+        // 1) Cursos que YA llevó (basado en tu detailShare)
+        $attendances = MPAttendance::with([
+            'event.capacitador:id,name',
+            'event.modality:id,name',
+        ])
+            ->where('participant_id', $participantId)
+            ->where('attendance', 1)
+            ->orderBy('id', 'DESC')
+            ->get();
+
+        $attendedEventIds = $attendances->pluck('event.id')->filter()->values();
+
+        $cursosLlevados = $attendances->map(function ($item) {
+            $event = $item->event;
+            return [
+                'titulo'     => $event?->title,
+                'fecha'      => $event?->date ? Carbon::parse($event->date)->format('d/m/Y') : null,
+                'estado'     => 'PARTICIPO',
+                'comentario' => 'Cuenta con información recopilada en el diagnóstico',
+            ];
+        })->values();
+
+        // 2) Próximos 2 eventos que aún no llevó (para "CORREO 1" y "CORREO 2")
+        $proximosEventos = MPEvent::with(['modality:id,name'])
+            ->whereDate('date', '>=', now()->toDateString())
+            ->whereNotIn('id', $attendedEventIds)
+            ->orderBy('date', 'ASC')
+            ->limit(2)
+            ->get();
+
+        $eventosCorreo = $proximosEventos->map(function ($event) {
+            $horaInicio = $event->hourStart
+                ? Carbon::createFromFormat('H:i:s', $event->hourStart)->format('g:i A')
+                : null;
+            $horaFin = $event->hourEnd
+                ? Carbon::createFromFormat('H:i:s', $event->hourEnd)->format('g:i A')
+                : null;
+
+            return [
+                'titulo'     => $event->title,
+                'fecha'      => $event->date ? Carbon::parse($event->date)->format('d/m/Y') : null,
+                'estado'     => 'POR REALIZAR',
+                'comentario' => trim("Previsto de {$horaInicio} a {$horaFin}, en formato "
+                    . strtolower($event->modality->name ?? 'virtual') . '.'),
+            ];
+        })->values();
+
+        // Relleno por si no hay 2 eventos próximos disponibles
+        while ($eventosCorreo->count() < 2) {
+            $eventosCorreo->push([
+                'titulo'     => 'Por definir',
+                'fecha'      => null,
+                'estado'     => null,
+                'comentario' => 'Evento por confirmar próximamente.',
+            ]);
+        }
+
+        $data = [
+            'razon_social'     => $payload['razon_social'] ?? '',
+            'nombre_completo'  => trim(($payload['nombre_completo'] ?? '') . ' ' . ($payload['apellidos'] ?? '')),
+            'ruc'              => $payload['ruc'] ?? '',
+            'email'            => $payload['email'],
+            'celular'          => $payload['celular'] ?? '',
+            'cursos'           => $cursosLlevados,
+            'eventos_correo'   => $eventosCorreo,
+        ];
+
+        // 3) Generar PDF
+        $pdf = \PDF::loadView('pdf.plan_accion', $data)->setPaper('a4', 'landscape');
+        $pdfContent = $pdf->output();
+        $fileName = 'plan_accion_' . Str::slug(
+            trim(($payload['nombre_completo'] ?? '') . ' ' . ($payload['apellidos'] ?? '')),
+            '_'
+        ) . '.pdf';
+
+        // 4) Enviar por el mailer "mujerproduce" con el PDF adjunto
+        Mail::mailer('mujerproduce')
+            ->to($data['email'])
+            ->send(new PlanAccionMail($data, $pdfContent, $fileName));
+
+        MPParticipant::where('id', $participantId)->update([
+            'send_plan' => 1,
+            'send_date' => Carbon::now(), // o now()
+        ]);
+
+        return response()->json([
+            'message' => 'Plan de acción enviado correctamente',
+            'status'  => 200,
+        ]);
     }
 }

@@ -5,16 +5,16 @@ namespace App\Http\Controllers\Download;
 use App\Exports\ParticipantDiagnosticExport;
 use App\Http\Controllers\Controller;
 use App\Models\MPDiagnostico;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Models\MPParticipant;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DownloadExportDiagnosticMP extends Controller
 {
     public function exportParticipantsExcel(Request $request)
     {
         $filters = [
-            'name'   => trim($request->input('name')),
+            'name' => trim($request->input('name')),
             'status' => $request->input('status'), // 👈 agregado
         ];
 
@@ -24,20 +24,48 @@ class DownloadExportDiagnosticMP extends Controller
             ->orderBy('position', 'ASC')
             ->get();
 
+        $currentYear = now()->year;
+
         $query = MPParticipant::with([
-            'diagnosticoResponses' => fn($q) => $q->with('option'), // 👈
+            'diagnosticoResponses' => fn ($q) => $q->with('option'), // 👈
             'comercialActivity:id,name',
             'rubro:id,name',
             'economicSector:id,name',
-            'typeDocument'
+            'typeDocument',
         ])
             ->withCount([
-                'attendances as shares' => function ($q) {
-                    $q->where('attendance', 1);
-                }
+                'attendances as shares' => function ($q) use ($currentYear) {
+                    $q->where('attendance', 1)
+                        ->whereHas('event', function ($eq) use ($currentYear) {
+                            $eq->where(function ($e) use ($currentYear) {
+                                $e->whereYear('date', $currentYear)
+                                    ->orWhereYear('created_at', $currentYear);
+                            });
+                        });
+                },
+                'attendances as gestion_empresarial' => function ($q) use ($currentYear) {
+                    $q->where('attendance', 1)
+                        ->whereHas('event', function ($eq) use ($currentYear) {
+                            $eq->where('component', 1)
+                                ->where(function ($e) use ($currentYear) {
+                                    $e->whereYear('date', $currentYear)
+                                        ->orWhereYear('created_at', $currentYear);
+                                });
+                        });
+                },
+                'attendances as habilidades_personales' => function ($q) use ($currentYear) {
+                    $q->where('attendance', 1)
+                        ->whereHas('event', function ($eq) use ($currentYear) {
+                            $eq->where('component', 2)
+                                ->where(function ($e) use ($currentYear) {
+                                    $e->whereYear('date', $currentYear)
+                                        ->orWhereYear('created_at', $currentYear);
+                                });
+                        });
+                },
             ]);
 
-        if (!empty($filters['name'])) {
+        if (! empty($filters['name'])) {
             $search = $filters['name'];
 
             $query->where(function ($q) use ($search) {
@@ -50,7 +78,7 @@ class DownloadExportDiagnosticMP extends Controller
             });
         }
 
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
 
             if ($filters['status'] === 'DIAGNÓSTICO COMPLETADOS') {
 
