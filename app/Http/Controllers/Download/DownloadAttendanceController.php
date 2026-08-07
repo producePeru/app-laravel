@@ -826,6 +826,24 @@ class DownloadAttendanceController extends Controller
                 ? str_replace(["\r\n", "\r", "\n", "\t"], ' ', trim($value))
                 : $value;
 
+
+
+            $filterDates = null;
+
+            if ($request->filled('rangeDate')) {
+                [$from, $to] = $request->input('rangeDate');
+
+                $current = Carbon::parse($from);
+                $end = Carbon::parse($to);
+
+                $filterDates = [];
+
+                while ($current->lte($end)) {
+                    $filterDates[] = $current->format('Y-m-d');
+                    $current->addDay();
+                }
+            }
+
             $actividades = ActividadPnte::with([
                 'tipoActividad:id,name',
                 'nombreActividad:id,name',
@@ -866,7 +884,8 @@ class DownloadAttendanceController extends Controller
                 ])
                 ->addSelect([
                     'inscritos' => EmpresarioActividad::selectRaw('COUNT(*)')
-                        ->whereColumn('empresario_actividad.slug', 'actividades_pnte.slug'),
+                        ->whereColumn('empresario_actividad.slug', 'actividades_pnte.slug')
+                        ->when($filterDates, fn($q) => $q->whereIn('fecha_seleccionada', $filterDates)),
                 ])
 
                 // ✅ FILTRO UNIDAD
@@ -875,29 +894,20 @@ class DownloadAttendanceController extends Controller
                     fn($q) => $q->where('unidad', $request->input('unidad'))
                 )
 
+                ->when($request->filled('name'), function ($q) use ($request) {
+                    $q->where('tema', 'LIKE', '%' . $request->input('name') . '%');
+                })
+
                 ->when(
                     $request->filled('year'),
                     fn($q) => $q->where('fechas', 'LIKE', "%{$request->input('year')}%")
                 )
 
-                ->when($request->filled('rangeDate'), function ($q) use ($request) {
-
-                    [$from, $to] = $request->input('rangeDate');
-
-                    $current = Carbon::parse($from);
-                    $end = Carbon::parse($to);
-
-                    $q->where(function ($query) use ($current, $end) {
-
-                        while ($current->lte($end)) {
-
-                            $query->orWhere(
-                                'fechas',
-                                'LIKE',
-                                "%{$current->format('Y-m-d')}%"
-                            );
-
-                            $current->addDay();
+                // ✅ Reutilizamos $filterDates en vez de recalcular el rango
+                ->when($filterDates, function ($q) use ($filterDates) {
+                    $q->where(function ($query) use ($filterDates) {
+                        foreach ($filterDates as $day) {
+                            $query->orWhere('fechas', 'LIKE', "%{$day}%");
                         }
                     });
                 })
@@ -950,6 +960,10 @@ class DownloadAttendanceController extends Controller
                 'empresario.rubro:id,name',
             ])
                 ->whereIn('slug', $slugs)
+
+                // ✅ Si hay filtro de rango de fechas, solo traemos los inscritos
+                //    cuya fecha_seleccionada caiga dentro del rango solicitado
+                ->when($filterDates, fn($q) => $q->whereIn('fecha_seleccionada', $filterDates))
                 ->orderBy('slug')
                 ->orderBy('id')
                 ->get()
@@ -1021,6 +1035,18 @@ class DownloadAttendanceController extends Controller
                     ? $actividad->fechas
                     : json_decode($actividad->fechas, true);
 
+
+
+                $fechasFiltradas = $filterDates
+                    ? array_values(array_intersect($fechas, $filterDates))
+                    : $fechas;
+
+                // Por seguridad, si por algún motivo la intersección quedara vacía
+                // (no debería pasar, ya que el WHERE ya garantiza al menos 1 coincidencia)
+                if (empty($fechasFiltradas)) {
+                    $fechasFiltradas = $fechas;
+                }
+
                 $fechaMin = collect($fechas)->min();
                 $fechaMax = collect($fechas)->max();
 
@@ -1062,7 +1088,7 @@ class DownloadAttendanceController extends Controller
                 // ✅ TEXTO UNIDAD
                 $unidadTexto = match ((int)$actividad->unidad) {
                     1 => 'UGO',
-                    2 => 'UPP',
+                    2 => 'UGSE',
                     3 => 'UGSE',
                     default => 'SIN UNIDAD',
                 };
@@ -1074,7 +1100,8 @@ class DownloadAttendanceController extends Controller
                     $clean(strtoupper(Carbon::parse($fechaMin)->translatedFormat('F'))),
                     Carbon::parse($fechaMin)->format('d/m/Y'),
                     Carbon::parse($fechaMax)->format('d/m/Y'),
-                    $actividad->cantidad_dias,
+                    // $actividad->cantidad_dias,
+                    count($fechasFiltradas),
                     $clean($actividad->tipoActividad->name ?? '-'),
                     $clean($actividad->nombreActividad->name ?? '-'),
                     $clean(strtoupper($actividad->tema ?? '-')),

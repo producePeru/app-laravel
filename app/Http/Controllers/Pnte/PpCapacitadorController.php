@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Exception;
 use App\Mail\FinalizacionTestSalidaMail;
+use Illuminate\Http\JsonResponse;
 
 class PpCapacitadorController extends Controller
 {
@@ -257,5 +258,83 @@ class PpCapacitadorController extends Controller
                 'message' => 'Ocurrió un error al enviar el correo.'
             ], 500);
         }
+    }
+
+    // calendario
+    public function calendar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'year' => 'nullable|integer|digits:4',
+            'month' => 'nullable|integer|min:1|max:12',
+        ]);
+
+        $componentes = [
+            1 => [
+                'nombre' => 'ACCESO AL FINANCIAMIENTO',
+                'color'  => 'success', // verde
+            ],
+            2 => [
+                'nombre' => 'DESARROLLO PRODUCTIVO',
+                'color'  => 'processing', // azul
+            ],
+            3 => [
+                'nombre' => 'DIGITALIZACIÓN',
+                'color'  => 'warning', // amarillo
+            ],
+            4 => [
+                'nombre' => 'GESTIÓN EMPRESARIAL',
+                'color'  => 'error', // rojo
+            ],
+        ];
+
+        $actividades = ActividadPnte::with([
+            'representante:id,name,lastname,middlename',
+        ])
+            ->select([
+                'id',
+                'fechas',
+                'tema',
+                'link',
+                'representante_id',
+                'horario',
+                'componente_id',
+            ])
+            ->where('unidad', 2)
+            ->when($request->filled('year') || $request->filled('month'), function ($q) use ($request) {
+                $year  = $request->filled('year') ? $request->year : '%';
+                $month = $request->filled('month')
+                    ? str_pad($request->month, 2, '0', STR_PAD_LEFT)
+                    : '%';
+
+                $pattern = "{$year}-{$month}-%";
+
+                $q->whereRaw("JSON_SEARCH(fechas, 'one', ?) IS NOT NULL", [$pattern]);
+            })
+            ->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(fechas, '$[0]')) ASC")
+            ->get()
+            ->map(function ($item) use ($componentes) {
+                $componente = $componentes[$item->componente_id] ?? [
+                    'nombre' => 'SIN COMPONENTE',
+                    'color'  => 'default',
+                ];
+
+                return [
+                    'id' => $item->id,
+                    'fechas' => $item->fechas,
+                    'tema' => $item->tema,
+                    'horario' => $item->horario,
+                    'link' => $item->link,
+                    'componente_id' => $item->componente_id,
+                    'componente' => $componente['nombre'],
+                    'color' => $componente['color'],
+                    'representante' => $item->representante,
+                ];
+            });
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Calendario obtenido correctamente.',
+            'data' => $actividades,
+        ]);
     }
 }

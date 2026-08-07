@@ -190,7 +190,7 @@ class EmailTemplateController extends Controller
                 $template,
                 $asunto,
                 $copias
-            )->delay(now()->addSeconds($index * 30));
+            )->delay(now()->addSeconds($index * 10));
         }
 
         return response()->json([

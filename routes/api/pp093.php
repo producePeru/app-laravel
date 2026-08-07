@@ -12,6 +12,10 @@ Route::controller(PpCapacitadorController::class)->group(function () {
     Route::GET('list-trainer', 'index');
 
     Route::PUT('update-trainer/{id}', 'update');
+
+    Route::GET('list-trainer', 'index');
+
+    Route::GET('calendar-events', 'calendar');
 });
 
 // pp093 
