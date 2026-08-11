@@ -16,7 +16,7 @@
         .info-grid { font-size: 14px; line-height: 1.6; }
         .info-label { font-weight: bold; color: #475569; }
         .btn-meet { display: inline-block; background-color: #16a34a; color: #ffffff !important; text-decoration: none; padding: 12px 24px; font-weight: bold; border-radius: 5px; margin-top: 15px; font-size: 15px; }
-        .btn-test { display: inline-block; background-color: #00a6db; color: #ffffff !important; text-decoration: none; padding: 10px 18px; font-weight: bold; border-radius: 5px; margin-top: 10px; font-size: 13px; }
+        .btn-test { display: inline-block; background-color: #00a6db; color: #ffffff !important; text-decoration: none; padding: 10px 18px; font-weight: bold; border-radius: 5px; margin-top: 10px; font-size: 16px; }
         .footer { background-color: #f1f5f9; text-align: center; padding: 15px; font-size: 12px; color: #64748b; }
     </style>
 </head>
@@ -40,12 +40,12 @@
                     <span class="info-label">⏰ Horario:</span> {{ $actividad['horario_inicio'] }} - {{ $actividad['horario_fin'] }}<br>
                     <span class="info-label">🏢 Organiza:</span> {{ $actividad['entidad_organizadora'] }}<br><br>
 
-                    @if(!empty($actividad['link_meet']))
+                    {{-- @if(!empty($actividad['link_meet']))
                         <a href="{{ $actividad['link_meet'] }}" target="_blank" class="btn-meet">
                             💻 UNIRSE A LA SESIÓN EN VIVO
                         </a>
                         <br>
-                    @endif
+                    @endif --}}
 
                     @if(!empty($actividad['link_test']))
                         <a href="{{ $actividad['link_test'] }}" target="_blank" class="btn-test">

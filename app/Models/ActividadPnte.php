@@ -51,7 +51,10 @@ class ActividadPnte extends Model
         'link',
 
         'componente_id',
-        'trainer_id'
+        'trainer_id',
+
+        'tipo_mercado',
+        'tipo_gestion',
     ];
 
     protected $casts = [
