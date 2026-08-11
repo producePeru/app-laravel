@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pnte;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tienda;
+use App\Models\TiendaContacto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -61,6 +62,7 @@ class TiendaController extends Controller
             'envio_id' => 'nullable|integer',
             'celular' => 'nullable|max:9',
             'correo' => 'nullable|email|max:255',
+            'categoria' => 'nullable|string',
             'image_id' => 'nullable|integer|exists:images,id',
             'socials' => 'nullable|array',
             'socials.*.name' => 'nullable|string|max:100',
@@ -74,6 +76,7 @@ class TiendaController extends Controller
             'envio_id' => $request->envio_id,
             'celular' => $request->celular ? trim($request->celular) : null,
             'correo' => $request->correo ? trim($request->correo) : null,
+            'categoria' => $request->categoria,
             'image_id' => $request->image_id,
             'socials' => $request->socials ?? [],
         ]);
@@ -95,6 +98,7 @@ class TiendaController extends Controller
             'ruc' => 'required|string|max:20|unique:tiendas,ruc,'.$id,
             'envio_id' => 'nullable|integer|exists:envios,id',
             'celular' => 'nullable|max:20',
+            'categoria' => 'nullable|string',
             'correo' => 'nullable|email|max:255',
             'image_id' => 'nullable|integer|exists:images,id',
             'socials' => 'nullable|array',
@@ -108,6 +112,7 @@ class TiendaController extends Controller
             'ruc' => trim($request->ruc),
             'envio_id' => $request->envio_id,
             'celular' => $request->celular ? trim($request->celular) : null,
+            'categoria' => $request->categoria,
             'correo' => $request->correo ? trim($request->correo) : null,
             'image_id' => $request->image_id,
             'socials' => $request->has('socials') ? $request->socials : $tienda->socials,
@@ -179,6 +184,25 @@ class TiendaController extends Controller
             'status' => 200,
             'message' => 'Tienda obtenida correctamente.',
             'data' => $tienda,
+        ]);
+    }
+
+    public function storeContactanos(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'celular' => 'nullable|string|max:20',
+            'correo' => 'nullable|email|max:255',
+            'productos' => 'nullable|string',
+            'id_empresa' => 'required|integer|exists:tiendas,id',
+        ]);
+
+        $contacto = TiendaContacto::create($data);
+
+        return response()->json([
+            'message' => 'Contacto creado correctamente',
+            'data' => $contacto,
+            'status' => 200,
         ]);
     }
 }
