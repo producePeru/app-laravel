@@ -4,17 +4,15 @@ namespace App\Http\Controllers\Pnte;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\SendConfirmacionActividadesPP093Job;
-use App\Mail\ConfirmacionRegistroPP093Mail;
+use App\Mail\FinalizacionTestSalidaMail;
 use App\Models\ActividadPnte;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
 use App\Models\PpCapacitador;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Exception;
-use App\Mail\FinalizacionTestSalidaMail;
-use Illuminate\Http\JsonResponse;
 
 class PpCapacitadorController extends Controller
 {
@@ -57,7 +55,7 @@ class PpCapacitadorController extends Controller
         return response()->json([
             'status' => 200,
             'message' => 'Capacitadores obtenidos correctamente.',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -66,19 +64,19 @@ class PpCapacitadorController extends Controller
         $request->validate([
             'nombres_apellidos' => 'required|string|max:255',
             'dni' => 'nullable|string|max:20|unique:pp_capacitadores,dni',
-            'correo' => 'nullable|email|max:255'
+            'correo' => 'nullable|email|max:255',
         ]);
 
         $capacitador = PpCapacitador::create([
             'nombres_apellidos' => trim($request->nombres_apellidos),
             'dni' => trim($request->dni),
-            'correo' => trim($request->correo)
+            'correo' => trim($request->correo),
         ]);
 
         return response()->json([
             'status' => 200,
             'message' => 'Capacitador registrado correctamente.',
-            'data' => $capacitador
+            'data' => $capacitador,
         ]);
     }
 
@@ -88,35 +86,33 @@ class PpCapacitadorController extends Controller
 
         $request->validate([
             'nombres_apellidos' => 'required|string|max:255',
-            'dni' => 'nullable|string|max:20|unique:pp_capacitadores,dni,' . $id,
-            'correo' => 'nullable|email|max:255'
+            'dni' => 'nullable|string|max:20|unique:pp_capacitadores,dni,'.$id,
+            'correo' => 'nullable|email|max:255',
         ]);
 
         $capacitador->update([
             'nombres_apellidos' => trim($request->nombres_apellidos),
             'dni' => trim($request->dni),
-            'correo' => trim($request->correo)
+            'correo' => trim($request->correo),
         ]);
 
         return response()->json([
             'status' => 200,
             'message' => 'Capacitador actualizado correctamente.',
-            'data' => $capacitador
+            'data' => $capacitador,
         ]);
     }
-
-
 
     public function isRegisterPlataforma(Request $request)
     {
         $request->validate([
-            'ruc'                                => 'required|string',
-            'numero_dni'                         => 'required|string',
-            'actividades'                        => 'required|array|min:1',
-            'actividades.*.slug'                 => 'required|string',
-            'actividades.*.fecha_seleccionada'   => 'required|date_format:Y-m-d',
-            'actividades.*.horario_inicio'       => 'required|string',
-            'actividades.*.horario_fin'          => 'required|string',
+            'ruc' => 'required|string',
+            'numero_dni' => 'required|string',
+            'actividades' => 'required|array|min:1',
+            'actividades.*.slug' => 'required|string',
+            'actividades.*.fecha_seleccionada' => 'required|date_format:Y-m-d',
+            'actividades.*.horario_inicio' => 'required|string',
+            'actividades.*.horario_fin' => 'required|string',
         ]);
 
         // 1. Buscamos el último registro del empresario usando el RUC y DNI
@@ -126,14 +122,14 @@ class PpCapacitadorController extends Controller
             ->first();
 
         // 🚨 REGLA: Si el empresario NO existe en absoluto en el sistema
-        if (!$empresario) {
+        if (! $empresario) {
             return response()->json([
-                'status'          => 201,
-                'is_registered'   => false, // Flag para saber que es un usuario sin registro anterior
-                'empresario_id'   => null,
-                'has_duplicates'  => false,
-                'message'         => 'Usuario sin registro previo en el sistema. Puede proceder a llenar todo el formulario.',
-                'duplicados'      => []
+                'status' => 201,
+                'is_registered' => false, // Flag para saber que es un usuario sin registro anterior
+                'empresario_id' => null,
+                'has_duplicates' => false,
+                'message' => 'Usuario sin registro previo en el sistema. Puede proceder a llenar todo el formulario.',
+                'duplicados' => [],
             ]);
         }
 
@@ -155,43 +151,43 @@ class PpCapacitadorController extends Controller
                 $fechaHumana = date('d/m/Y', strtotime($act['fecha_seleccionada']));
 
                 $duplicadosEncontrados[] = [
-                    'slug'               => $act['slug'],
+                    'slug' => $act['slug'],
                     'fecha_seleccionada' => $act['fecha_seleccionada'],
-                    'horario_inicio'     => $act['horario_inicio'],
-                    'horario_fin'        => $act['horario_fin'],
-                    'texto_auxiliar'     => "Código: {$act['slug']} para el día {$fechaHumana} de {$act['horario_inicio']} a {$act['horario_fin']}."
+                    'horario_inicio' => $act['horario_inicio'],
+                    'horario_fin' => $act['horario_fin'],
+                    'texto_auxiliar' => "Código: {$act['slug']} para el día {$fechaHumana} de {$act['horario_inicio']} a {$act['horario_fin']}.",
                 ];
             }
         }
 
-        if (!empty($duplicadosEncontrados)) {
+        if (! empty($duplicadosEncontrados)) {
 
             if (count($duplicadosEncontrados) === 1) {
-                $mensajeBonito = "Estimado usuario, usted ya se encuentra registrado en la siguiente actividad: " . $duplicadosEncontrados[0]['texto_auxiliar'];
+                $mensajeBonito = 'Estimado usuario, usted ya se encuentra registrado en la siguiente actividad: '.$duplicadosEncontrados[0]['texto_auxiliar'];
             } else {
                 $mensajeBonito = "Estimado usuario, detectamos que ya se encuentra inscrito en las siguientes actividades seleccionadas: \n";
                 foreach ($duplicadosEncontrados as $index => $dup) {
-                    $mensajeBonito .= ($index + 1) . ") " . $dup['texto_auxiliar'] . "\n";
+                    $mensajeBonito .= ($index + 1).') '.$dup['texto_auxiliar']."\n";
                 }
             }
 
             return response()->json([
-                'status'          => 409,
-                'is_registered'   => true,
-                'empresario_id'   => $empresarioId, // Retornamos el último ID del usuario
-                'has_duplicates'  => true,
-                'message'         => $mensajeBonito,
-                'duplicados'      => $duplicadosEncontrados
+                'status' => 409,
+                'is_registered' => true,
+                'empresario_id' => $empresarioId, // Retornamos el último ID del usuario
+                'has_duplicates' => true,
+                'message' => $mensajeBonito,
+                'duplicados' => $duplicadosEncontrados,
             ]);
         }
 
         return response()->json([
-            'status'          => 200,
-            'is_registered'   => true,
-            'empresario_id'   => $empresarioId, // Retornamos el último ID del usuario
-            'has_duplicates'  => false,
-            'message'         => 'El usuario ya cuenta con un registro en el sistema, pero las actividades seleccionadas están disponibles.',
-            'duplicados'      => []
+            'status' => 200,
+            'is_registered' => true,
+            'empresario_id' => $empresarioId, // Retornamos el último ID del usuario
+            'has_duplicates' => false,
+            'message' => 'El usuario ya cuenta con un registro en el sistema, pero las actividades seleccionadas están disponibles.',
+            'duplicados' => [],
         ], 200);
     }
 
@@ -205,7 +201,7 @@ class PpCapacitadorController extends Controller
 
             SendConfirmacionActividadesPP093Job::dispatch($payloadData, $mailer);
         } catch (\Exception $e) {
-            Log::error("Error al despachar el Job de correo para {$request->correo_electronico}: " . $e->getMessage());
+            Log::error("Error al despachar el Job de correo para {$request->correo_electronico}: ".$e->getMessage());
         }
     }
 
@@ -228,9 +224,10 @@ class PpCapacitadorController extends Controller
 
             if (empty($empresario->correo_electronico)) {
                 Log::warning("El empresario {$request->empresario_id} no tiene correo electrónico registrado.");
+
                 return response()->json([
                     'status' => 404,
-                    'message' => 'El empresario no tiene un correo electrónico registrado.'
+                    'message' => 'El empresario no tiene un correo electrónico registrado.',
                 ], 404);
             }
 
@@ -245,7 +242,7 @@ class PpCapacitadorController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Correo enviado correctamente.'
+                'message' => 'Correo enviado correctamente.',
             ]);
         } catch (\Exception $e) {
 
@@ -255,7 +252,7 @@ class PpCapacitadorController extends Controller
 
             return response()->json([
                 'status' => 500,
-                'message' => 'Ocurrió un error al enviar el correo.'
+                'message' => 'Ocurrió un error al enviar el correo.',
             ], 500);
         }
     }
@@ -271,19 +268,19 @@ class PpCapacitadorController extends Controller
         $componentes = [
             1 => [
                 'nombre' => 'ACCESO AL FINANCIAMIENTO',
-                'color'  => 'success', // verde
+                'color' => 'success', // verde
             ],
             2 => [
                 'nombre' => 'DESARROLLO PRODUCTIVO',
-                'color'  => 'processing', // azul
+                'color' => 'processing', // azul
             ],
             3 => [
                 'nombre' => 'DIGITALIZACIÓN',
-                'color'  => 'warning', // amarillo
+                'color' => 'warning', // amarillo
             ],
             4 => [
                 'nombre' => 'GESTIÓN EMPRESARIAL',
-                'color'  => 'error', // rojo
+                'color' => 'error', // rojo
             ],
         ];
 
@@ -300,8 +297,9 @@ class PpCapacitadorController extends Controller
                 'componente_id',
             ])
             ->where('unidad', 2)
+            ->where('tipo_actividad_id', 6)
             ->when($request->filled('year') || $request->filled('month'), function ($q) use ($request) {
-                $year  = $request->filled('year') ? $request->year : '%';
+                $year = $request->filled('year') ? $request->year : '%';
                 $month = $request->filled('month')
                     ? str_pad($request->month, 2, '0', STR_PAD_LEFT)
                     : '%';
@@ -315,7 +313,7 @@ class PpCapacitadorController extends Controller
             ->map(function ($item) use ($componentes) {
                 $componente = $componentes[$item->componente_id] ?? [
                     'nombre' => 'SIN COMPONENTE',
-                    'color'  => 'default',
+                    'color' => 'default',
                 ];
 
                 return [

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Pnte;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActividadPnte;
-use App\Models\Attendance;
 use App\Models\EmpresarioActividad;
 use App\Models\PntTest;
 use App\Models\SedDescripcion;
@@ -14,9 +13,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
-use Illuminate\Support\Facades\Log;
 
 class ActividadPnteController extends Controller
 {
@@ -56,8 +55,10 @@ class ActividadPnteController extends Controller
 
             'componente_id' => 'nullable',
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
-        ]);
 
+            'tipo_mercado' => 'nullable',
+            'tipo_gestion' => 'nullable',
+        ]);
 
         $validated['representante_id'] =
             $validated['representante_id'] ?? Auth::id();
@@ -67,8 +68,8 @@ class ActividadPnteController extends Controller
         // =====================================================
 
         $fechaMinima = collect($validated['fechas'])
-            ->map(fn($f) => Carbon::parse($f))
-            ->sortBy(fn($d) => $d->timestamp)
+            ->map(fn ($f) => Carbon::parse($f))
+            ->sortBy(fn ($d) => $d->timestamp)
             ->first();
 
         $validated['mes'] = (int) $fechaMinima->format('n');
@@ -132,7 +133,7 @@ class ActividadPnteController extends Controller
 
         while (ActividadPnte::where('slug', $slug)->exists()) {
             $count++;
-            $slug = $original . '-' . $count;
+            $slug = $original.'-'.$count;
         }
 
         return $slug;
@@ -151,8 +152,8 @@ class ActividadPnteController extends Controller
             if (Carbon::now()->gt($limiteEdicion)) {
                 return response()->json([
                     'status' => 403,
-                    'message' => 'No es posible editar esta actividad. El plazo de edición venció el ' .
-                        Carbon::parse($actividad->created_at)->format('d/m/Y') .
+                    'message' => 'No es posible editar esta actividad. El plazo de edición venció el '.
+                        Carbon::parse($actividad->created_at)->format('d/m/Y').
                         ' a las 23:59. Por favor, contacte con su supervisor.',
                 ], 403);
             }
@@ -190,8 +191,8 @@ class ActividadPnteController extends Controller
 
         // ✅ Obtener mes de la fecha mínima de forma segura
         $fechaMinima = collect($validated['fechas'])
-            ->map(fn($f) => Carbon::parse($f))
-            ->sortBy(fn($d) => $d->timestamp)
+            ->map(fn ($f) => Carbon::parse($f))
+            ->sortBy(fn ($d) => $d->timestamp)
             ->first();
 
         $validated['mes'] = (int) $fechaMinima->format('n');
@@ -266,7 +267,7 @@ class ActividadPnteController extends Controller
             'distritoRel:id,name',
             'representante:id,name,lastname,middlename',
             'modalidad:id,name',
-            'tainnerPp093:id,nombres_apellidos'
+            'tainnerPp093:id,nombres_apellidos',
         ])
             ->select([
                 'id',
@@ -303,6 +304,8 @@ class ActividadPnteController extends Controller
                 'link',
                 'componente_id',
                 'trainer_id',
+                'tipo_mercado',
+                'tipo_gestion',
                 'created_at',
             ])
 
@@ -316,7 +319,7 @@ class ActividadPnteController extends Controller
             ->when($user->rol == 2, function ($q) use ($user) {
                 $q->where('representante_id', $user->id);
             })
-            ->when(!in_array($user->rol, [1, 2, 3]), function ($q) {
+            ->when(! in_array($user->rol, [1, 2, 3]), function ($q) {
                 $q->whereRaw('1 = 0');
             })
 
@@ -357,7 +360,7 @@ class ActividadPnteController extends Controller
                 [$from, $to] = $request->input('rangeDate');
 
                 $current = \Carbon\Carbon::parse($from);
-                $end     = \Carbon\Carbon::parse($to);
+                $end = \Carbon\Carbon::parse($to);
 
                 $q->where(function ($query) use ($current, $end) {
                     while ($current->lte($end)) {
@@ -391,22 +394,22 @@ class ActividadPnteController extends Controller
             );
 
         return response()->json([
-            'status'  => 200,
+            'status' => 200,
             'message' => 'Actividades obtenidas correctamente.',
-            'data'    => [
-                'current_page'    => $actividades->currentPage(),
-                'data'            => $actividades->items(),
-                'first_page_url'  => $actividades->url(1),
-                'from'            => $actividades->firstItem(),
-                'last_page'       => $actividades->lastPage(),
-                'last_page_url'   => $actividades->url($actividades->lastPage()),
-                'links'           => $actividades->linkCollection()->toArray(),
-                'next_page_url'   => $actividades->nextPageUrl(),
-                'path'            => $actividades->path(),
-                'per_page'        => $actividades->perPage(),
-                'prev_page_url'   => $actividades->previousPageUrl(),
-                'to'              => $actividades->lastItem(),
-                'total'           => $actividades->total(),
+            'data' => [
+                'current_page' => $actividades->currentPage(),
+                'data' => $actividades->items(),
+                'first_page_url' => $actividades->url(1),
+                'from' => $actividades->firstItem(),
+                'last_page' => $actividades->lastPage(),
+                'last_page_url' => $actividades->url($actividades->lastPage()),
+                'links' => $actividades->linkCollection()->toArray(),
+                'next_page_url' => $actividades->nextPageUrl(),
+                'path' => $actividades->path(),
+                'per_page' => $actividades->perPage(),
+                'prev_page_url' => $actividades->previousPageUrl(),
+                'to' => $actividades->lastItem(),
+                'total' => $actividades->total(),
             ],
         ]);
     }
@@ -430,8 +433,8 @@ class ActividadPnteController extends Controller
         ]);
 
         $fechaMinima = collect($validated['fechas'])
-            ->map(fn($f) => Carbon::parse($f))
-            ->sortBy(fn($d) => $d->timestamp)
+            ->map(fn ($f) => Carbon::parse($f))
+            ->sortBy(fn ($d) => $d->timestamp)
             ->first();
 
         try {
@@ -606,10 +609,10 @@ class ActividadPnteController extends Controller
 
                     'actividad_comercial_id' => $e?->actividad_comercial_id,
 
-                    'actividad_comercial_nombre' => !empty($e?->actividadComercial?->name)
+                    'actividad_comercial_nombre' => ! empty($e?->actividadComercial?->name)
                         ? mb_strtoupper($e->actividadComercial->name, 'UTF-8')
                         : (
-                            !empty($e?->actividad_comercial_nombre)
+                            ! empty($e?->actividad_comercial_nombre)
                             ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8')
                             : null
                         ),
@@ -649,14 +652,14 @@ class ActividadPnteController extends Controller
                         : null,
 
                     'nombre_completo' => ! empty(trim(
-                        ($e?->apellido_paterno ?? '') . ' ' .
-                            ($e?->apellido_materno ?? '') . ' ' .
+                        ($e?->apellido_paterno ?? '').' '.
+                            ($e?->apellido_materno ?? '').' '.
                             ($e?->nombres ?? '')
                     ))
                         ? mb_strtoupper(
                             trim(
-                                ($e?->apellido_paterno ?? '') . ' ' .
-                                    ($e?->apellido_materno ?? '') . ' ' .
+                                ($e?->apellido_paterno ?? '').' '.
+                                    ($e?->apellido_materno ?? '').' '.
                                     ($e?->nombres ?? '')
                             ),
                             'UTF-8'
@@ -690,7 +693,7 @@ class ActividadPnteController extends Controller
 
                     'coop_ruc' => $e?->coop_ruc,
                     'coop_razon_social' => $e?->coop_razon_social,
-                    'coop_rol' => $e?->coop_rol
+                    'coop_rol' => $e?->coop_rol,
                 ];
             });
 
@@ -862,8 +865,8 @@ class ActividadPnteController extends Controller
                     ->count();
 
                 $actividad->update([
-                    'total_participantes'   => $total,
-                    'total_asesorias'       => $totalAsesorias,
+                    'total_participantes' => $total,
+                    'total_asesorias' => $totalAsesorias,
                     'total_formalizaciones' => $totalFormalizaciones,
                 ]);
             }
@@ -1113,8 +1116,6 @@ class ActividadPnteController extends Controller
         }
     }
 
-
-
     // create para los pp093
 
     public function pp093Store(Request $request): JsonResponse
@@ -1162,8 +1163,8 @@ class ActividadPnteController extends Controller
         $validated['fechas'] = array_values($fechasExtraidas);
 
         $fechaMinima = collect($validated['fechas'])
-            ->map(fn($f) => Carbon::parse($f))
-            ->sortBy(fn($d) => $d->timestamp)
+            ->map(fn ($f) => Carbon::parse($f))
+            ->sortBy(fn ($d) => $d->timestamp)
             ->first();
 
         $validated['mes'] = (int) $fechaMinima->format('n');
@@ -1180,18 +1181,18 @@ class ActividadPnteController extends Controller
             $actividad->load('representante');
 
             try {
-                $resultado = (new GoogleMeetCalendarService())->crearEventosParaActividad(
+                $resultado = (new GoogleMeetCalendarService)->crearEventosParaActividad(
                     $actividad,
                     $validated['horario'],
                     $validated['tema'] ?? null
                 );
 
                 // Guardamos el enlace de Meet y el array de horarios con los IDs de Google Calendar
-                $actividad->link    = $resultado['meetLink'];
+                $actividad->link = $resultado['meetLink'];
                 $actividad->horario = $resultado['horarioActualizado'];
                 $actividad->save();
             } catch (Throwable $eCalendar) {
-                Log::error('Error al agendar en Google Calendar: ' . $eCalendar->getMessage());
+                Log::error('Error al agendar en Google Calendar: '.$eCalendar->getMessage());
             }
 
             return response()->json([
@@ -1216,7 +1217,6 @@ class ActividadPnteController extends Controller
         }
     }
 
-
     // LISTA DE INSCRITOS MODIFICADA PARA PP093
 
     public function inscritosPP093PorSlug(Request $request, $slug)
@@ -1232,10 +1232,10 @@ class ActividadPnteController extends Controller
                 ->where('slug', $slug)
                 ->first();
 
-            if (!$event) {
+            if (! $event) {
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Actividad no encontrada.'
+                    'message' => 'Actividad no encontrada.',
                 ], 404);
             }
 
@@ -1279,7 +1279,7 @@ class ActividadPnteController extends Controller
 
             $data = $query->paginate($perPage);
 
-            // NUEVO 
+            // NUEVO
             $pntTest = PntTest::where('slug', $slug)->first();
 
             $ratingsLabel = [
@@ -1307,7 +1307,7 @@ class ActividadPnteController extends Controller
 
                 $testEntrada = [];
 
-                if (!empty($item->test_entrada) && !empty($pntTest?->test_entrada)) {
+                if (! empty($item->test_entrada) && ! empty($pntTest?->test_entrada)) {
 
                     foreach ($item->test_entrada as $preguntaKey => $respuestaId) {
 
@@ -1315,7 +1315,7 @@ class ActividadPnteController extends Controller
 
                         $preguntaBD = $pntTest->test_entrada[$numero - 1] ?? null;
 
-                        if (!$preguntaBD) {
+                        if (! $preguntaBD) {
                             continue;
                         }
 
@@ -1341,7 +1341,7 @@ class ActividadPnteController extends Controller
 
                 $testSalida = [];
 
-                if (!empty($item->test_salida) && !empty($pntTest?->test_entrada)) {
+                if (! empty($item->test_salida) && ! empty($pntTest?->test_entrada)) {
 
                     foreach ($item->test_salida as $preguntaKey => $respuestaId) {
 
@@ -1350,7 +1350,7 @@ class ActividadPnteController extends Controller
                         // 👇 Mismo cambio aquí: banco de preguntas es test_entrada
                         $preguntaBD = $pntTest->test_entrada[$numero - 1] ?? null;
 
-                        if (!$preguntaBD) {
+                        if (! $preguntaBD) {
                             continue;
                         }
 
@@ -1376,7 +1376,7 @@ class ActividadPnteController extends Controller
 
                 $ratings = [];
 
-                if (!empty($item->ratings)) {
+                if (! empty($item->ratings)) {
 
                     foreach ($item->ratings as $key => $value) {
 
@@ -1402,16 +1402,16 @@ class ActividadPnteController extends Controller
                     // DATOS EMPRESARIO
 
                     'ruc' => $e?->ruc,
-                    'razon_social' => !empty($e?->razon_social) ? mb_strtoupper($e->razon_social, 'UTF-8') : null,
-                    'nombre_comercial' => !empty($e?->nombre_comercial) ? mb_strtoupper($e->nombre_comercial, 'UTF-8') : null,
+                    'razon_social' => ! empty($e?->razon_social) ? mb_strtoupper($e->razon_social, 'UTF-8') : null,
+                    'nombre_comercial' => ! empty($e?->nombre_comercial) ? mb_strtoupper($e->nombre_comercial, 'UTF-8') : null,
                     'sector_economico_id' => $e?->sector_economico_id,
-                    'sector_economico_nombre' => !empty($e?->sectorEconomico?->name) ? mb_strtoupper($e->sectorEconomico->name, 'UTF-8') : null,
+                    'sector_economico_nombre' => ! empty($e?->sectorEconomico?->name) ? mb_strtoupper($e->sectorEconomico->name, 'UTF-8') : null,
                     'rubro_id' => $e?->rubro_id,
-                    'rubro_nombre' => !empty($e?->rubro?->name) ? mb_strtoupper($e->rubro->name, 'UTF-8') : null,
+                    'rubro_nombre' => ! empty($e?->rubro?->name) ? mb_strtoupper($e->rubro->name, 'UTF-8') : null,
                     'actividad_comercial_id' => $e?->actividad_comercial_id,
-                    'actividad_comercial_nombre' => !empty($e?->actividadComercial?->name)
+                    'actividad_comercial_nombre' => ! empty($e?->actividadComercial?->name)
                         ? mb_strtoupper($e->actividadComercial->name, 'UTF-8')
-                        : (!empty($e?->actividad_comercial_nombre)
+                        : (! empty($e?->actividad_comercial_nombre)
                             ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8')
                             : null),
 
@@ -1422,7 +1422,7 @@ class ActividadPnteController extends Controller
                     'distrito_id' => $e?->distrito_id,
                     'distrito_nombre' => $e?->distrito?->name,
 
-                    'direccion' => !empty($e?->direccion)
+                    'direccion' => ! empty($e?->direccion)
                         ? mb_strtoupper($e->direccion, 'UTF-8')
                         : null,
 
@@ -1434,20 +1434,20 @@ class ActividadPnteController extends Controller
 
                     'numero_dni_empresario' => $e?->numero_dni,
 
-                    'apellido_paterno' => !empty($e?->apellido_paterno)
+                    'apellido_paterno' => ! empty($e?->apellido_paterno)
                         ? mb_strtoupper($e->apellido_paterno, 'UTF-8')
                         : null,
 
-                    'apellido_materno' => !empty($e?->apellido_materno)
+                    'apellido_materno' => ! empty($e?->apellido_materno)
                         ? mb_strtoupper($e->apellido_materno, 'UTF-8')
                         : null,
 
-                    'nombres' => !empty($e?->nombres)
+                    'nombres' => ! empty($e?->nombres)
                         ? mb_strtoupper($e->nombres, 'UTF-8')
                         : null,
 
-                    'nombre_completo' => !empty(trim(($e?->apellido_paterno ?? '') . ' ' . ($e?->apellido_materno ?? '') . ' ' . ($e?->nombres ?? '')))
-                        ? mb_strtoupper(trim(($e?->apellido_paterno ?? '') . ' ' . ($e?->apellido_materno ?? '') . ' ' . ($e?->nombres ?? '')), 'UTF-8')
+                    'nombre_completo' => ! empty(trim(($e?->apellido_paterno ?? '').' '.($e?->apellido_materno ?? '').' '.($e?->nombres ?? '')))
+                        ? mb_strtoupper(trim(($e?->apellido_paterno ?? '').' '.($e?->apellido_materno ?? '').' '.($e?->nombres ?? '')), 'UTF-8')
                         : null,
 
                     'genero_id' => $e?->genero_id,

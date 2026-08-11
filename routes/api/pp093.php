@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Pnte\PpCapacitadorController;
+use App\Http\Controllers\Pnte\TiendaController;
 use App\Http\Controllers\Pnte\ActividadPublicPnteController;
 use App\Http\Controllers\PP03\CapacitacionesPP093Controller;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,14 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
     Route::POST('register-mype', 'registerBusinessManPP093');
 
     Route::POST('check-course', 'checkToCoursePp093');
+});
+
+Route::controller(TiendaController::class)->group(function () {
+    Route::GET('list-tienda', 'index');
+    Route::POST('new-tienda', 'store');
+    Route::GET('show-tienda/{id}', 'show');
+    Route::PUT('update-tienda/{id}', 'update');
+    Route::DELETE('delete-tienda/{id}', 'destroy');
 });
 
 Route::controller(CapacitacionesPP093Controller::class)->group(function () {
