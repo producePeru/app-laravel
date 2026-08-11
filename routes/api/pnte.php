@@ -22,6 +22,8 @@ Route::controller(TiendaController::class)->group(function () {
     Route::GET('tiendas', 'publicIndex');
 
     Route::GET('show-tienda/{id}', 'show');
+
+    Route::POST('new-contactanos', 'storeContactanos');
 });
 
 // pnte-public

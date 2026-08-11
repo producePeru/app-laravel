@@ -20,6 +20,7 @@ class Tienda extends Model
         'correo',
         'image_id',
         'socials',
+        'categoria',
     ];
 
     protected $casts = [
