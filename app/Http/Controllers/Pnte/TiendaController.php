@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Pnte;
 
 use App\Http\Controllers\Controller;
+use App\Mail\TiendaContactoMail;
 use App\Models\Tienda;
 use App\Models\TiendaContacto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class TiendaController extends Controller
 {
@@ -96,7 +98,7 @@ class TiendaController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'ruc' => 'required|string|max:20|unique:tiendas,ruc,'.$id,
-            'envio_id' => 'nullable|integer|exists:envios,id',
+            'envio_id' => 'nullable|integer',
             'celular' => 'nullable|max:20',
             'categoria' => 'nullable|string',
             'correo' => 'nullable|email|max:255',
@@ -106,7 +108,7 @@ class TiendaController extends Controller
             'socials.*.link' => 'nullable|string|max:255',
         ]);
 
-        $tienda->update([
+        $data = [
             'nombre' => trim($request->nombre),
             'descripcion' => $request->descripcion,
             'ruc' => trim($request->ruc),
@@ -114,14 +116,22 @@ class TiendaController extends Controller
             'celular' => $request->celular ? trim($request->celular) : null,
             'categoria' => $request->categoria,
             'correo' => $request->correo ? trim($request->correo) : null,
-            'image_id' => $request->image_id,
-            'socials' => $request->has('socials') ? $request->socials : $tienda->socials,
-        ]);
+            'socials' => $request->has('socials')
+                ? $request->socials
+                : $tienda->socials,
+        ];
+
+        // Si image_id es null, mantiene la imagen actual.
+        // Si viene un ID, actualiza la imagen.
+        if ($request->image_id !== null) {
+            $data['image_id'] = $request->image_id;
+        }
+
+        $tienda->update($data);
 
         return response()->json([
             'status' => 200,
             'message' => 'Tienda actualizada correctamente.',
-            'data' => $tienda->fresh()->load(['image', 'envio']),
         ]);
     }
 
@@ -143,14 +153,14 @@ class TiendaController extends Controller
      */
     public function publicIndex(Request $request): JsonResponse
     {
-        $pageSize = 50; // ✅ fijo, no configurable desde el público
+        $pageSize = 50; // fijo, no configurable desde el público
 
         $data = Tienda::with(['image'])
-            ->select(['id', 'nombre', 'image_id']) // ✅ solo lo necesario
+            ->select(['id', 'nombre', 'image_id'])
             ->when($request->filled('name'), function ($q) use ($request) {
                 $q->where('nombre', 'LIKE', '%'.trim($request->name).'%');
             })
-            ->orderBy('nombre')
+            ->inRandomOrder()
             ->paginate($pageSize);
 
         $data->getCollection()->transform(function ($tienda) {
@@ -158,7 +168,10 @@ class TiendaController extends Controller
             $thumbUrl = null;
 
             if ($tienda->image) {
-                $filename = basename(parse_url((string) $tienda->image->url, PHP_URL_PATH));
+                $filename = basename(
+                    parse_url((string) $tienda->image->url, PHP_URL_PATH)
+                );
+
                 $thumbUrl = url("storage/images/original/{$filename}");
             }
 
@@ -198,6 +211,20 @@ class TiendaController extends Controller
         ]);
 
         $contacto = TiendaContacto::create($data);
+
+        if (! empty($contacto->correo)) {
+
+            $tienda = Tienda::findOrFail($contacto->id_empresa);
+
+            $mailer = 'capacitaciones';
+
+            Mail::mailer($mailer)
+                ->to($contacto->correo)
+                ->send(new TiendaContactoMail(
+                    $contacto,
+                    $tienda
+                ));
+        }
 
         return response()->json([
             'message' => 'Contacto creado correctamente',
