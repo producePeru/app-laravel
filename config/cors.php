@@ -28,7 +28,7 @@ return [
         'https://seguimiento-capacitaciones.soporte-pnte.com',
         'https://cde.soporte-pnte.com',
         'https://tareitas.soporte-pnte.com',
-        'https://bodegas.soporte-pnte.com'
+        'https://bodegas.soporte-pnte.com',
     ],
 
     'allowed_origins_patterns' => [],
