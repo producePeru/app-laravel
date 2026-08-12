@@ -784,6 +784,53 @@ class ActividadPnteController extends Controller
         }
     }
 
+    public function deleteInscritos(Request $request): JsonResponse
+    {
+        $request->validate([
+            'slug' => 'required|string',
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer',
+        ]);
+
+        try {
+            $actividad = ActividadPnte::where('slug', $request->slug)->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Actividad no encontrada',
+                ], 404);
+            }
+
+            $deleted = EmpresarioActividad::where('slug', $request->slug)
+                ->whereIn('id', $request->ids)
+                ->delete();
+
+            $totalAsesorias = EmpresarioActividad::where('slug', $request->slug)
+                ->where('personal_asesoria', 1)
+                ->count();
+
+            $totalFormalizaciones = EmpresarioActividad::where('slug', $request->slug)
+                ->where('personal_formalizacion', 1)
+                ->count();
+
+            $actividad->total_asesorias = $totalAsesorias;
+            $actividad->total_formalizaciones = $totalFormalizaciones;
+            $actividad->save();
+
+            return response()->json([
+                'status' => 200,
+                'message' => "{$deleted} inscrito(s) eliminado(s) correctamente",
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al eliminar inscritos',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function descargarPantillaInscritos()
     {
         $path = storage_path('app/plantillas/plantilla_importar_inscritos.xlsx');

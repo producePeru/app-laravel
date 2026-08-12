@@ -25,6 +25,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::PUT('update-values-select', 'updateValuesSelect');
 
+    Route::DELETE('delete-inscritos', 'deleteInscritos');
+
     Route::PUT('aprobar-evento/{id}', 'aprobarEvento');
 
     Route::DELETE('delete-event/{id}', 'deleteEvent'); // eliminar actividades UGGER
