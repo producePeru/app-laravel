@@ -13,6 +13,8 @@ Route::controller(TiendaController::class)->group(function () {
 
     Route::DELETE('delete-tienda/{id}', 'destroy');
 
+    Route::POST('download-contacts', 'exportContactos');
+
 });
 
 // pnte

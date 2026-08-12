@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Pnte;
 
+use App\Exports\TiendaContactosExport;
 use App\Http\Controllers\Controller;
 use App\Mail\TiendaContactoMail;
 use App\Models\Tienda;
@@ -9,6 +10,7 @@ use App\Models\TiendaContacto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TiendaController extends Controller
 {
@@ -146,6 +148,14 @@ class TiendaController extends Controller
         ]);
     }
 
+    public function exportContactos()
+    {
+        return Excel::download(
+            new TiendaContactosExport,
+            'tiendas_contactos.xlsx'
+        );
+    }
+
     // MODO PUBLICO
     /**
      * Listado público de tiendas (solo id, nombre e imagen thumb).
@@ -203,7 +213,7 @@ class TiendaController extends Controller
     public function storeContactanos(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'nombre' => 'required|string|max:255',
+            'nombre' => 'string|max:255',
             'celular' => 'nullable|string|max:20',
             'correo' => 'nullable|email|max:255',
             'productos' => 'nullable|string',
