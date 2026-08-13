@@ -47,6 +47,9 @@ Route::controller(ActividadPnteController::class)->group(function () {
     Route::get('/evento/acceso', 'registrarAccesoToEmail');
 
     Route::GET('attendance-summary-slug/{slug}', 'attendanceSummaryBySlug');
+
+    Route::PUT('permission-to-delete/{slug}', 'permissionToDelete');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {
@@ -95,6 +98,5 @@ Route::controller(PnteTestController::class)->group(function () {
 
     Route::POST('check-asistencia', 'checkAsistencia');
 });
-
 
 // event-pnte-public 🌍
