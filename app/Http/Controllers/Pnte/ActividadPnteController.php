@@ -306,6 +306,7 @@ class ActividadPnteController extends Controller
                 'trainer_id',
                 'tipo_mercado',
                 'tipo_gestion',
+                'eliminar',
                 'created_at',
             ])
 
@@ -392,6 +393,13 @@ class ActividadPnteController extends Controller
                 'page',
                 $request->input('page', 1)
             );
+
+        // Convertir eliminar: 1/null → true/false
+        $actividades->getCollection()->transform(function ($actividad) {
+            $actividad->eliminar = $actividad->eliminar === 1;
+
+            return $actividad;
+        });
 
         return response()->json([
             'status' => 200,
@@ -800,6 +808,30 @@ class ActividadPnteController extends Controller
                     'status' => 404,
                     'message' => 'Actividad no encontrada',
                 ], 404);
+            }
+
+            $inscritos = EmpresarioActividad::where('slug', $request->slug)
+                ->whereIn('id', $request->ids)
+                ->get();
+
+            if ($inscritos->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontraron inscritos para eliminar',
+                ], 404);
+            }
+
+            $inicioDeHoy = now()->startOfDay();
+
+            $tieneRegistrosDeDiasAnteriores = $inscritos->contains(
+                fn ($inscrito) => $inscrito->created_at->lt($inicioDeHoy)
+            );
+
+            if ($tieneRegistrosDeDiasAnteriores && ! $actividad->eliminar) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'No puede eliminar inscritos de días anteriores al registro. Comuníquese con su administrador.',
+                ]);
             }
 
             $deleted = EmpresarioActividad::where('slug', $request->slug)
@@ -1551,5 +1583,19 @@ class ActividadPnteController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function permissionToDelete($slug)
+    {
+        $actividad = ActividadPnte::where('slug', $slug)->firstOrFail();
+
+        $actividad->eliminar = $actividad->eliminar === 1 ? null : 1;
+
+        $actividad->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Permiso de eliminación actualizado correctamente.',
+        ]);
     }
 }
