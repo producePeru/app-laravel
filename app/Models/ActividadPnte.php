@@ -55,6 +55,7 @@ class ActividadPnte extends Model
 
         'tipo_mercado',
         'tipo_gestion',
+        'eliminar',
     ];
 
     protected $casts = [
