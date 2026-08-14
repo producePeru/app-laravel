@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateFairRequest;
 use App\Mail\FeriasEmpresarialesMail;
 use App\Models\ActividadPnte;
+use App\Models\EmpresarioActividad;
 use App\Models\Fair;
 use App\Models\FairPostulate;
 use App\Models\Mype;
-use App\Models\SedAsistente;
 use App\Models\SedDescripcion;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,11 +23,11 @@ class FairController extends Controller
     public function cyberWowList(Request $request)
     {
         $filters = [
-            'year'      => $request->input('year'),
+            'year' => $request->input('year'),
             'startDate' => $request->input('dateStart'),
-            'endDate'   => $request->input('dateEnd'),
-            'name'      => $request->input('name'),
-            'orderby'   => $request->input('orderby'),
+            'endDate' => $request->input('dateEnd'),
+            'name' => $request->input('name'),
+            'orderby' => $request->input('orderby'),
         ];
 
         $query = Fair::query()->with([
@@ -45,7 +45,7 @@ class FairController extends Controller
         });
 
         return response()->json([
-            'data'   => $items,
+            'data' => $items,
             'status' => 200,
         ]);
     }
@@ -120,7 +120,7 @@ class FairController extends Controller
             'description' => $item->description ? $item->description : null,
             'description3' => isset($item->description)
                 ? (mb_strlen(strip_tags($item->description)) > 200
-                    ? mb_substr(strip_tags($item->description), 0, 200) . '...'
+                    ? mb_substr(strip_tags($item->description), 0, 200).'...'
                     : strip_tags($item->description))
                 : null,
             'fairtype_id' => $item->fairType->id ?? null,
@@ -147,13 +147,13 @@ class FairController extends Controller
             'msgEndForm' => $item->msgEndForm ? $item->msgEndForm : null,
             'msgEndForm3' => isset($item->msgEndForm)
                 ? (mb_strlen(strip_tags($item->msgEndForm)) > 200
-                    ? mb_substr(strip_tags($item->msgEndForm), 0, 200) . '...'
+                    ? mb_substr(strip_tags($item->msgEndForm), 0, 200).'...'
                     : strip_tags($item->msgEndForm))
                 : null,
             'msgSendEmail' => $item->msgSendEmail ? $item->msgSendEmail : null,
             'msgSendEmail3' => isset($item->msgSendEmail)
                 ? (mb_strlen(strip_tags($item->msgSendEmail)) > 200
-                    ? mb_substr(strip_tags($item->msgSendEmail), 0, 200) . '...'
+                    ? mb_substr(strip_tags($item->msgSendEmail), 0, 200).'...'
                     : strip_tags($item->msgSendEmail))
                 : null,
             'image' => $item->image ? [
@@ -186,7 +186,7 @@ class FairController extends Controller
             $count = 1;
 
             while (Fair::where('slug', $slug)->exists()) {
-                $slug = $originalSlug . '-' . $count;
+                $slug = $originalSlug.'-'.$count;
                 $count++;
             }
 
@@ -202,7 +202,7 @@ class FairController extends Controller
                 'status' => 200,
             ], 201);
         } catch (\Exception $e) {
-            Log::error('Error al crear feria: ' . $e->getMessage(), [
+            Log::error('Error al crear feria: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
 
@@ -231,13 +231,13 @@ class FairController extends Controller
                 ->where('slug', $slug)
                 ->first();
 
-            if (!$actividad) {
+            if (! $actividad) {
 
                 return response()->json([
                     'data' => [
-                        'title'   => 'No se encontró el evento.',
+                        'title' => 'No se encontró el evento.',
                         'message' => 'No existe una actividad con este registro.',
-                        'status'  => 404,
+                        'status' => 404,
                     ],
                 ]);
             }
@@ -251,14 +251,14 @@ class FairController extends Controller
             /**
              * EVENTO CANCELADO
              */
-            if (!is_null($actividad->cancelado) && $actividad->cancelado !== '') {
+            if (! is_null($actividad->cancelado) && $actividad->cancelado !== '') {
 
                 return response()->json([
                     'data' => [
-                        'title'      => 'Evento Cancelado',
-                        'message'    => $actividad->cancelado,
-                        'status'     => 410,
-                        'cancelado'  => true,
+                        'title' => 'Evento Cancelado',
+                        'message' => $actividad->cancelado,
+                        'status' => 410,
+                        'cancelado' => true,
                     ],
                 ]);
             }
@@ -275,7 +275,7 @@ class FairController extends Controller
              * EVENTO FINALIZADO
              * Se omite esta validación cuando mode=ugger
              */
-            if (!empty($fechaFin) && !$ignoreExpiration) {
+            if (! empty($fechaFin) && ! $ignoreExpiration) {
 
                 $fechaEvento = Carbon::parse($fechaFin)->endOfDay();
 
@@ -346,47 +346,29 @@ class FairController extends Controller
     public function showEventCount($slug)
     {
         try {
-            // 1. Obtener la fecha de hoy en formato YYYY-MM-DD
-            $today = Carbon::now()->format('Y-m-d');
+            $baseQuery = EmpresarioActividad::where('slug', $slug);
 
-            // 2. Buscar la actividad por slug que contenga la fecha de hoy en su array de 'fechas'
-            $actividad = ActividadPnte::with([
-                'regionRel:id,name',
-                'provinciaRel:id,name',
-                'distritoRel:id,name',
-            ])
-                ->where('slug', $slug)
-                ->whereJsonContains('fechas', $today)
-                ->first();
+            $total = (clone $baseQuery)->count();
 
-            // 3. Si no se encuentra una actividad para hoy, devolver 404
-            if (!$actividad) {
-                return response()->json([
-                    'message' => 'No se encontró un evento programado para el día de hoy con ese slug.',
-                    'status'  => 404,
-                ]);
-            }
+            $presentes = (clone $baseQuery)->whereNotNull('fecha_asistencia')->count();
 
-            // 4. Formatear los datos para la respuesta
-            $data = [
-                'fechas'    => collect($actividad->fechas)->map(fn($f) => Carbon::parse($f)->format('d/m/Y')),
-                'tema'      => $actividad->tema,
-                'horario'   => $actividad->horario,
-                'region'    => $actividad->regionRel?->name,
-                'provincia' => $actividad->provinciaRel?->name,
-                'distrito'  => $actividad->distritoRel?->name,
-                'lugar'     => $actividad->lugar,
-            ];
+            $faltan = $total - $presentes;
 
-            // 5. Devolver la respuesta exitosa
             return response()->json([
-                'data'   => $data,
                 'status' => 200,
+                'message' => 'Conteo de asistencia obtenido correctamente.',
+                'data' => [
+                    'slug' => $slug,
+                    'total' => $total,
+                    'presentes' => $presentes,
+                    'faltan' => $faltan,
+                ],
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Ocurrió un error al buscar el evento.',
-                'error'   => $e->getMessage(),
+                'status' => 500,
+                'message' => 'Ocurrió un error al obtener el conteo.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -587,7 +569,7 @@ class FairController extends Controller
                 'img3_url' => $item->mype->img3_path ? asset($item->mype->img3_path) : null,
 
                 'documentnumber' => $item->person->documentnumber,
-                'lastname' => $item->person->lastname . ' ' . $item->person->middlename,
+                'lastname' => $item->person->lastname.' '.$item->person->middlename,
                 // 'middlename' => $item->person->middlename,
                 'name' => $item->person->name,
                 'phone' => $item->person->phone,
