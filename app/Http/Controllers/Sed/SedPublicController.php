@@ -3,29 +3,29 @@
 namespace App\Http\Controllers\Sed;
 
 use App\Http\Controllers\Controller;
-use App\Models\Fair;
-use App\Models\SedAsistente;
-use App\Models\SedQuestion;
-use App\Models\SedSurvey;
-use App\Models\UgsePostulante;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
-use Endroid\QrCode\Builder\Builder;
-use Endroid\QrCode\Writer\PngWriter;
-use PDF;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 use App\Mail\FairSedInfoMail;
 use App\Models\ActividadPnte;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
+use App\Models\Fair;
 use App\Models\Question;
-use App\Models\QuestionOption;
+use App\Models\SedAsistente;
+use App\Models\SedQuestion;
 use App\Models\sedQuestionAnswer;
-use Illuminate\Support\Facades\Mail;
+use App\Models\SedSurvey;
+use App\Models\UgsePostulante;
+use Carbon\Carbon;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\PngWriter;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use PDF;
 
 class SedPublicController extends Controller
 {
@@ -50,7 +50,7 @@ class SedPublicController extends Controller
                     $q = $item->question;
 
                     // 👇 aquí aplicas dinámico
-                    if (!$q || $q->tableName !== $table) {
+                    if (! $q || $q->tableName !== $table) {
                         return null;
                     }
 
@@ -67,9 +67,9 @@ class SedPublicController extends Controller
                         'options' => $q->options->map(function ($opt) {
                             return [
                                 'label' => $opt->label,
-                                'value' => $opt->value
+                                'value' => $opt->value,
                             ];
-                        })->values()
+                        })->values(),
                     ];
                 })
                 ->filter()
@@ -83,19 +83,19 @@ class SedPublicController extends Controller
                 'sed_region' => $fair->regionRel?->name,
                 'sed_province' => $fair->provinciaRel?->name,
                 'sed_distrito' => $fair->distritoRel?->name,
-                'sed_lugar' => $fair->lugar
+                'sed_lugar' => $fair->lugar,
 
             ]);
         } catch (\Throwable $e) {
 
             Log::error('Error obteniendo encuesta SED', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'error' => $e->getMessage(),
                 'status' => 500,
-                'message' => 'Error al obtener la encuesta'
+                'message' => 'Error al obtener la encuesta',
             ], 500);
         }
     }
@@ -128,11 +128,11 @@ class SedPublicController extends Controller
         // NO ESTÁ REGISTRADO EN EL EVENTO
         // =====================================================
 
-        if (!$registro) {
+        if (! $registro) {
 
             return response()->json([
                 'status' => 404,
-                'message' => 'No se encuentra registrado para este evento.'
+                'message' => 'No se encuentra registrado para este evento.',
             ]);
         }
 
@@ -144,7 +144,7 @@ class SedPublicController extends Controller
 
             return response()->json([
                 'status' => 403,
-                'message' => 'Tu asistencia aún no ha sido registrada. Comunícate con el responsable del evento para que registre tu asistencia y puedas continuar con la encuesta.'
+                'message' => 'Tu asistencia aún no ha sido registrada. Comunícate con el responsable del evento para que registre tu asistencia y puedas continuar con la encuesta.',
             ]);
         }
 
@@ -177,8 +177,8 @@ class SedPublicController extends Controller
                 'registro' => [
                     'slug' => $registro->slug,
                     'fecha_asistencia' => $registro->fecha_asistencia,
-                ]
-            ]
+                ],
+            ],
         ]);
     }
 
@@ -221,7 +221,7 @@ class SedPublicController extends Controller
 
                 ->first();
 
-            if (!$empresa) {
+            if (! $empresa) {
 
                 return response()->json([
                     'status' => 404,
@@ -234,17 +234,17 @@ class SedPublicController extends Controller
                 'status' => 200,
                 'message' => 'Información encontrada correctamente.',
                 'data' => [
-                    'ruc'                    => $empresa->ruc,
-                    'razon_social'           => $empresa->razon_social,
-                    'nombre_comercial'       => $empresa->nombre_comercial,
-                    'sector_economico_id'    => $empresa->sector_economico_id,
-                    'rubro_id'               => $empresa->rubro_id,
+                    'ruc' => $empresa->ruc,
+                    'razon_social' => $empresa->razon_social,
+                    'nombre_comercial' => $empresa->nombre_comercial,
+                    'sector_economico_id' => $empresa->sector_economico_id,
+                    'rubro_id' => $empresa->rubro_id,
                     'actividad_comercial_id' => $empresa->actividad_comercial_id,
-                    'region_id'              => $empresa->region_id,
-                    'provincia_id'           => $empresa->provincia_id,
-                    'distrito_id'            => $empresa->distrito_id,
-                    'direccion'              => $empresa->direccion,
-                ]
+                    'region_id' => $empresa->region_id,
+                    'provincia_id' => $empresa->provincia_id,
+                    'distrito_id' => $empresa->distrito_id,
+                    'direccion' => $empresa->direccion,
+                ],
             ]);
         } catch (\Exception $e) {
 
@@ -295,7 +295,7 @@ class SedPublicController extends Controller
 
                 ->first();
 
-            if (!$empresario) {
+            if (! $empresario) {
 
                 return response()->json([
                     'status' => 404,
@@ -307,26 +307,26 @@ class SedPublicController extends Controller
             // ✅ ocultar últimos 4 dígitos del celular
             $celular = $empresario->celular;
 
-            if (!empty($celular) && strlen($celular) >= 4) {
+            if (! empty($celular) && strlen($celular) >= 4) {
 
-                $celular = substr($celular, 0, -4) . '****';
+                $celular = substr($celular, 0, -4).'****';
             }
 
             return response()->json([
                 'status' => 200,
                 'message' => 'Información encontrada correctamente.',
                 'data' => [
-                    'apellido_paterno'  => $empresario->apellido_paterno,
-                    'apellido_materno'  => $empresario->apellido_materno,
-                    'nombres'           => $empresario->nombres,
-                    'genero_id'         => $empresario->genero_id,
-                    'discapacidad'      => $empresario->discapacidad,
-                    'celular'           => $celular,
+                    'apellido_paterno' => $empresario->apellido_paterno,
+                    'apellido_materno' => $empresario->apellido_materno,
+                    'nombres' => $empresario->nombres,
+                    'genero_id' => $empresario->genero_id,
+                    'discapacidad' => $empresario->discapacidad,
+                    'celular' => $celular,
                     'correo_electronico' => $empresario->correo_electronico,
-                    'cargo_empresa_id'  => $empresario->cargo_empresa_id,
-                    'fecha_nacimiento'  => $empresario->fecha_nacimiento,
-                    'edad'              => $empresario->edad,
-                ]
+                    'cargo_empresa_id' => $empresario->cargo_empresa_id,
+                    'fecha_nacimiento' => $empresario->fecha_nacimiento,
+                    'edad' => $empresario->edad,
+                ],
             ]);
         } catch (\Exception $e) {
 
@@ -347,44 +347,44 @@ class SedPublicController extends Controller
             $validator = Validator::make($request->all(), [
 
                 // empresario
-                'ruc'                      => 'required|string|max:11',
-                'razon_social'             => 'required|string|max:255',
-                'nombre_comercial'         => 'nullable|string|max:255',
-                'sector_economico_id'      => 'nullable|integer',
-                'rubro_id'                 => 'nullable|integer',
-                'actividad_comercial_id'   => 'nullable|integer',
-                'region_id'                => 'nullable|integer',
-                'provincia_id'             => 'nullable|integer',
-                'distrito_id'              => 'nullable|integer',
-                'direccion'                => 'nullable|string|max:255',
-                'tipo_documento_id'        => 'nullable|integer',
-                'numero_dni'               => 'required|string|max:12',
-                'apellido_paterno'         => 'nullable|string|max:255',
-                'apellido_materno'         => 'nullable|string|max:255',
-                'nombres'                  => 'nullable|string|max:255',
-                'genero_id'                => 'nullable|integer',
-                'discapacidad'             => 'nullable',
-                'celular'                  => 'nullable|string|max:20',
-                'correo_electronico'       => 'nullable|email|max:255',
-                'cargo_empresa_id'         => 'nullable',
-                'fecha_nacimiento'         => 'nullable|string',
-                'edad'                     => 'nullable',
+                'ruc' => 'required|string|max:11',
+                'razon_social' => 'required|string|max:255',
+                'nombre_comercial' => 'nullable|string|max:255',
+                'sector_economico_id' => 'nullable|integer',
+                'rubro_id' => 'nullable|integer',
+                'actividad_comercial_id' => 'nullable|integer',
+                'region_id' => 'nullable|integer',
+                'provincia_id' => 'nullable|integer',
+                'distrito_id' => 'nullable|integer',
+                'direccion' => 'nullable|string|max:255',
+                'tipo_documento_id' => 'nullable|integer',
+                'numero_dni' => 'required|string|max:12',
+                'apellido_paterno' => 'nullable|string|max:255',
+                'apellido_materno' => 'nullable|string|max:255',
+                'nombres' => 'nullable|string|max:255',
+                'genero_id' => 'nullable|integer',
+                'discapacidad' => 'nullable',
+                'celular' => 'nullable|string|max:20',
+                'correo_electronico' => 'nullable|email|max:255',
+                'cargo_empresa_id' => 'nullable',
+                'fecha_nacimiento' => 'nullable|string',
+                'edad' => 'nullable',
 
                 // sed question
-                'question_1'               => 'nullable|string',
-                'question_2'               => 'nullable|string',
-                'question_3'               => 'nullable|string',
-                'question_4'               => 'nullable|string',
-                'question_5'               => 'nullable|string',
+                'question_1' => 'nullable|string',
+                'question_2' => 'nullable|string',
+                'question_3' => 'nullable|string',
+                'question_4' => 'nullable|string',
+                'question_5' => 'nullable|string',
 
-                'propagandamedia_id'       => 'nullable|integer',
-                'tipo_asistente'           => 'nullable|integer',
+                'propagandamedia_id' => 'nullable|integer',
+                'tipo_asistente' => 'nullable|integer',
 
-                'slug'                     => 'required|string|max:100',
+                'slug' => 'required|string|max:100',
 
-                'cooperativa'              => 'nullable',
-                'rucCooperativa'           => 'nullable|string|max:11',
-                'rolCooperativa'           => 'nullable|string|max:255',
+                'cooperativa' => 'nullable',
+                'rucCooperativa' => 'nullable|string|max:11',
+                'rolCooperativa' => 'nullable|string|max:255',
             ]);
 
             if ($validator->fails()) {
@@ -392,7 +392,7 @@ class SedPublicController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Errores de validación',
-                    'errors'  => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
@@ -422,26 +422,26 @@ class SedPublicController extends Controller
             }
 
             $dataEmpresario = [
-                'razon_social'           => $request->razon_social,
-                'nombre_comercial'       => $request->nombre_comercial,
-                'sector_economico_id'    => $request->sector_economico_id,
-                'rubro_id'               => $request->rubro_id,
+                'razon_social' => $request->razon_social,
+                'nombre_comercial' => $request->nombre_comercial,
+                'sector_economico_id' => $request->sector_economico_id,
+                'rubro_id' => $request->rubro_id,
                 'actividad_comercial_id' => $request->actividad_comercial_id,
-                'region_id'              => $request->region_id,
-                'provincia_id'           => $request->provincia_id,
-                'distrito_id'            => $request->distrito_id,
-                'direccion'              => $request->direccion,
-                'tipo_documento_id'      => $request->tipo_documento_id,
-                'apellido_paterno'       => $request->apellido_paterno,
-                'apellido_materno'       => $request->apellido_materno,
-                'nombres'                => $request->nombres,
-                'genero_id'              => $request->genero_id,
-                'discapacidad'           => $request->discapacidad,
-                'celular'                => $request->celular,
-                'correo_electronico'     => $request->correo_electronico,
-                'cargo_empresa_id'       => $request->cargo_empresa_id,
-                'fecha_nacimiento'       => $fechaNacimiento,
-                'edad'                   => $request->edad,
+                'region_id' => $request->region_id,
+                'provincia_id' => $request->provincia_id,
+                'distrito_id' => $request->distrito_id,
+                'direccion' => $request->direccion,
+                'tipo_documento_id' => $request->tipo_documento_id,
+                'apellido_paterno' => $request->apellido_paterno,
+                'apellido_materno' => $request->apellido_materno,
+                'nombres' => $request->nombres,
+                'genero_id' => $request->genero_id,
+                'discapacidad' => $request->discapacidad,
+                'celular' => $request->celular,
+                'correo_electronico' => $request->correo_electronico,
+                'cargo_empresa_id' => $request->cargo_empresa_id,
+                'fecha_nacimiento' => $fechaNacimiento,
+                'edad' => $request->edad,
             ];
 
             // =====================================================
@@ -457,8 +457,8 @@ class SedPublicController extends Controller
                 $empresario = Empresario::create(array_merge(
                     $dataEmpresario,
                     [
-                        'ruc'         => $request->ruc,
-                        'numero_dni'  => $request->numero_dni,
+                        'ruc' => $request->ruc,
+                        'numero_dni' => $request->numero_dni,
                     ]
                 ));
             }
@@ -475,12 +475,12 @@ class SedPublicController extends Controller
                 )
                 ->first();
 
-            if (!$empresarioActividad) {
+            if (! $empresarioActividad) {
 
                 EmpresarioActividad::create([
-                    'slug'          => $request->slug,
+                    'slug' => $request->slug,
                     'empresario_id' => $empresario->id,
-                    'numero_dni'    => $request->numero_dni,
+                    'numero_dni' => $request->numero_dni,
                 ]);
             }
 
@@ -500,16 +500,16 @@ class SedPublicController extends Controller
                 ->first();
 
             $dataSedQuestion = [
-                'question_1'         => $request->question_1,
-                'question_2'         => $request->question_2,
-                'question_3'         => $request->question_3,
-                'question_4'         => $request->question_4,
-                'question_5'         => $request->question_5,
+                'question_1' => $request->question_1,
+                'question_2' => $request->question_2,
+                'question_3' => $request->question_3,
+                'question_4' => $request->question_4,
+                'question_5' => $request->question_5,
                 'propagandamedia_id' => $request->propagandamedia_id,
-                'tipo_asistente'     => $request->tipo_asistente,
-                'cooperativa'        => $request->cooperativa,
-                'rucCooperativa'     => $request->rucCooperativa,
-                'rolCooperativa'     => $request->rolCooperativa,
+                'tipo_asistente' => $request->tipo_asistente,
+                'cooperativa' => $request->cooperativa,
+                'rucCooperativa' => $request->rucCooperativa,
+                'rolCooperativa' => $request->rolCooperativa,
             ];
 
             // =====================================================
@@ -526,7 +526,7 @@ class SedPublicController extends Controller
                     $dataSedQuestion,
                     [
                         'documentnumber' => $request->numero_dni,
-                        'slug'           => $request->slug,
+                        'slug' => $request->slug,
                     ]
                 ));
             }
@@ -534,12 +534,12 @@ class SedPublicController extends Controller
             DB::commit();
 
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Registro guardado correctamente',
-                'data'    => [
-                    'empresario_id'  => $empresario->id,
+                'data' => [
+                    'empresario_id' => $empresario->id,
                     'sedquestion_id' => $sedQuestion->id,
-                ]
+                ],
             ]);
         } catch (\Exception $e) {
 
@@ -548,7 +548,7 @@ class SedPublicController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error al registrar',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -559,11 +559,11 @@ class SedPublicController extends Controller
 
             // ✅ VALIDACIÓN COMPLETA
             $validated = $request->validate([
-                'slug'            => 'required|string',
-                'documentnumber'  => 'required|string',
-                'email'           => 'required|email',
-                'name'            => 'required|string',
-                'lastname'        => 'required|string',
+                'slug' => 'required|string',
+                'documentnumber' => 'required|string',
+                'email' => 'required|email',
+                'name' => 'required|string',
+                'lastname' => 'required|string',
             ]);
 
             $mailer = $request->mailer ?? 'digitalizacion';
@@ -576,10 +576,10 @@ class SedPublicController extends Controller
                 ->where('documentnumber', $validated['documentnumber'])
                 ->first();
 
-            if (!$ugsePostulante) {
+            if (! $ugsePostulante) {
                 return response()->json([
                     'message' => 'Participante no encontrado',
-                    'status' => 404
+                    'status' => 404,
                 ], 404);
             }
 
@@ -594,7 +594,7 @@ class SedPublicController extends Controller
 
             // 🔳 QR
             $qrResult = Builder::create()
-                ->writer(new PngWriter())
+                ->writer(new PngWriter)
                 ->data($validated['documentnumber'])
                 ->size(200)
                 ->margin(10)
@@ -610,7 +610,7 @@ class SedPublicController extends Controller
                 'logoDataUri' => $logoDataUri,
             ]);
 
-            $filename = 'entrada_' . Str::random(10) . '.pdf';
+            $filename = 'entrada_'.Str::random(10).'.pdf';
             $filepath = storage_path("app/public/entradas/{$filename}");
 
             Storage::makeDirectory('public/entradas');
@@ -632,16 +632,15 @@ class SedPublicController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Correo enviado correctamente',
-                'status' => 200
+                'status' => 200,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error: ' . $e->getMessage(),
-                'status' => 500
+                'message' => 'Error: '.$e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }
-
 
     public function saveSurvey(Request $request)
     {
@@ -659,7 +658,7 @@ class SedPublicController extends Controller
 
                 return response()->json([
                     'status' => 422,
-                    'message' => 'El slug es requerido'
+                    'message' => 'El slug es requerido',
                 ], 422);
             }
 
@@ -667,11 +666,11 @@ class SedPublicController extends Controller
 
                 return response()->json([
                     'status' => 422,
-                    'message' => 'El documentnumber es requerido'
+                    'message' => 'El documentnumber es requerido',
                 ], 422);
             }
 
-            $dni  = $payload['documentnumber'];
+            $dni = $payload['documentnumber'];
             $slug = $payload['slug'];
 
             // =====================================================
@@ -686,7 +685,7 @@ class SedPublicController extends Controller
                 }
             }
 
-            if (!empty($questionsInPayload)) {
+            if (! empty($questionsInPayload)) {
                 // Contamos cuántas de las preguntas enviadas ya existen para este DNI y Slug
                 $existingQuestionsCount = sedQuestionAnswer::where('dni', $dni)
                     ->where('slug_sed', $slug)
@@ -697,7 +696,7 @@ class SedPublicController extends Controller
                 if ($existingQuestionsCount === count($questionsInPayload)) {
                     return response()->json([
                         'status' => 409,
-                        'message' => 'La encuesta ya fue registrada anteriormente. Gracias por su participación.'
+                        'message' => 'La encuesta ya fue registrada anteriormente. Gracias por su participación.',
                     ]);
                 }
             }
@@ -709,7 +708,7 @@ class SedPublicController extends Controller
             foreach ($payload as $key => $value) {
 
                 // Solo questions
-                if (!str_starts_with($key, 'question_')) {
+                if (! str_starts_with($key, 'question_')) {
                     continue;
                 }
 
@@ -733,13 +732,13 @@ class SedPublicController extends Controller
 
                 // SI ES NUEVA: Se registra correctamente
                 sedQuestionAnswer::create([
-                    'dni'       => $dni,
-                    'slug_sed'  => $slug,
-                    'ruc'       => null,
-                    'sed_id'    => null,
-                    'question'  => $question,
-                    'answer'    => $answer,
-                    'order'     => (int) filter_var($key, FILTER_SANITIZE_NUMBER_INT)
+                    'dni' => $dni,
+                    'slug_sed' => $slug,
+                    'ruc' => null,
+                    'sed_id' => null,
+                    'question' => $question,
+                    'answer' => $answer,
+                    'order' => (int) filter_var($key, FILTER_SANITIZE_NUMBER_INT),
                 ]);
             }
 
@@ -747,7 +746,7 @@ class SedPublicController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Encuesta guardada correctamente'
+                'message' => 'Encuesta guardada correctamente',
             ]);
         } catch (\Throwable $th) {
 
@@ -755,124 +754,98 @@ class SedPublicController extends Controller
 
             return response()->json([
                 'status' => 500,
-                'message' => $th->getMessage()
+                'message' => $th->getMessage(),
             ], 500);
         }
     }
 
-
     public function participantConsultation(Request $request)
     {
-        try {
-            $validatedData = $request->validate([
-                'slug' => 'required|string',
-                'dni'  => 'required',
-            ]);
+        $data = $request->validate([
+            'slug' => 'required|string',
+            'dni' => 'required|string|max:12',
+        ]);
 
-            // 1. Buscar el registro del empresario en la actividad específica.
-            $registro = EmpresarioActividad::with('empresario')
-                ->where('slug', $validatedData['slug'])
-                ->where('numero_dni', $validatedData['dni'])
-                ->first();
+        $participante = EmpresarioActividad::with([
+            'empresario:id,apellido_paterno,apellido_materno,nombres',
+        ])
+            ->where('slug', $data['slug'])
+            ->where('numero_dni', $data['dni'])
+            ->first();
 
-            // 2. Si no se encuentra el registro, significa que no está inscrito.
-            if (!$registro) {
-                return response()->json([
-                    'message' => 'no-se-registro',
-                    'status'  => 404
-                ]);
-            }
-
-            // 3. Si ya tiene una fecha de asistencia, ya marcó su ingreso.
-            if ($registro->fecha_asistencia) {
-                return response()->json([
-                    'data' => [
-                        'participant' => optional($registro->empresario)->nombres . ' ' . optional($registro->empresario)->apellido_paterno,
-                        'status'      => 'ya-estas-en-sala',
-                    ],
-                    'status' => 200,
-                    'message' => 'Este participante ya tiene registrada su asistencia.'
-                ]);
-            }
-
-            // 4. Si no tiene asistencia, se registra la fecha y hora actual.
-            $registro->fecha_asistencia = Carbon::now()->format('d/m/Y H:i');
-            $registro->save();
-
-            // 5. Obtener el nombre del empresario desde la relación.
-            $nombreCompleto = 'Participante'; // Valor por defecto
-            if ($registro->empresario) {
-                $nombreCompleto = strtoupper(trim(
-                    $registro->empresario->nombres . ' ' . $registro->empresario->apellido_paterno . ' ' . $registro->empresario->apellido_materno
-                ));
-            }
-
+        if (! $participante) {
             return response()->json([
-                'data' => [
-                    'participant' => $nombreCompleto,
-                    'status'      => 'asistio',
-                ],
-                'status' => 200,
-                'message' => 'Asistencia registrada con éxito.'
+                'status' => 404,
+                'message' => 'Participante no encontrado.',
             ]);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'message' => 'Error interno',
-                'error'   => $e->getMessage(),
-                'status'  => 500
-            ], 500);
         }
+
+        // Registrar fecha y hora de asistencia
+        $participante->fecha_asistencia = Carbon::now()->format('d/m/Y h:i a');
+
+        $participante->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Asistencia registrada correctamente.',
+            'fecha_asistencia' => $participante->fecha_asistencia,
+            'empresario' => [
+                'apellido_paterno' => $participante->empresario?->apellido_paterno,
+                'apellido_materno' => $participante->empresario?->apellido_materno,
+                'nombres' => $participante->empresario?->nombres,
+            ],
+        ]);
     }
 
     public function registerAttendance(Request $request)
     {
         try {
             $validatedData = $request->validate([
-                'slug'     => 'required|string',
-                'dni'      => 'required|string',
+                'slug' => 'required|string',
+                'dni' => 'required|string',
                 'attended' => 'required|string',
             ]);
 
             $fair = Fair::where('slug', $validatedData['slug'])->first();
 
-            if (!$fair) {
+            if (! $fair) {
                 return response()->json([
                     'message' => 'Evento no encontrado',
-                    'status'  => 404
+                    'status' => 404,
                 ], 404);
             }
 
             $postulante = UgsePostulante::where('documentnumber', $validatedData['dni'])->first();
 
-            if (!$postulante) {
+            if (! $postulante) {
                 return response()->json([
                     'message' => 'Postulante no encontrado',
-                    'status'  => 404
+                    'status' => 404,
                 ], 404);
             }
 
             $updated = SedAsistente::where('sed_id', $fair->id)
                 ->where('dni', $postulante->documentnumber)
                 ->update([
-                    'attendance' => $validatedData['attended']
+                    'attendance' => $validatedData['attended'],
                 ]);
 
-            if (!$updated) {
+            if (! $updated) {
                 return response()->json([
                     'message' => 'No se encontró registro de asistencia',
-                    'status'  => 404
+                    'status' => 404,
                 ], 404);
             }
 
             return response()->json([
                 'message' => 'Asistencia registrada correctamente',
-                'status'  => 200
+                'status' => 200,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error interno',
-                'error'   => $e->getMessage(),
-                'status'  => 500
+                'error' => $e->getMessage(),
+                'status' => 500,
             ], 500);
         }
     }
@@ -883,7 +856,7 @@ class SedPublicController extends Controller
             // 1. Validar que el payload traiga lo necesario
             $request->validate([
                 'slug' => 'required|string',
-                'dni'  => 'required'
+                'dni' => 'required',
             ]);
 
             // 2. Buscar el evento por slug para obtener el ID
@@ -895,10 +868,10 @@ class SedPublicController extends Controller
                 ->first();
 
             // Si no existe el asistente en ese evento
-            if (!$asistente) {
+            if (! $asistente) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'El DNI ingresado no está registrado como asistente de este evento.'
+                    'status' => 404,
+                    'message' => 'El DNI ingresado no está registrado como asistente de este evento.',
                 ], 404);
             }
 
@@ -908,25 +881,111 @@ class SedPublicController extends Controller
             $asistente->save();
 
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Asistencia marcada correctamente.',
-                'data'    => [
+                'data' => [
                     'hora_asistencia' => $asistente->attendance,
-                    'dni' => $asistente->dni
-                ]
+                    'dni' => $asistente->dni,
+                ],
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
-                'status'  => 404,
-                'message' => 'Evento (slug) no encontrado.'
+                'status' => 404,
+                'message' => 'Evento (slug) no encontrado.',
             ], 404);
         } catch (\Exception $e) {
-            Log::error('Error al marcar asistencia: ' . $e->getMessage());
+            Log::error('Error al marcar asistencia: '.$e->getMessage());
+
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno al procesar la asistencia.',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function dataEventAsistencia($slug): JsonResponse
+    {
+        $actividad = ActividadPnte::with([
+            'nombreActividad:id,name',
+            'regionRel:id,name',
+        ])
+            ->where('slug', $slug)
+            ->first();
+
+        if (! $actividad) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Evento no encontrado.',
+            ], 404);
+        }
+
+        $hoy = Carbon::today();
+
+        $fechas = is_array($actividad->fechas)
+            ? $actividad->fechas
+            : json_decode($actividad->fechas, true);
+
+        $fechas = $fechas ?? [];
+
+        $fechasCarbon = collect($fechas)
+            ->map(fn ($fecha) => Carbon::parse($fecha)->startOfDay())
+            ->sort()
+            ->values();
+
+        // ¿El evento es hoy?
+        $esHoy = $fechasCarbon->contains(
+            fn ($fecha) => $fecha->isSameDay($hoy)
+        );
+
+        // ¿Todas las fechas ya pasaron?
+        $yaRealizado = $fechasCarbon->isNotEmpty()
+            && $fechasCarbon->every(
+                fn ($fecha) => $fecha->lt($hoy)
+            );
+
+        // ¿El evento será posteriormente?
+        $esFuturo = $fechasCarbon->isNotEmpty()
+            && $fechasCarbon->first()->gt($hoy);
+
+        // ==========================================
+        // ESTADO DEL EVENTO
+        // ==========================================
+
+        if ($esHoy) {
+
+            $status = 200;
+            $mensaje = 'El evento está habilitado hoy.';
+
+        } elseif ($yaRealizado) {
+
+            $status = 300;
+            $mensaje = 'El evento ya fue realizado.';
+
+        } elseif ($esFuturo) {
+
+            $status = 100;
+            $mensaje = 'El formulario estará habilitado el día del evento.';
+
+        } else {
+
+            $status = 100;
+            $mensaje = 'El evento aún no está habilitado.';
+        }
+
+        return response()->json([
+            'status' => $status,
+            'message' => $mensaje,
+            'data' => [
+                'evento' => $actividad->nombreActividad?->name,
+                'lugar' => trim(
+                    ($actividad->regionRel?->name ?? '').
+                    ' - '.
+                    ($actividad->lugar ?? '')
+                ),
+                'fecha' => $fechas,
+                'horario' => $actividad->horario,
+            ],
+        ]);
     }
 }

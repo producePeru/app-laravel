@@ -807,7 +807,7 @@ class DownloadAttendanceController extends Controller
         ]);
     }
 
-    // DESCARGAR TODAS LAS ACTIVIDADES CON LOS INSCRITOS
+    // DESCARGAR TODAS LAS ACTIVIDADES CON LOS INSCRITOS PP093
     public function exportInscritos(Request $request)
     {
         try {
@@ -1014,6 +1014,8 @@ class DownloadAttendanceController extends Controller
                 'NOMBRES',
                 'GENERO  F / M',
                 'DISCAPACIDAD   SI / NO',
+                'NIVEL EDUCATIVO',
+                'CARGO EN LA EMPRESA',
                 'RUC',
                 'REGIÓN_MYPE',
                 'PROVINCIA_MYPE',
