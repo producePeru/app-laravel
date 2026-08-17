@@ -17,6 +17,7 @@ class Empresario extends Model
         'ruc',
         'razon_social',
         'nombre_comercial',
+        'nombre_mercado',
         'sector_economico_id',
         'rubro_id',
         'actividad_comercial_id',
