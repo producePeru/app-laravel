@@ -702,6 +702,8 @@ class ActividadPnteController extends Controller
                     'coop_ruc' => $e?->coop_ruc,
                     'coop_razon_social' => $e?->coop_razon_social,
                     'coop_rol' => $e?->coop_rol,
+
+                    'nombre_mercado' => $e?->nombre_mercado,
                 ];
             });
 

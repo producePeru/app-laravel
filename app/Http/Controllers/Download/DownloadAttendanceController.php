@@ -438,6 +438,8 @@ class DownloadAttendanceController extends Controller
                     'discapacidad',
                     'celular',
                     'correo_electronico',
+
+                    'nombre_mercado',
                 ]);
             },
 
@@ -451,6 +453,7 @@ class DownloadAttendanceController extends Controller
             // 🔥 ESTOS FALTABAN
             'empresario.sectorEconomico:id,name',
             'empresario.rubro:id,name',
+
         ])
             ->where('slug', $slug)
             ->orderByDesc('created_at');
@@ -631,6 +634,10 @@ class DownloadAttendanceController extends Controller
 
                 // ¿SE FORMALIZO AL USUARIO DURANTE LA ACTIVIDAD?
                 $sheet->setCellValue("{$col}{$row}", $item->personal_formalizacion == 1 ? 'SI' : '');
+                $col++;
+
+                // MERCADO AL QUE PERTENECE
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->nombre_mercado ?? '', 'UTF-8'));
                 $col++;
 
                 $row++;
