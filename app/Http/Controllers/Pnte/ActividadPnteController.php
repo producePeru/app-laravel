@@ -1119,6 +1119,10 @@ class ActividadPnteController extends Controller
 
             $noAsistieron = (clone $baseQuery)->whereNull('fecha_asistencia')->count();
 
+            $pruebasEntrada = (clone $baseQuery)->whereRaw('JSON_LENGTH(test_entrada) > 0')->count();
+
+            $pruebasSalida = (clone $baseQuery)->whereRaw('JSON_LENGTH(test_salida) > 0')->count();
+
             return response()->json([
                 'status' => 200,
                 'message' => 'Resumen de asistencia obtenido correctamente.',
@@ -1127,6 +1131,8 @@ class ActividadPnteController extends Controller
                     'total' => $total,
                     'asistieron' => $asistieron,
                     'no_asistieron' => $noAsistieron,
+                    'pruebas_entrada' => $pruebasEntrada,
+                    'pruebas_salida' => $pruebasSalida,
                 ],
             ]);
         } catch (\Exception $e) {

@@ -16,8 +16,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class MujerProduceController extends Controller
 {
@@ -150,7 +150,7 @@ class MujerProduceController extends Controller
 
         // Si quieres incluir la fecha en el slug
         if ($date) {
-            $base .= '-' . date('Ymd', strtotime($date));
+            $base .= '-'.date('Ymd', strtotime($date));
         }
 
         $slug = $base;
@@ -159,10 +159,10 @@ class MujerProduceController extends Controller
         // Verifica incluso los eliminados (SoftDeletes)
         while (
             MpEvent::withTrashed()
-            ->where('slug', $slug)
-            ->exists()
+                ->where('slug', $slug)
+                ->exists()
         ) {
-            $slug = $base . '-' . $counter;
+            $slug = $base.'-'.$counter;
             $counter++;
         }
 
@@ -278,7 +278,7 @@ class MujerProduceController extends Controller
             'slug' => $item->slug,
             'city_id' => $item->city->id ?? null,
             'city_name' => $item->city?->name
-                ? '📌 ' . $item->city->name
+                ? '📌 '.$item->city->name
                 : '🖥 VIRTUAL',
             'place' => $item->place ?? 'Plataforma Virtual',
             'date_format' => $item->date ? Carbon::parse($item->date)->format('d/m/Y') : null,
@@ -509,7 +509,7 @@ class MujerProduceController extends Controller
             // Asegurar que el model sea único en BD
             while (MPDiagnostico::where('model', $model)->exists()) {
                 $count++;
-                $model = $baseModel . '_' . $count;
+                $model = $baseModel.'_'.$count;
             }
 
             // =====================================================
@@ -621,7 +621,7 @@ class MujerProduceController extends Controller
 
                 while (MPDiagnostico::where('model', $model)->where('id', '!=', $id)->exists()) {
                     $count++;
-                    $model = $baseModel . '_' . $count;
+                    $model = $baseModel.'_'.$count;
                 }
             }
 
@@ -800,15 +800,17 @@ class MujerProduceController extends Controller
             switch ($filters['filterResumen']) {
                 case 'finalizado':
                     $query->where('gender_id', 2)
-                        ->havingRaw('habilidades_personales > 1 AND gestion_empresarial > 1');
+                        ->havingRaw('habilidades_personales >= 1 AND gestion_empresarial >= 1');
                     break;
 
                 case 'proceso':
+
                     $query->where('gender_id', 2)
                         ->havingRaw('
-            (habilidades_personales >= 1 AND gestion_empresarial = 0)
-            OR (habilidades_personales = 0 AND gestion_empresarial >= 1)
-        ');
+                    habilidades_personales = 0
+                    OR gestion_empresarial = 0
+                ');
+
                     break;
 
                 case 'no_aplica':
@@ -846,7 +848,7 @@ class MujerProduceController extends Controller
                             'model' => $q->model,
                             'type' => $q->type === 't' ? 'text' : 'select',
                             'required' => (bool) $q->required,
-                            'options' => $q->options->map(fn($opt) => [
+                            'options' => $q->options->map(fn ($opt) => [
                                 'id' => $opt->id,
                                 'label' => $opt->name,
                             ]),
@@ -884,7 +886,7 @@ class MujerProduceController extends Controller
 
             // OPCIÓN ÚNICA o MÚLTIPLE → unir labels con " - "
             $labels = $questionResponses
-                ->map(fn($r) => $r->option?->name)
+                ->map(fn ($r) => $r->option?->name)
                 ->filter()
                 ->values();
 
@@ -901,7 +903,7 @@ class MujerProduceController extends Controller
             'participant_id' => $participant->id,
             'social_reason' => $participant->social_reason,
             'nombre_completo' => $participant->names,
-            'apellidos' => $participant->last_name . ' ' . $participant->middle_name,
+            'apellidos' => $participant->last_name.' '.$participant->middle_name,
             'fecha_nacimiento' => Carbon::parse($participant->date_of_birth)->format('d/m/Y'),
             'celular' => $participant->phone,
             'tipo_documento' => optional($participant->typeDocument)->avr,
@@ -1055,8 +1057,8 @@ class MujerProduceController extends Controller
             // =========================
             // CONTEOS POR COMPONENTE
             // =========================
-            $gestion = $attendances->filter(fn($a) => $a->event?->component === 1)->count();
-            $habilidades = $attendances->filter(fn($a) => $a->event?->component === 2)->count();
+            $gestion = $attendances->filter(fn ($a) => $a->event?->component === 1)->count();
+            $habilidades = $attendances->filter(fn ($a) => $a->event?->component === 2)->count();
 
             $result = $attendances->map(function ($item) {
 
@@ -1128,7 +1130,7 @@ class MujerProduceController extends Controller
             foreach ($validated['schedules'] as $index => $schedule) {
                 if ($schedule['endTime'] <= $schedule['startTime']) {
                     return response()->json([
-                        'message' => 'La hora final debe ser mayor a la inicial en el registro #' . ($index + 1),
+                        'message' => 'La hora final debe ser mayor a la inicial en el registro #'.($index + 1),
                     ], 422);
                 }
             }
@@ -1272,7 +1274,7 @@ class MujerProduceController extends Controller
             foreach ($validated['schedules'] as $index => $schedule) {
                 if ($schedule['endTime'] <= $schedule['startTime']) {
                     return response()->json([
-                        'message' => 'La hora final debe ser mayor a la inicial en el registro #' . ($index + 1),
+                        'message' => 'La hora final debe ser mayor a la inicial en el registro #'.($index + 1),
                     ], 422);
                 }
             }
@@ -1421,19 +1423,18 @@ class MujerProduceController extends Controller
         ], 200);
     }
 
-
     // 📧 email
 
     public function sendPlanAccion(Request $request)
     {
         $payload = $request->validate([
-            'id'               => 'required|integer',
-            'nombre_completo'  => 'required|string',
-            'apellidos'        => 'required|string',
-            'email'            => 'required|email',
-            'celular'          => 'nullable|string',
-            'ruc'              => 'nullable|string',
-            'razon_social'     => 'nullable|string',
+            'id' => 'required|integer',
+            'nombre_completo' => 'required|string',
+            'apellidos' => 'required|string',
+            'email' => 'required|email',
+            'celular' => 'nullable|string',
+            'ruc' => 'nullable|string',
+            'razon_social' => 'nullable|string',
         ]);
 
         $participantId = $payload['id'];
@@ -1452,10 +1453,11 @@ class MujerProduceController extends Controller
 
         $cursosLlevados = $attendances->map(function ($item) {
             $event = $item->event;
+
             return [
-                'titulo'     => $event?->title,
-                'fecha'      => $event?->date ? Carbon::parse($event->date)->format('d/m/Y') : null,
-                'estado'     => 'PARTICIPO',
+                'titulo' => $event?->title,
+                'fecha' => $event?->date ? Carbon::parse($event->date)->format('d/m/Y') : null,
+                'estado' => 'PARTICIPO',
                 'comentario' => 'Cuenta con información recopilada en el diagnóstico',
             ];
         })->values();
@@ -1477,41 +1479,41 @@ class MujerProduceController extends Controller
                 : null;
 
             return [
-                'titulo'     => $event->title,
-                'fecha'      => $event->date ? Carbon::parse($event->date)->format('d/m/Y') : null,
-                'estado'     => 'POR REALIZAR',
+                'titulo' => $event->title,
+                'fecha' => $event->date ? Carbon::parse($event->date)->format('d/m/Y') : null,
+                'estado' => 'POR REALIZAR',
                 'comentario' => trim("Previsto de {$horaInicio} a {$horaFin}, en formato "
-                    . strtolower($event->modality->name ?? 'virtual') . '.'),
+                    .strtolower($event->modality->name ?? 'virtual').'.'),
             ];
         })->values();
 
         // Relleno por si no hay 2 eventos próximos disponibles
         while ($eventosCorreo->count() < 2) {
             $eventosCorreo->push([
-                'titulo'     => 'Por definir',
-                'fecha'      => null,
-                'estado'     => null,
+                'titulo' => 'Por definir',
+                'fecha' => null,
+                'estado' => null,
                 'comentario' => 'Evento por confirmar próximamente.',
             ]);
         }
 
         $data = [
-            'razon_social'     => $payload['razon_social'] ?? '',
-            'nombre_completo'  => trim(($payload['nombre_completo'] ?? '') . ' ' . ($payload['apellidos'] ?? '')),
-            'ruc'              => $payload['ruc'] ?? '',
-            'email'            => $payload['email'],
-            'celular'          => $payload['celular'] ?? '',
-            'cursos'           => $cursosLlevados,
-            'eventos_correo'   => $eventosCorreo,
+            'razon_social' => $payload['razon_social'] ?? '',
+            'nombre_completo' => trim(($payload['nombre_completo'] ?? '').' '.($payload['apellidos'] ?? '')),
+            'ruc' => $payload['ruc'] ?? '',
+            'email' => $payload['email'],
+            'celular' => $payload['celular'] ?? '',
+            'cursos' => $cursosLlevados,
+            'eventos_correo' => $eventosCorreo,
         ];
 
         // 3) Generar PDF
         $pdf = \PDF::loadView('pdf.plan_accion', $data)->setPaper('a4', 'landscape');
         $pdfContent = $pdf->output();
-        $fileName = 'plan_accion_' . Str::slug(
-            trim(($payload['nombre_completo'] ?? '') . ' ' . ($payload['apellidos'] ?? '')),
+        $fileName = 'plan_accion_'.Str::slug(
+            trim(($payload['nombre_completo'] ?? '').' '.($payload['apellidos'] ?? '')),
             '_'
-        ) . '.pdf';
+        ).'.pdf';
 
         // 4) Enviar por el mailer "mujerproduce" con el PDF adjunto
         Mail::mailer('mujerproduce')
@@ -1526,7 +1528,7 @@ class MujerProduceController extends Controller
 
         return response()->json([
             'message' => 'Plan de acción enviado correctamente',
-            'status'  => 200,
+            'status' => 200,
         ]);
     }
 }

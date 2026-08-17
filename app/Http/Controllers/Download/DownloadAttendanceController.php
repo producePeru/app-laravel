@@ -950,7 +950,7 @@ class DownloadAttendanceController extends Controller
             $slugs = $actividades->pluck('slug')->toArray();
 
             $inscritosPorSlug = EmpresarioActividad::with([
-                'empresario:id,ruc,razon_social,apellido_paterno,apellido_materno,nombres,numero_dni,celular,correo_electronico,genero_id,discapacidad,sector_economico_id,rubro_id,region_id,provincia_id,distrito_id,pais_id,tipo_documento_id',
+                'empresario:id,ruc,razon_social,apellido_paterno,apellido_materno,nombres,numero_dni,celular,correo_electronico,genero_id,discapacidad,sector_economico_id,rubro_id,region_id,provincia_id,distrito_id,pais_id,tipo_documento_id,academicdegree_id,cargo_empresa_id',
                 'empresario.genero:id,name',
                 'empresario.tipoDocumento:id,name',
                 'empresario.pais:id,name',
@@ -959,6 +959,8 @@ class DownloadAttendanceController extends Controller
                 'empresario.distrito:id,name',
                 'empresario.sectorEconomico:id,name',
                 'empresario.rubro:id,name',
+                'empresario.gradoAcademico:id,name',
+                'empresario.cargoEmpresa:id,name',
             ])
                 ->whereIn('slug', $slugs)
 
@@ -1138,7 +1140,7 @@ class DownloadAttendanceController extends Controller
 
                     fputcsv(
                         $handle,
-                        array_merge($colsActividad, array_fill(0, 17, null)),
+                        array_merge($colsActividad, array_fill(0, 19, null)),
                         ','
                     );
                 } else {
@@ -1164,6 +1166,8 @@ class DownloadAttendanceController extends Controller
                             $clean(strtoupper($emp?->nombres ?? '')),
                             $clean(strtoupper($emp?->genero?->name ?? '')),
                             $emp?->discapacidad ? 'SI' : 'NO',
+                            $clean($emp?->gradoAcademico?->name ?? null),
+                            $clean($emp?->cargoEmpresa?->name ?? null),
                             $clean($emp?->ruc ?? null),
                             $clean($emp?->region?->name ?? null),
                             $clean($emp?->provincia?->name ?? null),
