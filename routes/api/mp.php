@@ -4,7 +4,6 @@ use App\Http\Controllers\MujerProduce\FormularioPublicoController;
 use App\Http\Controllers\MujerProduce\MujerProduceController;
 use Illuminate\Support\Facades\Route;
 
-
 Route::controller(MujerProduceController::class)->group(function () {
 
     Route::post('register-capacitador', 'registerCapacitador');
@@ -40,8 +39,9 @@ Route::controller(MujerProduceController::class)->group(function () {
     Route::get('detail-share/{idRow}', 'detailShare');
 
     Route::post('send-email-plan-accion', 'sendPlanAccion');
-});
 
+    Route::get('total-envios-diagnostico', 'totalEnviosDiagnostico');
+});
 
 Route::controller(FormularioPublicoController::class)->group(function () {
 

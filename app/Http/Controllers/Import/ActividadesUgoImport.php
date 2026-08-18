@@ -177,11 +177,12 @@ class ActividadesUgoImport extends Controller
                     $correo                = strtolower(trim((string)($row['T'] ?? '')));
                     $personalAsesoria      = strtoupper(trim((string)($row['U'] ?? '')));
                     $personalFormalizacion = strtoupper(trim((string)($row['V'] ?? '')));
+                    $nombreMercado         = trim((string)($row['W'] ?? ''));
 
-                    // ─── COLUMNAS COOPERATIVA (W, X, Y) ──────────────────────
-                    $coopRuc         = trim((string)($row['W'] ?? ''));
-                    $coopRazonSocial = trim((string)($row['X'] ?? ''));
-                    $coopRolNombre   = strtoupper(trim((string)($row['Y'] ?? '')));
+                    // ─── COLUMNAS COOPERATIVA (X, Y, Z) ──────────────────────
+                    $coopRuc         = trim((string)($row['X'] ?? ''));
+                    $coopRazonSocial = trim((string)($row['Y'] ?? ''));
+                    $coopRolNombre   = strtoupper(trim((string)($row['Z'] ?? '')));
 
                     // Resolver el id del rol ('dir', 'soc', 'mie') o null si vacío
                     $coopRolId = !empty($coopRolNombre)
@@ -235,6 +236,7 @@ class ActividadesUgoImport extends Controller
                     $datosEmpresario = [
                         'razon_social'               => $razonSocial        ?: null,
                         'nombre_comercial'           => $nombreComercial    ?: null,
+                        'nombre_mercado'             => $nombreMercado      ?: null,
                         'sector_economico_id'        => $sectorId,
                         'rubro_id'                   => $rubroId,
                         'actividad_comercial_nombre' => $actividadComercial ?: null,

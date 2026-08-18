@@ -1977,22 +1977,8 @@ class DownloadAttendanceController extends Controller
         $bancoPreguntas = $pntTest?->test_entrada ?? [];
         $totalPreguntasTest = count($bancoPreguntas);
 
-        $ratingsLabel = [
-            1 => 'Muy insatisfecho',
-            2 => 'Insatisfecho',
-            3 => 'Poco satisfecho',
-            4 => 'Satisfecho',
-            5 => 'Muy satisfecho',
-        ];
-
-        $ratingsQuestions = [
-            'rating_1' => 'Se cumplió con tus expectativas personales 1',
-            'rating_2' => 'Se cumplió con tus expectativas personales 2',
-            'rating_3' => 'Se cumplió con tus expectativas personales 3',
-            'rating_4' => 'Se cumplió con tus expectativas personales 4',
-            'rating_5' => 'Se cumplió con tus expectativas personales 5',
-        ];
-        $totalRatings = count($ratingsQuestions);
+        $testSalidaPreguntas = $pntTest?->test_salida ?? [];
+        $totalRatings = count($testSalidaPreguntas);
 
         // Helper para convertir número de columna a letra (soporta más allá de Z)
         $colLetter = function (int $index) {
@@ -2040,8 +2026,9 @@ class DownloadAttendanceController extends Controller
         $colIndex++;
 
         // RATINGS
-        foreach ($ratingsQuestions as $key => $label) {
-            $sheet->setCellValue($colLetter($colIndex).$headerRow, mb_strtoupper($label, 'UTF-8'));
+        foreach ($testSalidaPreguntas as $i => $pregunta) {
+            $texto = $pregunta['texto'] ?? 'Rating '.($i + 1);
+            $sheet->setCellValue($colLetter($colIndex).$headerRow, mb_strtoupper($texto, 'UTF-8'));
             $colIndex++;
         }
 
@@ -2061,8 +2048,7 @@ class DownloadAttendanceController extends Controller
             $actividad,
             $bancoPreguntas,
             $totalPreguntasTest,
-            $ratingsLabel,
-            $ratingsQuestions
+            $testSalidaPreguntas
         ) {
 
             foreach ($items as $item) {
@@ -2341,13 +2327,21 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($item->caso_practico ?? '', 'UTF-8'));
                 $col++;
 
-                // RATINGS
+                // RATINGS dinámicos desde test_salida
                 $ratingsItem = $item->ratings ?? [];
 
-                foreach ($ratingsQuestions as $key => $label) {
+                foreach ($testSalidaPreguntas as $i => $pregunta) {
+
+                    $ratingId = $pregunta['id'] ?? null;
+                    $key = 'rating_'.$ratingId;
                     $valor = $ratingsItem[$key] ?? null;
-                    $respuestaRating = $valor ? ($ratingsLabel[$valor] ?? '') : '';
-                    $sheet->setCellValue("{$col}{$row}", mb_strtoupper($respuestaRating, 'UTF-8'));
+
+                    $respuestaRating = null;
+                    if ($valor && isset($pregunta['opciones'][$valor - 1])) {
+                        $respuestaRating = $pregunta['opciones'][$valor - 1]['label'] ?? null;
+                    }
+
+                    $sheet->setCellValue("{$col}{$row}", mb_strtoupper($respuestaRating ?? '', 'UTF-8'));
                     $col++;
                 }
 

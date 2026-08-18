@@ -50,6 +50,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::PUT('permission-to-delete/{slug}', 'permissionToDelete');
 
+    Route::PUT('toggle-formulario-registro/{slug}', 'toggleFormularioRegistro');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {

@@ -263,6 +263,24 @@ class FairController extends Controller
                 ]);
             }
 
+            /**
+             * INSCRIPCIONES CERRADAS (prendido = 0)
+             */
+            if ($actividad->prendido == 0) {
+
+                return response()->json([
+                    'data' => [
+                        'title' => '¡Inscripciones Cerradas!',
+                        'message' => 'Las inscripciones para este evento se encuentran cerradas en este momento.<br>
+                            No te preocupes, estamos preparando nuevas oportunidades para ti.<br>
+                            Mantente atento(a) a nuestros próximos talleres, capacitaciones y eventos<br>
+                            para seguir impulsando tu negocio.',
+                        'status' => 403,
+                        'prendido' => false,
+                    ],
+                ]);
+            }
+
             // Fechas puede venir como array o JSON
             $fechas = is_array($actividad->fechas)
                 ? $actividad->fechas
