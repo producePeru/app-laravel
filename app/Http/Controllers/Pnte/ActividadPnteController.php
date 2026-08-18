@@ -307,6 +307,7 @@ class ActividadPnteController extends Controller
                 'tipo_mercado',
                 'tipo_gestion',
                 'eliminar',
+                'prendido',
                 'created_at',
             ])
 
@@ -394,9 +395,10 @@ class ActividadPnteController extends Controller
                 $request->input('page', 1)
             );
 
-        // Convertir eliminar: 1/null → true/false
+        // Convertir eliminar y prendido: 1/0 → true/false
         $actividades->getCollection()->transform(function ($actividad) {
             $actividad->eliminar = $actividad->eliminar === 1;
+            $actividad->formulario_registro = $actividad->prendido == 1;
 
             return $actividad;
         });
@@ -1369,24 +1371,8 @@ class ActividadPnteController extends Controller
             // NUEVO
             $pntTest = PntTest::where('slug', $slug)->first();
 
-            $ratingsLabel = [
-                1 => 'Muy insatisfecho',
-                2 => 'Insatisfecho',
-                3 => 'Poco satisfecho',
-                4 => 'Satisfecho',
-                5 => 'Muy satisfecho',
-            ];
-
-            $ratingsQuestions = [
-                'rating_1' => 'Se cumplió con tus expectativas personales 1',
-                'rating_2' => 'Se cumplió con tus expectativas personales 2',
-                'rating_3' => 'Se cumplió con tus expectativas personales 3',
-                'rating_4' => 'Se cumplió con tus expectativas personales 4',
-                'rating_5' => 'Se cumplió con tus expectativas personales 5',
-            ];
-
             // 🔥 TRANSFORMAR LA COLECCIÓN (Mismo mapeo tuyo)
-            $data->getCollection()->transform(function ($item) use ($pntTest, $ratingsLabel, $ratingsQuestions) {
+            $data->getCollection()->transform(function ($item) use ($pntTest) {
 
                 $e = $item->empresario;
 
@@ -1459,18 +1445,32 @@ class ActividadPnteController extends Controller
                     }
                 }
 
-                /* Resolver Ratings */
+                /* Resolver Ratings dinámicamente desde test_salida */
 
                 $ratings = [];
 
-                if (! empty($item->ratings)) {
+                if (! empty($item->ratings) && ! empty($pntTest?->test_salida)) {
 
                     foreach ($item->ratings as $key => $value) {
 
+                        // rating_id_1 => id_1
+                        $ratingId = str_replace('rating_', '', $key);
+
+                        // Buscar la pregunta en test_salida por id
+                        $preguntaBD = collect($pntTest->test_salida)->firstWhere('id', $ratingId);
+
+                        $textoPregunta = $preguntaBD['texto'] ?? $key;
+
+                        // value es el índice de la opción (1-based)
+                        $respuestaLabel = null;
+                        if ($preguntaBD && isset($preguntaBD['opciones'][$value - 1])) {
+                            $respuestaLabel = $preguntaBD['opciones'][$value - 1]['label'];
+                        }
+
                         $ratings[] = [
-                            'pregunta' => $ratingsQuestions[$key] ?? $key,
+                            'pregunta' => $textoPregunta,
                             'valor' => $value,
-                            'respuesta' => $ratingsLabel[$value] ?? null,
+                            'respuesta' => $respuestaLabel,
                         ];
                     }
                 }
@@ -1604,6 +1604,22 @@ class ActividadPnteController extends Controller
         return response()->json([
             'status' => 200,
             'message' => 'Permiso de eliminación actualizado correctamente.',
+        ]);
+    }
+
+    public function toggleFormularioRegistro($slug)
+    {
+
+        $actividad = ActividadPnte::where('slug', $slug)->firstOrFail();
+
+        $actividad->prendido = $actividad->prendido === 1 ? 0 : 1;
+
+        $actividad->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Formulario de registro actualizado.',
+            'prendido' => $actividad->prendido,
         ]);
     }
 }

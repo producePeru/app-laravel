@@ -1423,6 +1423,45 @@ class MujerProduceController extends Controller
         ], 200);
     }
 
+    public function totalEnviosDiagnostico()
+    {
+        $currentYear = now()->year;
+
+        $query = MPParticipant::withCount([
+            'attendances as gestion_empresarial' => function ($q) use ($currentYear) {
+                $q->where('attendance', 1)
+                    ->whereHas('event', function ($eq) use ($currentYear) {
+                        $eq->where('component', 1)
+                            ->where(function ($e) use ($currentYear) {
+                                $e->whereYear('date', $currentYear)
+                                    ->orWhereYear('created_at', $currentYear);
+                            });
+                    });
+            },
+            'attendances as habilidades_personales' => function ($q) use ($currentYear) {
+                $q->where('attendance', 1)
+                    ->whereHas('event', function ($eq) use ($currentYear) {
+                        $eq->where('component', 2)
+                            ->where(function ($e) use ($currentYear) {
+                                $e->whereYear('date', $currentYear)
+                                    ->orWhereYear('created_at', $currentYear);
+                            });
+                    });
+            },
+        ])
+            ->where('gender_id', 2)
+            ->havingRaw('habilidades_personales >= 1 AND gestion_empresarial >= 1');
+
+        $total = (clone $query)->count();
+        $enviados = (clone $query)->where('send_plan', 1)->count();
+
+        return response()->json([
+            'status' => 200,
+            'total' => $total,
+            'enviados' => $enviados,
+        ]);
+    }
+
     // 📧 email
 
     public function sendPlanAccion(Request $request)
