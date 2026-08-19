@@ -8,6 +8,12 @@
 -- AFTER medio_entero;
 
 
-ALTER TABLE actividades_pnte
-ADD COLUMN prendido TINYINT(1) NOT NULL DEFAULT 0
-AFTER eliminar;
+-- ALTER TABLE actividades_pnte
+-- ADD COLUMN prendido TINYINT(1) NOT NULL DEFAULT 0
+-- AFTER eliminar;
+
+
+
+ALTER TABLE empresario_actividad
+ADD COLUMN asistire TINYINT NULL DEFAULT NULL
+AFTER fecha_ts;

@@ -972,4 +972,45 @@ class SedPublicController extends Controller
             ],
         ]);
     }
+
+    public function asistire(Request $request)
+    {
+        try {
+            $request->validate([
+                'slug' => 'required|string',
+                'numero_dni' => 'required|string',
+                'asistire' => 'required|in:0,1',
+            ]);
+
+            $registro = EmpresarioActividad::where('slug', $request->slug)
+                ->where('numero_dni', $request->numero_dni)
+                ->first();
+
+            if (! $registro) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontró el registro para este evento.',
+                ], 404);
+            }
+
+            $registro->asistire = (int) $request->asistire;
+            $registro->save();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Respuesta de asistencia actualizada correctamente.',
+                'data' => [
+                    'slug' => $registro->slug,
+                    'numero_dni' => $registro->numero_dni,
+                    'asistire' => $registro->asistire,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al actualizar la asistencia.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

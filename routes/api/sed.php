@@ -41,6 +41,8 @@ Route::controller(SedPublicController::class)->group(function () {
 
     Route::GET('info-event-asistencia/{slug}', 'dataEventAsistencia');
 
+    Route::put('asistire', 'asistire');
+
 });
 
 // sed
