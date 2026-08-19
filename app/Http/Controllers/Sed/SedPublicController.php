@@ -144,11 +144,7 @@ class SedPublicController extends Controller
             'id',
             'ruc',
             'numero_dni',
-            'apellido_paterno',
-            'apellido_materno',
-            'nombres',
-            'correo_electronico',
-            'celular'
+            'nombres'
         )
             ->where('numero_dni', $documentNumber)
             ->first();
@@ -162,6 +158,7 @@ class SedPublicController extends Controller
             'message' => 'Usuario autorizado para completar la encuesta.',
             'data' => [
                 'registro' => [
+                    'empresario' => $empresario,
                     'slug' => $registro->slug,
                     'fecha_asistencia' => $registro->fecha_asistencia,
                 ],
