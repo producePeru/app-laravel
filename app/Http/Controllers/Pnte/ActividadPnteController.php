@@ -592,6 +592,7 @@ class ActividadPnteController extends Controller
                     'actividad_id' => $item->actividad_id,
                     'slug' => $item->slug,
                     'fecha_asistencia' => $item->fecha_asistencia ? true : false,
+                    'asistire' => $item->asistire,
                     'numero_dni' => $item->numero_dni,
 
                     // 🔥 DATOS EMPRESARIO
@@ -1127,6 +1128,10 @@ class ActividadPnteController extends Controller
 
             $pruebasSalida = (clone $baseQuery)->whereRaw('JSON_LENGTH(test_salida) > 0')->count();
 
+            $confirmaron = (clone $baseQuery)->where('asistire', 1)->count();
+
+            $noAsistiran = (clone $baseQuery)->where('asistire', 0)->count();
+
             return response()->json([
                 'status' => 200,
                 'message' => 'Resumen de asistencia obtenido correctamente.',
@@ -1137,6 +1142,8 @@ class ActividadPnteController extends Controller
                     'no_asistieron' => $noAsistieron,
                     'pruebas_entrada' => $pruebasEntrada,
                     'pruebas_salida' => $pruebasSalida,
+                    'confirmaron' => $confirmaron,
+                    'no_asistiran' => $noAsistiran,
                 ],
             ]);
         } catch (\Exception $e) {
