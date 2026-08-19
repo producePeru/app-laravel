@@ -4,12 +4,12 @@ use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\Download\DownloadImageCyberWowTemplateController;
 use App\Http\Controllers\Event\CyberWowController;
 use App\Http\Controllers\Event\CyberwowParticipantController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Event\PublicEventsController;
 use App\Http\Controllers\Fair\FairController;
 use App\Http\Controllers\Page\BodaController;
 use App\Http\Controllers\Page\InvitadoController;
 use App\Http\Controllers\Training\TrainingController;
+use Illuminate\Support\Facades\Route;
 
 Route::controller(PublicEventsController::class)->group(function () {
 
@@ -20,8 +20,10 @@ Route::controller(PublicEventsController::class)->group(function () {
     Route::post('questions-answers-formalization', 'formalizationsQuestionsAndAnswers');
 
     Route::get('exist-event/{slug}/{typeId}', 'existEvent');          // existe formulario de wow
-});
 
+    Route::post('estoy-registrado', 'estoyRegistrado');
+
+});
 
 Route::controller(FairController::class)->group(function () {
 
@@ -32,13 +34,10 @@ Route::controller(FairController::class)->group(function () {
     Route::get('wow-success/{slug}', 'messageFormCompletedWow');
 });
 
-
 Route::controller(AttendanceController::class)->group(function () {
 
     Route::post('attendance-present', 'userPresent');
 });
-
-
 
 // DASHBOARD - SERGIO - training
 Route::controller(TrainingController::class)->group(function () {
@@ -60,19 +59,15 @@ Route::controller(TrainingController::class)->group(function () {
     Route::get('estadisticas-trainings', 'estadisticasTrainings');
 });
 
-
-
 Route::controller(CyberwowParticipantController::class)->group(function () {
 
     Route::post('register-cyber-wow', 'store');
 });
 
-
 Route::controller(DownloadImageCyberWowTemplateController::class)->group(function () {
 
     Route::POST('merge-with-frame/{idOffert}', 'generateOfferTemplate');
 });
-
 
 Route::controller(CyberWowController::class)->group(function () {
 
@@ -96,16 +91,15 @@ Route::controller(InvitadoController::class)->group(function () {
     Route::PATCH('invitado/{invitado:slug}/confirmar', 'confirmar');
 });
 
-
 Route::controller(BodaController::class)->group(function () {
 
-    Route::POST('/wedding-upload-image',  'upload');
+    Route::POST('/wedding-upload-image', 'upload');
 
-    Route::GET('/wedding-gallery',  'index');
+    Route::GET('/wedding-gallery', 'index');
 
-    Route::DELETE('/wedding-delete-image/{id}',  'destroy');
+    Route::DELETE('/wedding-delete-image/{id}', 'destroy');
 
-    Route::GET('/wedding-download-image/{id}',  'download');
+    Route::GET('/wedding-download-image/{id}', 'download');
 });
 
 // public

@@ -173,7 +173,6 @@ class SedPublicController extends Controller
             'status' => 200,
             'message' => 'Usuario autorizado para completar la encuesta.',
             'data' => [
-                'empresario' => $empresario,
                 'registro' => [
                     'slug' => $registro->slug,
                     'fecha_asistencia' => $registro->fecha_asistencia,
