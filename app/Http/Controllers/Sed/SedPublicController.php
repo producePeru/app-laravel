@@ -137,18 +137,6 @@ class SedPublicController extends Controller
         }
 
         // =====================================================
-        // NO TIENE ASISTENCIA REGISTRADA
-        // =====================================================
-
-        if (empty($registro->fecha_asistencia)) {
-
-            return response()->json([
-                'status' => 403,
-                'message' => 'Tu asistencia aún no ha sido registrada. Comunícate con el responsable del evento para que registre tu asistencia y puedas continuar con la encuesta.',
-            ]);
-        }
-
-        // =====================================================
         // DATOS DEL EMPRESARIO
         // =====================================================
 
