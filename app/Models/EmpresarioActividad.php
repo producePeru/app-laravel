@@ -34,15 +34,16 @@ class EmpresarioActividad extends Model
         'ratings',
         'sugerencias',
         'fecha_ts',
+        'asistire',
     ];
 
     protected $casts = [
         'test_entrada' => 'array',
-        'test_salida'  => 'array',
-        'ratings'      => 'array',
+        'test_salida' => 'array',
+        'ratings' => 'array',
 
-        'fecha_te'     => 'datetime',
-        'fecha_ts'     => 'datetime',
+        'fecha_te' => 'datetime',
+        'fecha_ts' => 'datetime',
     ];
 
     public function empresario()
@@ -63,11 +64,6 @@ class EmpresarioActividad extends Model
         );
     }
 }
-
-
-
-
-
 
 // public function empresario()
 // {
