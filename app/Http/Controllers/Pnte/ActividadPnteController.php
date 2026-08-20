@@ -7,6 +7,7 @@ use App\Models\ActividadPnte;
 use App\Models\EmpresarioActividad;
 use App\Models\PntTest;
 use App\Models\SedDescripcion;
+use App\Models\sedQuestionAnswer;
 use App\Services\GoogleMeetCalendarService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -1132,6 +1133,10 @@ class ActividadPnteController extends Controller
 
             $noAsistiran = (clone $baseQuery)->where('asistire', 0)->count();
 
+            $encuestasSatisfaccion = sedQuestionAnswer::where('slug_sed', $slug)
+                ->distinct('dni')
+                ->count('dni');
+
             return response()->json([
                 'status' => 200,
                 'message' => 'Resumen de asistencia obtenido correctamente.',
@@ -1144,6 +1149,7 @@ class ActividadPnteController extends Controller
                     'pruebas_salida' => $pruebasSalida,
                     'confirmaron' => $confirmaron,
                     'no_asistiran' => $noAsistiran,
+                    'encuestas_satisfaccion' => $encuestasSatisfaccion,
                 ],
             ]);
         } catch (\Exception $e) {
