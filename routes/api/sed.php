@@ -43,6 +43,7 @@ Route::controller(SedPublicController::class)->group(function () {
 
     Route::put('asistire', 'asistire');
 
+    Route::get('is-register-this-user-consulta', 'isRegisterThisUserConsulta');
 });
 
 // sed

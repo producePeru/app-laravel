@@ -137,6 +137,18 @@ class SedPublicController extends Controller
         }
 
         // =====================================================
+        // NO TIENE ASISTENCIA REGISTRADA
+        // =====================================================
+
+        if (empty($registro->fecha_asistencia)) {
+
+            return response()->json([
+                'status' => 403,
+                'message' => 'Tu asistencia aún no ha sido registrada. Comunícate con el responsable del evento para que registre tu asistencia y puedas continuar con la encuesta.',
+            ]);
+        }
+
+        // =====================================================
         // DATOS DEL EMPRESARIO
         // =====================================================
 
@@ -144,7 +156,11 @@ class SedPublicController extends Controller
             'id',
             'ruc',
             'numero_dni',
-            'nombres'
+            'apellido_paterno',
+            'apellido_materno',
+            'nombres',
+            'correo_electronico',
+            'celular'
         )
             ->where('numero_dni', $documentNumber)
             ->first();
@@ -157,8 +173,8 @@ class SedPublicController extends Controller
             'status' => 200,
             'message' => 'Usuario autorizado para completar la encuesta.',
             'data' => [
+                'empresario' => $empresario,
                 'registro' => [
-                    'empresario' => $empresario,
                     'slug' => $registro->slug,
                     'fecha_asistencia' => $registro->fecha_asistencia,
                 ],
@@ -1012,5 +1028,71 @@ class SedPublicController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function isRegisterThisUserConsulta(Request $request)
+    {
+        $request->validate([
+            'documentNumber' => 'required|string',
+            'slug' => 'required|string',
+        ]);
+
+        $documentNumber = trim($request->input('documentNumber'));
+        $slug = trim($request->input('slug'));
+
+        // =====================================================
+        // BUSCAR REGISTRO EN LA ACTIVIDAD
+        // =====================================================
+
+        $registro = EmpresarioActividad::select(
+            'id',
+            'slug',
+            'numero_dni',
+            'fecha_asistencia'
+        )
+            ->where('slug', $slug)
+            ->where('numero_dni', $documentNumber)
+            ->first();
+
+        // =====================================================
+        // NO ESTÁ REGISTRADO EN EL EVENTO
+        // =====================================================
+
+        if (! $registro) {
+
+            return response()->json([
+                'status' => 404,
+                'message' => 'No se encuentra registrado para este evento.',
+            ]);
+        }
+
+        // =====================================================
+        // DATOS DEL EMPRESARIO
+        // =====================================================
+
+        $empresario = Empresario::select(
+            'id',
+            'ruc',
+            'numero_dni',
+            'nombres'
+        )
+            ->where('numero_dni', $documentNumber)
+            ->first();
+
+        // =====================================================
+        // AUTORIZADO
+        // =====================================================
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Usuario autorizado para completar la encuesta.',
+            'data' => [
+                'registro' => [
+                    'empresario' => $empresario,
+                    'slug' => $registro->slug,
+                    'fecha_asistencia' => $registro->fecha_asistencia,
+                ],
+            ],
+        ]);
     }
 }
