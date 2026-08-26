@@ -8,6 +8,7 @@ use App\Http\Controllers\Event\PublicEventsController;
 use App\Http\Controllers\Fair\FairController;
 use App\Http\Controllers\Page\BodaController;
 use App\Http\Controllers\Page\InvitadoController;
+use App\Http\Controllers\Public\EmailBajaController;
 use App\Http\Controllers\Training\TrainingController;
 use Illuminate\Support\Facades\Route;
 
@@ -100,6 +101,11 @@ Route::controller(BodaController::class)->group(function () {
     Route::DELETE('/wedding-delete-image/{id}', 'destroy');
 
     Route::GET('/wedding-download-image/{id}', 'download');
+});
+
+Route::controller(EmailBajaController::class)->group(function () {
+
+    Route::post('cancelar-notificacion', 'store');
 });
 
 // public
