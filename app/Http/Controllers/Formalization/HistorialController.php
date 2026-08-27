@@ -116,7 +116,10 @@ class HistorialController extends Controller
             ]);
         }
 
-        $advisories = $query->paginate(90)->through(function ($advisory) {
+        $page = $request->input('page', 1);
+        $pageSize = $request->input('pageSize', 10);
+
+        $advisories = $query->paginate($pageSize, ['*'], 'page', $page)->through(function ($advisory) {
             return $this->mapAdvisory($advisory);
         });
 
@@ -212,7 +215,10 @@ class HistorialController extends Controller
             ]);
         }
 
-        $formalizations = $query->paginate(90)->through(function ($item) {
+        $page = $request->input('page', 1);
+        $pageSize = $request->input('pageSize', 10);
+
+        $formalizations = $query->paginate($pageSize, ['*'], 'page', $page)->through(function ($item) {
             return $this->mapFormalization10($item);
         });
 
@@ -308,7 +314,10 @@ class HistorialController extends Controller
             ]);
         }
 
-        $formalizations = $query->paginate(90)->through(function ($item) {
+        $page = $request->input('page', 1);
+        $pageSize = $request->input('pageSize', 10);
+
+        $formalizations = $query->paginate($pageSize, ['*'], 'page', $page)->through(function ($item) {
             return $this->mapFormalization20($item);
         });
 
