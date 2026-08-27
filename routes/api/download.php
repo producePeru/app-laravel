@@ -25,6 +25,13 @@ Route::controller(DownloadFormalizationsController::class)->group(function () {
     Route::post('formalizations-ruc10', 'exportFormalizationsRuc10');
 
     Route::post('formalizations-ruc20', 'exportFormalizationsRuc20');
+
+    // scv
+    Route::post('asesories-csv', 'exportAsesoriasCsv');
+
+    Route::post('formalization-ppnn-csv', 'exportFormalizationsRuc10Csv');
+
+    Route::post('formalization-ppjj-csv', 'exportFormalizationsRuc20Csv');
 });
 
 Route::controller(SedAsistentesController::class)->group(function () {
