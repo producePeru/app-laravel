@@ -52,6 +52,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::PUT('toggle-formulario-registro/{slug}', 'toggleFormularioRegistro');
 
+    Route::POST('envia-email-recordatorios', 'enviaEmailRecordatoriosPP093');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {

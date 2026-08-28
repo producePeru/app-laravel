@@ -1635,4 +1635,6 @@ class ActividadPnteController extends Controller
             'prendido' => $actividad->prendido,
         ]);
     }
+
+    public function enviaEmailRecordatoriosPP093(Request $request) {}
 }
