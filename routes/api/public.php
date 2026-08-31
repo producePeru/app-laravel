@@ -24,6 +24,8 @@ Route::controller(PublicEventsController::class)->group(function () {
 
     Route::post('estoy-registrado', 'estoyRegistrado');
 
+    Route::post('ferias-empresariales', 'fairRegisterMype');
+
 });
 
 Route::controller(FairController::class)->group(function () {

@@ -3,21 +3,21 @@
 namespace App\Http\Controllers\Import;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Models\ActividadPnte;
+use App\Models\Category;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\District;
+use App\Models\EconomicSector;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
-use App\Models\ActividadPnte;
-use App\Models\EconomicSector;
-use App\Models\Category;
-use App\Models\Country;
-use App\Models\City;
-use App\Models\Province;
-use App\Models\District;
-use App\Models\Typedocument;
 use App\Models\Gender;
+use App\Models\Province;
+use App\Models\Typedocument;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Throwable;
 
 class ActividadesUgoImport extends Controller
@@ -35,16 +35,16 @@ class ActividadesUgoImport extends Controller
             ini_set('memory_limit', '512M');
             set_time_limit(300);
 
-            $file        = $request->file('file');
+            $file = $request->file('file');
             $spreadsheet = IOFactory::load($file->getPathname());
-            $sheet       = $spreadsheet->getActiveSheet();
-            $rows        = $sheet->toArray(null, true, true, true);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray(null, true, true, true);
 
             array_shift($rows);
 
-            $registrados  = 0;
+            $registrados = 0;
             $actualizados = 0;
-            $errores      = [];
+            $errores = [];
 
             DB::transaction(function () use (
                 $rows,
@@ -56,34 +56,34 @@ class ActividadesUgoImport extends Controller
             ) {
 
                 $sectores = EconomicSector::pluck('id', 'name')
-                    ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
+                    ->mapWithKeys(fn ($id, $name) => [strtoupper($name) => $id]);
 
                 $rubros = Category::pluck('id', 'name')
-                    ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
+                    ->mapWithKeys(fn ($id, $name) => [strtoupper($name) => $id]);
 
                 $paises = Country::pluck('id', 'name')
-                    ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
+                    ->mapWithKeys(fn ($id, $name) => [strtoupper($name) => $id]);
 
                 $ciudades = City::pluck('id', 'name')
-                    ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
+                    ->mapWithKeys(fn ($id, $name) => [strtoupper($name) => $id]);
 
                 $provincias = Province::pluck('id', 'name')
-                    ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
+                    ->mapWithKeys(fn ($id, $name) => [strtoupper($name) => $id]);
 
                 $distritos = District::pluck('id', 'name')
-                    ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
+                    ->mapWithKeys(fn ($id, $name) => [strtoupper($name) => $id]);
 
                 $tiposDocs = Typedocument::pluck('id', 'name')
-                    ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
+                    ->mapWithKeys(fn ($id, $name) => [strtoupper($name) => $id]);
 
                 $generos = Gender::pluck('id', 'name')
-                    ->mapWithKeys(fn($id, $name) => [strtoupper($name) => $id]);
+                    ->mapWithKeys(fn ($id, $name) => [strtoupper($name) => $id]);
 
                 // ─── MAPA ROL COOPERATIVA ─────────────────────────────────────
                 $rolesCooperativa = [
                     'DIRIGENTE' => 'dir',
-                    'SOCIO'     => 'soc',
-                    'MIEMBRO'   => 'mie',
+                    'SOCIO' => 'soc',
+                    'MIEMBRO' => 'mie',
                 ];
 
                 // ✅ VALIDAR DUPLICADOS EN EL MISMO ARCHIVO
@@ -92,43 +92,43 @@ class ActividadesUgoImport extends Controller
                 foreach ($rows as $index => $row) {
 
                     $filaTieneDatos = collect($row)
-                        ->filter(fn($v) => !is_null($v) && trim((string)$v) !== '')
+                        ->filter(fn ($v) => ! is_null($v) && trim((string) $v) !== '')
                         ->isNotEmpty();
 
-                    if (!$filaTieneDatos) {
+                    if (! $filaTieneDatos) {
                         continue;
                     }
 
                     $filaNum = $index + 2;
 
-                    $ruc       = trim((string)($row['A'] ?? ''));
-                    $numeroDoc = trim((string)($row['M'] ?? ''));
+                    $ruc = trim((string) ($row['A'] ?? ''));
+                    $numeroDoc = trim((string) ($row['M'] ?? ''));
 
                     if (empty($numeroDoc)) {
 
                         $errores[] = [
-                            'fila'  => $filaNum,
-                            'celda' => 'M' . $filaNum,
+                            'fila' => $filaNum,
+                            'celda' => 'M'.$filaNum,
                             'campo' => 'Número documento',
                             'valor' => '',
-                            'error' => 'Número de documento vacío'
+                            'error' => 'Número de documento vacío',
                         ];
 
                         continue;
                     }
 
-                    $clave = ($ruc ?: 'SIN_RUC') . '|' . $numeroDoc;
+                    $clave = ($ruc ?: 'SIN_RUC').'|'.$numeroDoc;
 
                     if (isset($combinacionesEnArchivo[$clave])) {
 
                         $filaOriginal = $combinacionesEnArchivo[$clave];
 
                         $errores[] = [
-                            'fila'  => $filaNum,
-                            'celda' => 'A' . $filaNum,
+                            'fila' => $filaNum,
+                            'celda' => 'A'.$filaNum,
                             'campo' => 'RUC + Documento',
-                            'valor' => $ruc . ' - ' . $numeroDoc,
-                            'error' => "Duplicado con fila {$filaOriginal}"
+                            'valor' => $ruc.' - '.$numeroDoc,
+                            'error' => "Duplicado con fila {$filaOriginal}",
                         ];
                     } else {
 
@@ -136,17 +136,17 @@ class ActividadesUgoImport extends Controller
                     }
                 }
 
-                if (!empty($errores)) {
+                if (! empty($errores)) {
                     return;
                 }
 
                 foreach ($rows as $index => $row) {
 
                     $filaTieneDatos = collect($row)
-                        ->filter(fn($v) => !is_null($v) && trim((string)$v) !== '')
+                        ->filter(fn ($v) => ! is_null($v) && trim((string) $v) !== '')
                         ->isNotEmpty();
 
-                    if (!$filaTieneDatos) {
+                    if (! $filaTieneDatos) {
                         continue;
                     }
 
@@ -155,37 +155,40 @@ class ActividadesUgoImport extends Controller
                     // ─────────────────────────────────────────────────────────
                     // MAPEO COLUMNAS
                     // ─────────────────────────────────────────────────────────
-                    $ruc                   = trim((string)($row['A'] ?? ''));
-                    $razonSocial           = trim((string)($row['B'] ?? ''));
-                    $nombreComercial       = trim((string)($row['C'] ?? ''));
-                    $sectorNombre          = strtoupper(trim((string)($row['D'] ?? '')));
-                    $rubroNombre           = strtoupper(trim((string)($row['E'] ?? '')));
-                    $actividadComercial    = trim((string)($row['F'] ?? ''));
-                    $paisNombre            = strtoupper(trim((string)($row['G'] ?? '')));
-                    $regionNombre          = strtoupper(trim((string)($row['H'] ?? '')));
-                    $provinciaNombre       = strtoupper(trim((string)($row['I'] ?? '')));
-                    $distritoNombre        = strtoupper(trim((string)($row['J'] ?? '')));
-                    $direccion             = trim((string)($row['K'] ?? ''));
-                    $tipoDocNombre         = strtoupper(trim((string)($row['L'] ?? '')));
-                    $numeroDoc             = trim((string)($row['M'] ?? ''));
-                    $apellidoPaterno       = strtoupper(trim((string)($row['N'] ?? '')));
-                    $apellidoMaterno       = strtoupper(trim((string)($row['O'] ?? '')));
-                    $nombres               = strtoupper(trim((string)($row['P'] ?? '')));
-                    $generoNombre          = strtoupper(trim((string)($row['Q'] ?? '')));
-                    $discapacidad          = strtoupper(trim((string)($row['R'] ?? '')));
-                    $celular               = trim((string)($row['S'] ?? ''));
-                    $correo                = strtolower(trim((string)($row['T'] ?? '')));
-                    $personalAsesoria      = strtoupper(trim((string)($row['U'] ?? '')));
-                    $personalFormalizacion = strtoupper(trim((string)($row['V'] ?? '')));
-                    $nombreMercado         = trim((string)($row['W'] ?? ''));
+                    $ruc = (string) ($row['A'] ?? '');
+
+                    $ruc = str_replace("\xC2\xA0", '', $ruc);
+                    $ruc = trim($ruc);
+                    $razonSocial = trim((string) ($row['B'] ?? ''));
+                    $nombreComercial = trim((string) ($row['C'] ?? ''));
+                    $sectorNombre = strtoupper(trim((string) ($row['D'] ?? '')));
+                    $rubroNombre = strtoupper(trim((string) ($row['E'] ?? '')));
+                    $actividadComercial = trim((string) ($row['F'] ?? ''));
+                    $paisNombre = strtoupper(trim((string) ($row['G'] ?? '')));
+                    $regionNombre = strtoupper(trim((string) ($row['H'] ?? '')));
+                    $provinciaNombre = strtoupper(trim((string) ($row['I'] ?? '')));
+                    $distritoNombre = strtoupper(trim((string) ($row['J'] ?? '')));
+                    $direccion = trim((string) ($row['K'] ?? ''));
+                    $tipoDocNombre = strtoupper(trim((string) ($row['L'] ?? '')));
+                    $numeroDoc = trim((string) ($row['M'] ?? ''));
+                    $apellidoPaterno = strtoupper(trim((string) ($row['N'] ?? '')));
+                    $apellidoMaterno = strtoupper(trim((string) ($row['O'] ?? '')));
+                    $nombres = strtoupper(trim((string) ($row['P'] ?? '')));
+                    $generoNombre = strtoupper(trim((string) ($row['Q'] ?? '')));
+                    $discapacidad = strtoupper(trim((string) ($row['R'] ?? '')));
+                    $celular = trim((string) ($row['S'] ?? ''));
+                    $correo = strtolower(trim((string) ($row['T'] ?? '')));
+                    $personalAsesoria = strtoupper(trim((string) ($row['U'] ?? '')));
+                    $personalFormalizacion = strtoupper(trim((string) ($row['V'] ?? '')));
+                    $nombreMercado = trim((string) ($row['W'] ?? ''));
 
                     // ─── COLUMNAS COOPERATIVA (X, Y, Z) ──────────────────────
-                    $coopRuc         = trim((string)($row['X'] ?? ''));
-                    $coopRazonSocial = trim((string)($row['Y'] ?? ''));
-                    $coopRolNombre   = strtoupper(trim((string)($row['Z'] ?? '')));
+                    $coopRuc = trim((string) ($row['X'] ?? ''));
+                    $coopRazonSocial = trim((string) ($row['Y'] ?? ''));
+                    $coopRolNombre = strtoupper(trim((string) ($row['Z'] ?? '')));
 
                     // Resolver el id del rol ('dir', 'soc', 'mie') o null si vacío
-                    $coopRolId = !empty($coopRolNombre)
+                    $coopRolId = ! empty($coopRolNombre)
                         ? ($rolesCooperativa[$coopRolNombre] ?? null)
                         : null;
 
@@ -193,11 +196,11 @@ class ActividadesUgoImport extends Controller
                     if (empty($numeroDoc)) {
 
                         $errores[] = [
-                            'fila'  => $filaNum,
-                            'celda' => 'M' . $filaNum,
+                            'fila' => $filaNum,
+                            'celda' => 'M'.$filaNum,
                             'campo' => 'Número documento',
                             'valor' => '',
-                            'error' => 'Número de documento vacío'
+                            'error' => 'Número de documento vacío',
                         ];
 
                         continue;
@@ -206,21 +209,21 @@ class ActividadesUgoImport extends Controller
                     // ─────────────────────────────────────────────────────────
                     // RESOLVER IDS
                     // ─────────────────────────────────────────────────────────
-                    $sectorId    = $sectores[$sectorNombre]      ?? null;
-                    $rubroId     = $rubros[$rubroNombre]         ?? null;
-                    $paisId      = $paises[$paisNombre]          ?? null;
-                    $regionId    = $ciudades[$regionNombre]      ?? null;
+                    $sectorId = $sectores[$sectorNombre] ?? null;
+                    $rubroId = $rubros[$rubroNombre] ?? null;
+                    $paisId = $paises[$paisNombre] ?? null;
+                    $regionId = $ciudades[$regionNombre] ?? null;
                     $provinciaId = $provincias[$provinciaNombre] ?? null;
-                    $distritoId  = $distritos[$distritoNombre]   ?? null;
-                    $tipoDocId   = $tiposDocs[$tipoDocNombre]    ?? null;
-                    $generoId    = $generos[$generoNombre]       ?? null;
+                    $distritoId = $distritos[$distritoNombre] ?? null;
+                    $tipoDocId = $tiposDocs[$tipoDocNombre] ?? null;
+                    $generoId = $generos[$generoNombre] ?? null;
 
                     // ─────────────────────────────────────────────────────────
                     // BUSCAR EMPRESARIO
                     // ─────────────────────────────────────────────────────────
                     $query = Empresario::query();
 
-                    if (!empty($ruc)) {
+                    if (! empty($ruc)) {
                         $query->where('ruc', $ruc);
                     } else {
                         $query->whereNull('ruc');
@@ -234,29 +237,29 @@ class ActividadesUgoImport extends Controller
                     // DATOS EMPRESARIO — incluye cooperativa
                     // ─────────────────────────────────────────────────────────
                     $datosEmpresario = [
-                        'razon_social'               => $razonSocial        ?: null,
-                        'nombre_comercial'           => $nombreComercial    ?: null,
-                        'nombre_mercado'             => $nombreMercado      ?: null,
-                        'sector_economico_id'        => $sectorId,
-                        'rubro_id'                   => $rubroId,
+                        'razon_social' => $razonSocial ?: null,
+                        'nombre_comercial' => $nombreComercial ?: null,
+                        'nombre_mercado' => $nombreMercado ?: null,
+                        'sector_economico_id' => $sectorId,
+                        'rubro_id' => $rubroId,
                         'actividad_comercial_nombre' => $actividadComercial ?: null,
-                        'pais_id'                    => $paisId,
-                        'region_id'                  => $regionId,
-                        'provincia_id'               => $provinciaId,
-                        'distrito_id'                => $distritoId,
-                        'direccion'                  => $direccion          ?: null,
-                        'tipo_documento_id'          => $tipoDocId,
-                        'apellido_paterno'           => $apellidoPaterno    ?: null,
-                        'apellido_materno'           => $apellidoMaterno    ?: null,
-                        'nombres'                    => $nombres            ?: null,
-                        'genero_id'                  => $generoId,
-                        'discapacidad'               => $discapacidad === 'SI' ? 1 : 0,
-                        'celular'                    => $celular            ?: null,
-                        'correo_electronico'         => $correo             ?: null,
+                        'pais_id' => $paisId,
+                        'region_id' => $regionId,
+                        'provincia_id' => $provinciaId,
+                        'distrito_id' => $distritoId,
+                        'direccion' => $direccion ?: null,
+                        'tipo_documento_id' => $tipoDocId,
+                        'apellido_paterno' => $apellidoPaterno ?: null,
+                        'apellido_materno' => $apellidoMaterno ?: null,
+                        'nombres' => $nombres ?: null,
+                        'genero_id' => $generoId,
+                        'discapacidad' => $discapacidad === 'SI' ? 1 : 0,
+                        'celular' => $celular ?: null,
+                        'correo_electronico' => $correo ?: null,
                         // ─── COOPERATIVA → va en empresarios ─────────────────
-                        'coop_ruc'                   => $coopRuc            ?: null,
-                        'coop_razon_social'          => $coopRazonSocial    ?: null,
-                        'coop_rol'                   => $coopRolId,
+                        'coop_ruc' => $coopRuc ?: null,
+                        'coop_razon_social' => $coopRazonSocial ?: null,
+                        'coop_rol' => $coopRolId,
                     ];
 
                     if ($empresario) {
@@ -268,7 +271,7 @@ class ActividadesUgoImport extends Controller
                         $empresario = Empresario::create(array_merge(
                             $datosEmpresario,
                             [
-                                'ruc'        => $ruc ?: null,
+                                'ruc' => $ruc ?: null,
                                 'numero_dni' => $numeroDoc,
                             ]
                         ));
@@ -281,13 +284,13 @@ class ActividadesUgoImport extends Controller
                     // ─────────────────────────────────────────────────────────
                     EmpresarioActividad::updateOrCreate(
                         [
-                            'slug'          => $slug,
+                            'slug' => $slug,
                             'empresario_id' => $empresario->id,
                         ],
                         [
-                            'actividad_id'           => $actividad->id,
-                            'numero_dni'             => $numeroDoc,
-                            'personal_asesoria'      => $personalAsesoria === 'SI' ? 1 : 0,
+                            'actividad_id' => $actividad->id,
+                            'numero_dni' => $numeroDoc,
+                            'personal_asesoria' => $personalAsesoria === 'SI' ? 1 : 0,
                             'personal_formalizacion' => $personalFormalizacion === 'SI' ? 1 : 0,
                         ]
                     );
@@ -296,14 +299,14 @@ class ActividadesUgoImport extends Controller
                 $total = EmpresarioActividad::where('slug', $slug)->count();
 
                 $actividad->update([
-                    'total_participantes' => $total
+                    'total_participantes' => $total,
                 ]);
             });
 
             // ✅ HTML ERRORES
             $htmlErrores = '';
 
-            if (!empty($errores)) {
+            if (! empty($errores)) {
 
                 $htmlErrores .= '
             <div style="max-height:500px;overflow:auto">
@@ -324,11 +327,11 @@ class ActividadesUgoImport extends Controller
 
                     $htmlErrores .= '
                     <tr>
-                        <td>' . $error['fila'] . '</td>
-                        <td>' . $error['celda'] . '</td>
-                        <td>' . $error['campo'] . '</td>
-                        <td>' . $error['valor'] . '</td>
-                        <td style="color:red">' . $error['error'] . '</td>
+                        <td>'.$error['fila'].'</td>
+                        <td>'.$error['celda'].'</td>
+                        <td>'.$error['campo'].'</td>
+                        <td>'.$error['valor'].'</td>
+                        <td style="color:red">'.$error['error'].'</td>
                     </tr>
                 ';
                 }
@@ -341,19 +344,19 @@ class ActividadesUgoImport extends Controller
             }
 
             return response()->json([
-                'status'       => 200,
-                'message'      => 'Importación completada correctamente.',
-                'registrados'  => $registrados,
+                'status' => 200,
+                'message' => 'Importación completada correctamente.',
+                'registrados' => $registrados,
                 'actualizados' => $actualizados,
-                'errores'      => $errores,
+                'errores' => $errores,
                 'html_errores' => $htmlErrores,
             ]);
         } catch (Throwable $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error al importar el archivo.',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

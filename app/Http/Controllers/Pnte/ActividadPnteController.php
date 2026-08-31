@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pnte;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendRecordatorioPP093DesdeAdminJob;
 use App\Models\ActividadPnte;
 use App\Models\EmpresarioActividad;
 use App\Models\PntTest;
@@ -538,7 +539,8 @@ class ActividadPnteController extends Controller
                 'id',
                 'slug',
                 'tema',
-                'fechas'
+                'fechas',
+                'nombre_actividad_id'
             )
                 ->where('slug', $slug)
                 ->first();
@@ -1636,5 +1638,108 @@ class ActividadPnteController extends Controller
         ]);
     }
 
-    public function enviaEmailRecordatoriosPP093(Request $request) {}
+    public function enviaEmailRecordatoriosPP093(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'slug' => 'required|string',
+            'dateEvent' => 'required|date_format:Y-m-d',
+        ]);
+
+        try {
+            $actividad = ActividadPnte::where('slug', $validated['slug'])->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Actividad no encontrada.',
+                ], 404);
+            }
+
+            $inscritos = EmpresarioActividad::where('slug', $validated['slug'])
+                ->where('fecha_seleccionada', $validated['dateEvent'])
+                ->with('empresario')
+                ->get();
+
+            if ($inscritos->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No hay inscritos para la fecha indicada.',
+                ], 404);
+            }
+
+            $mailer = 'hostinger3k';
+            $enviados = 0;
+            $sinCorreo = 0;
+
+            foreach ($inscritos as $inscrito) {
+                $empresario = $inscrito->empresario;
+                $correo = $empresario?->correo_electronico;
+
+                if (empty($correo)) {
+                    $sinCorreo++;
+
+                    continue;
+                }
+
+                $nombreCompleto = trim(
+                    ($empresario->apellido_paterno ?? '').' '.
+                    ($empresario->apellido_materno ?? '').' '.
+                    ($empresario->nombres ?? '')
+                );
+
+                $dataUsuario = [
+                    'nombres' => ! empty($nombreCompleto) ? $nombreCompleto : 'Usuario',
+                    'correo_electronico' => $correo,
+                ];
+
+                $actividadItem = [
+                    'id' => $actividad->id,
+                    'slug' => $actividad->slug,
+                    'tema' => $actividad->tema,
+                    'entidad_organizadora' => $actividad->entidad_organizadora ?? 'Plataforma PNTE',
+                    'lugar' => $actividad->lugar ?? 'Virtual',
+                    'link_meet' => $actividad->link,
+                    'link_test' => 'https://inscripcion.soporte-pnte.com/pp093-test-entrada/'
+                        .$actividad->slug
+                        .'?'
+                        .http_build_query([
+                            'id' => $actividad->id,
+                            'date' => $inscrito->fecha_seleccionada,
+                            'hourStart' => $inscrito->horario_inicio,
+                            'hourEnd' => $inscrito->horario_fin,
+                        ]),
+                    'fecha_seleccionada' => date('d/m/Y', strtotime($inscrito->fecha_seleccionada)),
+                    'horario_inicio' => $inscrito->horario_inicio,
+                    'horario_fin' => $inscrito->horario_fin,
+                ];
+
+                SendRecordatorioPP093DesdeAdminJob::dispatch(
+                    $correo,
+                    $dataUsuario,
+                    $actividadItem,
+                    $mailer
+                );
+
+                $enviados++;
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => "Se programaron {$enviados} correo(s) de recordatorio.",
+                'data' => [
+                    'total_inscritos' => $inscritos->count(),
+                    'emails_programados' => $enviados,
+                    'inscritos_sin_correo' => $sinCorreo,
+                ],
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Error al enviar recordatorios PP093: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al enviar los recordatorios.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

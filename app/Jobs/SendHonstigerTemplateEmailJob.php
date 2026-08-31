@@ -3,22 +3,23 @@
 namespace App\Jobs;
 
 use App\Models\EmailTemplate;
-use App\Models\EmailSend;
 use Illuminate\Bus\Queueable;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class SendHonstigerTemplateEmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $email;
+
     protected $template;
+
     protected $asunto;
+
     protected $copias;
 
     public function __construct($email, EmailTemplate $template, $asunto, $copias = [])
@@ -39,11 +40,11 @@ class SendHonstigerTemplateEmailJob implements ShouldQueue
                 $message->to($this->email)
                     ->subject($this->asunto);
 
-                if (!empty($this->copias)) {
+                if (! empty($this->copias)) {
                     $message->cc($this->copias);
                 }
 
-                $message->bcc('capacitaciones_tuempresa@produce.gob.pe');
+                // $message->bcc('capacitaciones_tuempresa@produce.gob.pe');
             });
     }
 }

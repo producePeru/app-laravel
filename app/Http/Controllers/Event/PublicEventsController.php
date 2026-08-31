@@ -6,8 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SedQuestionStoreRequest;
 use App\Http\Requests\StoreSedRequest;
 use App\Mail\FairSedInfoMail;
+use App\Models\ActividadPnte;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
+use App\Models\Empresario;
+use App\Models\EmpresarioActividad;
+use App\Models\EmpresarioEmprendimiento;
 use App\Models\Fair;
 use App\Models\Mype;
 use App\Models\People;
@@ -204,106 +208,6 @@ class PublicEventsController extends Controller
         }
     }
 
-    // public function dniConsultBusinessman($dni)
-    // {
-    //     try {
-    //         $person = People::where('documentnumber', $dni)->first();
-
-    //         if (!$person) {
-
-    //             $user = auth()->user();
-
-    //             $apiUrl = "https://api.decolecta.com/v1/reniec/dni?numero={$dni}";
-
-    //             if ($user) {
-    //                 $tokens = Token::where('user_id', $user->id)     // Tokens del usuario autenticado
-    //                     ->pluck('token')
-    //                     ->toArray();
-    //             } else {
-    //                 $tokens = Token::inRandomOrder()                // No hay sesión → usar tokens de cualquier usuario
-    //                     ->pluck('token')
-    //                     ->toArray();
-    //             }
-
-    //             // 3. Si no hay tokens en la base de datos
-    //             if (empty($tokens)) {
-    //                 return response()->json([
-    //                     'status'  => 404,
-    //                     'message' => 'No existen tokens registrados'
-    //                 ], 404);
-    //             }
-
-    //             $client = new Client();
-
-    //             $responseData = null;
-
-    //             foreach ($tokens as $token) {
-    //                 try {
-    //                     $response = $client->request('GET', $apiUrl, [
-    //                         'headers' => [
-    //                             'Authorization' => $token,
-    //                             'Accept' => 'application/json',
-    //                         ],
-    //                         'timeout' => 5,
-    //                     ]);
-
-    //                     $responseData = json_decode($response->getBody(), true);
-
-    //                     if (!empty($responseData['document_number'])) {
-    //                         break;
-    //                     }
-    //                 } catch (\Exception $e) {
-    //                     // Si hay error, pasa al siguiente token
-    //                     continue;
-    //                 }
-    //             }
-
-    //             if ($responseData && !empty($responseData['document_number'])) {
-    //                 return response()->json([
-    //                     'status' => 200,
-    //                     'message' => 'Información obtenida',
-    //                     'data' => [
-    //                         'numeroDocumento' => $responseData['document_number'],
-    //                         'name' => $responseData['first_name'] ?? null,
-    //                         'lastname' => $responseData['first_last_name'] ?? null,
-    //                         'middlename' => $responseData['second_last_name'] ?? null,
-    //                         'gender_id' => null,
-    //                         'sick' => null,
-    //                         'phone' => null,
-    //                         'email' => null
-    //                     ]
-    //                 ]);
-    //             } else {
-    //                 return response()->json([
-    //                     'status' => 404,
-    //                     'message' => 'No se pudo obtener información con los tokens disponibles'
-    //                 ]);
-    //             }
-    //         } else {
-    //             // Si se encuentra
-    //             return response()->json([
-    //                 'status' => 200,
-    //                 'message' => 'Usuario',
-    //                 'data' => [
-    //                     'name' => $person->name ?? null,
-    //                     'lastname' => $person->lastname ?? null,
-    //                     'middlename' => $person->middlename ?? null,
-    //                     'gender_id' => $person->gender_id ?? null,
-    //                     'sick' => $person->sick ?? null,
-    //                     'phone' => $person->phone ?? null,
-    //                     'email' => $person->email ?? null
-    //                 ]
-    //             ]);
-    //         }
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'message' => 'Error al procesar la solicitud',
-    //             'error' => $th->getMessage(),
-    //             'status' => 500
-    //         ], 500);
-    //     }
-    // }
-
     public function isThisUserRegistered(Request $request)
     {
         try {
@@ -362,98 +266,6 @@ class PublicEventsController extends Controller
             ], 500);
         }
     }
-
-    // public function participantRegistrationSed(StoreSedRequest $request)
-    // {
-    //     try {
-    //         $fair = Fair::where('slug', $request->slug)->firstOrFail();
-    //         $request->merge(['event_id' => $fair->id]);
-
-    //         // Crear el nuevo postulante
-    //         $ugsePostulante = UgsePostulante::create($request->all());
-
-    //         if (!$ugsePostulante) {
-    //             return response()->json([
-    //                 'message' => 'Error al registrar al postulante.',
-    //                 'status' => 500
-    //             ], 500);
-    //         }
-
-    //         $mailer = $request->mailer ?? 'hostinger';
-
-    //         // Codificar logo en base64
-    //         $logoPath = public_path('images/logo/sed.png');
-    //         $logoBase64 = base64_encode(file_get_contents($logoPath));
-    //         $logoMime = mime_content_type($logoPath);
-    //         $logoDataUri = "data:$logoMime;base64,$logoBase64";
-
-    //         // Generar QR en base64
-    //         $qrResult = Builder::create()
-    //             ->writer(new PngWriter())
-    //             ->data($ugsePostulante->documentnumber)
-    //             ->size(200)
-    //             ->margin(10)
-    //             ->build();
-
-    //         $qrBase64 = base64_encode($qrResult->getString());
-
-    //         $qrResult = Builder::create()
-    //             ->writer(new PngWriter())
-    //             ->data($ugsePostulante->documentnumber)
-    //             ->size(200)
-    //             ->margin(10)
-    //             ->build();
-
-    //         $qrBase64 = base64_encode($qrResult->getString());
-
-    //         // Generar PDF
-    //         $pdf = PDF::loadView('pdf.ticket_entry', [
-    //             'fair' => $fair,
-    //             'participantName' => "{$ugsePostulante->name} {$ugsePostulante->lastname}",
-    //             'qrBase64' => $qrBase64,
-    //             'logoDataUri' => $logoDataUri,
-    //         ]);
-
-    //         $filename = 'entrada_' . Str::random(10) . '.pdf';
-    //         $filepath = storage_path("app/public/entradas/{$filename}");
-    //         Storage::makeDirectory('public/entradas');
-    //         $pdf->save($filepath);
-
-    //         $participantName = "{$ugsePostulante->name} {$ugsePostulante->lastname}";
-    //         $messageContent = strip_tags($fair->msgSendEmail);
-
-    //         Mail::mailer($mailer)
-    //             ->to($ugsePostulante->email)
-    //             ->send(new FairSedInfoMail(
-    //                 $messageContent,
-    //                 $filepath,
-    //                 $participantName,
-    //                 $fair
-    //             ));
-
-    //         return response()->json([
-    //             'message' => 'Postulante creado correctamente y correo enviado.',
-    //             'data' => $ugsePostulante,
-    //             'status' => 200
-    //         ], 200);
-    //     } catch (ModelNotFoundException $e) {
-    //         return response()->json([
-    //             'message' => 'El evento con el slug proporcionado no existe.',
-    //             'status' => 404
-    //         ], 404);
-    //     } catch (ValidationException $e) {
-    //         return response()->json([
-    //             'message' => 'Validation error',
-    //             'errors' => $e->errors(),
-    //             'status' => 422
-    //         ], 422);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Unexpected error: ' . $e->getMessage(),
-    //             'status' => 500
-    //         ], 500);
-    //     }
-    // }
 
     public function participantRegistrationSed(StoreSedRequest $request)
     {
@@ -697,6 +509,124 @@ class PublicEventsController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener los detalles del evento.',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    // FERIAS EMPRESARIALES
+
+    public function fairRegisterMype(Request $request)
+    {
+        try {
+            $data = $request->all();
+
+            // ─── 1. CREAR/OBTENER EMPRESARIO ─────────────────────────
+            $data['fecha_nacimiento'] = \Carbon\Carbon::createFromFormat('d/m/Y', $data['fecha_nacimiento'])->format('Y-m-d');
+
+            $empresario = Empresario::where('numero_dni', $data['numero_dni'])->first();
+
+            if ($empresario) {
+                $empresario->update($data);
+            } else {
+                $empresario = Empresario::create([
+                    'ruc' => $data['ruc'],
+                    'razon_social' => $data['razon_social'],
+                    'nombre_comercial' => $data['nombre_comercial'],
+                    'sector_economico_id' => $data['sector_economico_id'],
+                    'rubro_id' => $data['rubro_id'],
+                    'actividad_comercial_id' => $data['actividad_comercial_id'],
+                    'region_id' => $data['region_id'],
+                    'provincia_id' => $data['provincia_id'],
+                    'distrito_id' => $data['distrito_id'],
+                    'direccion' => $data['direccion'],
+                    'tipo_documento_id' => $data['tipo_documento_id'],
+                    'numero_dni' => $data['numero_dni'],
+                    'apellido_paterno' => $data['apellido_paterno'],
+                    'apellido_materno' => $data['apellido_materno'],
+                    'nombres' => $data['nombres'],
+                    'genero_id' => $data['genero_id'],
+                    'discapacidad' => $data['discapacidad'],
+                    'celular' => $data['celular'],
+                    'correo_electronico' => $data['correo_electronico'],
+                    'cargo_empresa_id' => $data['cargo_empresa_id'],
+                    'fecha_nacimiento' => $data['fecha_nacimiento'],
+                    'edad' => $data['edad'],
+                    'pais_id' => $data['pais_nacimiento_id'] ?? null,
+                ]);
+            }
+
+            // ─── 2. BUSCAR ACTIVIDAD POR SLUG ────────────────────────
+            $actividad = ActividadPnte::where('slug', $data['slug'])->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'message' => 'No se encontró la actividad con el slug proporcionado.',
+                    'status' => 404,
+                ], 404);
+            }
+
+            // ─── 3. REGISTRAR EMPRESARIO ACTIVIDAD ───────────────────
+            EmpresarioActividad::firstOrCreate(
+                [
+                    'empresario_id' => $empresario->id,
+                    'slug' => $data['slug'],
+                ],
+                [
+                    'actividad_id' => $actividad->id,
+                    'numero_dni' => $data['numero_dni'],
+                ]
+            );
+
+            // ─── 4. REGISTRAR EMPRESARIO EMPRENDIMIENTO ──────────────
+            $emprendimiento = EmpresarioEmprendimiento::firstOrCreate(
+                [
+                    'empresario_id' => $empresario->id,
+                    'actividad_id' => $actividad->id,
+                ],
+                [
+                    'redes_sociales' => $data['redes_sociales'] ?? null,
+                    'pertenece_gremio' => $data['pertenece_gremio'] ?? false,
+                    'nombre_gremio' => $data['nombre_gremio'] ?? null,
+                    'cap_prod_mensual' => $data['cap_prod_mensual'] ?? null,
+                    'porc_prod_planta' => $data['porc_prod_planta'] ?? null,
+                    'porc_prod_maquila' => $data['porc_prod_maquila'] ?? null,
+                    'tiene_puntos_venta' => $data['tiene_puntos_venta'] ?? false,
+                    'num_puntos_ventas' => $data['num_puntos_ventas'] ?? null,
+                    'desc_negocio' => $data['desc_negocio'] ?? null,
+                    'pos' => $data['pos'] ?? false,
+                    'yape_plim' => $data['yape_plim'] ?? false,
+                    'tiene_tiendas' => $data['tiene_tiendas'] ?? false,
+                    'nombre_tienda' => $data['nombre_tienda'] ?? null,
+                    'tiene_delivery' => $data['tiene_delivery'] ?? false,
+                    'factura_electronica' => $data['factura_electronica'] ?? false,
+                    'participado_produce' => $data['participado_produce'] ?? false,
+                    'nombre_servicio' => $data['nombre_servicio'] ?? null,
+                    'participado_feria' => $data['participado_feria'] ?? false,
+                    'nombre_feria' => $data['nombre_feria'] ?? null,
+                    'formalizado_produce' => $data['formalizado_produce'] ?? false,
+                    'indecopi' => $data['indecopi'] ?? false,
+                    'logros_empresa' => $data['logros_empresa'] ?? null,
+                    'terminos_condiciones' => $data['terminos_condiciones'] ?? false,
+                ]
+            );
+
+            return response()->json([
+                'message' => 'Mype registrado exitosamente en la feria.',
+                'data' => [
+                    'empresario' => $empresario,
+                    'emprendimiento' => $emprendimiento,
+                ],
+                'status' => 200,
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Error al registrar Mype en feria: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'message' => 'Ocurrió un error al registrar la Mype.',
                 'error' => $e->getMessage(),
                 'status' => 500,
             ], 500);
