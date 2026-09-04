@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Automatic;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Jobs\SendPdfCertificadosEmailsJob;
+use Illuminate\Http\Request;
 
 class CertificadoPDFController extends Controller
 {
@@ -12,14 +12,14 @@ class CertificadoPDFController extends Controller
     {
         $emails = $request->input('emails');
         $groupedEmails = [];
-        $mailer = 'capacitaciones';      // capacitaciones || office365 || digitalizacion
+        $mailer = 'digitalizacion';      // capacitaciones || office365 || digitalizacion
 
         // Agrupar destinatarios por archivo PDF
         foreach ($emails as $emailData) {
             $email = $emailData['correo'];
-            $pdfFile = $emailData['archivo'] . '.pdf';
+            $pdfFile = $emailData['archivo'].'.pdf';
 
-            if (!isset($groupedEmails[$pdfFile])) {
+            if (! isset($groupedEmails[$pdfFile])) {
                 $groupedEmails[$pdfFile] = [];
             }
             $groupedEmails[$pdfFile][] = $email;
@@ -33,7 +33,6 @@ class CertificadoPDFController extends Controller
         return response()->json(['message' => 'Emails are being processed.']);
     }
 }
-
 
 // {
 //     "emails": [

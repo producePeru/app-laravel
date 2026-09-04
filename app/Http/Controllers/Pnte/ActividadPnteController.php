@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Pnte;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendRecordatorioPP093DesdeAdminJob;
 use App\Models\ActividadPnte;
+use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
+use App\Models\EmpresarioEmprendimiento;
 use App\Models\PntTest;
 use App\Models\SedDescripcion;
 use App\Models\sedQuestionAnswer;
@@ -1741,5 +1743,181 @@ class ActividadPnteController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    // IMPORTAR PARA LAS FERIAS EN FORMATO JSON
+
+    public function importEmpresariosJson(Request $request, $slug): JsonResponse
+    {
+        $payload = $request->input('data');
+
+        if (! is_array($payload)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El campo data debe ser un array.',
+            ], 422);
+        }
+
+        $actividad = ActividadPnte::where('slug', $slug)->firstOrFail();
+
+        $importados = 0;
+        $errores = [];
+
+        DB::transaction(function () use ($payload, $actividad, $slug, &$importados, &$errores) {
+            foreach ($payload as $indice => $item) {
+                $item = is_array($item) ? $item : (array) $item;
+
+                $numeroPosicion = $indice + 1;
+
+                try {
+                    $documento = $item['num_doc'] ?? $item['numero_dni'] ?? null;
+
+                    if ($documento === null || trim((string) $documento) === '') {
+                        throw new \Exception('No se encontró num_doc en el registro.');
+                    }
+
+                    $dataEmpresario = [
+                        'ruc' => $item['ruc'] ?? null,
+                        'razon_social' => $item['razon_social'] ?? null,
+                        'nombre_comercial' => $item['nombre_comercial'] ?? null,
+                        'sector_economico_id' => $item['sector'] ?? null,
+                        'rubro_id' => $item['rubro'] ?? null,
+                        'actividad_comercial_id' => $item['actividad_comercial'] ?: null,
+                        'region_id' => $item['departamento'] ?? null,
+                        'provincia_id' => $item['provincia'] ?? null,
+                        'distrito_id' => $item['distrito'] ?? null,
+                        'direccion' => $item['domicilio'] ?? null,
+                        'pais_id' => $item['pais'] ?? null,
+                        'tipo_documento_id' => $item['tipo_doc'] ?? null,
+                        'numero_dni' => $documento,
+                        'apellido_paterno' => $item['apellido_pat'] ?? null,
+                        'apellido_materno' => $item['apellido_mat'] ?? null,
+                        'nombres' => $item['nombres'] ?? null,
+                        'genero_id' => (isset($item['genero']) && Str::lower(trim($item['genero'])) === 'masculino') ? 1 : 2,
+                        'discapacidad' => (isset($item['discapacidad']) && (int) $item['discapacidad'] === 1) ? 1 : 0,
+                        'celular' => $this->extraerNueveDigitos($item['telefono'] ?? null),
+                        'correo_electronico' => $item['correo'] ?? null,
+                        'fecha_nacimiento' => $item['fecha_nacimiento'] ?? null,
+                        'edad' => $item['edad'] ?? null,
+                    ];
+
+                    $empresario = Empresario::create($dataEmpresario);
+
+                    $actividadId = $actividad->id;
+
+                    EmpresarioActividad::create([
+                        'actividad_id' => $actividadId,
+                        'slug' => $slug,
+                        'empresario_id' => $empresario->id,
+                        'numero_dni' => $documento,
+                    ]);
+
+                    EmpresarioEmprendimiento::create([
+                        'empresario_id' => $empresario->id,
+                        'actividad_id' => $actividadId,
+                        'redes_sociales' => $this->construitRedesSociales($item),
+                        'pertenece_gremio' => $item['pertenece_gremio'] ?? '0',
+                        'nombre_gremio' => $item['nombre_gremio'] ?? null,
+                        'cap_prod_mensual' => $item['capacidad_producccion_mensual'] ?? null,
+                        'porc_prod_planta' => $item['porcentaje_produccion_planta_propia'] ?? null,
+                        'porc_prod_maquila' => $item['porcentaje_produccion_maquila'] ?? null,
+                        'tiene_puntos_venta' => $item['cuenta_punto_venta'] ?? '0',
+                        'num_puntos_ventas' => $item['numeros_punto_venta'] ?? null,
+                        'desc_negocio' => isset($item['explicacion']) ? trim($item['explicacion']) : null,
+                        'pos' => $this->siNoToBool($item['cuenta_pos'] ?? null),
+                        'yape_plim' => $this->siNoToBool($item['cuenta_pagos'] ?? null),
+                        'tiene_tiendas' => $this->siNoToBool($item['tienda_virtual'] ?? null),
+                        'nombre_tienda' => $item['tienda_virtual_otro'] ?? null,
+                        'tiene_delivery' => $this->siNoToBool($item['delivery'] ?? null),
+                        'factura_electronica' => $this->siNoToBool($item['emite_factura'] ?? null),
+                        'participado_produce' => $this->siNoToBool($item['servicio_produce'] ?? null),
+                        'nombre_servicio' => $item['servicio_produce_otro'] ?? null,
+                        'participado_feria' => $this->siNoToBool($item['participado_feria'] ?? null),
+                        'nombre_feria' => $item['participado_otro'] ?? null,
+                        'formalizado_produce' => $this->siNoToBool($item['formalizado'] ?? null),
+                        'indecopi' => $item['marca_registrada_indecopi'] ?? '0',
+                        'logros_empresa' => isset($item['logros']) ? trim($item['logros']) : null,
+                        'terminos_condiciones' => $item['accept_terms'] ?? '0',
+                    ]);
+
+                    $importados++;
+                } catch (Throwable $e) {
+                    $errores[] = [
+                        'indice' => $numeroPosicion,
+                        'numero_dni' => $item['num_doc'] ?? $item['numero_dni'] ?? null,
+                        'error' => $e->getMessage(),
+                    ];
+                }
+            }
+        });
+
+        return response()->json([
+            'success' => count($errores) === 0,
+            'message' => count($errores) === 0
+                ? 'Empresarios importados correctamente.'
+                : 'Se importaron algunos empresarios, pero hubo errores.',
+            'total_recibido' => count($payload),
+            'importados' => $importados,
+            'fallidos' => count($errores),
+            'errores' => $errores,
+        ]);
+    }
+
+    private function siNoToBool($valor): int
+    {
+        if ($valor === null) {
+            return 0;
+        }
+
+        return Str::upper(trim((string) $valor)) === 'SI' ? 1 : 0;
+    }
+
+    private function construitRedesSociales(array $item): array
+    {
+        $redes = [];
+
+        $mapa = [
+            'pagina' => 'Web',
+            'facebook' => 'Facebook',
+            'imstagram' => 'Instagram',
+        ];
+
+        foreach ($mapa as $campo => $nombre) {
+            $link = isset($item[$campo]) ? trim((string) $item[$campo]) : '';
+
+            if ($link === '') {
+                continue;
+            }
+
+            $link = str_replace(['\\/', '\\'], '', $link);
+
+            $redes[] = [
+                'name' => $nombre,
+                'link' => $link,
+            ];
+        }
+
+        return $redes;
+    }
+
+    private function extraerNueveDigitos($telefono): ?string
+    {
+        if ($telefono === null) {
+            return null;
+        }
+
+        $telefono = trim((string) $telefono);
+
+        if ($telefono === '') {
+            return null;
+        }
+
+        $digitos = preg_replace('/\D/', '', $telefono);
+
+        if ($digitos === null || $digitos === '') {
+            return null;
+        }
+
+        return substr($digitos, -9);
     }
 }

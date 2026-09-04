@@ -35,108 +35,94 @@ return [
 
     'mailers' => [
         'capacitaciones' => [  // capacitaciones.pnte@gmail.com
-            'transport'     => env('MAIL_MAILER_CAPACITACIONES', 'smtp'),
-            'host'          => env('MAIL_HOST_CAPACITACIONES'),
-            'port'          => env('MAIL_PORT_CAPACITACIONES'),
-            'username'      => env('MAIL_USERNAME_CAPACITACIONES'),
-            'password'      => env('MAIL_PASSWORD_CAPACITACIONES'),
-            'encryption'    => env('MAIL_ENCRYPTION_CAPACITACIONES'),
+            'transport' => env('MAIL_MAILER_CAPACITACIONES', 'smtp'),
+            'host' => env('MAIL_HOST_CAPACITACIONES'),
+            'port' => env('MAIL_PORT_CAPACITACIONES'),
+            'username' => env('MAIL_USERNAME_CAPACITACIONES'),
+            'password' => env('MAIL_PASSWORD_CAPACITACIONES'),
+            'encryption' => env('MAIL_ENCRYPTION_CAPACITACIONES'),
             'from' => [
-                'address'   => env('MAIL_FROM_ADDRESS_CAPACITACIONES'),
-                'name'      => env('MAIL_FROM_NAME_CAPACITACIONES'),
+                'address' => env('MAIL_FROM_ADDRESS_CAPACITACIONES'),
+                'name' => env('MAIL_FROM_NAME_CAPACITACIONES'),
             ],
         ],
         'notificaciones' => [  // notificaciones.pnte@gmail.com
-            'transport'     => env('MAIL_MAILER_NOTIFICACIONES', 'smtp'),
-            'host'          => env('MAIL_HOST_NOTIFICACIONES'),
-            'port'          => env('MAIL_PORT_NOTIFICACIONES'),
-            'username'      => env('MAIL_USERNAME_NOTIFICACIONES'),
-            'password'      => env('MAIL_PASSWORD_NOTIFICACIONES'),
-            'encryption'    => env('MAIL_ENCRYPTION_NOTIFICACIONES'),
+            'transport' => env('MAIL_MAILER_NOTIFICACIONES', 'smtp'),
+            'host' => env('MAIL_HOST_NOTIFICACIONES'),
+            'port' => env('MAIL_PORT_NOTIFICACIONES'),
+            'username' => env('MAIL_USERNAME_NOTIFICACIONES'),
+            'password' => env('MAIL_PASSWORD_NOTIFICACIONES'),
+            'encryption' => env('MAIL_ENCRYPTION_NOTIFICACIONES'),
             'from' => [
-                'address'   => env('MAIL_FROM_ADDRESS_NOTIFICACIONES'),
-                'name'      => env('MAIL_FROM_NAME_NOTIFICACIONES'),
+                'address' => env('MAIL_FROM_ADDRESS_NOTIFICACIONES'),
+                'name' => env('MAIL_FROM_NAME_NOTIFICACIONES'),
             ],
         ],
         'cyberpnte' => [    // cyberpnte@gmail.com
-            'transport'     => env('MAIL_MAILER_CYBERPNTE', 'smtp'),
-            'host'          => env('MAIL_HOST_CYBERPNTE'),
-            'port'          => env('MAIL_PORT_CYBERPNTE'),
-            'username'      => env('MAIL_USERNAME_CYBERPNTE'),
-            'password'      => env('MAIL_PASSWORD_CYBERPNTE'),
-            'encryption'    => env('MAIL_ENCRYPTION_CYBERPNTE'),
+            'transport' => env('MAIL_MAILER_CYBERPNTE', 'smtp'),
+            'host' => env('MAIL_HOST_CYBERPNTE'),
+            'port' => env('MAIL_PORT_CYBERPNTE'),
+            'username' => env('MAIL_USERNAME_CYBERPNTE'),
+            'password' => env('MAIL_PASSWORD_CYBERPNTE'),
+            'encryption' => env('MAIL_ENCRYPTION_CYBERPNTE'),
             'from' => [
-                'address'   => env('MAIL_FROM_ADDRESS_CYBERPNTE'),
-                'name'      => env('MAIL_FROM_NAME_CYBERPNTE'),
+                'address' => env('MAIL_FROM_ADDRESS_CYBERPNTE'),
+                'name' => env('MAIL_FROM_NAME_CYBERPNTE'),
             ],
         ],
 
-
         'hostinger' => [    // capacitaciones@soporte-pnte.com
-            'transport'  => env('MAIL_MAILER_HOSTINGER', 'smtp'),
-            'host'       => env('MAIL_HOST_HOSTINGER', 'smtp.hostinger.com'),
-            'port'       => env('MAIL_PORT_HOSTINGER', 465),
-            'username'   => env('MAIL_USERNAME_HOSTINGER'),
-            'password'   => env('MAIL_PASSWORD_HOSTINGER'),
+            'transport' => env('MAIL_MAILER_HOSTINGER', 'smtp'),
+            'host' => env('MAIL_HOST_HOSTINGER', 'smtp.hostinger.com'),
+            'port' => env('MAIL_PORT_HOSTINGER', 465),
+            'username' => env('MAIL_USERNAME_HOSTINGER'),
+            'password' => env('MAIL_PASSWORD_HOSTINGER'),
             'encryption' => env('MAIL_ENCRYPTION_HOSTINGER', 'ssl'),
-            'timeout'    => null,
+            'timeout' => null,
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS_HOSTINGER', 'capacitaciones@soporte-pnte.com'),
-                'name'    => env('MAIL_FROM_NAME_HOSTINGER', 'PROGRAMA NACIONAL TU EMPRESA'),
-            ]
+                'name' => env('MAIL_FROM_NAME_HOSTINGER', 'PROGRAMA NACIONAL TU EMPRESA'),
+            ],
         ],
 
         'hostinger3k' => [    // capacitaciones@pnte-mype.com 3k
-            'transport'  => env('MAIL_MAILER_HOSTINGER_3K', 'smtp'),
-            'host'       => env('MAIL_HOST_HOSTINGER_3K', 'smtp.hostinger.com'),
-            'port'       => env('MAIL_PORT_HOSTINGER_3K', 465),
-            'username'   => env('MAIL_USERNAME_HOSTINGER_3K'),
-            'password'   => env('MAIL_PASSWORD_HOSTINGER_3K'),
+            'transport' => env('MAIL_MAILER_HOSTINGER_3K', 'smtp'),
+            'host' => env('MAIL_HOST_HOSTINGER_3K', 'smtp.hostinger.com'),
+            'port' => env('MAIL_PORT_HOSTINGER_3K', 465),
+            'username' => env('MAIL_USERNAME_HOSTINGER_3K'),
+            'password' => env('MAIL_PASSWORD_HOSTINGER_3K'),
             'encryption' => env('MAIL_ENCRYPTION_HOSTINGER_3K', 'ssl'),
-            'timeout'    => null,
+            'timeout' => null,
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS_HOSTINGER_3K', 'capacitaciones@soporte-pnte.com'),
-                'name'    => env('MAIL_FROM_NAME_HOSTINGER_3K', 'PROGRAMA NACIONAL TU EMPRESA'),
-            ]
+                'name' => env('MAIL_FROM_NAME_HOSTINGER_3K', 'PROGRAMA NACIONAL TU EMPRESA'),
+            ],
         ],
 
         'digitalizacion' => [    // digitalizacion.pnte@gmail.com
-            'transport'  => env('MAIL_MAILER', 'smtp'),
-            'host'       => env('MAIL_HOST', 'smtp.hostinger.com'),
-            'port'       => env('MAIL_PORT', 465),
-            'username'   => env('MAIL_USERNAME'),
-            'password'   => env('MAIL_PASSWORD'),
+            'transport' => env('MAIL_MAILER', 'smtp'),
+            'host' => env('MAIL_HOST', 'smtp.hostinger.com'),
+            'port' => env('MAIL_PORT', 465),
+            'username' => env('MAIL_USERNAME'),
+            'password' => env('MAIL_PASSWORD'),
             'encryption' => env('MAIL_ENCRYPTION', 'ssl'),
-            'timeout'    => null,
+            'timeout' => null,
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS', 'capacitaciones@soporte-pnte.com'),
-                'name'    => env('MAIL_FROM_NAME', 'PROGRAMA NACIONAL TU EMPRESA'),
-            ]
+                'name' => env('MAIL_FROM_NAME', 'PROGRAMA NACIONAL TU EMPRESA'),
+            ],
         ],
 
-        'pp093' => [   // capacitaciones_tuempresa@produce.gob.pe   **** PP093                   
+        'pp093' => [   // capacitaciones_tuempresa@produce.gob.pe   **** PP093
             'transport' => env('MAIL_MAILER_OFFICE365', 'smtp'),
-            'host'      => env('MAIL_HOST_OFFICE365'),
-            'port'      => env('MAIL_PORT_OFFICE365'),
-            'username'  => env('MAIL_USERNAME_OFFICE365'),
-            'password'  => env('MAIL_PASSWORD_OFFICE365'),
+            'host' => env('MAIL_HOST_OFFICE365'),
+            'port' => env('MAIL_PORT_OFFICE365'),
+            'username' => env('MAIL_USERNAME_OFFICE365'),
+            'password' => env('MAIL_PASSWORD_OFFICE365'),
             'encryption' => env('MAIL_ENCRYPTION_OFFICE365'),
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS_OFFICE365'),
                 'name' => env('MAIL_FROM_NAME_OFFICE365'),
-            ],
-        ],
-
-        'lucho' => [    // tuempresa_temp372@produce.gob.pe
-            'transport' => env('MAIL_MAILER_LUCHO', 'smtp'),
-            'host' => env('MAIL_HOST_LUCHO'),
-            'port' => env('MAIL_PORT_LUCHO'),
-            'username' => env('MAIL_USERNAME_LUCHO'),
-            'password' => env('MAIL_PASSWORD_LUCHO'),
-            'encryption' => env('MAIL_ENCRYPTION_LUCHO'),
-            'from' => [
-                'address' => env('MAIL_FROM_ADDRESS_LUCHO'),
-                'name' => env('MAIL_FROM_NAME_LUCHO'),
             ],
         ],
 
@@ -153,7 +139,6 @@ return [
             ],
         ],
 
-
         // 'smtp' => [
         //     'transport' => 'smtp',
         //     'url' => env('MAIL_URL'),
@@ -166,11 +151,7 @@ return [
         //     'local_domain' => env('MAIL_EHLO_DOMAIN'),
         // ],
 
-
         // CORREOS PARA CAPACITACIONES PP093
-
-
-
 
         'ses' => [
             'transport' => 'ses',

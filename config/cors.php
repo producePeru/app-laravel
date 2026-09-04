@@ -12,7 +12,13 @@ return [
     | in web browsers. You are free to adjust these settings as needed.
     |
     | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
+
+    'https://fiesta-del-cafe.soporte-pnte.com',
+    'https://seguimiento-capacitaciones.soporte-pnte.com',
+    'https://cde.soporte-pnte.com',
+    'https://tareitas.soporte-pnte.com',
+    'https://bodegas.soporte-pnte.com',
+
     */
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
@@ -22,13 +28,8 @@ return [
     // 'allowed_origins' => ['*'],
 
     'allowed_origins' => [
-        'https://programa.soporte-pnte.com',
-        'https://inscripcion.soporte-pnte.com',
-        'https://fiesta-del-cafe.soporte-pnte.com',
-        'https://seguimiento-capacitaciones.soporte-pnte.com',
-        'https://cde.soporte-pnte.com',
-        'https://tareitas.soporte-pnte.com',
-        'https://bodegas.soporte-pnte.com',
+        'https://reporte.soportepnte.com',
+        'https://soportepnte.com',
     ],
 
     'allowed_origins_patterns' => [],

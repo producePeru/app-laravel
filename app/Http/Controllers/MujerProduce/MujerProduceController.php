@@ -1555,7 +1555,7 @@ class MujerProduceController extends Controller
         ).'.pdf';
 
         // 4) Enviar por el mailer "mujerproduce" con el PDF adjunto
-        Mail::mailer('mujerproduce')
+        Mail::mailer('hostinger3k')
             ->to($data['email'])
             ->bcc('mujerproduce@produce.gob.pe')
             ->send(new PlanAccionMail($data, $pdfContent, $fileName));

@@ -54,6 +54,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::POST('envia-email-recordatorios', 'enviaEmailRecordatoriosPP093');
 
+    Route::POST('import-empresarios-json/{slug}', 'importEmpresariosJson');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {
