@@ -56,6 +56,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::POST('import-empresarios-json/{slug}', 'importEmpresariosJson');
 
+    Route::GET('inscritos-feria/{slug}', 'inscritosFeriaPorSlug');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {
