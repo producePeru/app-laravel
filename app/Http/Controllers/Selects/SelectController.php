@@ -5,55 +5,53 @@ namespace App\Http\Controllers\Selects;
 use App\Http\Controllers\Controller;
 use App\Models\AcademicDegree;
 use App\Models\Activity;
-use App\Models\Advisory;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\Country;
-use App\Models\City;
-use App\Models\Province;
-use App\Models\District;
-use App\Models\Office;
-use App\Models\Cde;
-use App\Models\Gender;
-use App\Models\Modality;
-use App\Models\Typedocument;
-use App\Models\Component;
-use App\Models\Themecomponent;
-use App\Models\Role;
-use App\Models\DetailProcedure;
-use App\Models\EconomicSector;
-use App\Models\ComercialActivities;
-use App\Models\Regime;
-use App\Models\Notary;
-use App\Models\Supervisor;
-use App\Models\DriveFile;
-use App\Models\Profile;
 use App\Models\AgreementOperationalStatus;
 use App\Models\AgreementStatus;
-use App\Models\OfficePnte;
-use App\Models\Typecapital;
-use App\Models\Attendance;
-use App\Models\TypeCompany;
-use App\Models\Category;
 use App\Models\AnnualSale;
+use App\Models\Attendance;
+use App\Models\Category;
+use App\Models\Cde;
+use App\Models\City;
 use App\Models\CivilStatus;
+use App\Models\ComercialActivities;
+use App\Models\Component;
+use App\Models\Country;
 use App\Models\CpComponente;
 use App\Models\CpSectorPriorizado;
 use App\Models\CpTema;
 use App\Models\CyberwowLeader;
+use App\Models\DetailProcedure;
+use App\Models\District;
+use App\Models\DriveFile;
+use App\Models\EconomicSector;
 use App\Models\Fair;
 use App\Models\FairType;
+use App\Models\Gender;
+use App\Models\Modality;
 use App\Models\MPCapacitador;
 use App\Models\NombreActividad;
+use App\Models\Notary;
+use App\Models\Office;
+use App\Models\OfficePnte;
 use App\Models\PpCapacitador;
+use App\Models\Profile;
 use App\Models\PropagandaMedia;
+use App\Models\Province;
+use App\Models\Regime;
+use App\Models\Role;
 use App\Models\RoleCompany;
+use App\Models\Supervisor;
+use App\Models\Themecomponent;
 use App\Models\TipoActividad;
 use App\Models\TrainingDimension;
 use App\Models\TrainingMeta;
 use App\Models\TrainingSpecialist;
+use App\Models\Typecapital;
+use App\Models\TypeCompany;
+use App\Models\Typedocument;
 use App\Models\TypeTaxpayer;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class SelectController extends Controller
 {
@@ -70,8 +68,8 @@ class SelectController extends Controller
         }
 
         return [
-            "role_id" => $roleUser->role_id,
-            'user_id' => $user_id
+            'role_id' => $roleUser->role_id,
+            'user_id' => $user_id,
         ];
     }
 
@@ -126,7 +124,7 @@ class SelectController extends Controller
             $data = $province->map(function ($item) {
                 return [
                     'label' => $item->name,
-                    'value' => $item->id
+                    'value' => $item->id,
                 ];
             });
 
@@ -141,7 +139,7 @@ class SelectController extends Controller
             ->map(function ($item) {
                 return [
                     'label' => $item->name,
-                    'value' => $item->id
+                    'value' => $item->id,
                 ];
             })
             ->values();
@@ -159,7 +157,7 @@ class SelectController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
-        $data = $districts->map(fn($item) => [
+        $data = $districts->map(fn ($item) => [
             'label' => $item->name,
             'value' => $item->id,
         ])->values();
@@ -176,9 +174,10 @@ class SelectController extends Controller
         $data = $offices->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -189,9 +188,10 @@ class SelectController extends Controller
         $data = $cdes->sortBy('name')->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         })->values();
+
         return response()->json(['data' => $data]);
     }
 
@@ -202,9 +202,10 @@ class SelectController extends Controller
         $data = $genders->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -215,9 +216,10 @@ class SelectController extends Controller
         $data = $modalities->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -228,9 +230,10 @@ class SelectController extends Controller
         $data = $typeDocuments->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -241,9 +244,10 @@ class SelectController extends Controller
         $data = $components->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -256,13 +260,12 @@ class SelectController extends Controller
         $data = $themes->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
         return response()->json(['data' => $data]);
     }
-
 
     public function getRoles()
     {
@@ -271,9 +274,10 @@ class SelectController extends Controller
         $data = $roles->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -288,9 +292,10 @@ class SelectController extends Controller
         $data = $detailProcedures->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -301,9 +306,10 @@ class SelectController extends Controller
         $data = $economicSectors->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -314,7 +320,7 @@ class SelectController extends Controller
         $data = $comercialActivities->map(function ($item) {
             return [
                 'label' => ucfirst(strtolower($item->name)), // Solo la primera letra en mayúscula
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -328,9 +334,10 @@ class SelectController extends Controller
         $data = $regimes->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -341,9 +348,10 @@ class SelectController extends Controller
         $data = $notaries->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -353,10 +361,11 @@ class SelectController extends Controller
 
         $data = $supervisors->map(function ($item) {
             return [
-                'label' => $item->profile['name'] . ' ' . $item->profile['lastname'] . ' ' . $item->profile['middlename'],
-                'value' => $item->user_id
+                'label' => $item->profile['name'].' '.$item->profile['lastname'].' '.$item->profile['middlename'],
+                'value' => $item->user_id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -367,21 +376,22 @@ class SelectController extends Controller
         $data = $files->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
     public function getAsesores()
     {
-        $asesores = User::where('rol', 2)
+        $asesores = User::where('office_id', 1)
             ->where('active', 1)
             ->get();
 
         $data = $asesores->map(function ($item) {
             $label = strtoupper(trim(
-                $item->name . ' ' . $item->lastname . ' ' . ($item->middlename ?? '')
+                $item->name.' '.$item->lastname.' '.($item->middlename ?? '')
             ));
 
             return [
@@ -394,7 +404,7 @@ class SelectController extends Controller
 
         return response()->json([
             'data' => $sortedData,
-            'status' => 200
+            'status' => 200,
         ]);
     }
 
@@ -406,8 +416,8 @@ class SelectController extends Controller
         $data = $users->map(function ($user) {
 
             $label = strtoupper(
-                $user->name . ' ' .
-                    $user->lastname . ' ' .
+                $user->name.' '.
+                    $user->lastname.' '.
                     $user->middlename
             );
 
@@ -421,10 +431,9 @@ class SelectController extends Controller
 
         return response()->json([
             'data' => $data,
-            'status' => 200
+            'status' => 200,
         ]);
     }
-
 
     public function getOperationalStatus()
     {
@@ -433,9 +442,10 @@ class SelectController extends Controller
         $data = $files->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -446,9 +456,10 @@ class SelectController extends Controller
         $data = $files->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -459,9 +470,10 @@ class SelectController extends Controller
         $data = $typeDocuments->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
+
         return response()->json(['data' => $data]);
     }
 
@@ -474,7 +486,7 @@ class SelectController extends Controller
                 'label' => $item->name,
                 'value' => $item->id,
                 'color' => $item->color,
-                'avr' => $item->avr
+                'avr' => $item->avr,
             ];
         });
 
@@ -490,7 +502,7 @@ class SelectController extends Controller
         $data = collect();
 
         foreach ($profiles as $profile) {
-            $label = strtoupper($profile->name . ' ' . $profile->lastname . ' ' . $profile->middlename);
+            $label = strtoupper($profile->name.' '.$profile->lastname.' '.$profile->middlename);
 
             $data->push([
                 'label' => $label,
@@ -510,7 +522,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -524,7 +536,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -538,7 +550,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -552,7 +564,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -566,7 +578,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -580,7 +592,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -594,7 +606,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -608,7 +620,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -622,7 +634,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => substr($item->month, 0, 7),
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -636,7 +648,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -652,8 +664,8 @@ class SelectController extends Controller
 
         $data = $types->map(function ($item) {
             return [
-                'label'  => trim("{$item->name} {$item->lastname} {$item->middlename}"),
-                'value'  => $item->id,
+                'label' => trim("{$item->name} {$item->lastname} {$item->middlename}"),
+                'value' => $item->id,
                 'office' => $item->office?->name ?? null, // nombre de la oficina
             ];
         });
@@ -661,16 +673,14 @@ class SelectController extends Controller
         return response()->json(['data' => $data]);
     }
 
-
-
     public function getAllLeadersWow($slug)
     {
         $fair = Fair::where('slug', $slug)->first();
 
-        if (!$fair) {
+        if (! $fair) {
             return response()->json([
                 'message' => 'Evento no encontrado',
-                'status'  => 404
+                'status' => 404,
             ]);
         }
 
@@ -682,14 +692,14 @@ class SelectController extends Controller
             $user = $leader->user;
 
             $fullName = trim(
-                ($user->name ?? '') . ' ' .
-                    ($user->lastname ?? '') . ' ' .
+                ($user->name ?? '').' '.
+                    ($user->lastname ?? '').' '.
                     ($user->middlename ?? '')
             );
 
             return [
                 'label' => $fullName !== '' ? $fullName : 'Sin nombre',
-                'value' => $user->id
+                'value' => $user->id,
             ];
         });
 
@@ -703,7 +713,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -717,7 +727,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -731,7 +741,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -745,7 +755,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -759,7 +769,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -773,7 +783,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -787,7 +797,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->name,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
@@ -808,7 +818,7 @@ class SelectController extends Controller
         });
 
         return response()->json([
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -863,7 +873,7 @@ class SelectController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
-        $data = $districts->map(fn($item) => [
+        $data = $districts->map(fn ($item) => [
             'label' => $item->name,
             'value' => $item->id,
         ])->values();
@@ -879,7 +889,7 @@ class SelectController extends Controller
 
         $data = $users->map(function ($item) {
             $label = strtoupper(trim(
-                $item->name . ' ' . $item->lastname . ' ' . ($item->middlename ?? '')
+                $item->name.' '.$item->lastname.' '.($item->middlename ?? '')
             ));
 
             return [
@@ -900,7 +910,7 @@ class SelectController extends Controller
         $data = $types->map(function ($item) {
             return [
                 'label' => $item->nombres_apellidos,
-                'value' => $item->id
+                'value' => $item->id,
             ];
         });
 
