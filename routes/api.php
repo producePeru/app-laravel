@@ -551,6 +551,8 @@ Route::group(['prefix' => 'select', 'namespace' => 'App\Http\Controllers'], func
     Route::get('pnte-offices', [SelectController::class, 'getOfficesPnte']);
 
     Route::get('asesores-report', [SelectController::class, 'getAsesoresReporte']);
+    Route::get('asesores-cde', [SelectController::class, 'getAsesoresCde']);
+
     Route::get('asesores-events-ugo', [SelectController::class, 'getAsesoresEventsUgo']);
 
     Route::get('type-companies', [SelectController::class, 'getTypeCompanies']);

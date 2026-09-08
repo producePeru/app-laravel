@@ -411,7 +411,7 @@ class SelectController extends Controller
     // Lista de asesores para el reporte
     public function getAsesoresReporte()
     {
-        $users = User::where('rol', 2)->get();
+        $users = User::with('cde:id,name')->where('rol', 2)->get();
 
         $data = $users->map(function ($user) {
 
@@ -424,6 +424,7 @@ class SelectController extends Controller
             return [
                 'label' => $label,
                 'value' => $user->id,
+                'cde' => strtoupper($user->cde?->name ?? ''),
             ];
         })
             ->sortBy('label')
@@ -915,5 +916,39 @@ class SelectController extends Controller
         });
 
         return response()->json(['data' => $data]);
+    }
+
+    // asesores con su cde
+    public function getAsesoresCde()
+    {
+        $users = User::with('cde:id,name')->where('rol', 2)->get();
+
+        $data = $users->map(function ($user) {
+
+            $cdeName = strtoupper($user->cde?->name ?? '');
+
+            $label = strtoupper(
+                $user->name.' '.
+                    $user->lastname.' '.
+                    $user->middlename
+            );
+
+            // if ($cdeName !== '') {
+            //     $label .= ' - '.$cdeName;
+            // }
+
+            return [
+                'label' => $label,
+                'value' => $user->id,
+                'cde' => $cdeName,
+            ];
+        })
+            ->sortBy('label')
+            ->values();
+
+        return response()->json([
+            'data' => $data,
+            'status' => 200,
+        ]);
     }
 }
