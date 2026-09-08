@@ -238,7 +238,8 @@ class Advisory extends Model
         ])->orderBy('created_at', 'desc');
 
         if (!empty($filters['asesor'])) {
-            $query->where('user_id', $filters['asesor']);
+            $asesores = is_array($filters['asesor']) ? $filters['asesor'] : [$filters['asesor']];
+            $query->whereIn('user_id', $asesores);
         }
 
         if (!empty($filters['name'])) {

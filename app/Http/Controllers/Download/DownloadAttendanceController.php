@@ -2522,4 +2522,265 @@ class DownloadAttendanceController extends Controller
             'Cache-Control' => 'max-age=0',
         ]);
     }
+
+    // FERIAS + COMPLEMENTO
+
+    public function exportInscritosFeria(Request $request, $slug)
+    {
+        try {
+            set_time_limit(0);
+            ini_set('memory_limit', '1024M');
+
+            $actividad = ActividadPnte::select(
+                'id',
+                'slug',
+                'tema',
+                'fechas',
+                'nombre_actividad_id'
+            )
+                ->where('slug', $slug)
+                ->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Actividad no encontrada',
+                ], 404);
+            }
+
+            $search = trim($request->input('name', ''));
+
+            $query = EmpresarioActividad::with([
+                'emprendimiento',
+                'empresario',
+                'empresario.pais',
+                'empresario.region',
+                'empresario.provincia',
+                'empresario.distrito',
+                'empresario.actividadComercial',
+                'empresario.sectorEconomico',
+                'empresario.rubro',
+                'empresario.tipoDocumento',
+                'empresario.genero',
+            ])
+                ->where('slug', $slug)
+
+                // 🔥 BUSCADOR
+                ->when($search, function ($q) use ($search) {
+                    $q->whereHas('empresario', function ($emp) use ($search) {
+                        $emp->where('ruc', 'LIKE', "%{$search}%")
+                            ->orWhere('numero_dni', 'LIKE', "%{$search}%")
+                            ->orWhereRaw("
+                                CONCAT(
+                                    COALESCE(apellido_paterno, ''),
+                                    ' ',
+                                    COALESCE(apellido_materno, ''),
+                                    ' ',
+                                    COALESCE(nombres, '')
+                                ) LIKE ?
+                            ", ["%{$search}%"]);
+                    });
+                })
+                ->orderByDesc('created_at')
+                ->get();
+
+            $sino = fn ($value) => is_null($value) ? null : ($value ? 'SI' : 'NO');
+
+            $headers = [
+                'N°',
+                'RUC',
+                'RAZÓN SOCIAL',
+                'NOMBRE COMERCIAL',
+                'SECTOR ECONÓMICO',
+                'RUBRO',
+                'ACTIVIDAD COMERCIAL',
+                'PAÍS NACIMIENTO',
+                'REGIÓN',
+                'PROVINCIA',
+                'DISTRITO',
+                'DIRECCIÓN',
+                'TIPO DE DOCUMENTO',
+                'NÚMERO DE DOCUMENTO',
+                'APELLIDO PATERNO',
+                'APELLIDO MATERNO',
+                'NOMBRES',
+                'NOMBRE COMPLETO',
+                'GÉNERO',
+                '¿TIENE ALGUNA DISCAPACIDAD?',
+                'CELULAR',
+                'CORREO',
+                'FECHA DE NACIMIENTO',
+                'EDAD',
+                '¿CÓMO SE ENTERÓ?',
+                'FECHA DE ASISTENCIA',
+                'ASISTIRÉ',
+                '¿SE BRINDÓ ASESORÍA PERSONAL?',
+                '¿SE FORMALIZÓ PERSONAL?',
+                'COOP RUC',
+                'COOP RAZÓN SOCIAL',
+                'COOP ROL',
+                'NOMBRE DEL MERCADO',
+                '¿PERTENECE A ALGÚN GREMIO EMPRESARIAL?',
+                'NOMBRE DEL GREMIO',
+                '¿CUÁL ES SU CAPACIDAD DE PRODUCCIÓN MENSUAL?',
+                '% PRODUCCIÓN PLANTA PROPIA',
+                '% PRODUCCIÓN MAQUILA',
+                '¿CUENTA CON PUNTOS DE VENTA?',
+                '¿CUÁNTOS PUNTOS DE VENTA PROPIOS TIENE?',
+                'BREVE EXPLICACIÓN DEL NEGOCIO',
+                'PAGOS ELECTRÓNICOS POS',
+                'MONEDEROS ELECTRÓNICOS (YAPE, PLIM)',
+                'VENTAS POR TIENDAS VIRTUALES',
+                'NOMBRE DE LA TIENDA VIRTUAL',
+                'ENTREGAS A DOMICILIO (DELIVERY)',
+                'EMITE FACTURA ELECTRÓNICA',
+                'HA PARTICIPADO EN SERVICIOS DE PRODUCE',
+                'NOMBRE DEL SERVICIO',
+                'HA PARTICIPADO EN FERIAS/RUEDA DE NEGOCIOS',
+                'EVENTO EN EL QUE PARTICIPÓ',
+                'FORMALIZADO A TRAVÉS DE TU EMPRESA',
+                'MARCA REGISTRADA EN INDECOPI',
+                'LOGROS DE LA EMPRESA',
+                'TÉRMINOS Y CONDICIONES',
+                'REDES SOCIALES',
+            ];
+
+            $rows = [];
+            $index = 1;
+
+            foreach ($query as $item) {
+                $e = $item->empresario;
+                $emp = $item->emprendimiento;
+
+                $nombreCompleto = trim(
+                    ($e?->apellido_paterno ?? '').' '.
+                        ($e?->apellido_materno ?? '').' '.
+                        ($e?->nombres ?? '')
+                );
+
+                $rows[] = [
+                    $index++,
+                    $e?->ruc,
+                    mb_strtoupper($e?->razon_social ?? '', 'UTF-8'),
+                    mb_strtoupper($e?->nombre_comercial ?? '', 'UTF-8'),
+                    mb_strtoupper($e?->sectorEconomico?->name ?? '', 'UTF-8'),
+                    mb_strtoupper($e?->rubro?->name ?? '', 'UTF-8'),
+                    mb_strtoupper($e?->actividadComercial?->name ?? $e?->actividad_comercial_nombre ?? '', 'UTF-8'),
+                    mb_strtoupper($e?->pais?->name ?? '', 'UTF-8'),
+                    $e?->region?->name,
+                    $e?->provincia?->name,
+                    $e?->distrito?->name,
+                    mb_strtoupper($e?->direccion ?? '', 'UTF-8'),
+                    $e?->tipoDocumento?->avr,
+                    $e?->numero_dni,
+                    mb_strtoupper($e?->apellido_paterno ?? '', 'UTF-8'),
+                    mb_strtoupper($e?->apellido_materno ?? '', 'UTF-8'),
+                    mb_strtoupper($e?->nombres ?? '', 'UTF-8'),
+                    $nombreCompleto !== '' ? mb_strtoupper($nombreCompleto, 'UTF-8') : '',
+                    $e?->genero?->avr,
+                    isset($e?->discapacidad) ? ($e->discapacidad ? 'SI' : 'NO') : '',
+                    $e?->celular,
+                    $e?->correo_electronico,
+                    $e?->fecha_nacimiento ? Carbon::parse($e->fecha_nacimiento)->format('d/m/Y') : '',
+                    $e?->edad,
+                    $e?->como_entero,
+                    ! empty($item->fecha_asistencia) ? 'SI' : 'NO',
+                    $item->asistire == 1 ? 'SI' : ($item->asistire == 0 ? 'NO' : ''),
+                    $item->personal_asesoria == 1 ? 'SI' : '',
+                    $item->personal_formalizacion == 1 ? 'SI' : '',
+                    $e?->coop_ruc,
+                    $e?->coop_razon_social,
+                    $e?->coop_rol,
+                    mb_strtoupper($e?->nombre_mercado ?? '', 'UTF-8'),
+                    $emp ? $sino($emp->pertenece_gremio) : '',
+                    $emp?->nombre_gremio,
+                    $emp?->cap_prod_mensual,
+                    $emp?->porc_prod_planta,
+                    $emp?->porc_prod_maquila,
+                    $emp ? $sino($emp->tiene_puntos_venta) : '',
+                    $emp?->num_puntos_ventas,
+                    $emp?->desc_negocio,
+                    $emp ? $sino($emp->pos) : '',
+                    $emp ? $sino($emp->yape_plim) : '',
+                    $emp ? $sino($emp->tiene_tiendas) : '',
+                    $emp?->nombre_tienda,
+                    $emp ? $sino($emp->tiene_delivery) : '',
+                    $emp ? $sino($emp->factura_electronica) : '',
+                    $emp ? $sino($emp->participado_produce) : '',
+                    $emp?->nombre_servicio,
+                    $emp ? $sino($emp->participado_feria) : '',
+                    $emp?->nombre_feria,
+                    $emp ? $sino($emp->formalizado_produce) : '',
+                    $emp ? $sino($emp->indecopi) : '',
+                    $emp?->logros_empresa,
+                    $emp ? $sino($emp->terminos_condiciones) : '',
+                    $emp && $emp->redes_sociales ? implode(', ', (array) $emp->redes_sociales) : '',
+                ];
+            }
+
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Inscritos Feria');
+
+            foreach ($rows as &$row) {
+                foreach ($row as &$value) {
+                    if (is_array($value)) {
+                        $flat = [];
+                        array_walk_recursive($value, function ($item) use (&$flat) {
+                            $flat[] = $item;
+                        });
+                        $value = $flat ? implode(', ', $flat) : '';
+                    }
+                }
+            }
+            unset($row, $value);
+
+            $sheet->fromArray($headers, null, 'A1');
+
+            if (! empty($rows)) {
+                $sheet->fromArray($rows, null, 'A2');
+            }
+
+            $headerStyle = $sheet->getStyle('A1:'.$sheet->getHighestDataColumn().'1');
+            $headerStyle->getFont()->setBold(true);
+            $headerStyle->getFont()->setSize(10);
+            $headerStyle->getFill()
+                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()
+                ->setRGB('D9E1F2');
+            $headerStyle->getAlignment()->setVertical(
+                \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+            );
+
+            foreach ($sheet->getColumnIterator() as $column) {
+                $sheet->getColumnDimension($column->getColumnIndex())->setAutoSize(true);
+            }
+
+            $sheet->setAutoFilter('A1:'.$sheet->getHighestDataColumn().$sheet->getHighestDataRow());
+
+            $filename = 'inscritos_feria_'.now()->format('Ymd_His').'.xlsx';
+
+            return new StreamedResponse(function () use ($spreadsheet) {
+                $writer = new Xlsx($spreadsheet);
+                $writer->setPreCalculateFormulas(false);
+                $writer->save('php://output');
+            }, 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+                'Cache-Control' => 'max-age=0',
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Error exportInscritosFeria: '.$e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al generar el reporte de inscritos.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
