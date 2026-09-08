@@ -63,6 +63,20 @@ class EmpresarioActividad extends Model
             'slug'
         );
     }
+
+    public function emprendimiento()
+    {
+        return $this->hasOne(
+            EmpresarioEmprendimiento::class,
+            'empresario_id',
+            'empresario_id'
+        )->whereExists(function ($query) {
+            $query->selectRaw('1')
+                ->from('empresario_actividad as ea')
+                ->whereColumn('ea.empresario_id', 'empresarios_emprendimiento.empresario_id')
+                ->whereColumn('ea.actividad_id', 'empresarios_emprendimiento.actividad_id');
+        })->latest('created_at');
+    }
 }
 
 // public function empresario()

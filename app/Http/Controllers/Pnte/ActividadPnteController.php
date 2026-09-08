@@ -1927,8 +1927,6 @@ class ActividadPnteController extends Controller
     {
         try {
 
-            a todo esto agregamos del modelo EmpresarioEmprendimiento (empresario_id, actividad_id)
-
             $perPage = $request->input('pageSize', 10);
             $search = trim($request->input('name', ''));
 
@@ -1943,6 +1941,7 @@ class ActividadPnteController extends Controller
                 ->first();
 
             $query = EmpresarioActividad::with([
+                'emprendimiento',
                 'empresario',
                 'empresario.pais',
                 'empresario.region',
@@ -2107,6 +2106,34 @@ class ActividadPnteController extends Controller
                     'coop_rol' => $e?->coop_rol,
 
                     'nombre_mercado' => $e?->nombre_mercado,
+
+                    'emprendimiento' => ($emp = $item->emprendimiento) ? [
+                        'empresario_id' => $emp->empresario_id,
+                        'actividad_id' => $emp->actividad_id,
+                        'redes_sociales' => $emp->redes_sociales,
+                        'pertenece_gremio' => $this->sino($emp->pertenece_gremio),
+                        'nombre_gremio' => $emp->nombre_gremio,
+                        'cap_prod_mensual' => $emp->cap_prod_mensual,
+                        'porc_prod_planta' => $emp->porc_prod_planta,
+                        'porc_prod_maquila' => $emp->porc_prod_maquila,
+                        'tiene_puntos_venta' => $this->sino($emp->tiene_puntos_venta),
+                        'num_puntos_ventas' => $emp->num_puntos_ventas,
+                        'desc_negocio' => $emp->desc_negocio,
+                        'pos' => $this->sino($emp->pos),
+                        'yape_plim' => $this->sino($emp->yape_plim),
+                        'tiene_tiendas' => $this->sino($emp->tiene_tiendas),
+                        'nombre_tienda' => $emp->nombre_tienda,
+                        'tiene_delivery' => $this->sino($emp->tiene_delivery),
+                        'factura_electronica' => $this->sino($emp->factura_electronica),
+                        'participado_produce' => $this->sino($emp->participado_produce),
+                        'nombre_servicio' => $emp->nombre_servicio,
+                        'participado_feria' => $this->sino($emp->participado_feria),
+                        'nombre_feria' => $emp->nombre_feria,
+                        'formalizado_produce' => $this->sino($emp->formalizado_produce),
+                        'indecopi' => $this->sino($emp->indecopi),
+                        'logros_empresa' => $emp->logros_empresa,
+                        'terminos_condiciones' => $this->sino($emp->terminos_condiciones),
+                    ] : null,
                 ];
             });
 
@@ -2123,5 +2150,14 @@ class ActividadPnteController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function sino($value): ?string
+    {
+        if (is_null($value)) {
+            return null;
+        }
+
+        return $value ? 'SI' : 'NO';
     }
 }
