@@ -25,12 +25,12 @@ return [
 
     'allowed_methods' => ['*'],
 
-    // 'allowed_origins' => ['*'],
+    'allowed_origins' => ['*'],
 
-    'allowed_origins' => [
-        'https://reporte.soportepnte.com',
-        'https://soportepnte.com',
-    ],
+    // 'allowed_origins' => [
+    //     'https://reporte.soportepnte.com',
+    //     'https://soportepnte.com',
+    // ],
 
     'allowed_origins_patterns' => [],
 

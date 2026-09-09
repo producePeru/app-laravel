@@ -1965,6 +1965,16 @@ class ActividadPnteController extends Controller
 
                             ->orWhere('numero_dni', 'LIKE', "%{$search}%")
 
+                            ->orWhere('apellido_paterno', 'LIKE', "%{$search}%")
+
+                            ->orWhere('apellido_materno', 'LIKE', "%{$search}%")
+
+                            ->orWhere('nombres', 'LIKE', "%{$search}%")
+
+                            ->orWhere('razon_social', 'LIKE', "%{$search}%")
+
+                            ->orWhere('nombre_comercial', 'LIKE', "%{$search}%")
+
                             ->orWhereRaw("
                             CONCAT(
                                 COALESCE(apellido_paterno, ''),

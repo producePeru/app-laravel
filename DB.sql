@@ -66,7 +66,18 @@ FROM
 WHERE
     estado = 1
 ORDER BY
-    `ferias`.`idFeria` DESC *********************************************************************************************************
+    `ferias`.`idFeria` DESC 
+*********************************************************************************************************
+
+
+
+
+
+
+
+
+
+
 SELECT
     i.*
     ,
@@ -86,3 +97,23 @@ ON
 WHERE
     i.idFeria = 100
 AND i.estado  = 1;
+
+
+
+
+
+
+
+
+SELECT
+    i.*,
+    r.*
+FROM
+    inscripcion_feria AS i
+INNER JOIN
+    representante_feria AS r
+ON
+    i.idInscripcion = r.idInscrito
+WHERE
+    i.idFeria = 71
+AND i.estado = 1;

@@ -65,7 +65,7 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
 
     Route::POST('export-inscritos-por-slug-ugsc/{slug}', 'exportInscritosPorSlugUgsc');
 
-    Route::POST('export-inscritos-ferias/{slug}', 'exportInscritosFeria');
+    Route::POST('export-inscritos-ferias/{slug}', 'exportInscritosFeriaPorSlug');
 
 });
 
