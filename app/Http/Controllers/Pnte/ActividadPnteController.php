@@ -257,6 +257,7 @@ class ActividadPnteController extends Controller
             // ✅ NUEVO
             'unidad' => 'nullable|integer',
             'name' => 'nullable|string',
+            'aprobar' => 'nullable|in:0,1',
         ]);
 
         $pageSize = $request->input('pageSize', 10);
@@ -380,6 +381,12 @@ class ActividadPnteController extends Controller
             // ✅ FILTRO: city → region
             ->when($request->filled('city'), function ($q) use ($request) {
                 $q->where('region', $request->input('city'));
+            })
+
+            // ✅ FILTRO: aprobar → activo (0 = No aprobados, 1 = Aprobados)
+            // NOTA: no usar filled() porque filled('aprobar') es false cuando vale 0
+            ->when($request->has('aprobar') && $request->input('aprobar') !== null && $request->input('aprobar') !== '', function ($q) use ($request) {
+                $q->where('activo', (int) $request->input('aprobar'));
             })
 
             // ✅ ORDENAR POR FECHA MÁS RECIENTE

@@ -95,6 +95,11 @@ class DownloadAttendanceController extends Controller
                 ->when($request->filled('asesor') && $user->rol == 1, function ($q) use ($request) {
                     $q->where('representante_id', $request->input('asesor'));
                 })
+                // ✅ FILTRO: aprobar → activo (0 = No aprobados, 1 = Aprobados)
+                // NOTA: no usar filled() porque es false cuando vale 0
+                ->when($request->has('aprobar') && $request->input('aprobar') !== null && $request->input('aprobar') !== '', function ($q) use ($request) {
+                    $q->where('activo', (int) $request->input('aprobar'));
+                })
                 ->get()
                 ->sortByDesc(function ($actividad) {
                     $fechas = is_array($actividad->fechas)
@@ -800,6 +805,12 @@ class DownloadAttendanceController extends Controller
                         'representante_id',
                         $request->input('asesor')
                     )
+                )
+
+                // ✅ FILTRO: aprobar → activo (0 = No aprobados, 1 = Aprobados)
+                ->when(
+                    $request->has('aprobar') && $request->input('aprobar') !== null && $request->input('aprobar') !== '',
+                    fn ($q) => $q->where('activo', (int) $request->input('aprobar'))
                 )
 
                 ->get()
