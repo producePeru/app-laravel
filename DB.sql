@@ -117,3 +117,22 @@ ON
 WHERE
     i.idFeria = 71
 AND i.estado = 1;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////
+ALTER TABLE actividades_pnte 
+ADD COLUMN switch_asistencias TINYINT(1) NOT NULL DEFAULT 1 
+AFTER prendido;

@@ -52,6 +52,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::PUT('toggle-formulario-registro/{slug}', 'toggleFormularioRegistro');
 
+    Route::PUT('toggle-switch-asistencias/{slug}', 'toggleSwitchAsistencias');
+
     Route::POST('envia-email-recordatorios', 'enviaEmailRecordatoriosPP093');
 
     Route::POST('import-empresarios-json/{slug}', 'importEmpresariosJson');

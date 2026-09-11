@@ -536,13 +536,15 @@ class ActividadPnteController extends Controller
 
             $perPage = $request->input('pageSize', 10);
             $search = trim($request->input('name', ''));
+            $asistencia = $request->input('asistencia');
 
             $event = ActividadPnte::select(
                 'id',
                 'slug',
                 'tema',
                 'fechas',
-                'nombre_actividad_id'
+                'nombre_actividad_id',
+                'switch_asistencias'
             )
                 ->where('slug', $slug)
                 ->first();
@@ -581,6 +583,14 @@ class ActividadPnteController extends Controller
                             ) LIKE ?
                         ", ["%{$search}%"]);
                     });
+                })
+
+                ->when($asistencia === 'asistieron', function ($q) {
+                    $q->whereNotNull('fecha_asistencia');
+                })
+
+                ->when($asistencia === 'faltaron', function ($q) {
+                    $q->whereNull('fecha_asistencia');
                 })
 
                 ->orderBy('created_at', 'desc');
@@ -1123,6 +1133,15 @@ class ActividadPnteController extends Controller
                 $baseQuery->whereDate('fecha_seleccionada', $request->input('dateEvent'));
             }
 
+            // ✅ FILTRO: asistencia
+            if ($request->input('asistencia') === 'asistieron') {
+                $baseQuery->whereNotNull('fecha_asistencia');
+            }
+
+            if ($request->input('asistencia') === 'faltaron') {
+                $baseQuery->whereNull('fecha_asistencia');
+            }
+
             $total = $baseQuery->count();
 
             $asistieron = (clone $baseQuery)->whereNotNull('fecha_asistencia')->count();
@@ -1370,21 +1389,21 @@ class ActividadPnteController extends Controller
                 $q->whereHas('empresario', function ($emp) use ($search) {
                     $emp->where('ruc', 'LIKE', "%{$search}%")
                         ->orWhere('numero_dni', 'LIKE', "%{$search}%")
-                        ->orWhereRaw("
-                        CONCAT(
-                            COALESCE(apellido_paterno, ''),
-                            ' ',
-                            COALESCE(apellido_materno, ''),
-                            ' ',
-                            COALESCE(nombres, '')
-                        ) LIKE ?
-                    ", ["%{$search}%"]);
-                });
-            })
+                            ->orWhereRaw("
+                            CONCAT(
+                                COALESCE(apellido_paterno, ''),
+                                ' ',
+                                COALESCE(apellido_materno, ''),
+                                ' ',
+                                COALESCE(nombres, '')
+                            ) LIKE ?
+                        ", ["%{$search}%"]);
+                    });
+                })
+
                 ->orderBy('created_at', 'desc');
 
             $data = $query->paginate($perPage);
-
             // NUEVO
             $pntTest = PntTest::where('slug', $slug)->first();
 
@@ -1637,6 +1656,22 @@ class ActividadPnteController extends Controller
             'status' => 200,
             'message' => 'Formulario de registro actualizado.',
             'prendido' => $actividad->prendido,
+        ]);
+    }
+
+    public function toggleSwitchAsistencias($slug)
+    {
+
+        $actividad = ActividadPnte::where('slug', $slug)->firstOrFail();
+
+        $actividad->switch_asistencias = $actividad->switch_asistencias ? 0 : 1;
+
+        $actividad->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Switch de asistencias actualizado.',
+            'switch_asistencias' => (bool) $actividad->switch_asistencias,
         ]);
     }
 

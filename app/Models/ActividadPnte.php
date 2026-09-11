@@ -57,12 +57,14 @@ class ActividadPnte extends Model
         'tipo_gestion',
         'eliminar',
         'prendido',
+        'switch_asistencias',
     ];
 
     protected $casts = [
         'fechas' => 'array',
         'horario' => 'array',
         'requiere_pasaje' => 'boolean',
+        'switch_asistencias' => 'boolean',
     ];
 
     // ─── RELACIONES ───────────────────────────────────────────────

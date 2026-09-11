@@ -1272,10 +1272,12 @@ class DownloadAttendanceController extends Controller
 
     // SED 2026 ********************************************************
 
-    public function exportInscritosPorSlugSed($slug)
+    public function exportInscritosPorSlugSed(Request $request, $slug)
     {
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
+
+        $asistencia = $request->input('asistencia');
 
         // EVENTO / ACTIVIDAD
 
@@ -1425,6 +1427,8 @@ class DownloadAttendanceController extends Controller
             'empresario.actividadComercial:id,name',
         ])
             ->where('slug', $slug)
+            ->when($asistencia === 'asistieron', fn ($q) => $q->whereNotNull('fecha_asistencia'))
+            ->when($asistencia === 'faltaron', fn ($q) => $q->whereNull('fecha_asistencia'))
             ->orderByDesc('created_at');
 
         // TEMPLATE EXCEL
