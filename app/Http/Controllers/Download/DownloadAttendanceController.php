@@ -2788,4 +2788,59 @@ class DownloadAttendanceController extends Controller
 
         return $value ? 'SI' : 'NO';
     }
+
+    public function exportarInscritosParaCertificados(Request $request)
+    {
+
+        EL ARCHIVO EXCEL ESTÁ EN:
+        $templatePath = storage_path('app/plantillas/pp093_listado_certificados.xlsx');
+
+        en el excel a partir de la fila 2 completar 
+        A: EmpresarioActividad->fecha_seleccionada (formato dia/mes/año)
+        B: Empresario->numero_dni
+        C: Empresario->nombres Empresario->apellido_paterno Empresario->apellido_materno
+        D: Emprendimiento->genero_id (Gender->name)
+        E: Empresario->correo_electronico
+        F: Empresario->celular
+        G: Empresario->discapacidad (0 = NO, 1 = SI)
+        H: Empresario->fecha_nacimiento (formato dia/mes/año)
+        I: Empresario->academicdegree_id (gradoAcademico->name)
+        J: Empresario->ruc
+        K: Empresario->razon_social
+        L: Empresario->sector_economico_id (sectorEconomico->name)
+        M: Empresario->region_id (region->name)
+        N: Empresario->provincia_id (provincia->name)
+        O: Empresario->distrito_id (distrito->name)
+        P: ActividadPnte->tema
+        Q: ActividadPnte->componente_id 
+            componente_id: [
+                { label: 'ACCESO AL FINANCIAMIENTO', value: 1 },
+                { label: 'DESARROLLO PRODUCTIVO', value: 2 },
+                { label: 'DIGITALIZACIÓN', value: 3 },
+                { label: 'GESTIÓN EMPRESARIAL', value: 4 },
+            ],      
+       R: ActividadPnte->modalidad_id (Modality->name)
+       S: ActividadPnte->representante_id (User->name User->lastname User->middlename)
+       T: ActividadPnte->representante_id (User->dni)
+       U: EmpresarioActividad->horario_inicio
+       V: "PP093 - Activ 1.1"
+       W: "3 HORAS"
+       X: EmpresarioActividad->test_entrada (Guiate de la funcion de app\Http\Controllers\Pnte\ActividadPnteController.php 'inscritosPP093PorSlug' para sacar el promedio test_entrada)
+       Y: EmpresarioActividad->test_salida (Guiate de la funcion de app\Http\Controllers\Pnte\ActividadPnteController.php 'inscritosPP093PorSlug' para sacar el promedio test_salida)
+       Z: EmpresarioActividad->fecha_seleccionada (regresar asi ejemplo: 'JULIO-2026')
+
+       CONDISIONES:
+       1. CONSIDERAR ESTOS FILTROS
+        unidad: 2
+        year: 2026
+        rangeDate[]: 2026-09-15 (opcional)
+        rangeDate[]: 2026-09-30 (opcional)
+        city: 2 (opcional)
+        tipo_actividad_id: 6
+
+        2. SOLO TRAES LOS DATOS DE LOS 'Y: EmpresarioActividad->test_salida' CUANDO SEAN MAYOR O IGUAL A 12
+
+        3. AGRUPAS TODOS POR RUC
+                 
+    }
 }
