@@ -546,9 +546,46 @@ class PnteTestController extends Controller
                     'fecha_te' => now(),
                 ]);
 
+                // Calcular nota sobre 20 (misma fórmula que inscritosPP093PorSlug)
+                $banco = PntTest::where('slug', $request->slug)->first()?->test_entrada ?? [];
+                $correctas = 0;
+                $respondidas = 0;
+                $detalle = [];
+                foreach (($request->test_entrada ?? []) as $preguntaKey => $respuestaId) {
+                    $numero = (int) str_replace('pregunta_', '', $preguntaKey);
+                    $preguntaBD = $banco[$numero - 1] ?? null;
+                    if (! $preguntaBD) {
+                        continue;
+                    }
+                    $respondidas++;
+                    $esCorrecta = ($preguntaBD['correctaId'] ?? null) == $respuestaId;
+                    if ($esCorrecta) {
+                        $correctas++;
+                    }
+                    $textoRespuesta = null;
+                    $textoCorrecta = null;
+                    foreach (($preguntaBD['opciones'] ?? []) as $opcion) {
+                        if (($opcion['id'] ?? null) == $respuestaId) {
+                            $textoRespuesta = $opcion['texto'] ?? null;
+                        }
+                        if (($opcion['id'] ?? null) == ($preguntaBD['correctaId'] ?? null)) {
+                            $textoCorrecta = $opcion['texto'] ?? null;
+                        }
+                    }
+                    $detalle[] = [
+                        'pregunta' => $preguntaBD['texto'] ?? $preguntaKey,
+                        'tu_respuesta' => $textoRespuesta,
+                        'respuesta_correcta' => $textoCorrecta,
+                        'es_correcta' => $esCorrecta,
+                    ];
+                }
+                $nota = $respondidas > 0 ? round(($correctas / $respondidas) * 20, 2) : 0;
+
                 return response()->json([
                     'status' => 200,
                     'message' => 'Test de entrada registrado correctamente.',
+                    'nota' => $nota,
+                    'detalle' => $detalle,
                 ]);
             }
 
