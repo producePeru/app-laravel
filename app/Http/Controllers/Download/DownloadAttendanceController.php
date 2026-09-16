@@ -2791,56 +2791,240 @@ class DownloadAttendanceController extends Controller
 
     public function exportarInscritosParaCertificados(Request $request)
     {
+        try {
+            ini_set('memory_limit', '2G');
+            set_time_limit(600);
 
-        EL ARCHIVO EXCEL ESTÁ EN:
-        $templatePath = storage_path('app/plantillas/pp093_listado_certificados.xlsx');
+            $user = Auth::user();
 
-        en el excel a partir de la fila 2 completar 
-        A: EmpresarioActividad->fecha_seleccionada (formato dia/mes/año)
-        B: Empresario->numero_dni
-        C: Empresario->nombres Empresario->apellido_paterno Empresario->apellido_materno
-        D: Emprendimiento->genero_id (Gender->name)
-        E: Empresario->correo_electronico
-        F: Empresario->celular
-        G: Empresario->discapacidad (0 = NO, 1 = SI)
-        H: Empresario->fecha_nacimiento (formato dia/mes/año)
-        I: Empresario->academicdegree_id (gradoAcademico->name)
-        J: Empresario->ruc
-        K: Empresario->razon_social
-        L: Empresario->sector_economico_id (sectorEconomico->name)
-        M: Empresario->region_id (region->name)
-        N: Empresario->provincia_id (provincia->name)
-        O: Empresario->distrito_id (distrito->name)
-        P: ActividadPnte->tema
-        Q: ActividadPnte->componente_id 
-            componente_id: [
-                { label: 'ACCESO AL FINANCIAMIENTO', value: 1 },
-                { label: 'DESARROLLO PRODUCTIVO', value: 2 },
-                { label: 'DIGITALIZACIÓN', value: 3 },
-                { label: 'GESTIÓN EMPRESARIAL', value: 4 },
-            ],      
-       R: ActividadPnte->modalidad_id (Modality->name)
-       S: ActividadPnte->representante_id (User->name User->lastname User->middlename)
-       T: ActividadPnte->representante_id (User->dni)
-       U: EmpresarioActividad->horario_inicio
-       V: "PP093 - Activ 1.1"
-       W: "3 HORAS"
-       X: EmpresarioActividad->test_entrada (Guiate de la funcion de app\Http\Controllers\Pnte\ActividadPnteController.php 'inscritosPP093PorSlug' para sacar el promedio test_entrada)
-       Y: EmpresarioActividad->test_salida (Guiate de la funcion de app\Http\Controllers\Pnte\ActividadPnteController.php 'inscritosPP093PorSlug' para sacar el promedio test_salida)
-       Z: EmpresarioActividad->fecha_seleccionada (regresar asi ejemplo: 'JULIO-2026')
+            // Solo rol 1 puede descargar (mismo criterio que exportInscritos)
+            if ($user && $user->rol != 1) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'No tienes permisos para descargar este reporte.',
+                ], 403);
+            }
 
-       CONDISIONES:
-       1. CONSIDERAR ESTOS FILTROS
-        unidad: 2
-        year: 2026
-        rangeDate[]: 2026-09-15 (opcional)
-        rangeDate[]: 2026-09-30 (opcional)
-        city: 2 (opcional)
-        tipo_actividad_id: 6
+            $year = $request->input('year', 2026);
 
-        2. SOLO TRAES LOS DATOS DE LOS 'Y: EmpresarioActividad->test_salida' CUANDO SEAN MAYOR O IGUAL A 12
+            $filterDates = null;
+            if ($request->filled('rangeDate')) {
+                [$from, $to] = $request->input('rangeDate');
+                $current = Carbon::parse($from);
+                $end = Carbon::parse($to);
+                $filterDates = [];
+                while ($current->lte($end)) {
+                    $filterDates[] = $current->format('Y-m-d');
+                    $current->addDay();
+                }
+            }
 
-        3. AGRUPAS TODOS POR RUC
-                 
+            // Actividades PP093: unidad y tipo_actividad_id fijos
+            $actividades = ActividadPnte::with([
+                'modalidad:id,name',
+                'representante:id,name,lastname,middlename,dni',
+            ])
+                ->select([
+                    'id', 'unidad', 'slug', 'fechas', 'tema',
+                    'componente_id', 'modalidad_id', 'representante_id',
+                    'tipo_actividad_id', 'region',
+                ])
+                ->where('unidad', 2)
+                ->where('tipo_actividad_id', 6)
+                ->when($year, fn ($q) => $q->where('fechas', 'LIKE', "%{$year}%"))
+                ->when($filterDates, function ($q) use ($filterDates) {
+                    $q->where(function ($query) use ($filterDates) {
+                        foreach ($filterDates as $day) {
+                            $query->orWhere('fechas', 'LIKE', "%{$day}%");
+                        }
+                    });
+                })
+                ->when($request->filled('city'), fn ($q) => $q->where('region', $request->input('city')))
+                ->get();
+
+            if ($actividades->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontraron actividades con los filtros indicados.',
+                ], 404);
+            }
+
+            $slugs = $actividades->pluck('slug')->toArray();
+            $actividadesPorSlug = $actividades->keyBy('slug');
+
+            // Banco de preguntas por actividad (en inscritosPP093PorSlug el banco
+            // de salida también es test_entrada: se mantiene ese criterio)
+            $bancosPorSlug = PntTest::whereIn('slug', $slugs)->get()->keyBy('slug');
+
+            $componentes = [
+                1 => 'ACCESO AL FINANCIAMIENTO',
+                2 => 'DESARROLLO PRODUCTIVO',
+                3 => 'DIGITALIZACIÓN',
+                4 => 'GESTIÓN EMPRESARIAL',
+            ];
+
+            $templatePath = storage_path('app/plantillas/pp093_listado_certificados.xlsx');
+
+            if (! file_exists($templatePath)) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Plantilla no encontrada',
+                ], 404);
+            }
+
+            $spreadsheet = IOFactory::load($templatePath);
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $row = 2;
+
+            $calcPromedio = function ($respuestas, $banco) {
+                $correctas = 0;
+                $respondidas = 0;
+                if (! empty($respuestas) && ! empty($banco)) {
+                    foreach ($respuestas as $preguntaKey => $respuestaId) {
+                        $numero = (int) str_replace('pregunta_', '', $preguntaKey);
+                        $preguntaBD = $banco[$numero - 1] ?? null;
+                        if (! $preguntaBD) {
+                            continue;
+                        }
+                        $respondidas++;
+                        if (($preguntaBD['correctaId'] ?? null) == $respuestaId) {
+                            $correctas++;
+                        }
+                    }
+                }
+
+                return $respondidas > 0 ? round(($correctas / $respondidas) * 20, 2) : null;
+            };
+
+            EmpresarioActividad::with([
+                'empresario.genero:id,name',
+                'empresario.gradoAcademico:id,name',
+                'empresario.sectorEconomico:id,name',
+                'empresario.region:id,name',
+                'empresario.provincia:id,name',
+                'empresario.distrito:id,name',
+            ])
+                ->join('empresarios', 'empresarios.id', '=', 'empresario_actividad.empresario_id')
+                ->select('empresario_actividad.*')
+                ->whereIn('empresario_actividad.slug', $slugs)
+                ->when($filterDates, fn ($q) => $q->whereIn('empresario_actividad.fecha_seleccionada', $filterDates))
+                ->orderBy('empresarios.ruc')
+                ->orderBy('empresario_actividad.id')
+                ->chunk(1000, function ($items) use (
+                    &$row, $sheet, $actividadesPorSlug, $bancosPorSlug, $componentes, $calcPromedio
+                ) {
+                    foreach ($items as $item) {
+                        $banco = $bancosPorSlug->get($item->slug)?->test_entrada ?? [];
+
+                        $promedioTE = $calcPromedio($item->test_entrada, $banco);
+                        $promedioTS = $calcPromedio($item->test_salida, $banco);
+
+                        // Solo filas con nota de salida >= 12
+                        if ($promedioTS === null || $promedioTS < 12) {
+                            continue;
+                        }
+
+                        $e = $item->empresario;
+                        $act = $actividadesPorSlug->get($item->slug);
+
+                        try {
+                            $fechaSel = $item->fecha_seleccionada
+                                ? Carbon::parse($item->fecha_seleccionada)->format('d/m/Y')
+                                : '';
+                        } catch (\Throwable $th) {
+                            $fechaSel = '';
+                        }
+
+                        try {
+                            $fechaNac = $e?->fecha_nacimiento
+                                ? Carbon::parse($e->fecha_nacimiento)->format('d/m/Y')
+                                : '';
+                        } catch (\Throwable $th) {
+                            $fechaNac = '';
+                        }
+
+                        try {
+                            $mesAnio = $item->fecha_seleccionada
+                                ? mb_strtoupper(Carbon::parse($item->fecha_seleccionada)->translatedFormat('F-Y'), 'UTF-8')
+                                : '';
+                        } catch (\Throwable $th) {
+                            $mesAnio = '';
+                        }
+
+                        $nombreCompleto = $e
+                            ? mb_strtoupper(trim(
+                                ($e->nombres ?? '').' '.
+                                ($e->apellido_paterno ?? '').' '.
+                                ($e->apellido_materno ?? '')
+                            ), 'UTF-8')
+                            : '';
+
+                        $representante = $act?->representante
+                            ? mb_strtoupper(trim(
+                                ($act->representante->name ?? '').' '.
+                                ($act->representante->lastname ?? '').' '.
+                                ($act->representante->middlename ?? '')
+                            ), 'UTF-8')
+                            : '';
+
+                        $fila = [
+                            $fechaSel,                                            // A
+                            $e?->numero_dni ?? '',                               // B
+                            $nombreCompleto,                                     // C
+                            $e?->genero?->name ?? '',                            // D
+                            $e?->correo_electronico ?? '',                       // E
+                            $e?->celular ?? '',                                  // F
+                            $e?->discapacidad ? 'SI' : 'NO',                     // G
+                            $fechaNac,                                           // H
+                            $e?->gradoAcademico?->name ?? '',                    // I
+                            $e?->ruc ?? '',                                      // J
+                            $e?->razon_social ?? '',                             // K
+                            $e?->sectorEconomico?->name ?? '',                   // L
+                            $e?->region?->name ?? '',                            // M
+                            $e?->provincia?->name ?? '',                         // N
+                            $e?->distrito?->name ?? '',                          // O
+                            $act?->tema ?? '',                                   // P
+                            $componentes[$act?->componente_id] ?? '',            // Q
+                            $act?->modalidad?->name ?? '',                       // R
+                            $representante,                                      // S
+                            $act?->representante?->dni ?? '',                    // T
+                            $item->horario_inicio ?? '',                         // U
+                            'PP093 - Activ 1.1',                                 // V
+                            '3 HORAS',                                           // W
+                            $promedioTE ?? '',                                   // X
+                            $promedioTS ?? '',                                   // Y
+                            $mesAnio,                                            // Z
+                        ];
+
+                        foreach ($fila as $colIndex => $value) {
+                            $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
+                            $sheet->setCellValue("{$letter}{$row}", $value);
+                        }
+
+                        $row++;
+                    }
+                });
+
+            return new StreamedResponse(function () use ($spreadsheet) {
+                $writer = new Xlsx($spreadsheet);
+                $writer->setPreCalculateFormulas(false);
+                $writer->save('php://output');
+            }, 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="pp093_listado_certificados_'.now()->format('Ymd_His').'.xlsx"',
+                'Cache-Control' => 'max-age=0',
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Error exportarInscritosParaCertificados: '.$e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'message' => 'Ocurrió un error al generar el reporte',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

@@ -67,6 +67,8 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
 
     Route::POST('export-inscritos-ferias/{slug}', 'exportInscritosFeriaPorSlug');
 
+    Route::POST('export-inscritos-certificados-pp093', 'exportarInscritosParaCertificados');
+
 });
 
 Route::controller(ActividadesUgoController::class)->group(function () {
