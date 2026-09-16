@@ -1192,6 +1192,38 @@ class ActividadPnteController extends Controller
         }
     }
 
+    public function inscritosPorRegionSlug(Request $request, $slug)
+    {
+        try {
+            $rows = EmpresarioActividad::join('empresarios', 'empresarios.id', '=', 'empresario_actividad.empresario_id')
+                ->leftJoin('cities', 'cities.id', '=', 'empresarios.region_id')
+                ->where('empresario_actividad.slug', $slug)
+                ->when($request->input('asistencia') === 'asistieron', function ($q) {
+                    $q->whereNotNull('empresario_actividad.fecha_asistencia');
+                })
+                ->when($request->input('asistencia') === 'faltaron', function ($q) {
+                    $q->whereNull('empresario_actividad.fecha_asistencia');
+                })
+                ->groupBy('cities.id', 'cities.name')
+                ->selectRaw("COALESCE(cities.name, 'SIN REGIÓN') as region, COUNT(*) as total")
+                ->orderByDesc('total')
+                ->get();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Conteo por región obtenido correctamente.',
+                'data' => $rows,
+                'total' => (int) $rows->sum('total'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al obtener el conteo por región.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function aprobarEvento($id)
     {
         try {

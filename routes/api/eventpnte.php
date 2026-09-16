@@ -48,6 +48,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::GET('attendance-summary-slug/{slug}', 'attendanceSummaryBySlug');
 
+    Route::GET('inscritos-por-region/{slug}', 'inscritosPorRegionSlug');
+
     Route::PUT('permission-to-delete/{slug}', 'permissionToDelete');
 
     Route::PUT('toggle-formulario-registro/{slug}', 'toggleFormularioRegistro');
