@@ -6,23 +6,21 @@ use App\Exports\AgreementExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendEndDateNotification;
 use App\Models\Agreement;
-use App\Models\Commitment;
 use App\Models\AgreementActions;
 use App\Models\AgreementCommitments;
 use App\Models\AgreementFiles;
+use App\Models\Commitment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Jobs\SendEndDateNotificationUGSE;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
-
 class AgreementController extends Controller
 {
-
     public function index(Request $request, $entity)
     {
-        if (!in_array($entity, ['ugo', 'ugse'])) {
+        if (! in_array($entity, ['ugo', 'ugse'])) {
             return response()->json(['error' => 'Entidad no válida'], 400);
         }
 
@@ -44,28 +42,28 @@ class AgreementController extends Controller
 
         $data->getCollection()->transform(function ($item) {
             return [
-                'id'                =>      $item->id,
-                'city'              =>      $item->region->name,
-                'city_id'           =>      $item->region->id,
-                'province'          =>      $item->provincia->name,
-                'province_id'       =>      $item->provincia->id,
-                'district'          =>      $item->distrito->name,
-                'district_id'       =>      $item->distrito->id,
-                'entity'            =>      $item->alliedEntity,
-                'startOperations'   =>      $item->homeOperations,
-                'startDate'         =>      $item->startDate,
-                'external'          =>      $item->external,
-                'years'             =>      $item->years,
-                'endDate'           =>      $item->endDate,
-                'observations'      =>      $item->observations,
-                'archivos'          =>      $item->archivosConvenios,
-                'ruc'               =>      $item->ruc,
-                'components'        =>      $item->components,
-                'focal'             =>      $item->focal,
-                'focalCargo'        =>      $item->focalCargo,
-                'focalPhone'        =>      $item->focalPhone,
-                'aliado'            =>      $item->aliado,
-                'aliadoPhone'       =>      $item->aliadoPhone
+                'id' => $item->id,
+                'city' => $item->region->name,
+                'city_id' => $item->region->id,
+                'province' => $item->provincia->name,
+                'province_id' => $item->provincia->id,
+                'district' => $item->distrito->name,
+                'district_id' => $item->distrito->id,
+                'entity' => $item->alliedEntity,
+                'startOperations' => $item->homeOperations,
+                'startDate' => $item->startDate,
+                'external' => $item->external,
+                'years' => $item->years,
+                'endDate' => $item->endDate,
+                'observations' => $item->observations,
+                'archivos' => $item->archivosConvenios,
+                'ruc' => $item->ruc,
+                'components' => $item->components,
+                'focal' => $item->focal,
+                'focalCargo' => $item->focalCargo,
+                'focalPhone' => $item->focalPhone,
+                'aliado' => $item->aliado,
+                'aliadoPhone' => $item->aliadoPhone,
             ];
         });
 
@@ -75,17 +73,17 @@ class AgreementController extends Controller
     // UGSE - CONVENIOS
     public function indexUgse(Request $request, $entity)
     {
-        if (!in_array($entity, ['ugo', 'ugse'])) {
+        if (! in_array($entity, ['ugo', 'ugse'])) {
             return response()->json([
-                'error' => 'Entidad no válida'
+                'error' => 'Entidad no válida',
             ], 400);
         }
 
-        $page       = $request->input('page', 1);
-        $pageSize   = $request->input('pageSize', 10);
-        $year       = $request->input('year');
-        $startDate  = $request->input('startDate');
-        $name       = $request->input('name');
+        $page = $request->input('page', 1);
+        $pageSize = $request->input('pageSize', 10);
+        $year = $request->input('year');
+        $startDate = $request->input('startDate');
+        $name = $request->input('name');
 
         $query = Agreement::with([
             'estadoOperatividad',
@@ -99,17 +97,17 @@ class AgreementController extends Controller
             ->where('entity', $entity);
 
         // Buscar por nombre de la entidad aliada
-        if (!empty($name)) {
+        if (! empty($name)) {
             $query->where('alliedEntity', 'like', "%{$name}%");
         }
 
         // Filtrar por año
-        if (!empty($year)) {
+        if (! empty($year)) {
             $query->whereYear('startDate', $year);
         }
 
         // Filtrar por fecha de inicio
-        if (!empty($startDate)) {
+        if (! empty($startDate)) {
             $query->whereDate('startDate', date('Y-m-d', strtotime($startDate)));
         }
 
@@ -119,40 +117,45 @@ class AgreementController extends Controller
 
         $data->getCollection()->transform(function ($item) {
             return [
-                'id'                => $item->id,
-                'city'              => optional($item->region)->name,
-                'city_id'           => optional($item->region)->id,
-                'province'          => optional($item->provincia)->name,
-                'province_id'       => optional($item->provincia)->id,
-                'district'          => optional($item->distrito)->name,
-                'district_id'       => optional($item->distrito)->id,
-                'entity'            => $item->alliedEntity,
-                'startOperations'   => $item->homeOperations,
-                'startDate'         => $item->startDate,
-                'external'          => $item->external,
-                'years'             => $item->years,
-                'endDate'           => $item->endDate,
-                'observations'      => $item->observations,
-                'archivos'          => $item->archivosConvenios,
-                'ruc'               => $item->ruc,
-                'components'        => $item->components,
-                'focal'             => $item->focal,
-                'focalCargo'        => $item->focalCargo,
-                'focalPhone'        => $item->focalPhone,
-                'aliado'            => $item->aliado,
-                'aliadoPhone'       => $item->aliadoPhone,
-                'renovation'        => $item->renovation == 1 ? '✓' : '-'
+                'id' => $item->id,
+                'city' => optional($item->region)->name,
+                'city_id' => optional($item->region)->id,
+                'province' => optional($item->provincia)->name,
+                'province_id' => optional($item->provincia)->id,
+                'district' => optional($item->distrito)->name,
+                'district_id' => optional($item->distrito)->id,
+                'entity' => $item->alliedEntity,
+                'startOperations' => $item->homeOperations,
+                'startDate' => $item->startDate,
+                'external' => $item->external,
+                'years' => $item->years,
+                'endDate' => $item->endDate,
+                'observations' => $item->observations,
+                'archivos' => $item->archivosConvenios,
+                'ruc' => $item->ruc,
+                'components' => $item->components,
+                'focal' => $item->focal,
+                'focalCargo' => $item->focalCargo,
+                'focalPhone' => $item->focalPhone,
+                'aliado' => $item->aliado,
+                'aliadoPhone' => $item->aliadoPhone,
+                'renovation' => $item->renovation == 1 ? '✓' : '-',
+                'nombre' => $item->nombre,
+                'fecha_adenda' => $item->fecha_adenda?->format('Y-m-d'),
+                'alternos' => $item->alternos ?? [],
+                'alternos_aliados' => $item->alternos_aliados ?? [],
+                'cuenta_plan_trabajo' => (bool) $item->cuenta_plan_trabajo,
             ];
         });
 
         return response()->json([
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
     public function allActionsById($id)
     {
-        $data = AgreementActions::where('agreements_id', $id)->get()->makeHidden(['created_at', 'updated_at', 'deleted_at']); //🚩
+        $data = AgreementActions::where('agreements_id', $id)->get()->makeHidden(['created_at', 'updated_at', 'deleted_at']); // 🚩
 
         return response()->json(['data' => $data, 'status' => 200]);
     }
@@ -169,25 +172,24 @@ class AgreementController extends Controller
         return response()->json(['message' => 'Actualizado correctamente', 'status' => 200]);
     }
 
-
     // **************************************************************** convenios UGO
 
     public function store(Request $request)
     {
         try {
             $validatedData = $request->validate([
-                'city_id'           =>      'required|exists:cities,id',
-                'province_id'       =>      'required|exists:provinces,id',
-                'district_id'       =>      'required|exists:districts,id',
-                'alliedEntity'      =>      'required|string|max:100',
-                'homeOperations'    =>      'nullable',
-                'startDate'         =>      'nullable',
-                'years'             =>      'nullable',
-                'endDate'           =>      'nullable|date',
-                'external'          =>      'nullable',
-                'observations'      =>      'nullable|string',
-                'entity'            =>      'required',
-                'created_id'        =>      'required|exists:users,id'
+                'city_id' => 'required|exists:cities,id',
+                'province_id' => 'required|exists:provinces,id',
+                'district_id' => 'required|exists:districts,id',
+                'alliedEntity' => 'required|string|max:100',
+                'homeOperations' => 'nullable',
+                'startDate' => 'nullable',
+                'years' => 'nullable',
+                'endDate' => 'nullable|date',
+                'external' => 'nullable',
+                'observations' => 'nullable|string',
+                'entity' => 'required',
+                'created_id' => 'required|exists:users,id',
             ]);
 
             $convenio = Agreement::create($validatedData);
@@ -209,47 +211,54 @@ class AgreementController extends Controller
         }
     }
 
-
-
     // **************************************************************** convenios UGSE
 
     public function storeUgse(Request $request)
     {
         try {
             $validatedData = $request->validate([
-                'city_id'           =>      'required|exists:cities,id',
-                'province_id'       =>      'required|exists:provinces,id',
-                'district_id'       =>      'required|exists:districts,id',
-                'alliedEntity'      =>      'required|string|max:100',
-                'ruc'               =>      'nullable|max:11',
-                'components'        =>      'nullable|max:18',
-                'startDate'         =>      'nullable|date',
-                'years'             =>      'required',
-                'endDate'           =>      'nullable|date',
-                'aliado'            =>      'nullable',
-                'aliadoPhone'       =>      'nullable',
-                'focal'             =>      'nullable',
-                'focalCargo'        =>      'nullable',
-                'focalPhone'        =>      'nullable',
-                'renovation'        =>      'nullable',
-                'observations'      =>      'nullable|string',
-                'entity'            =>      'required',
-                'created_id'        =>      'required|exists:users,id'
+                'city_id' => 'nullable|exists:cities,id',
+                'province_id' => 'nullable|exists:provinces,id',
+                'district_id' => 'nullable|exists:districts,id',
+                'alliedEntity' => 'required|string|max:100',
+                'ruc' => 'nullable|max:11',
+                'components' => 'nullable|max:18',
+                'startDate' => 'nullable|date',
+                'years' => 'nullable',
+                'endDate' => 'nullable|date',
+                'aliado' => 'nullable',
+                'aliadoPhone' => 'nullable',
+                'focal' => 'nullable',
+                'focalCargo' => 'nullable',
+                'focalPhone' => 'nullable',
+                'renovation' => 'nullable',
+                'observations' => 'nullable|string',
+                'entity' => 'required',
+                'created_id' => 'nullable|exists:users,id',
+
+                // ugse (nuevas columnas)
+                'nombre' => 'nullable|string|max:255',
+                'fecha_suscripcion' => 'nullable|date',
+                'fecha_adenda' => 'nullable|date',
+                'alternos' => 'nullable|array',
+                'alternos.*' => 'nullable|string|max:255',
+                'alternos_aliados' => 'nullable|array',
+                'alternos_aliados.*' => 'nullable|string|max:255',
+                'cuenta_plan_trabajo' => 'nullable|boolean',
             ]);
+
+            // Si el frontend no envía quién crea, se usa el usuario autenticado
+            $validatedData['created_id'] = $validatedData['created_id'] ?? Auth::id();
 
             $convenio = Agreement::create($validatedData);
 
-            if (!is_null($convenio->endDate)) {
-                // $endDate = Carbon::parse($convenio->endDate);
-                // SendEndDateNotificationUGSE::dispatch($convenio)->delay($endDate->subDays(60));
-                // SendEndDateNotificationUGSE::dispatch($convenio)->delay($endDate->subDays(30));
-                // $testDelay = 10;
-                // SendEndDateNotificationUGSE::dispatch($convenio)->delay(now()->addSeconds($testDelay));
-            }
-
             return response()->json(['message' => 'Convenio creado con éxito', 'status' => 200]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['error:' => $e, 'status' => 500]);
+            return response()->json([
+                'message' => 'Error de validación. Revise los campos enviados.',
+                'errors' => $e->errors(),
+                'status' => 422,
+            ], 422);
         } catch (QueryException $e) {
             return response()->json(['message' => 'Existe un error', 'error' => $e], 400);
         }
@@ -273,7 +282,7 @@ class AgreementController extends Controller
 
     public function deleteAgreement($id)
     {
-        if (!Agreement::where('id', $id)->exists()) {
+        if (! Agreement::where('id', $id)->exists()) {
             return response()->json(['message' => 'Convenio no encontrado', 'status' => 404], 404);
         }
 
@@ -281,6 +290,7 @@ class AgreementController extends Controller
 
             $agreement = Agreement::findOrFail($id);
             $agreement->delete();
+
             return response()->json(['message' => 'Eliminado del registro', 'status' => 200]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al eliminar el convenio', 'error' => $e->getMessage(), 'status' => 500], 500);
@@ -291,6 +301,7 @@ class AgreementController extends Controller
     {
         $action = AgreementActions::findOrFail($id);
         $action->delete();
+
         return response()->json(['message' => 'Eliminado del registro', 'status' => 200]);
     }
 
@@ -302,10 +313,10 @@ class AgreementController extends Controller
         ]);
 
         $file = $request->file('file');
-        $filename = time() . '_' . $file->getClientOriginalName();
+        $filename = time().'_'.$file->getClientOriginalName();
         $path = $file->storeAs('filesagreements', $filename, 'public');
 
-        $filesAgreement = new AgreementFiles();
+        $filesAgreement = new AgreementFiles;
         $filesAgreement->name = $file->getClientOriginalName();
         $filesAgreement->path = $path;
         $filesAgreement->agreements_id = $request->input('agreements_id');
@@ -325,7 +336,7 @@ class AgreementController extends Controller
     {
         $fileAgreement = AgreementFiles::findOrFail($id);
 
-        $filePath = 'public/' . $fileAgreement->path;
+        $filePath = 'public/'.$fileAgreement->path;
 
         if (! Storage::exists($filePath)) {
             return response()->json(['message' => 'File not found'], 404);
@@ -340,7 +351,7 @@ class AgreementController extends Controller
         $role_array = $user_role['role_id'];
         $user_id = $user_role['user_id'];
 
-        if (in_array(5, $role_array) || in_array(7, $role_array)  || in_array(8, $role_array)) {
+        if (in_array(5, $role_array) || in_array(7, $role_array) || in_array(8, $role_array)) {
             $action = AgreementFiles::findOrFail($id);
             $action->delete();
 
@@ -407,8 +418,6 @@ class AgreementController extends Controller
         return Excel::download(new AgreementExport($result), 'agreements.xlsx');
     }
 
-
-
     // COMPROMISOS
 
     public function createCompromission(Request $request)
@@ -441,8 +450,8 @@ class AgreementController extends Controller
                 // Almacenar el archivo en el directorio 'public/compromisos'
                 try {
                     $filePath = $file->store('compromisos', 'public');
-                    $filePaths[$fileKey . '_path'] = $filePath;
-                    $fileNames[$fileKey . '_name'] = $file->getClientOriginalName();
+                    $filePaths[$fileKey.'_path'] = $filePath;
+                    $fileNames[$fileKey.'_name'] = $file->getClientOriginalName();
                 } catch (\Exception $e) {
                     return response()->json(['message' => "Error al guardar el archivo: {$fileKey}. Error: {$e->getMessage()}", 'status' => 500]);
                 }
@@ -468,7 +477,7 @@ class AgreementController extends Controller
                 'commitment_id' => $request->input('commitment_id'),
             ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Error al guardar los datos en la base de datos: ' . $e->getMessage(), 'status' => 500]);
+            return response()->json(['message' => 'Error al guardar los datos en la base de datos: '.$e->getMessage(), 'status' => 500]);
         }
 
         return response()->json(['message' => 'Se registro', 'status' => 200]);
@@ -496,7 +505,6 @@ class AgreementController extends Controller
         }
     }
 
-
     // RESUMEN GENERAL DE CADA CONVENIO DE UGSE
 
     // public function resumenGeneral($id)
@@ -522,8 +530,8 @@ class AgreementController extends Controller
         $start = request()->query('start');
         $end = request()->query('end');
 
-        $startDate = $start ?  $start : null;
-        $endDate = $end ?  $end : null;
+        $startDate = $start ? $start : null;
+        $endDate = $end ? $end : null;
 
         $evento = Agreement::with([
             'profile:id,user_id,name,lastname,middlename',
@@ -538,7 +546,7 @@ class AgreementController extends Controller
                     $query->whereBetween('date', [$startDate, $endDate]);
                 }
             },
-            'compromisos.acciones.profile:id,user_id,name,lastname,middlename'
+            'compromisos.acciones.profile:id,user_id,name,lastname,middlename',
         ])->findOrFail($id);
 
         return response()->json($evento);
@@ -556,6 +564,7 @@ class AgreementController extends Controller
 
             if ($commitment) {
                 $commitment->delete();
+
                 return response()->json(['message' => 'Commitment deleted successfully.', 'status' => 200]);
             } else {
                 return response()->json(['error' => 'Commitment not found.'], 404);
@@ -568,12 +577,12 @@ class AgreementController extends Controller
 
         if ($commitment) {
             $commitment->delete();
+
             return response()->json(['message' => 'Commitment deleted successfully.', 'status' => 200]);
         } else {
             return response()->json(['error' => 'You do not have permission to delete this commitment or commitment not found.'], 403);
         }
     }
-
 
     // CONVENIOS HANNA
 
@@ -592,24 +601,24 @@ class AgreementController extends Controller
 
     public function allCommitments(Request $request, $id)
     {
-        $page     = $request->input('page', 1);
+        $page = $request->input('page', 1);
         $pageSize = $request->input('pageSize', 10);
-        $year     = $request->input('year');
-        $name     = $request->input('name');
+        $year = $request->input('year');
+        $name = $request->input('name');
 
         $query = Commitment::with([
             'profile:id,user_id,name,lastname,middlename',
-            'commitments'
+            'commitments',
         ])
             ->where('agreement_id', $id);
 
         // Filtrar por título
-        if (!empty($name)) {
+        if (! empty($name)) {
             $query->where('title', 'like', "%{$name}%");
         }
 
         // Filtrar por año de creación
-        if (!empty($year)) {
+        if (! empty($year)) {
             $query->whereYear('created_at', $year);
         }
 
@@ -619,7 +628,7 @@ class AgreementController extends Controller
 
         return response()->json([
             'data' => $commitments,
-            'status' => 200
+            'status' => 200,
         ]);
     }
 
@@ -631,7 +640,6 @@ class AgreementController extends Controller
 
         return response()->json(['message' => 'Se actualizaron los datos', 'status' => 200]);
     }
-
 
     // CHART
     public function chatAgreement($name)

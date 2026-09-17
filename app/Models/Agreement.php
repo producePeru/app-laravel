@@ -36,6 +36,20 @@ class Agreement extends Model
         'renovation',
         'entity',
         'created_id',
+
+        // ugse
+        'nombre',
+        'fecha_adenda',
+        'alternos',
+        'alternos_aliados',
+        'cuenta_plan_trabajo',
+    ];
+
+    protected $casts = [
+        'fecha_adenda' => 'date',
+        'alternos' => 'array',
+        'alternos_aliados' => 'array',
+        'cuenta_plan_trabajo' => 'boolean',
     ];
 
     public function estadoOperatividad()
@@ -95,22 +109,19 @@ class Agreement extends Model
         return $this->belongsTo(Profile::class, 'created_id', 'user_id');
     }
 
-
-
     // SCOPE SEARCH
     public function scopeSearch($query, $search)
     {
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('alliedEntity', 'like', "%{$search}%")
-                ->orWhereHas('region', function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('provincia', function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%");
-                });
+                    ->orWhereHas('region', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('provincia', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    });
             });
         }
     }
-
 }
