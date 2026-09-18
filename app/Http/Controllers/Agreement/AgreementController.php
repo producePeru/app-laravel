@@ -88,9 +88,6 @@ class AgreementController extends Controller
         $query = Agreement::with([
             'estadoOperatividad',
             'estadoConvenio',
-            'region',
-            'provincia',
-            'distrito',
             'acciones',
             'archivosConvenios',
         ])
@@ -118,12 +115,6 @@ class AgreementController extends Controller
         $data->getCollection()->transform(function ($item) {
             return [
                 'id' => $item->id,
-                'city' => optional($item->region)->name,
-                'city_id' => optional($item->region)->id,
-                'province' => optional($item->provincia)->name,
-                'province_id' => optional($item->provincia)->id,
-                'district' => optional($item->distrito)->name,
-                'district_id' => optional($item->distrito)->id,
                 'entity' => $item->alliedEntity,
                 'startOperations' => $item->homeOperations,
                 'startDate' => $item->startDate,
