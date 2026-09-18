@@ -577,6 +577,7 @@ class AgreementController extends Controller
         $pageSize = $request->input('pageSize', 10);
         $year = $request->input('year');
         $name = $request->input('name');
+        $type = $request->input('type');
 
         $query = Commitment::with([
             'profile:id,user_id,name,lastname,middlename',
@@ -592,6 +593,11 @@ class AgreementController extends Controller
         // Filtrar por año de creación
         if (! empty($year)) {
             $query->whereYear('created_at', $year);
+        }
+
+        // Filtrar por entidad: pnte / aliado ('ambos' o vacío lista todo)
+        if (! empty($type) && in_array($type, ['pnte', 'aliado'])) {
+            $query->where('type', $type);
         }
 
         $commitments = $query
