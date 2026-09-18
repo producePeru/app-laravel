@@ -36,24 +36,50 @@ class PDFConveniosGeneralController extends Controller
         ])->findOrFail($id);
 
         // Prepare data for the PDF
+        $fmtDate = fn ($value) => $value
+            ? Carbon::parse($value)->format('d-m-Y')
+            : '';
+
+        // Semáforo del convenio (mismo criterio que el frontend)
+        $estado = 'SIN FECHA';
+        $estadoColor = '#8c8c8c';
+        if ($agreement->endDate) {
+            // end - today: positivo = días restantes (igual que dayjs en el frontend)
+            $diffDays = (int) Carbon::today()->diffInDays(
+                Carbon::parse($agreement->endDate)->startOfDay(),
+                false
+            );
+            if ($diffDays < 0) {
+                $estado = 'CULMINADO';
+                $estadoColor = '#dc2626';
+            } elseif ($diffDays <= 30) {
+                $estado = 'PRÓXIMO A VENCER';
+                $estadoColor = '#faad14';
+            } else {
+                $estado = 'VIGENTE';
+                $estadoColor = '#16a34a';
+            }
+        }
+
         $data = [
             'entity' => $agreement->alliedEntity,
-            'region' => $agreement->region->name,
-            'provincia' => $agreement->provincia->name,
-            'distrito' => $agreement->distrito->name,
-            'ruc' => $agreement->ruc,
-            'componente' => $agreement->components,
-            'inicioConvenio' => Carbon::parse($agreement->startDate)->format('d-m-Y'),
-            'finConvenio' => Carbon::parse($agreement->endDate)->format('d-m-Y'),
-            'renovacion' => $agreement->renovation,
-            'puntoFocal' => $agreement->focal,
-            'puntoFocalCargo' => $agreement->focalCargo,
-            'puntoFocalTelf' => $agreement->focalPhone,
-            'aliado' => $agreement->aliado,
-            'aliadoPhone' => $agreement->aliadoPhone,
-            'detalles' => $agreement->observations,
+            'nombre' => $agreement->nombre,
+            'fechaSuscripcion' => $fmtDate($agreement->fecha_suscripcion ?? $agreement->startDate),
+            'finConvenio' => $fmtDate($agreement->endDate),
+            'fechaAdenda' => $fmtDate($agreement->fecha_adenda),
+            'estado' => $estado,
+            'estadoColor' => $estadoColor,
+            'periodoVigencia' => $agreement->observations,
+            'titular' => $agreement->focal,
+            'alternos' => $agreement->alternos ?? [],
+            'titularAliado' => $agreement->aliado,
+            'alternosAliados' => $agreement->alternos_aliados ?? [],
+            'planTrabajo' => is_null($agreement->cuenta_plan_trabajo)
+                ? '-'
+                : ($agreement->cuenta_plan_trabajo ? 'SI' : 'NO'),
+            'archivos' => $agreement->archivosConvenios,
             'compromisos' => $agreement->compromisos,
-            'date' => date('m/d/Y')
+            'date' => date('m/d/Y'),
         ];
 
         // Load the PDF view with the data

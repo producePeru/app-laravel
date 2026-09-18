@@ -14,24 +14,71 @@
 
         .table {
             font-size: 12px;
-            /* border-collapse: collapse; */
         }
 
         td,
         th {
-            padding: 4px;
+            padding: 6px 8px;
         }
 
         .table td {
             border: 1px solid #dddddd;
         }
 
+        .label-cell {
+            background-color: #fafafa;
+            font-weight: 700;
+            width: 22%;
+        }
+
+        .label-cell strong {
+            font-size: 10px;
+        }
+
+        .estado-text {
+            font-size: 10px;
+        }
+
         strong {
             font-weight: 400;
         }
 
+        .title-entity {
+            color: #009ed0;
+            font-size: 14px;
+            margin: 0 0 10px 0;
+        }
+
+        .mini-label {
+            font-size: 10px;
+            color: #888888;
+        }
+
+        .badge-plan {
+            display: inline-block;
+            border: 1px solid #b7eb8f;
+            background-color: #f6ffed;
+            color: #389e0d;
+            border-radius: 4px;
+            padding: 1px 8px;
+            font-size: 11px;
+        }
+
+        .badge-plan-no {
+            border-color: #ffa39e;
+            background-color: #fff1f0;
+            color: #cf1322;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
         .acciones {
-            /* margin: 1rem 0; */
             line-height: 1.4;
         }
 
@@ -41,7 +88,6 @@
 
         .acciones-box {
             border: 1px solid rgba(12, 12, 12, 0.14);
-            /* width: 100%; */
             margin-bottom: .7rem;
             border-radius: 8px;
             padding: .5rem;
@@ -56,61 +102,91 @@
         }
     </style>
 
-    <h4>Convenio: {{ $entity }}</h4>
+    <h4 class="title-entity">{{ $entity }}</h4>
 
     <table class="table" border="1" style="width: 100%; border-collapse: collapse;">
         <tr>
-            <td><strong>Región</strong></td>
-            <td>{{ $region }}</td>
-            <td><strong>Provincia</strong></td>
-            <td>{{ $provincia }}</td>
-            <td><strong>Distrito</strong></td>
-            <td>{{ $distrito }}</td>
+            <td class="label-cell"><strong>ENTIDAD ALIADA</strong></td>
+            <td style="width: 38%;">{{ $entity }}</td>
+            <td class="label-cell"><strong>ESTADO DEL CONVENIO</strong></td>
+            <td><span class="dot" style="background-color: {{ $estadoColor }};"></span><span class="estado-text">{{ $estado }}</span></td>
         </tr>
 
         <tr>
-            <td><strong>RUC</strong></td>
-            <td>{{ $ruc }}</td>
-            <td><strong>Componente</strong></td>
-            <td>{{ $componente }}</td>
-            <td></td>
-            <td></td>
+            <td class="label-cell"><strong>NOMBRE DEL CONVENIO</strong></td>
+            <td colspan="3">{{ $nombre ?? '' }}</td>
         </tr>
 
         <tr>
-            <td><strong>Inicio convenio</strong></td>
-            <td>{{ $inicioConvenio }}</td>
-            <td><strong>Fin convenio</strong></td>
+            <td class="label-cell"><strong>FECHA DE SUSCRIPCIÓN</strong></td>
+            <td>{{ $fechaSuscripcion }}</td>
+            <td class="label-cell"><strong>FECHA DE CULMINACIÓN</strong></td>
             <td>{{ $finConvenio }}</td>
-            <td><strong>Renovación</strong></td>
-            <td>{{ $renovacion == 1 ? 'SI' : 'NO' }}</td>
-        </tr>
-        <tr>
-            <td><strong>Punto Focal</strong></td>
-            <td>{{ $puntoFocal }}</td>
-            <td><strong>Punto Focal cargo</strong></td>
-            <td>{{ $puntoFocalCargo }}</td>
-            <td><strong>Focal Num. Telf.</strong></td>
-            <td>{{ $puntoFocalTelf }}</td>
         </tr>
 
         <tr>
-            <td><strong>Representante Legal</strong></td>
-            <td>{{ $aliado }}</td>
-            <td><strong>Representante Legal Telf.</strong></td>
-            <td>{{ $aliadoPhone }}</td>
-            <td></td>
-            <td></td>
+            <td class="label-cell"><strong>FECHA DE ADENDA</strong></td>
+            <td colspan="3">{{ $fechaAdenda }}</td>
         </tr>
 
         <tr>
-            <td><strong>Comentarios</strong></td>
-            <td colspan="5">{{ $detalles }}</td>
+            <td class="label-cell"><strong>PERIODO DE VIGENCIA</strong></td>
+            <td colspan="3">{{ $periodoVigencia ?? '' }}</td>
         </tr>
+
+        <tr>
+            <td class="label-cell"><strong>PROFESIONAL RESPONSABLE</strong></td>
+            <td colspan="3">
+                <div class="mini-label">TITULAR:</div>
+                <div>{{ $titular ?? '' }}</div>
+                @if (!empty($alternos))
+                    <div class="mini-label" style="margin-top: 4px;">ALTERNOS:</div>
+                    @foreach ($alternos as $alterno)
+                        <div>{{ $loop->iteration }}. {{ $alterno }}</div>
+                    @endforeach
+                @endif
+            </td>
+        </tr>
+
+        <tr>
+            <td class="label-cell"><strong>RESPONSABLE ENTIDAD ALIADA</strong></td>
+            <td colspan="3">
+                <div class="mini-label">TITULAR:</div>
+                <div>{{ $titularAliado ?? '' }}</div>
+                @if (!empty($alternosAliados))
+                    <div class="mini-label" style="margin-top: 4px;">ALTERNOS:</div>
+                    @foreach ($alternosAliados as $alterno)
+                        <div>{{ $loop->iteration }}. {{ $alterno }}</div>
+                    @endforeach
+                @endif
+            </td>
+        </tr>
+
+        <tr>
+            <td class="label-cell"><strong>PLAN DE TRABAJO</strong></td>
+            <td colspan="3">
+                @if ($planTrabajo === '-')
+                    -
+                @else
+                    <span class="badge-plan {{ $planTrabajo === 'NO' ? 'badge-plan-no' : '' }}">{{ $planTrabajo }}</span>
+                @endif
+            </td>
+        </tr>
+
+        {{-- <tr>
+            <td class="label-cell"><strong>Archivos</strong></td>
+            <td colspan="3">
+                @forelse ($archivos ?? [] as $archivo)
+                    <div>{{ $archivo->name ?? '' }}</div>
+                @empty
+                    -
+                @endforelse
+            </td>
+        </tr> --}}
     </table>
 
     <div>
-        @if ($compromisos->isNotEmpty())
+        @if (!empty($compromisos) && $compromisos->isNotEmpty())
             <h4>Compromisos</h4>
 
 
@@ -133,8 +209,8 @@
                         @endif
 
                         <div>Registrado por:
-                            {{ $compromiso->profile->name }} {{ $compromiso->profile->lastname }}
-                            {{ $compromiso->profile->middlename }}
+                            {{ optional($compromiso->profile)->name }} {{ optional($compromiso->profile)->lastname }}
+                            {{ optional($compromiso->profile)->middlename }}
                         </div>
 
                         @if ($compromiso->acciones->isNotEmpty())
@@ -164,8 +240,8 @@
                                                         <div>Detalle: {{ $accion->details }}</div>
                                                     @endif
                                                     <div>Registrado por:
-                                                        {{ $accion->profile->name }} {{ $accion->profile->lastname }}
-                                                        {{ $accion->profile->middlename }}
+                                                        {{ optional($accion->profile)->name }} {{ optional($accion->profile)->lastname }}
+                                                        {{ optional($accion->profile)->middlename }}
                                                     </div>
                                                 </td>
                                             </tr>
