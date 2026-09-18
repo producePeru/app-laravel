@@ -595,7 +595,6 @@ class AgreementController extends Controller
         }
 
         $commitments = $query
-            ->orderBy('created_at', 'desc')
             ->paginate($pageSize, ['*'], 'page', $page);
 
         return response()->json([
