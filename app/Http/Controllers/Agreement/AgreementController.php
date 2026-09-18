@@ -73,11 +73,6 @@ class AgreementController extends Controller
     // UGSE - CONVENIOS
     public function indexUgse(Request $request, $entity)
     {
-        if (! in_array($entity, ['ugo', 'ugse'])) {
-            return response()->json([
-                'error' => 'Entidad no válida',
-            ], 400);
-        }
 
         $page = $request->input('page', 1);
         $pageSize = $request->input('pageSize', 10);
@@ -86,26 +81,12 @@ class AgreementController extends Controller
         $name = $request->input('name');
 
         $query = Agreement::with([
-            'estadoOperatividad',
-            'estadoConvenio',
-            'acciones',
             'archivosConvenios',
-        ])
-            ->where('entity', $entity);
+        ])->where('entity', 'ugse');
 
         // Buscar por nombre de la entidad aliada
         if (! empty($name)) {
             $query->where('alliedEntity', 'like', "%{$name}%");
-        }
-
-        // Filtrar por año
-        if (! empty($year)) {
-            $query->whereYear('startDate', $year);
-        }
-
-        // Filtrar por fecha de inicio
-        if (! empty($startDate)) {
-            $query->whereDate('startDate', date('Y-m-d', strtotime($startDate)));
         }
 
         $data = $query
