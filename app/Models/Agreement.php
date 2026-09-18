@@ -104,9 +104,9 @@ class Agreement extends Model
         return $this->hasMany(Commitment::class);
     }
 
-    public function profile()
+    public function user()
     {
-        return $this->belongsTo(Profile::class, 'created_id', 'user_id');
+        return $this->belongsTo(User::class, 'created_id', 'id');
     }
 
     // SCOPE SEARCH

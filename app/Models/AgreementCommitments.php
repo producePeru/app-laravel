@@ -34,6 +34,11 @@ class AgreementCommitments extends Model
         return $this->belongsTo(Profile::class, 'user_id', 'user_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
     // nuevo
     public function compromiso()
     {

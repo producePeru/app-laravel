@@ -506,7 +506,7 @@ class AgreementController extends Controller
         $endDate = $end ? $end : null;
 
         $evento = Agreement::with([
-            'profile:id,user_id,name,lastname,middlename',
+            'user:id,name,lastname,middlename',
             'region',
             'provincia',
             'distrito',

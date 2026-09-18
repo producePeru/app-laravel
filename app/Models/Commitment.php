@@ -26,6 +26,11 @@ class Commitment extends Model
         return $this->belongsTo(Profile::class, 'user_id', 'user_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
     public function commitments()
     {
         return $this->hasMany(AgreementCommitments::class, 'commitment_id');

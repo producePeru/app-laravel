@@ -20,19 +20,19 @@ class PDFConveniosGeneralController extends Controller
 
         // Fetch the agreement with related data and filter actions based on dates
         $agreement = Agreement::with([
-            'profile:id,user_id,name,lastname,middlename',
+            'user:id,name,lastname,middlename',
             'region',
             'provincia',
             'distrito',
             'archivosConvenios',
-            'compromisos.profile:id,user_id,name,lastname,middlename',
+            'compromisos.user:id,name,lastname,middlename',
             'compromisos.acciones' => function ($query) use ($startDate, $endDate) {
                 // Apply date filtering if both dates are provided
                 if ($startDate && $endDate) {
                     $query->whereBetween('date', [$startDate, $endDate]);
                 }
             },
-            'compromisos.acciones.profile:id,user_id,name,lastname,middlename'
+            'compromisos.acciones.user:id,name,lastname,middlename'
         ])->findOrFail($id);
 
         // Prepare data for the PDF

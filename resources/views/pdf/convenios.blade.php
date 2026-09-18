@@ -194,12 +194,12 @@
                 <div class="acciones-box" style="">
                     <div style="width: 100%;">
 
-                        <div style="margin-bottom: 6px;">
+                        {{-- <div style="margin-bottom: 6px;">
                             <b>{{ $loop->iteration }}. </b>
                             Título: <b>{{ $compromiso->title }}</b>
-                        </div>
+                        </div> --}}
 
-                        <div>Tipo: <span style="text-transform: capitalize;">{{ $compromiso->type }}</span></div>
+                        <div>Entidad: <span style="text-transform: capitalize;">{{ $compromiso->type }}</span></div>
 
                         @if (!empty($compromiso->meta))
                             <div>Meta: {{ $compromiso->meta }}</div>
@@ -209,13 +209,13 @@
                         @endif
 
                         <div>Registrado por:
-                            {{ optional($compromiso->profile)->name }} {{ optional($compromiso->profile)->lastname }}
-                            {{ optional($compromiso->profile)->middlename }}
+                            {{ optional($compromiso->user)->name }} {{ optional($compromiso->user)->lastname }}
+                            {{ optional($compromiso->user)->middlename }}
                         </div>
 
                         @if ($compromiso->acciones->isNotEmpty())
                             <div class="acciones">
-                                <h4 style="margin: 10px 0;">Acciones</h4>
+                                <h4 style="margin: 10px 0;">Actividades</h4>
 
                                 @foreach ($compromiso->acciones as $accion)
                                     <div class="acciones-box acciones-bg">
@@ -240,8 +240,8 @@
                                                         <div>Detalle: {{ $accion->details }}</div>
                                                     @endif
                                                     <div>Registrado por:
-                                                        {{ optional($accion->profile)->name }} {{ optional($accion->profile)->lastname }}
-                                                        {{ optional($accion->profile)->middlename }}
+                                                        {{ optional($accion->user)->name }} {{ optional($accion->user)->lastname }}
+                                                        {{ optional($accion->user)->middlename }}
                                                     </div>
                                                 </td>
                                             </tr>
