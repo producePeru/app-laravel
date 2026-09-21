@@ -459,7 +459,7 @@ class AgreementController extends Controller
     public function listCompromission($id)
     {
         $data = AgreementCommitments::where('commitment_id', $id)
-            ->with(['profile:id,user_id,name,lastname,middlename'])
+            ->with(['user:id,name,lastname,middlename'])
             ->orderBy('created_at', 'desc')
             ->get();
 
