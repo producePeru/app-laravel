@@ -132,11 +132,25 @@ class ActividadPublicPnteController extends Controller
             'slug' => 'required|string',
             'ruc' => 'nullable|size:11',
             'numero_dni' => 'required|string|max:12',
+            'fecha_nacimiento' => 'required|string',
         ]);
 
         try {
 
             DB::beginTransaction();
+
+            // Conversión de fecha de nacimiento a Año-Mes-Día
+            try {
+                $carbonFecha = Carbon::createFromFormat('d/m/Y', $request->fecha_nacimiento);
+                $fechaNacimientoFormatted = $carbonFecha->format('Y-m-d');
+            } catch (\Exception $e) {
+                DB::rollBack();
+
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'El formato de la fecha de nacimiento debe ser Día/Mes/Año.',
+                ], 422);
+            }
 
             $empresario = Empresario::where('ruc', $request->ruc)
                 ->where('numero_dni', $request->numero_dni)
@@ -166,6 +180,8 @@ class ActividadPublicPnteController extends Controller
                     'rubro_id' => $request->rubro_id,
                     'sector_economico_id' => $request->sector_economico_id,
                     'tipo_documento_id' => $request->tipo_documento_id,
+                    'fecha_nacimiento' => $fechaNacimientoFormatted,
+                    'edad' => $carbonFecha->age,
                 ]);
             } else {
 
@@ -192,6 +208,8 @@ class ActividadPublicPnteController extends Controller
                     'ruc' => $request->ruc,
                     'sector_economico_id' => $request->sector_economico_id,
                     'tipo_documento_id' => $request->tipo_documento_id,
+                    'fecha_nacimiento' => $fechaNacimientoFormatted,
+                    'edad' => $carbonFecha->age,
 
                 ]);
             }
