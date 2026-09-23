@@ -365,6 +365,7 @@ class AgreementController extends Controller
             'archivosConvenios',
         ]);
 
+        $query->where('entity', 'ugo');
         $query->latest();
         $data = $query->get();
 
