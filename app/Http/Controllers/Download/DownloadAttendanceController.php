@@ -184,8 +184,8 @@ class DownloadAttendanceController extends Controller
                     $item->total_formalizaciones ?? 0,
                     $estado,
                     Carbon::parse($item->created_at)->format('d/m/Y'),
-                    'https://programa.soporte-pnte.com/admin/actividades-ugo/eventos-inscritos/'.$item->slug,
-                    'https://inscripcion.soporte-pnte.com/actividades-ugo/'.$item->slug,
+                    'https://reporte.soportepnte.com/admin/actividades-ugo/eventos-inscritos/'.$item->slug,
+                    'https://soportepnte.com/actividades-ugo/'.$item->slug,
                     $registradoPor,
                     $estadoActividad,
                 ];
