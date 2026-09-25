@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Empresario extends Model
@@ -109,6 +110,21 @@ class Empresario extends Model
     public function actividades(): HasMany
     {
         return $this->hasMany(EmpresarioActividad::class, 'empresario_id');
+    }
+
+    public function archivosFerias(): HasMany
+    {
+        return $this->hasMany(ArchivoFeria::class, 'empresario_id');
+    }
+
+    public function archivos(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Archivo::class,
+            'archivos_ferias',
+            'empresario_id',
+            'archivo_id'
+        );
     }
 
     public function gradoAcademico(): BelongsTo

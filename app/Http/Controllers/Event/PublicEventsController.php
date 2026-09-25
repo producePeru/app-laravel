@@ -7,6 +7,8 @@ use App\Http\Requests\SedQuestionStoreRequest;
 use App\Http\Requests\StoreSedRequest;
 use App\Mail\FairSedInfoMail;
 use App\Models\ActividadPnte;
+use App\Models\Archivo;
+use App\Models\ArchivoFeria;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
 use App\Models\Empresario;
@@ -522,6 +524,34 @@ class PublicEventsController extends Controller
         try {
             $data = $request->all();
 
+            // Cuando el front envía FormData (con archivo), los objetos llegan como JSON string
+            if (isset($data['redes_sociales']) && is_string($data['redes_sociales'])) {
+                $decoded = json_decode($data['redes_sociales'], true);
+                $data['redes_sociales'] = is_array($decoded) ? $decoded : null;
+            }
+
+            // FormData envía todo como string: 'true'/'false' deben volver a booleano
+            // para las columnas booleanas (se conserva cualquier otro valor como "3" de OTRO)
+            $toBool = function ($v) {
+                if (is_bool($v)) {
+                    return $v;
+                }
+                if ($v === 1 || $v === '1' || $v === 'true') {
+                    return true;
+                }
+                if ($v === 0 || $v === '0' || $v === 'false') {
+                    return false;
+                }
+
+                return $v;
+            };
+
+            foreach (['pertenece_gremio', 'tiene_puntos_venta', 'pos', 'yape_plim', 'tiene_tiendas', 'tiene_delivery', 'factura_electronica', 'participado_produce', 'participado_feria', 'formalizado_produce', 'indecopi', 'terminos_condiciones'] as $boolField) {
+                if (array_key_exists($boolField, $data)) {
+                    $data[$boolField] = $toBool($data[$boolField]);
+                }
+            }
+
             // ─── 1. CREAR/OBTENER EMPRESARIO ─────────────────────────
             $data['fecha_nacimiento'] = \Carbon\Carbon::createFromFormat('d/m/Y', $data['fecha_nacimiento'])->format('Y-m-d');
 
@@ -608,15 +638,62 @@ class PublicEventsController extends Controller
                     'formalizado_produce' => $data['formalizado_produce'] ?? false,
                     'indecopi' => $data['indecopi'] ?? false,
                     'logros_empresa' => $data['logros_empresa'] ?? null,
-                    'terminos_condiciones' => $data['terminos_condiciones'] ?? false,
+                    // 'terminos_condiciones' => $data['terminos_condiciones'] ?? false,
+                    'terminos_condiciones' => ! empty($data['terminos_condiciones']) ? 1 : 0,
                 ]
             );
+
+            // ─── 5. REPORTE TRIBUTARIO (PDF) ─────────────────────────
+            $archivoInfo = null;
+
+            if ($request->hasFile('reporte_tributario')) {
+                $file = $request->file('reporte_tributario');
+
+                if (! $file->isValid() || strtolower($file->getClientOriginalExtension()) !== 'pdf' || $file->getMimeType() !== 'application/pdf') {
+                    return response()->json([
+                        'message' => 'El reporte tributario debe ser un archivo PDF válido.',
+                        'status' => 422,
+                    ], 422);
+                }
+
+                if ($file->getSize() > 10 * 1024 * 1024) {
+                    return response()->json([
+                        'message' => 'El reporte tributario no debe superar los 10 MB.',
+                        'status' => 422,
+                    ], 422);
+                }
+
+                $filename = 'reporte_'.$data['numero_dni'].'_'.time().'.pdf';
+                $path = $file->storeAs('reportes_tributarios', $filename, 'public');
+
+                $archivo = Archivo::create([
+                    'nombre_original' => $file->getClientOriginalName(),
+                    'nombre_archivo' => $filename,
+                    'extension' => 'pdf',
+                    'mime_type' => 'application/pdf',
+                    'ruta' => $path,
+                    'tamanio' => $file->getSize(),
+                    'descripcion' => 'Reporte tributario adjuntado en registro de feria ('.$data['slug'].')',
+                    'usuario_id' => null,
+                ]);
+
+                ArchivoFeria::firstOrCreate(
+                    ['archivo_id' => $archivo->id, 'empresario_id' => $empresario->id]
+                );
+
+                $archivoInfo = [
+                    'archivo_id' => $archivo->id,
+                    'nombre_original' => $archivo->nombre_original,
+                    'ruta' => $archivo->ruta,
+                ];
+            }
 
             return response()->json([
                 'message' => 'Mype registrado exitosamente en la feria.',
                 'data' => [
                     'empresario' => $empresario,
                     'emprendimiento' => $emprendimiento,
+                    'archivo' => $archivoInfo,
                 ],
                 'status' => 200,
             ], 201);

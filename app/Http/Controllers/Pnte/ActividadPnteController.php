@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pnte;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendRecordatorioPP093DesdeAdminJob;
 use App\Models\ActividadPnte;
+use App\Models\Archivo;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
 use App\Models\EmpresarioEmprendimiento;
@@ -18,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -2026,6 +2028,7 @@ class ActividadPnteController extends Controller
                 'empresario.rubro',
                 'empresario.tipoDocumento',
                 'empresario.genero',
+                'empresario.archivosFerias.archivo',
             ])
 
                 ->where('slug', $slug)
@@ -2191,6 +2194,11 @@ class ActividadPnteController extends Controller
 
                     'nombre_mercado' => $e?->nombre_mercado,
 
+                    'reporte_tributario' => ($rep = $e?->archivosFerias?->sortByDesc('id')->first()?->archivo) ? [
+                        'archivo_id' => $rep->id,
+                        'nombre_original' => $rep->nombre_original,
+                    ] : null,
+
                     'emprendimiento' => ($emp = $item->emprendimiento) ? [
                         'empresario_id' => $emp->empresario_id,
                         'actividad_id' => $emp->actividad_id,
@@ -2243,5 +2251,27 @@ class ActividadPnteController extends Controller
         }
 
         return $value ? 'SI' : 'NO';
+    }
+
+    public function descargarReporteTributario($archivo)
+    {
+        try {
+            $archivo = Archivo::findOrFail($archivo);
+
+            if (! Storage::disk('public')->exists($archivo->ruta)) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'El archivo no existe en el servidor.',
+                ], 404);
+            }
+
+            return Storage::disk('public')->download($archivo->ruta, $archivo->nombre_original);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al descargar el reporte tributario',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

@@ -53,7 +53,6 @@ class EmpresarioEmprendimiento extends Model
         'participado_feria' => 'boolean',
         'formalizado_produce' => 'boolean',
         'indecopi' => 'boolean',
-        'terminos_condiciones' => 'boolean',
     ];
 
     // ─── RELACIONES ───────────────────────────────────────────────
