@@ -6,16 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Mail\EventMujerProduceMail;
 use App\Models\MPAdvice;
 use App\Models\MPAdviceDate;
-use Illuminate\Support\Facades\DB;
-use App\Models\MPDiagnostico;
-use App\Models\MPParticipant;
-use Illuminate\Http\Request;
 use App\Models\MPAttendance;
+use App\Models\MPDiagnostico;
 use App\Models\MPDiagnosticoResponse;
 use App\Models\MPEvent;
-use GuzzleHttp\Client;
+use App\Models\MPParticipant;
 use App\Models\Token;
 use Carbon\Carbon;
+use GuzzleHttp\Client;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -35,15 +35,15 @@ class FormularioPublicoController extends Controller
                     'status' => 200,
                     'message' => 'Participante encontrado',
                     'data' => [
-                        'ruc'                   => $participant->ruc,
-                        'social_reason'         => $participant->social_reason,
-                        'economic_sector_id'    => $participant->economic_sector_id,
-                        'rubro_id'              => $participant->rubro_id,
+                        'ruc' => $participant->ruc,
+                        'social_reason' => $participant->social_reason,
+                        'economic_sector_id' => $participant->economic_sector_id,
+                        'rubro_id' => $participant->rubro_id,
                         'comercial_activity_id' => $participant->comercial_activity_id,
-                        'city_id'               => $participant->city_id,
-                        'province_id'           => $participant->province_id,
-                        'district_id'           => $participant->district_id,
-                    ]
+                        'city_id' => $participant->city_id,
+                        'province_id' => $participant->province_id,
+                        'district_id' => $participant->district_id,
+                    ],
                 ], 200);
             }
 
@@ -52,9 +52,9 @@ class FormularioPublicoController extends Controller
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno al procesar la solicitud',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -67,7 +67,7 @@ class FormularioPublicoController extends Controller
 
             $tokens = Token::where('name', 'mp')->pluck('token')->toArray();
 
-            $client = new Client();
+            $client = new Client;
             $responseData = null;
 
             foreach ($tokens as $token) {
@@ -84,7 +84,7 @@ class FormularioPublicoController extends Controller
                     $responseData = json_decode($response->getBody(), true);
 
                     // Verificar si la API devolvió datos válidos
-                    if (!empty($responseData['numero_documento'])) {
+                    if (! empty($responseData['numero_documento'])) {
                         break;
                     }
                 } catch (\Exception $e) {
@@ -94,21 +94,21 @@ class FormularioPublicoController extends Controller
             }
 
             // Si API respondió correctamente
-            if ($responseData && !empty($responseData['numero_documento'])) {
+            if ($responseData && ! empty($responseData['numero_documento'])) {
 
                 return response()->json([
                     'status' => 200,
                     'message' => 'Información obtenida de la API externa',
                     'data' => [
-                        'ruc'                   => $responseData['numero_documento'] ?? null,
-                        'social_reason'         => $responseData['razon_social'] ?? null,
-                        'economic_sector_id'    => null,
-                        'rubro_id'              => null,
+                        'ruc' => $responseData['numero_documento'] ?? null,
+                        'social_reason' => $responseData['razon_social'] ?? null,
+                        'economic_sector_id' => null,
+                        'rubro_id' => null,
                         'comercial_activity_id' => null,
-                        'city_id'               => null,
-                        'province_id'           => null,
-                        'district_id'           => null,
-                    ]
+                        'city_id' => null,
+                        'province_id' => null,
+                        'district_id' => null,
+                    ],
                 ], 200);
             }
 
@@ -122,14 +122,14 @@ class FormularioPublicoController extends Controller
             return response()->json([
                 'status' => 500,
                 'message' => 'fallo la api',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
     private function hideLastFour($phone)
     {
-        if (!$phone) {
+        if (! $phone) {
             return null;
         }
 
@@ -141,8 +141,6 @@ class FormularioPublicoController extends Controller
 
         return substr($phone, 0, $len - 4);
     }
-
-
 
     public function checkDniNumber($dni)
     {
@@ -156,20 +154,20 @@ class FormularioPublicoController extends Controller
                     'status' => 200,
                     'message' => 'Participante encontrado',
                     'data' => [
-                        'names'                 => $participant->names,
-                        'last_name'             => $participant->last_name,
-                        'middle_name'           => $participant->middle_name,
-                        'civil_status_id'       => $participant->civil_status_id,
-                        'num_soons'             => $participant->num_soons,
-                        'gender_id'             => $participant->gender_id,
-                        'sick'                  => $participant->sick,
-                        'academicdegree_id'     => $participant->academicdegree_id,
-                        'phone'                 => $this->hideLastFour($participant->phone),
-                        'email'                 => $participant->email,
-                        'role_company_id'       => $participant->role_company_id,
-                        'date_of_birth'         => $participant->date_of_birth,
-                        'country_id'            => $participant->country_id
-                    ]
+                        'names' => $participant->names,
+                        'last_name' => $participant->last_name,
+                        'middle_name' => $participant->middle_name,
+                        'civil_status_id' => $participant->civil_status_id,
+                        'num_soons' => $participant->num_soons,
+                        'gender_id' => $participant->gender_id,
+                        'sick' => $participant->sick,
+                        'academicdegree_id' => $participant->academicdegree_id,
+                        'phone' => $this->hideLastFour($participant->phone),
+                        'email' => $participant->email,
+                        'role_company_id' => $participant->role_company_id,
+                        'date_of_birth' => $participant->date_of_birth,
+                        'country_id' => $participant->country_id,
+                    ],
                 ], 200);
             }
 
@@ -178,23 +176,22 @@ class FormularioPublicoController extends Controller
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno al procesar la solicitud',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     private function consultExternalDni($dni)
     {
         try {
 
             // VALIDACIÓN DEL DNI (8 caracteres)
-            if (strlen($dni) !== 8 || !ctype_digit($dni)) {
+            if (strlen($dni) !== 8 || ! ctype_digit($dni)) {
                 return response()->json([
-                    'status'  => 409,
-                    'message' => 'dni inválido'
+                    'status' => 409,
+                    'message' => 'dni inválido',
                 ]);
             }
 
@@ -202,7 +199,7 @@ class FormularioPublicoController extends Controller
 
             $tokens = Token::where('name', 'decolecta')->pluck('token')->toArray();
 
-            $client = new Client();
+            $client = new Client;
             $responseData = null;
 
             foreach ($tokens as $token) {
@@ -219,7 +216,7 @@ class FormularioPublicoController extends Controller
                     $responseData = json_decode($response->getBody(), true);
 
                     // Verificar si la API devolvió datos válidos
-                    if (!empty($responseData['document_number'])) {
+                    if (! empty($responseData['document_number'])) {
                         break;
                     }
                 } catch (\Exception $e) {
@@ -229,40 +226,40 @@ class FormularioPublicoController extends Controller
             }
 
             // Si API respondió correctamente
-            if ($responseData && !empty($responseData['document_number'])) {
+            if ($responseData && ! empty($responseData['document_number'])) {
 
                 return response()->json([
                     'status' => 201,
                     'message' => 'Información obtenida de la API externa',
                     'data' => [
-                        'names'                 => $responseData['first_name'] ?? null,
-                        'last_name'             => $responseData['first_last_name'] ?? null,
-                        'middle_name'           => $responseData['second_last_name'] ?? null,
-                        'civil_status_id'       => null,
-                        'num_soons'             => null,
-                        'gender_id'             => null,
-                        'sick'                  => null,
-                        'academicdegree_id'     => null,
-                        'phone'                 => null,
-                        'email'                 => null,
-                        'role_company_id'       => null,
-                        'date_of_birth'         => null,
-                        'country_id'            => null
-                    ]
+                        'names' => $responseData['first_name'] ?? null,
+                        'last_name' => $responseData['first_last_name'] ?? null,
+                        'middle_name' => $responseData['second_last_name'] ?? null,
+                        'civil_status_id' => null,
+                        'num_soons' => null,
+                        'gender_id' => null,
+                        'sick' => null,
+                        'academicdegree_id' => null,
+                        'phone' => null,
+                        'email' => null,
+                        'role_company_id' => null,
+                        'date_of_birth' => null,
+                        'country_id' => null,
+                    ],
                 ]);
             }
 
             // API falló o no devolvió datos válidos
             return response()->json([
-                'status'  => 409,
-                'message' => 'fallo la api'
+                'status' => 409,
+                'message' => 'fallo la api',
             ]);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'fallo la api',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -276,38 +273,38 @@ class FormularioPublicoController extends Controller
             // 1. VALIDACIÓN
             // =======================================================
             $request->validate([
-                'ruc_cooperativa'       => 'nullable|string|max:11',
+                'ruc_cooperativa' => 'nullable|string|max:11',
                 'razon_social_cooperativa' => 'nullable|string|max:255',
 
-                'ruc'                   => 'nullable|string|max:11',
-                'social_reason'         => 'nullable|string|max:255',
-                'economic_sector_id'    => 'nullable|exists:economicsectors,id',
-                'rubro_id'              => 'nullable|exists:categories,id',
+                'ruc' => 'nullable|string|max:11',
+                'social_reason' => 'nullable|string|max:255',
+                'economic_sector_id' => 'nullable|exists:economicsectors,id',
+                'rubro_id' => 'nullable|exists:categories,id',
                 'comercial_activity_id' => 'nullable|exists:activities,id',
-                'city_id'               => 'nullable|exists:cities,id',
-                'province_id'           => 'nullable|exists:provinces,id',
-                'district_id'           => 'nullable|exists:districts,id',
+                'city_id' => 'nullable|exists:cities,id',
+                'province_id' => 'nullable|exists:provinces,id',
+                'district_id' => 'nullable|exists:districts,id',
 
-                't_doc_id'              => 'nullable|exists:typedocuments,id',
-                'doc_number'            => 'required|string|max:12',
-                'country_id'            => 'nullable|exists:countries,id',
-                'date_of_birth'         => 'nullable|date_format:d/m/Y',
-                'names'                 => 'nullable|string|max:100',
-                'last_name'             => 'nullable|string|max:100',
-                'middle_name'           => 'nullable|string|max:100',
-                'civil_status_id'       => 'nullable|exists:civilstatus,id',
-                'num_soons'             => 'nullable|max:3',
-                'gender_id'             => 'nullable|exists:genders,id',
-                'sick'                  => 'nullable|string|max:10',
-                'academicdegree_id'     => 'nullable|exists:academicdegree,id',
-                'phone'                 => 'nullable|max:9',
-                'email'                 => 'nullable|string|max:200',
-                'role_company_id'       => 'nullable|exists:role_company,id',
+                't_doc_id' => 'nullable|exists:typedocuments,id',
+                'doc_number' => 'required|string|max:12',
+                'country_id' => 'nullable|exists:countries,id',
+                'date_of_birth' => 'nullable|date_format:d/m/Y',
+                'names' => 'nullable|string|max:100',
+                'last_name' => 'nullable|string|max:100',
+                'middle_name' => 'nullable|string|max:100',
+                'civil_status_id' => 'nullable|exists:civilstatus,id',
+                'num_soons' => 'nullable|max:3',
+                'gender_id' => 'nullable|exists:genders,id',
+                'sick' => 'nullable|string|max:10',
+                'academicdegree_id' => 'nullable|exists:academicdegree,id',
+                'phone' => 'nullable|max:9',
+                'email' => 'nullable|string|max:200',
+                'role_company_id' => 'nullable|exists:role_company,id',
 
-                'obs_ruc'               => 'nullable|in:1',
-                'obs_dni'               => 'nullable|in:1',
+                'obs_ruc' => 'nullable|in:1',
+                'obs_dni' => 'nullable|in:1',
 
-                'slug'                  => 'required|string'
+                'slug' => 'required|string',
             ]);
 
             // =======================================================
@@ -318,7 +315,7 @@ class FormularioPublicoController extends Controller
                     'date_of_birth' => Carbon::createFromFormat(
                         'd/m/Y',
                         $request->date_of_birth
-                    )->format('Y-m-d')
+                    )->format('Y-m-d'),
                 ]);
             }
 
@@ -348,12 +345,12 @@ class FormularioPublicoController extends Controller
                             ->where('id', '!=', $participant->id)
                             ->exists();
 
-                        if ($existsRuc) {
-                            return response()->json([
-                                'status'  => 409,
-                                'message' => 'El RUC ya se encuentra registrado en otro participante'
-                            ], 409);
-                        }
+                        // if ($existsRuc) {
+                        //     return response()->json([
+                        //         'status'  => 409,
+                        //         'message' => 'El RUC ya se encuentra registrado en otro participante'
+                        //     ], 409);
+                        // }
                     }
 
                     $participant->update($request->except('slug'));
@@ -368,7 +365,7 @@ class FormularioPublicoController extends Controller
                     */
 
                     $data = collect($request->except('slug'))
-                        ->filter(fn($value) => !is_null($value))
+                        ->filter(fn ($value) => ! is_null($value))
                         ->toArray();
 
                     $participant->update($data);
@@ -388,8 +385,8 @@ class FormularioPublicoController extends Controller
 
                     if ($existsRuc) {
                         return response()->json([
-                            'status'  => 409,
-                            'message' => 'El RUC ya se encuentra registrado'
+                            'status' => 409,
+                            'message' => 'El RUC ya se encuentra registrado',
                         ], 409);
                     }
                 }
@@ -407,10 +404,10 @@ class FormularioPublicoController extends Controller
             // =======================================================
             $event = MPEvent::where('slug', $request->slug)->first();
 
-            if (!$event) {
+            if (! $event) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Evento no encontrado'
+                    'status' => 404,
+                    'message' => 'Evento no encontrado',
                 ], 404);
             }
 
@@ -418,49 +415,48 @@ class FormularioPublicoController extends Controller
             // 5. REGISTRAR ASISTENCIA (SIN DUPLICAR)
             // =======================================================
             MPAttendance::firstOrCreate([
-                'event_id'       => $event->id,
+                'event_id' => $event->id,
                 'participant_id' => $participant->id,
             ], [
-                'attendance' => null
+                'attendance' => null,
             ]);
 
             // =======================================================
             // 6. RESPUESTA FINAL
             // =======================================================
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => $action === 'created'
                     ? 'Participante creado y asistencia registrada'
                     : 'Participante actualizado y asistencia verificada',
-                'data'    => $participant
+                'data' => $participant,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
-                'status'  => 422,
+                'status' => 422,
                 'message' => 'Error de validación',
-                'errors'  => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno del servidor',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     public function registerAttendance(Request $request)
     {
         try {
 
             $request->validate([
-                'ruc'        => 'required|string|max:11',
+                'ruc' => 'required|string|max:11',
                 'doc_number' => 'required|string|max:12',
-                'slug'       => 'required|string',
-                'attendance' => 'required|in:1'
+                'slug' => 'required|string',
+                'attendance' => 'required|in:1',
             ]);
 
             // Buscar participante
@@ -468,20 +464,20 @@ class FormularioPublicoController extends Controller
                 ->where('doc_number', $request->doc_number)
                 ->first();
 
-            if (!$participant) {
+            if (! $participant) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Participante no existe en el sistema'
+                    'status' => 404,
+                    'message' => 'Participante no existe en el sistema',
                 ]);
             }
 
             // Buscar evento
             $event = MPEvent::where('slug', $request->slug)->first();
 
-            if (!$event) {
+            if (! $event) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Evento no encontrado'
+                    'status' => 404,
+                    'message' => 'Evento no encontrado',
                 ], 404);
             }
 
@@ -493,44 +489,43 @@ class FormularioPublicoController extends Controller
             // Si ya está registrada
             if ($attendance && $attendance->attendance == 1) {
                 return response()->json([
-                    'status'  => 409,
-                    'message' => 'La asistencia ya fue registrada previamente'
+                    'status' => 409,
+                    'message' => 'La asistencia ya fue registrada previamente',
                 ]);
             }
 
             // Registrar asistencia
             $attendance = MPAttendance::updateOrCreate(
                 [
-                    'event_id'       => $event->id,
+                    'event_id' => $event->id,
                     'participant_id' => $participant->id,
                 ],
                 [
-                    'attendance' => 1
+                    'attendance' => 1,
                 ]
             );
 
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Asistencia registrada correctamente',
-                'data'    => $attendance
+                'data' => $attendance,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
-                'status'  => 422,
+                'status' => 422,
                 'message' => 'Error de validación',
-                'errors'  => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno al procesar la solicitud',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     // PAGINA DE REGISTROS STATUS
 
@@ -543,45 +538,45 @@ class FormularioPublicoController extends Controller
                 ->where('slug', $slug)
                 ->first();
 
-            if (!$event) {
+            if (! $event) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Evento no encontrado.'
+                    'status' => 404,
+                    'message' => 'Evento no encontrado.',
                 ], 404);
             }
 
             $today = now()->format('Y-m-d');
 
             // Determinar si ha finalizado
-            $finished = (!empty($event->endDate) && $event->endDate < $today);
+            $finished = (! empty($event->endDate) && $event->endDate < $today);
 
             return response()->json([
-                'status'   => 200,
-                'message'  => $finished
+                'status' => 200,
+                'message' => $finished
                     ? 'El evento ha finalizado.'
                     : 'El evento no ha finalizado.',
                 'data' => [
                     'finished' => $finished,
-                    'title'     => $event->title,
-                    'city'      => $event->city->name ?? null,
-                    'province'  => $event->province->name ?? null,
-                    'district'  => $event->district->name ?? null,
-                    'modality'  => $event->modality->name ?? null,
+                    'title' => $event->title,
+                    'city' => $event->city->name ?? null,
+                    'province' => $event->province->name ?? null,
+                    'district' => $event->district->name ?? null,
+                    'modality' => $event->modality->name ?? null,
                     // 'hours'     => $event->hours,
                     'hourStart' => $event->hourStart,
-                    'hourEnd'   => $event->hourEnd,
+                    'hourEnd' => $event->hourEnd,
 
-                    'place'     => $event->place,
-                    'link'      => $event->link,
-                    'date'      => Carbon::parse($event->date)->format('d/m/Y')
-                ]
+                    'place' => $event->place,
+                    'link' => $event->link,
+                    'date' => Carbon::parse($event->date)->format('d/m/Y'),
+                ],
             ], 200);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error al procesar la solicitud.',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -595,14 +590,14 @@ class FormularioPublicoController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'data'   => $questions
+                'data' => $questions,
             ]);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error al obtener preguntas del diagnóstico',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -618,11 +613,11 @@ class FormularioPublicoController extends Controller
                 ->map(function ($q) {
 
                     return [
-                        'id'    => $q->id,
+                        'id' => $q->id,
                         'label' => $q->label,
 
                         // tipo
-                        'type'  => match ($q->type) {
+                        'type' => match ($q->type) {
                             't' => 'text',
                             'o' => 'select',
                             'l' => 'title',
@@ -645,29 +640,28 @@ class FormularioPublicoController extends Controller
 
                         // opciones solo select
                         'options' => $q->type === 'o' || $q->type === 'm'
-                            ? $q->options->map(fn($opt) => [
+                            ? $q->options->map(fn ($opt) => [
                                 'value' => $opt->id,
-                                'label' => $opt->name
+                                'label' => $opt->name,
                             ])
-                            : []
+                            : [],
                     ];
                 });
 
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Listado de preguntas obtenido correctamente',
-                'data'    => $questions
+                'data' => $questions,
             ], 200);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error al obtener las preguntas diagnósticas',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     public function registerConsulting(Request $request)
     {
@@ -678,8 +672,8 @@ class FormularioPublicoController extends Controller
             // =========================
             $request->validate([
                 'typedocument_id' => 'required|integer',
-                'ruc'             => 'nullable|string|max:20',
-                'documentnumber'  => 'required|string|max:20',
+                'ruc' => 'nullable|string|max:20',
+                'documentnumber' => 'required|string|max:20',
             ]);
 
             // =========================
@@ -691,10 +685,10 @@ class FormularioPublicoController extends Controller
                 })
                 ->first();
 
-            if (!$participant) {
+            if (! $participant) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'El participante no existe'
+                    'status' => 404,
+                    'message' => 'El participante no existe',
                 ]);
             }
 
@@ -736,28 +730,28 @@ class FormularioPublicoController extends Controller
             // 6. RESPUESTA FINAL
             // =========================
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Participante encontrado',
-                'data'    => [
-                    'id'            => $participant->id,
-                    'ruc'           => $participant->ruc,
-                    'doc_number'    => $participant->doc_number,
-                    'questionnaire' => $questionnaire
-                ]
+                'data' => [
+                    'id' => $participant->id,
+                    'ruc' => $participant->ruc,
+                    'doc_number' => $participant->doc_number,
+                    'questionnaire' => $questionnaire,
+                ],
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
-                'status'  => 422,
+                'status' => 422,
                 'message' => 'Error de validación',
-                'errors'  => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno del servidor',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -770,22 +764,22 @@ class FormularioPublicoController extends Controller
             // 1. VALIDACIÓN BASE
             // ===============================
             $request->validate([
-                'ruc'            => 'nullable|string',
+                'ruc' => 'nullable|string',
                 'documentnumber' => 'required|string',
-                'autorization'   => 'required|accepted',
+                'autorization' => 'required|accepted',
             ]);
 
             // ===============================
             // 2. BUSCAR PARTICIPANTE
             // ===============================
             $participant = MPParticipant::where('doc_number', $request->documentnumber)
-                ->when($request->ruc, fn($q) => $q->where('ruc', $request->ruc))
+                ->when($request->ruc, fn ($q) => $q->where('ruc', $request->ruc))
                 ->first();
 
-            if (!$participant) {
+            if (! $participant) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Participante no encontrado'
+                    'status' => 404,
+                    'message' => 'Participante no encontrado',
                 ], 404);
             }
 
@@ -793,24 +787,30 @@ class FormularioPublicoController extends Controller
             // 3. FILTRAR RESPUESTAS DINÁMICAS
             // ===============================
             $fixedKeys = ['ruc', 'documentnumber', 'typedocument_id', 'autorization'];
-            $answers   = collect($request->all())->except($fixedKeys);
+            $answers = collect($request->all())->except($fixedKeys);
 
             DB::beginTransaction();
 
             foreach ($answers as $questionId => $value) {
 
                 // Solo keys numéricas
-                if (!is_numeric($questionId)) continue;
+                if (! is_numeric($questionId)) {
+                    continue;
+                }
 
                 // Ignorar respuestas vacías/nulas
-                if (is_null($value) || $value === '' || $value === []) continue;
+                if (is_null($value) || $value === '' || $value === []) {
+                    continue;
+                }
 
                 // Buscar pregunta activa
                 $question = MPDiagnostico::where('id', $questionId)
                     ->where('status', 1)
                     ->first();
 
-                if (!$question) continue;
+                if (! $question) {
+                    continue;
+                }
 
                 // ===============================
                 // 4. ELIMINAR RESPUESTAS PREVIAS
@@ -827,37 +827,37 @@ class FormularioPublicoController extends Controller
                 // TEXTO LIBRE
                 if ($question->type === 't') {
                     MPDiagnosticoResponse::create([
-                        'participant_id'    => $participant->id,
-                        'question_id'       => $question->id,
-                        'answer_text'       => (string) $value,
-                        'answer_option_id'  => null,
+                        'participant_id' => $participant->id,
+                        'question_id' => $question->id,
+                        'answer_text' => (string) $value,
+                        'answer_option_id' => null,
                     ]);
                 }
 
                 // OPCIÓN ÚNICA
                 if ($question->type === 'o' && is_numeric($value)) {
                     MPDiagnosticoResponse::create([
-                        'participant_id'    => $participant->id,
-                        'question_id'       => $question->id,
-                        'answer_text'       => null,
-                        'answer_option_id'  => (int) $value,
+                        'participant_id' => $participant->id,
+                        'question_id' => $question->id,
+                        'answer_text' => null,
+                        'answer_option_id' => (int) $value,
                     ]);
                 }
 
                 // OPCIÓN MÚLTIPLE (array)
                 if ($question->type === 'm' && is_array($value)) {
                     $rows = collect($value)
-                        ->filter(fn($v) => is_numeric($v))
-                        ->map(fn($optionId) => [
-                            'participant_id'   => $participant->id,
-                            'question_id'      => $question->id,
-                            'answer_text'      => null,
+                        ->filter(fn ($v) => is_numeric($v))
+                        ->map(fn ($optionId) => [
+                            'participant_id' => $participant->id,
+                            'question_id' => $question->id,
+                            'answer_text' => null,
                             'answer_option_id' => (int) $optionId,
                         ])
                         ->values()
                         ->toArray();
 
-                    if (!empty($rows)) {
+                    if (! empty($rows)) {
                         MPDiagnosticoResponse::insert($rows);
                     }
                 }
@@ -866,21 +866,22 @@ class FormularioPublicoController extends Controller
             DB::commit();
 
             return response()->json([
-                'status'  => 200,
-                'message' => 'Respuestas registradas correctamente'
+                'status' => 200,
+                'message' => 'Respuestas registradas correctamente',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'status'  => 422,
+                'status' => 422,
                 'message' => 'Error de validación',
-                'errors'  => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno al registrar respuestas',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -890,7 +891,7 @@ class FormularioPublicoController extends Controller
         try {
             $validated = $request->validate([
                 'doc_number' => 'required|string',
-                'slug'       => 'required|string',
+                'slug' => 'required|string',
             ]);
 
             // 1. Validar que el participante exista
@@ -898,11 +899,11 @@ class FormularioPublicoController extends Controller
                 ->latest('id')
                 ->first();
 
-            if (!$participant) {
+            if (! $participant) {
                 return response()->json([
-                    'status'    => 403,
-                    'success'   => false,
-                    'message'   => 'No te encuentras registrado.'
+                    'status' => 403,
+                    'success' => false,
+                    'message' => 'No te encuentras registrado.',
                 ]);
             }
 
@@ -934,38 +935,38 @@ class FormularioPublicoController extends Controller
                 }
             }
 
-            if (!empty($camposFaltantes)) {
+            if (! empty($camposFaltantes)) {
                 return response()->json([
-                    'status'           => 202,
-                    'success'          => false,
-                    'message'          => 'Tienes datos pendientes por completar.',
+                    'status' => 202,
+                    'success' => false,
+                    'message' => 'Tienes datos pendientes por completar.',
                     'campos_faltantes' => $camposFaltantes,
-                    'data'             => [
-                        'id'                     => $participant->id,
-                        'ruc'                    => $participant->ruc,
-                        'social_reason'          => $participant->social_reason,
-                        'economic_sector_id'     => $participant->economic_sector_id,
-                        'rubro_id'               => $participant->rubro_id,
-                        'comercial_activity_id'  => $participant->comercial_activity_id,
-                        'city_id'                => $participant->city_id,
-                        'province_id'            => $participant->province_id,
-                        'district_id'            => $participant->district_id,
-                        't_doc_id'               => $participant->t_doc_id,
-                        'doc_number'             => $participant->doc_number,
-                        'country_id'             => $participant->country_id,
-                        'date_of_birth'          => $participant->date_of_birth,
-                        'names'                  => $participant->names,
-                        'last_name'              => $participant->last_name,
-                        'middle_name'            => $participant->middle_name,
-                        'civil_status_id'        => $participant->civil_status_id,
-                        'num_soons'              => $participant->num_soons,
-                        'gender_id'              => $participant->gender_id,
-                        'sick'                   => $participant->sick,
-                        'academicdegree_id'      => $participant->academicdegree_id,
-                        'phone'                  => $participant->phone,
-                        'email'                  => $participant->email,
-                        'role_company_id'        => $participant->role_company_id,
-                    ]
+                    'data' => [
+                        'id' => $participant->id,
+                        'ruc' => $participant->ruc,
+                        'social_reason' => $participant->social_reason,
+                        'economic_sector_id' => $participant->economic_sector_id,
+                        'rubro_id' => $participant->rubro_id,
+                        'comercial_activity_id' => $participant->comercial_activity_id,
+                        'city_id' => $participant->city_id,
+                        'province_id' => $participant->province_id,
+                        'district_id' => $participant->district_id,
+                        't_doc_id' => $participant->t_doc_id,
+                        'doc_number' => $participant->doc_number,
+                        'country_id' => $participant->country_id,
+                        'date_of_birth' => $participant->date_of_birth,
+                        'names' => $participant->names,
+                        'last_name' => $participant->last_name,
+                        'middle_name' => $participant->middle_name,
+                        'civil_status_id' => $participant->civil_status_id,
+                        'num_soons' => $participant->num_soons,
+                        'gender_id' => $participant->gender_id,
+                        'sick' => $participant->sick,
+                        'academicdegree_id' => $participant->academicdegree_id,
+                        'phone' => $participant->phone,
+                        'email' => $participant->email,
+                        'role_company_id' => $participant->role_company_id,
+                    ],
                 ]);
             }
 
@@ -974,35 +975,35 @@ class FormularioPublicoController extends Controller
                 ->select('id', 'link')
                 ->first();
 
-            if (!$event) {
+            if (! $event) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'El evento no existe.'
+                    'message' => 'El evento no existe.',
                 ], 404);
             }
 
             // 4. Validar que el evento tenga link
-            if (!$event->link) {
+            if (! $event->link) {
                 return response()->json([
-                    'status'    => 401,
-                    'success'   => false,
-                    'message'   => 'El enlace de la sala aún no está disponible.'
+                    'status' => 401,
+                    'success' => false,
+                    'message' => 'El enlace de la sala aún no está disponible.',
                 ]);
             }
 
             // 5. Retornar link
             return response()->json([
-                'status'    => 200,
-                'success'   => true,
-                'data'      => [
-                    'link' => $event->link
-                ]
+                'status' => 200,
+                'success' => true,
+                'data' => [
+                    'link' => $event->link,
+                ],
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error al validar el acceso.',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -1013,7 +1014,7 @@ class FormularioPublicoController extends Controller
             // Validación básica
             $request->validate([
                 'doc_number' => 'required|string',
-                'slug'       => 'required|string',
+                'slug' => 'required|string',
             ]);
 
             DB::beginTransaction();
@@ -1021,18 +1022,18 @@ class FormularioPublicoController extends Controller
             // Buscar participante por documento
             $participant = MPParticipant::where('doc_number', $request->doc_number)->first();
 
-            if (!$participant) {
+            if (! $participant) {
                 return response()->json([
-                    'message' => 'Participante no encontrado'
+                    'message' => 'Participante no encontrado',
                 ], 404);
             }
 
             // Buscar evento por slug
             $event = MPEvent::where('slug', $request->slug)->first();
 
-            if (!$event) {
+            if (! $event) {
                 return response()->json([
-                    'message' => 'Evento no encontrado'
+                    'message' => 'Evento no encontrado',
                 ], 404);
             }
 
@@ -1040,10 +1041,10 @@ class FormularioPublicoController extends Controller
             $attendance = MPAttendance::updateOrCreate(
                 [
                     'participant_id' => $participant->id,
-                    'event_id'       => $event->id,
+                    'event_id' => $event->id,
                 ],
                 [
-                    'attendance' => 1
+                    'attendance' => 1,
                 ]
             );
 
@@ -1051,18 +1052,17 @@ class FormularioPublicoController extends Controller
 
             return response()->json([
                 'message' => 'Asistencia registrada correctamente',
-                'data'    => $attendance
+                'data' => $attendance,
             ], 200);
         } catch (\Throwable $e) {
             DB::rollBack();
 
             return response()->json([
                 'message' => 'Error al registrar la asistencia',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     public function updateParticipant(Request $request, $id)
     {
@@ -1072,31 +1072,31 @@ class FormularioPublicoController extends Controller
             // 1. VALIDACIÓN
             // =======================================================
             $request->validate([
-                'doc_number'            => 'required|string|max:12',
-                'ruc'                   => 'nullable|string|max:11',
+                'doc_number' => 'required|string|max:12',
+                'ruc' => 'nullable|string|max:11',
 
-                'social_reason'         => 'nullable|string|max:255',
-                'economic_sector_id'    => 'nullable|exists:economicsectors,id',
-                'rubro_id'              => 'nullable|exists:categories,id',
+                'social_reason' => 'nullable|string|max:255',
+                'economic_sector_id' => 'nullable|exists:economicsectors,id',
+                'rubro_id' => 'nullable|exists:categories,id',
                 'comercial_activity_id' => 'nullable|exists:activities,id',
-                'city_id'               => 'nullable|exists:cities,id',
-                'province_id'           => 'nullable|exists:provinces,id',
-                'district_id'           => 'nullable|exists:districts,id',
+                'city_id' => 'nullable|exists:cities,id',
+                'province_id' => 'nullable|exists:provinces,id',
+                'district_id' => 'nullable|exists:districts,id',
 
-                't_doc_id'              => 'nullable|exists:typedocuments,id',
-                'country_id'            => 'nullable|exists:countries,id',
-                'date_of_birth'         => 'nullable|date_format:d/m/Y',
-                'names'                 => 'nullable|string|max:100',
-                'last_name'             => 'nullable|string|max:100',
-                'middle_name'           => 'nullable|string|max:100',
-                'civil_status_id'       => 'nullable|exists:civilstatus,id',
-                'num_soons'             => 'nullable|max:3',
-                'gender_id'             => 'nullable|exists:genders,id',
-                'sick'                  => 'nullable|string|max:10',
-                'academicdegree_id'     => 'nullable|exists:academicdegree,id',
-                'phone'                 => 'nullable|max:9',
-                'email'                 => 'nullable|string|max:200',
-                'role_company_id'       => 'nullable|exists:role_company,id',
+                't_doc_id' => 'nullable|exists:typedocuments,id',
+                'country_id' => 'nullable|exists:countries,id',
+                'date_of_birth' => 'nullable|date_format:d/m/Y',
+                'names' => 'nullable|string|max:100',
+                'last_name' => 'nullable|string|max:100',
+                'middle_name' => 'nullable|string|max:100',
+                'civil_status_id' => 'nullable|exists:civilstatus,id',
+                'num_soons' => 'nullable|max:3',
+                'gender_id' => 'nullable|exists:genders,id',
+                'sick' => 'nullable|string|max:10',
+                'academicdegree_id' => 'nullable|exists:academicdegree,id',
+                'phone' => 'nullable|max:9',
+                'email' => 'nullable|string|max:200',
+                'role_company_id' => 'nullable|exists:role_company,id',
             ]);
 
             // =======================================================
@@ -1104,10 +1104,10 @@ class FormularioPublicoController extends Controller
             // =======================================================
             $participant = MPParticipant::find($id);
 
-            if (!$participant) {
+            if (! $participant) {
                 return response()->json([
-                    'status'  => 404,
-                    'message' => 'Participante no encontrado'
+                    'status' => 404,
+                    'message' => 'Participante no encontrado',
                 ], 404);
             }
 
@@ -1150,27 +1150,26 @@ class FormularioPublicoController extends Controller
             // 7. RESPUESTA
             // =======================================================
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => 'Participante actualizado correctamente',
-                'data'    => $participant
+                'data' => $participant,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
-                'status'  => 422,
+                'status' => 422,
                 'message' => 'Error de validación',
-                'errors'  => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno del servidor',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     public function mpIndexEventsSoon(Request $request)
     {
@@ -1183,7 +1182,7 @@ class FormularioPublicoController extends Controller
                 'modality:id,name',
                 'city:id,name',
                 'province:id,name',
-                'district:id,name'
+                'district:id,name',
             ])
             ->orderBy('date', 'ASC') // más próximos primero
             ->get()
@@ -1192,8 +1191,8 @@ class FormularioPublicoController extends Controller
             });
 
         return response()->json([
-            'data'   => $items,
-            'status' => 200
+            'data' => $items,
+            'status' => 200,
         ]);
     }
 
@@ -1202,15 +1201,15 @@ class FormularioPublicoController extends Controller
         $date = $item->date ? Carbon::parse($item->date) : null;
 
         return [
-            'title'        => $item->title,
+            'title' => $item->title,
 
-            'slug'         => $item->slug,
+            'slug' => $item->slug,
 
-            'component'    => $item->component,
+            'component' => $item->component,
 
-            'capacitador'  => $item->capacitador,
+            'capacitador' => $item->capacitador,
 
-            'modality'     => $item->modality->name ?? null,
+            'modality' => $item->modality->name ?? null,
 
             'hourStart' => $item->hourStart
                 ? Carbon::createFromFormat('H:i:s', $item->hourStart)->format('g:i A')
@@ -1222,16 +1221,14 @@ class FormularioPublicoController extends Controller
 
             // formato solicitado: día, mes (ene, feb), año
             'date' => $date ? [
-                'day'   => $date->format('d'),
+                'day' => $date->format('d'),
                 'month' => strtolower($date->translatedFormat('M')), // ene, feb
-                'year'  => $date->format('Y'),
+                'year' => $date->format('Y'),
             ] : null,
 
-            'place' => $item->modality->name == "PRESENCIAL" ? $item->city->name . ' / ' . $item->province->name . ' / ' . $item->district->name . ' / ' . $item->place : null
+            'place' => $item->modality->name == 'PRESENCIAL' ? $item->city->name.' / '.$item->province->name.' / '.$item->district->name.' / '.$item->place : null,
         ];
     }
-
-
 
     // enviamos correo por participar en mujer produce de acuerdo al payload que se manda
     public function sendEventEmail(Request $request)
@@ -1239,12 +1236,12 @@ class FormularioPublicoController extends Controller
         $mailer = 'mujerproduce'; // capacitaciones || office365
 
         $payload = $request->validate([
-            'title'      => 'required|string',
-            'link'       => 'required|url',
-            'date'       => 'required|string', // 24/01/2026
-            'hourStart'  => 'required|string', // 14:00:00
-            'hourEnd'    => 'required|string', // 19:00:00
-            'email'      => 'required|email',
+            'title' => 'required|string',
+            'link' => 'required|url',
+            'date' => 'required|string', // 24/01/2026
+            'hourStart' => 'required|string', // 14:00:00
+            'hourEnd' => 'required|string', // 19:00:00
+            'email' => 'required|email',
         ]);
 
         // 📅 Fecha: 24 de enero de 2026
@@ -1263,20 +1260,19 @@ class FormularioPublicoController extends Controller
         Mail::mailer($mailer)
             ->to($payload['email'])
             ->send(new EventMujerProduceMail([
-                'title'     => $payload['title'],
-                'link'      => $payload['link'],
-                'date'      => $dateFormatted,
+                'title' => $payload['title'],
+                'link' => $payload['link'],
+                'date' => $dateFormatted,
                 'hourStart' => $hourStartFormatted,
-                'hourEnd'   => $hourEndFormatted,
-                'email'     => $payload['email'],
+                'hourEnd' => $hourEndFormatted,
+                'email' => $payload['email'],
             ]));
 
         return response()->json([
             'message' => 'Correo enviado correctamente',
-            'mailer'  => $mailer
+            'mailer' => $mailer,
         ]);
     }
-
 
     public function mpIndexAdvice(Request $request)
     {
@@ -1302,7 +1298,7 @@ class FormularioPublicoController extends Controller
                     })
                     ->orderBy('date', 'ASC')
                     ->orderBy('startTime', 'ASC');
-            }
+            },
         ])
             ->orderByDesc('id');
 
@@ -1311,78 +1307,74 @@ class FormularioPublicoController extends Controller
         });
 
         return response()->json([
-            'data'   => $items,
-            'status' => 200
+            'data' => $items,
+            'status' => 200,
         ]);
     }
 
     private function mapAdviceItems($item)
     {
         return [
-            'id'           => $item->id,
-            'title'        => $item->title,
-            'description'  => $item->description,
+            'id' => $item->id,
+            'title' => $item->title,
+            'description' => $item->description,
             'requirements' => $item->requirements,
-            'link'         => $item->link,
+            'link' => $item->link,
 
             // 🔹 Horarios ordenados (ya vienen ordenados desde SQL)
             'schedules' => $item->dates->map(function ($date) {
 
                 return [
-                    'id'          => $date->id,
-                    'date'        => $date->date,
+                    'id' => $date->id,
+                    'date' => $date->date,
                     'date_format' => Carbon::parse($date->date)->format('d/m/Y'),
-                    'startTime'   => Carbon::parse($date->startTime)->format('g:i A'),
-                    'endTime'     => Carbon::parse($date->endTime)->format('g:i A'),
-                    'is_past'     => Carbon::parse($date->date)->isPast(),
+                    'startTime' => Carbon::parse($date->startTime)->format('g:i A'),
+                    'endTime' => Carbon::parse($date->endTime)->format('g:i A'),
+                    'is_past' => Carbon::parse($date->date)->isPast(),
                 ];
             }),
 
             // 🔹 Indica si algún horario está reservado
             'has_reservation' => $item->dates->contains(function ($d) {
-                return !is_null($d->mype_id);
+                return ! is_null($d->mype_id);
             }),
 
             'capacitador_name' => $item->capacitador->name ?? null,
-            'image_url'        => $item->image?->url ? url($item->image->url) : null,
+            'image_url' => $item->image?->url ? url($item->image->url) : null,
 
             'created_at' => $item->created_at,
             'updated_at' => $item->updated_at,
         ];
     }
 
-
-
-
     public function mpAdviceParticipant($dni)
     {
         $participant = MPParticipant::where('doc_number', $dni)->first();
 
-        if (!$participant) {
+        if (! $participant) {
             return response()->json([
                 'message' => 'Participante no encontrado.',
-                'status'  => 404
+                'status' => 404,
             ]);
         }
 
         return response()->json([
-            'names'       => $participant->names,
-            'ruc'         => $participant->ruc,
-            'doc_number'  => $participant->doc_number,
-            'phone'       => $participant->phone ? 'si' : 'no',
-            'status'      => 200
+            'names' => $participant->names,
+            'ruc' => $participant->ruc,
+            'doc_number' => $participant->doc_number,
+            'phone' => $participant->phone ? 'si' : 'no',
+            'status' => 200,
         ], 200);
     }
-
 
     public function reserveAdvice(Request $request)
     {
         $data = $request->validate([
-            'ruc'       => 'nullable|string',
-            'dni'       => 'required|string',
-            'names'     => 'required|string',
+            'ruc' => 'nullable|string',
+            'dni' => 'required|string',
+            'names' => 'required|string',
             'advice_id' => 'required|integer|exists:mp_advice_dates,id',
-            'phone'     => ['required', 'regex:/^9\d{8}$/'] // ✅ 9 dígitos y empieza con 9
+            'phone' => ['required', 'regex:/^9\d{8}$/'], // ✅ 9 dígitos y empieza con 9
         ]);
 
         // 1️⃣ Buscar participante
@@ -1391,33 +1383,33 @@ class FormularioPublicoController extends Controller
             ->where('names', $data['names'])
             ->first();
 
-        if (!$participant) {
+        if (! $participant) {
             return response()->json([
-                'message' => 'Participante no encontrado.'
+                'message' => 'Participante no encontrado.',
             ], 404);
         }
 
         // 2️⃣ Actualizar teléfono
         if ($participant->phone !== $data['phone']) {
             $participant->update([
-                'phone' => $data['phone']
+                'phone' => $data['phone'],
             ]);
         }
 
         // 3️⃣ Buscar horario
         $schedule = MPAdviceDate::find($data['advice_id']);
 
-        if (!$schedule) {
+        if (! $schedule) {
             return response()->json([
-                'message' => 'Horario no encontrado.'
+                'message' => 'Horario no encontrado.',
             ], 404);
         }
 
         // 4️⃣ Validar si ya fue reservado
-        if (!is_null($schedule->mype_id)) {
+        if (! is_null($schedule->mype_id)) {
             return response()->json([
                 'message' => 'Este horario ya fue reservado.',
-                'status'  => 409
+                'status' => 409,
             ], 409);
         }
 
@@ -1425,33 +1417,32 @@ class FormularioPublicoController extends Controller
         if ($schedule->start_date_time->isPast()) {
             return response()->json([
                 'message' => 'No se puede reservar un horario pasado.',
-                'status'  => 422
+                'status' => 422,
             ], 422);
         }
 
         // 6️⃣ Reservar
         $schedule->update([
-            'mype_id' => $participant->id
+            'mype_id' => $participant->id,
         ]);
 
         return response()->json([
-            'message'       => 'Horario reservado correctamente.',
-            'schedule_id'   => $schedule->id,
-            'advice_id'     => $schedule->mp_personalized_advice_id,
-            'mype_id'       => $participant->id,
+            'message' => 'Horario reservado correctamente.',
+            'schedule_id' => $schedule->id,
+            'advice_id' => $schedule->mp_personalized_advice_id,
+            'mype_id' => $participant->id,
             'phone_updated' => $participant->phone,
-            'status'        => 200
+            'status' => 200,
         ], 200);
     }
-
 
     public function mpMyAdvice($dni)
     {
         $participant = MPParticipant::where('doc_number', $dni)->first();
 
-        if (!$participant) {
+        if (! $participant) {
             return response()->json([
-                'message' => 'Participante no encontrado.'
+                'message' => 'Participante no encontrado.',
             ], 404);
         }
 
@@ -1466,7 +1457,7 @@ class FormularioPublicoController extends Controller
                     $q->where('mype_id', $participant->id)
                         ->orderBy('date', 'ASC')
                         ->orderBy('startTime', 'ASC');
-                }
+                },
             ])
             ->orderByDesc('id');
 
@@ -1475,37 +1466,37 @@ class FormularioPublicoController extends Controller
         });
 
         return response()->json([
-            'data'   => $items,
-            'status' => 200
+            'data' => $items,
+            'status' => 200,
         ]);
     }
 
     private function mapMyAdviceItems($item)
     {
         return [
-            'id'           => $item->id,
-            'title'        => $item->title,
-            'description'  => Str::limit(strip_tags($item->description), 150, '...'),
+            'id' => $item->id,
+            'title' => $item->title,
+            'description' => Str::limit(strip_tags($item->description), 150, '...'),
             'requirements' => $item->requirements,
-            'link'         => $item->link,
+            'link' => $item->link,
 
             'schedules' => $item->dates->map(function ($date) {
                 return [
-                    'id'          => $date->id,
-                    'date'        => $date->date,
+                    'id' => $date->id,
+                    'date' => $date->date,
                     'date_format' => $date->date?->format('d/m/Y'),
                     'startTime' => \Carbon\Carbon::createFromFormat('H:i:s', $date->startTime)
                         ->format('g:i A'),
 
-                    'endTime'   => \Carbon\Carbon::createFromFormat('H:i:s', $date->endTime)
+                    'endTime' => \Carbon\Carbon::createFromFormat('H:i:s', $date->endTime)
                         ->format('g:i A'),
 
-                    'mype_id'     => $date->mype_id,
+                    'mype_id' => $date->mype_id,
                 ];
             }),
 
             'capacitador_name' => $item->capacitador->name ?? null,
-            'image_url'        => $item->image?->url ? url($item->image->url) : null,
+            'image_url' => $item->image?->url ? url($item->image->url) : null,
 
             'created_at' => $item->created_at,
             'updated_at' => $item->updated_at,
@@ -1518,16 +1509,16 @@ class FormularioPublicoController extends Controller
             'advice_date_id' => [
                 'required',
                 'integer',
-                'exists:mp_advice_dates,id,deleted_at,NULL'
+                'exists:mp_advice_dates,id,deleted_at,NULL',
             ],
             'dni' => ['required', 'string'],
         ]);
 
         $participant = MPParticipant::where('doc_number', $data['dni'])->first();
 
-        if (!$participant) {
+        if (! $participant) {
             return response()->json([
-                'message' => 'Participante no encontrado.'
+                'message' => 'Participante no encontrado.',
             ], 404);
         }
 
@@ -1535,25 +1526,25 @@ class FormularioPublicoController extends Controller
             ->where('mype_id', $participant->id)
             ->first();
 
-        if (!$schedule) {
+        if (! $schedule) {
             return response()->json([
-                'message' => 'Reserva no encontrada para este participante.'
+                'message' => 'Reserva no encontrada para este participante.',
             ], 404);
         }
 
         if ($schedule->start_date_time->isPast()) {
             return response()->json([
-                'message' => 'No se puede cancelar un horario pasado.'
+                'message' => 'No se puede cancelar un horario pasado.',
             ], 422);
         }
 
         $schedule->update([
-            'mype_id' => null
+            'mype_id' => null,
         ]);
 
         return response()->json([
             'message' => 'Reserva cancelada correctamente.',
-            'status'  => 200
+            'status' => 200,
         ], 200);
     }
 
@@ -1561,33 +1552,33 @@ class FormularioPublicoController extends Controller
     {
         try {
             $request->validate([
-                'ruc'                   => 'nullable|string|max:11',
-                'social_reason'         => 'nullable|string|max:255',
-                'economic_sector_id'    => 'nullable|exists:economicsectors,id',
-                'rubro_id'              => 'nullable|exists:categories,id',
+                'ruc' => 'nullable|string|max:11',
+                'social_reason' => 'nullable|string|max:255',
+                'economic_sector_id' => 'nullable|exists:economicsectors,id',
+                'rubro_id' => 'nullable|exists:categories,id',
                 'comercial_activity_id' => 'nullable|exists:activities,id',
-                'city_id'               => 'nullable|exists:cities,id',
-                'province_id'           => 'nullable|exists:provinces,id',
-                'district_id'           => 'nullable|exists:districts,id',
+                'city_id' => 'nullable|exists:cities,id',
+                'province_id' => 'nullable|exists:provinces,id',
+                'district_id' => 'nullable|exists:districts,id',
 
-                't_doc_id'              => 'nullable|exists:typedocuments,id',
-                'doc_number'            => 'required|string|max:12',
-                'country_id'            => 'nullable|exists:countries,id',
-                'date_of_birth'         => 'nullable|date_format:d/m/Y',
-                'names'                 => 'nullable|string|max:100',
-                'last_name'             => 'nullable|string|max:100',
-                'middle_name'           => 'nullable|string|max:100',
-                'civil_status_id'       => 'nullable|exists:civilstatus,id',
-                'num_soons'             => 'nullable|max:3',
-                'gender_id'             => 'nullable|exists:genders,id',
-                'sick'                  => 'nullable|string|max:10',
-                'academicdegree_id'     => 'nullable|exists:academicdegree,id',
-                'phone'                 => 'nullable|max:9',
-                'email'                 => 'nullable|string|max:200',
-                'role_company_id'       => 'nullable|exists:role_company,id',
+                't_doc_id' => 'nullable|exists:typedocuments,id',
+                'doc_number' => 'required|string|max:12',
+                'country_id' => 'nullable|exists:countries,id',
+                'date_of_birth' => 'nullable|date_format:d/m/Y',
+                'names' => 'nullable|string|max:100',
+                'last_name' => 'nullable|string|max:100',
+                'middle_name' => 'nullable|string|max:100',
+                'civil_status_id' => 'nullable|exists:civilstatus,id',
+                'num_soons' => 'nullable|max:3',
+                'gender_id' => 'nullable|exists:genders,id',
+                'sick' => 'nullable|string|max:10',
+                'academicdegree_id' => 'nullable|exists:academicdegree,id',
+                'phone' => 'nullable|max:9',
+                'email' => 'nullable|string|max:200',
+                'role_company_id' => 'nullable|exists:role_company,id',
 
-                'obs_ruc'               => 'nullable|in:1',
-                'obs_dni'               => 'nullable|in:1',
+                'obs_ruc' => 'nullable|in:1',
+                'obs_dni' => 'nullable|in:1',
             ]);
 
             if ($request->filled('date_of_birth')) {
@@ -1595,7 +1586,7 @@ class FormularioPublicoController extends Controller
                     'date_of_birth' => Carbon::createFromFormat(
                         'd/m/Y',
                         $request->date_of_birth
-                    )->format('Y-m-d')
+                    )->format('Y-m-d'),
                 ]);
             }
 
@@ -1616,8 +1607,8 @@ class FormularioPublicoController extends Controller
 
                         if ($existsRuc) {
                             return response()->json([
-                                'status'  => 409,
-                                'message' => 'El RUC ya se encuentra registrado en otro participante'
+                                'status' => 409,
+                                'message' => 'El RUC ya se encuentra registrado en otro participante',
                             ], 409);
                         }
                     }
@@ -1626,7 +1617,7 @@ class FormularioPublicoController extends Controller
                 } else {
 
                     $data = collect($request->all())
-                        ->filter(fn($value) => !is_null($value))
+                        ->filter(fn ($value) => ! is_null($value))
                         ->toArray();
 
                     $participant->update($data);
@@ -1638,8 +1629,8 @@ class FormularioPublicoController extends Controller
 
                     if ($existsRuc) {
                         return response()->json([
-                            'status'  => 409,
-                            'message' => 'El RUC ya se encuentra registrado'
+                            'status' => 409,
+                            'message' => 'El RUC ya se encuentra registrado',
                         ], 409);
                     }
                 }
@@ -1650,25 +1641,25 @@ class FormularioPublicoController extends Controller
             }
 
             return response()->json([
-                'status'  => 200,
+                'status' => 200,
                 'message' => $action === 'created'
                     ? 'Participante creado correctamente'
                     : 'Participante actualizado correctamente',
-                'data'    => $participant
+                'data' => $participant,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
-                'status'  => 422,
+                'status' => 422,
                 'message' => 'Error de validación',
-                'errors'  => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 500,
+                'status' => 500,
                 'message' => 'Error interno del servidor',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -1696,9 +1687,9 @@ class FormularioPublicoController extends Controller
             ])
             ->first();
 
-        if (!$event) {
+        if (! $event) {
             return response()->json([
-                'status'  => 404,
+                'status' => 404,
                 'message' => 'Evento no encontrado.',
             ], 404);
         }
@@ -1713,28 +1704,28 @@ class FormularioPublicoController extends Controller
 
         // ✅ Fechas formateadas a dd/mm/yyyy
         $fechasFormateadas = collect($event->dates)
-            ->map(fn($date) => Carbon::parse($date)->format('d/m/Y'))
+            ->map(fn ($date) => Carbon::parse($date)->format('d/m/Y'))
             ->values();
 
         // ✅ Horario formateado a HH:mm
         $horario = null;
         if ($event->hourStart && $event->hourEnd) {
-            $horario = Carbon::parse($event->hourStart)->format('H:i') .
-                ' - ' .
+            $horario = Carbon::parse($event->hourStart)->format('H:i').
+                ' - '.
                 Carbon::parse($event->hourEnd)->format('H:i');
         }
 
         return response()->json([
             'status' => 200,
-            'data'   => [
-                'title'               => $event->title,
-                'dates'               => $fechasFormateadas,
-                'horario'             => $horario,
-                'region'              => $event->city->name      ?? null,
-                'provincia'           => $event->provincia->name ?? null,
-                'distrito'            => $event->distrito->name  ?? null,
+            'data' => [
+                'title' => $event->title,
+                'dates' => $fechasFormateadas,
+                'horario' => $horario,
+                'region' => $event->city->name ?? null,
+                'provincia' => $event->provincia->name ?? null,
+                'distrito' => $event->distrito->name ?? null,
                 'total_participantes' => $totalParticipantes,
-                'total_asistentes'    => $totalAsistentes,
+                'total_asistentes' => $totalAsistentes,
             ],
         ]);
     }
@@ -1748,9 +1739,9 @@ class FormularioPublicoController extends Controller
         // ✅ Buscar el evento por slug
         $event = MPEvent::where('slug', $slug)->first();
 
-        if (!$event) {
+        if (! $event) {
             return response()->json([
-                'status'  => 404,
+                'status' => 404,
                 'message' => 'Evento no encontrado.',
             ]);
         }
@@ -1758,9 +1749,9 @@ class FormularioPublicoController extends Controller
         // ✅ Buscar participante por doc_number
         $participant = MPParticipant::where('doc_number', $request->doc_number)->first();
 
-        if (!$participant) {
+        if (! $participant) {
             return response()->json([
-                'status'  => 404,
+                'status' => 404,
                 'message' => 'Participante no encontrado con ese número de documento.',
             ], 404);
         }
@@ -1770,9 +1761,9 @@ class FormularioPublicoController extends Controller
             ->where('participant_id', $participant->id)
             ->first();
 
-        if (!$attendance) {
+        if (! $attendance) {
             return response()->json([
-                'status'  => 404,
+                'status' => 404,
                 'message' => 'El participante no está registrado en este evento.',
             ], 404);
         }
@@ -1781,10 +1772,10 @@ class FormularioPublicoController extends Controller
         $attendance->update(['attendance' => 1]);
 
         return response()->json([
-            'status'  => 200,
+            'status' => 200,
             'message' => 'Asistencia registrada correctamente.',
-            'data'    => [
-                'nombres'    => $participant->names . ' ' . $participant->last_name . ' ' . $participant->middle_name,
+            'data' => [
+                'nombres' => $participant->names.' '.$participant->last_name.' '.$participant->middle_name,
                 'doc_number' => $participant->doc_number,
                 'attendance' => $attendance->attendance,
             ],
