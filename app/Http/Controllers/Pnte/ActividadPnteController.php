@@ -2016,7 +2016,8 @@ class ActividadPnteController extends Controller
                 'tema',
                 'fechas',
                 'nombre_actividad_id',
-                'descripcion'
+                'descripcion',
+                'especial'
             )
                 ->where('slug', $slug)
                 ->first();
@@ -2034,9 +2035,23 @@ class ActividadPnteController extends Controller
                 'empresario.tipoDocumento',
                 'empresario.genero',
                 'empresario.archivosFerias.archivo',
+                'empresario.feriasPapa.image1',
+                'empresario.feriasPapa.image2',
             ])
 
                 ->where('slug', $slug)
+
+                // 🔥 FILTRO POR PRIORIDAD (feria papa: prioridad_1 o prioridad_2)
+                ->when($request->filled('prioridad'), function ($q) use ($request, $event) {
+                    $prioridad = $request->input('prioridad');
+                    $q->whereHas('empresario.feriasPapa', function ($pq) use ($event, $prioridad) {
+                        $pq->where('actividad_id', $event?->id)
+                            ->where(function ($w) use ($prioridad) {
+                                $w->where('prioridad_1', $prioridad)
+                                    ->orWhere('prioridad_2', $prioridad);
+                            });
+                    });
+                })
 
                 // 🔥 BUSCADOR
                 ->when($search, function ($q) use ($search) {

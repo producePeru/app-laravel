@@ -2548,7 +2548,7 @@ class DownloadAttendanceController extends Controller
         $search = trim($request->input('name', ''));
 
         // EVENTO (para encabezado informativo, opcional)
-        $event = ActividadPnte::select('id', 'slug', 'tema', 'fechas', 'nombre_actividad_id')
+        $event = ActividadPnte::select('id', 'slug', 'tema', 'fechas', 'nombre_actividad_id', 'descripcion')
             ->where('slug', $slug)
             ->first();
 
@@ -2558,6 +2558,9 @@ class DownloadAttendanceController extends Controller
                 'message' => 'Actividad no encontrada',
             ], 404);
         }
+
+        // Solo ferias papa (eventInfo.especial === 'feria_papa') llevan prioridades y fotos
+        $esPapa = $event->descripcion === 'feria_papa';
 
         // MISMA QUERY QUE inscritosFeriaPorSlug
         $query = EmpresarioActividad::with([
@@ -2572,8 +2575,21 @@ class DownloadAttendanceController extends Controller
             'empresario.rubro',
             'empresario.tipoDocumento',
             'empresario.genero',
+            'empresario.archivosFerias.archivo',
+            'empresario.feriasPapa.image1',
+            'empresario.feriasPapa.image2',
         ])
             ->where('slug', $slug)
+            ->when($request->filled('prioridad'), function ($q) use ($request, $event) {
+                $prioridad = $request->input('prioridad');
+                $q->whereHas('empresario.feriasPapa', function ($pq) use ($event, $prioridad) {
+                    $pq->where('actividad_id', $event?->id)
+                        ->where(function ($w) use ($prioridad) {
+                            $w->where('prioridad_1', $prioridad)
+                                ->orWhere('prioridad_2', $prioridad);
+                        });
+                });
+            })
             ->when($search, function ($q) use ($search) {
                 $q->whereHas('empresario', function ($emp) use ($search) {
                     $emp->where('ruc', 'LIKE', "%{$search}%")
@@ -2601,39 +2617,82 @@ class DownloadAttendanceController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Inscritos Feria');
 
-        $headers = [
-            'N°', 'ID', 'ACTIVIDAD ID', 'SLUG', 'FECHA ASISTENCIA', 'ASISTIRÉ', 'DNI',
-            'RUC', 'RAZÓN SOCIAL', 'NOMBRE COMERCIAL',
-            'SECTOR ECONÓMICO', 'RUBRO', 'ACTIVIDAD COMERCIAL',
-            'REGIÓN', 'PROVINCIA', 'DISTRITO', 'DIRECCIÓN', 'PAÍS',
-            'TIPO DOCUMENTO', 'N° DOCUMENTO',
-            'APELLIDO PATERNO', 'APELLIDO MATERNO', 'NOMBRES', 'NOMBRE COMPLETO',
-            'GÉNERO', 'DISCAPACIDAD', 'CELULAR', 'CORREO ELECTRÓNICO',
-            'CARGO EMPRESA ID', 'FECHA NACIMIENTO', 'EDAD', 'CÓMO SE ENTERÓ',
-            'PERSONAL ASESORÍA', 'PERSONAL FORMALIZACIÓN',
-            'COOP RUC', 'COOP RAZÓN SOCIAL', 'COOP ROL', 'NOMBRE MERCADO',
-            // EMPRENDIMIENTO
-            'REDES SOCIALES', 'PERTENECE GREMIO', 'NOMBRE GREMIO',
-            'CAP. PROD. MENSUAL', '% PROD. PLANTA', '% PROD. MAQUILA',
-            'TIENE PUNTOS DE VENTA', 'N° PUNTOS DE VENTA', 'DESC. NEGOCIO',
-            'POS', 'YAPE/PLIN', 'TIENE TIENDAS', 'NOMBRE TIENDA',
-            'TIENE DELIVERY', 'FACTURA ELECTRÓNICA', 'PARTICIPÓ PRODUCE',
-            'NOMBRE SERVICIO', 'PARTICIPÓ FERIA', 'NOMBRE FERIA',
-            'FORMALIZADO PRODUCE', 'INDECOPI', 'LOGROS EMPRESA', 'TÉRMINOS Y CONDICIONES',
-        ];
+        // Mismas columnas y orden que la tabla del frontend (ferias-inscritos.vue)
+        $headers = array_merge(
+            ['N°', 'APROBADOS'],
+            $esPapa ? ['LUGAR DE PRIORIDAD 1', 'LUGAR DE PRIORIDAD 2'] : [],
+            [
+                'RUC', 'RAZÓN SOCIAL', 'NOMBRE COMERCIAL',
+                'SECTOR ECONÓMICO', 'RUBRO', 'ACTIVIDAD COMERCIAL',
+                'PAÍS NACIMIENTO', 'REGIÓN', 'PROVINCIA', 'DISTRITO', 'DIRECCIÓN',
+                'TIPO DE DOCUMENTO', 'NÚMERO DE DOCUMENTO',
+                'APELLIDO PATERNO', 'APELLIDO MATERNO', 'NOMBRES',
+                'GÉNERO', '¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'CORREO',
+                // EMPRENDIMIENTO
+                '¿Pertenece a algún gremio empresarial?', 'Nombre del gremio',
+                '¿Cuál es su capacidad de producción mensual?',
+                'Qué porcentaje de su producción lo realiza en: Planta propia',
+                'Qué porcentaje de su producción lo realiza en: Maquila',
+                '¿Cuenta con puntos de venta?', '¿Cuántos puntos de venta propios tiene?',
+                'Breve explicación del negocio (aspectos resaltantes, productos, valor diferencial)',
+                'Cuenta con el servicio de pagos electrónicos mediante POS (Tarjeta de crédito y/o Débito)',
+                'Su negocio cuenta con el servicio de pagos por medio de monederos electrónicos (Yape, PLIM, etc.)',
+                'Su negocio realiza ventas a través de tiendas virtuales, ya sea por medio de página web (Mercado Libre, Amazon, etc.), redes sociales, Whatsapp, etc',
+                'Nombre de la tienda virtual',
+                'Su negocio realiza entregas a domicilio (delivery)',
+                'Su negocio emite factura electrónica',
+                'Ha participado en algún servicio que ofrece PRODUCE (taller, capacitación, o asistencia técnica)',
+                'Nombre del servicio',
+                'Ha participado en alguna feria virtual/presencial y/o rueda de negocios en los últimos años? Especificar',
+                'Mencionar el evento que participó',
+                'Se ha formalizado a través del Programa Nacional Tu Empresa',
+                '¿Su marca se encuentra registrada en INDECOPI?',
+                'Comente los logros que ha obtenido con su empresa',
+                'REPORTE TRIBUTARIO',
+            ]
+        );
 
         $headerRow = 1;
+        $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers));
         foreach ($headers as $i => $title) {
             $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i + 1);
             $sheet->setCellValue("{$col}{$headerRow}", $title);
         }
-        $sheet->getStyle("A{$headerRow}:".\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers)).$headerRow)
-            ->getFont()->setBold(true);
+
+        // Estilo corporativo del encabezado
+        $headerRange = "A{$headerRow}:{$lastCol}{$headerRow}";
+        $sheet->getStyle($headerRange)->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['argb' => 'FFFFFFFF'],
+                'size' => 11,
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FF1F4E79'],
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                'wrapText' => true,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => 'FFBDD7EE'],
+                ],
+            ],
+        ]);
+        $sheet->getRowDimension($headerRow)->setRowHeight(45);
+
+        // Fila fija + filtros
+        $sheet->freezePane('B2');
+        $sheet->setAutoFilter($headerRange);
 
         $row = 2;
         $index = 1;
 
-        $query->chunk(1000, function ($items) use (&$row, &$index, $sheet) {
+        $query->chunk(1000, function ($items) use (&$row, &$index, $sheet, $esPapa) {
 
             foreach ($items as $item) {
 
@@ -2648,12 +2707,16 @@ class DownloadAttendanceController extends Controller
                 };
 
                 $set($index++);
-                $set($item->id);
-                $set($item->actividad_id);
-                $set($item->slug);
                 $set($item->fecha_asistencia ? 'SI' : 'NO');
-                $set($item->asistire);
-                $set($item->numero_dni);
+
+                // PAPA: prioridades y fotos (solo ferias feria_papa)
+                if ($esPapa) {
+                    $papa = $e?->feriasPapa?->firstWhere('actividad_id', $item->actividad_id);
+                    $set($papa?->prioridad_1 ? $this->feriaNombre($papa->prioridad_1) : null);
+                    $set($papa?->prioridad_2 ? $this->feriaNombre($papa->prioridad_2) : null);
+                    // $set($papa?->image1?->name);
+                    // $set($papa?->image2?->name);
+                }
 
                 $set($e?->ruc);
                 $set($e?->razon_social ? mb_strtoupper($e->razon_social, 'UTF-8') : null);
@@ -2667,11 +2730,11 @@ class DownloadAttendanceController extends Controller
                         : ($e?->actividad_comercial_nombre ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8') : null)
                 );
 
+                $set($e?->pais?->name);
                 $set($e?->region?->name);
                 $set($e?->provincia?->name);
                 $set($e?->distrito?->name);
                 $set($e?->direccion ? mb_strtoupper($e->direccion, 'UTF-8') : null);
-                $set($e?->pais?->name);
 
                 $set($e?->tipoDocumento?->avr);
                 $set($e?->numero_dni);
@@ -2680,34 +2743,12 @@ class DownloadAttendanceController extends Controller
                 $set($e?->apellido_materno ? mb_strtoupper($e->apellido_materno, 'UTF-8') : null);
                 $set($e?->nombres ? mb_strtoupper($e->nombres, 'UTF-8') : null);
 
-                $nombreCompleto = trim(
-                    ($e?->apellido_paterno ?? '').' '.
-                    ($e?->apellido_materno ?? '').' '.
-                    ($e?->nombres ?? '')
-                );
-                $set($nombreCompleto !== '' ? mb_strtoupper($nombreCompleto, 'UTF-8') : null);
-
                 $set($e?->genero?->avr);
                 $set(isset($e?->discapacidad) ? ($e->discapacidad ? 'SI' : 'NO') : null);
                 $set($e?->celular);
                 $set($e?->correo_electronico);
 
-                $set($e?->cargo_empresa_id);
-                $set($e?->fecha_nacimiento);
-                $set($e?->edad);
-                $set($e?->como_entero);
-
-                $set($item->personal_asesoria);
-                $set($item->personal_formalizacion);
-
-                $set($e?->coop_ruc);
-                $set($e?->coop_razon_social);
-                $set($e?->coop_rol);
-
-                $set($e?->nombre_mercado);
-
                 // EMPRENDIMIENTO
-                $set($emp?->redes_sociales);
                 $set($this->sino($emp?->pertenece_gremio));
                 $set($emp?->nombre_gremio);
                 $set($emp?->cap_prod_mensual);
@@ -2729,7 +2770,8 @@ class DownloadAttendanceController extends Controller
                 $set($this->sino($emp?->formalizado_produce));
                 $set($this->sino($emp?->indecopi));
                 $set($emp?->logros_empresa);
-                $set($this->sino($emp?->terminos_condiciones));
+
+                $set($e?->archivosFerias?->sortByDesc('id')->first()?->archivo?->nombre_original);
 
                 $row++;
             }
@@ -2787,6 +2829,22 @@ class DownloadAttendanceController extends Controller
         }
 
         return $value ? 'SI' : 'NO';
+    }
+
+    private function feriaNombre($value): ?string
+    {
+        $nombres = [
+            1 => 'Perú Produce Lima',
+            2 => 'Perú Produce Lambayeque',
+            3 => 'Perú Produce Ucayali',
+            4 => 'Perú Produce Cusco',
+        ];
+
+        if (is_null($value) || $value === '') {
+            return null;
+        }
+
+        return $nombres[$value] ?? (string) $value;
     }
 
     public function exportarInscritosParaCertificados(Request $request)
