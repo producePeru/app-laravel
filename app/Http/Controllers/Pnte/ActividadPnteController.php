@@ -2016,8 +2016,7 @@ class ActividadPnteController extends Controller
                 'tema',
                 'fechas',
                 'nombre_actividad_id',
-                'descripcion',
-                'especial'
+                'descripcion'
             )
                 ->where('slug', $slug)
                 ->first();
