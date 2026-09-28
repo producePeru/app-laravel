@@ -340,6 +340,8 @@ class FairController extends Controller
 
                     'horario' => $actividad->horario,
 
+                    'especial' => $actividad->especial,
+
                     'descripcion' => $descripcion?->descripcion,
 
                     'mensaje_finalizacion' => $descripcion?->mensaje_finalizacion,
@@ -349,6 +351,8 @@ class FairController extends Controller
                     'mensaje_recordatorio' => $descripcion?->mensaje_recordatorio,
 
                     'cancelado' => false,
+
+                    'especial' => $actividad->descripcion,
                 ],
             ]);
         } catch (\Exception $e) {

@@ -9,6 +9,7 @@ use App\Models\Archivo;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
 use App\Models\EmpresarioEmprendimiento;
+use App\Models\Image;
 use App\Models\PntTest;
 use App\Models\SedDescripcion;
 use App\Models\sedQuestionAnswer;
@@ -289,6 +290,7 @@ class ActividadPnteController extends Controller
                 'provincia',
                 'distrito',
                 'lugar',
+                'descripcion',
                 'entidad_organizadora',
                 'entidad_aliada',
                 'representante_id',
@@ -553,7 +555,7 @@ class ActividadPnteController extends Controller
                 'tema',
                 'fechas',
                 'nombre_actividad_id',
-                'switch_asistencias'
+                'especial'
             )
                 ->where('slug', $slug)
                 ->first();
@@ -569,6 +571,8 @@ class ActividadPnteController extends Controller
                 'empresario.rubro',
                 'empresario.tipoDocumento',
                 'empresario.genero',
+                'empresario.feriasPapa.image1',
+                'empresario.feriasPapa.image2',
             ])
 
                 ->where('slug', $slug)
@@ -1430,7 +1434,7 @@ class ActividadPnteController extends Controller
                 $q->whereHas('empresario', function ($emp) use ($search) {
                     $emp->where('ruc', 'LIKE', "%{$search}%")
                         ->orWhere('numero_dni', 'LIKE', "%{$search}%")
-                            ->orWhereRaw("
+                        ->orWhereRaw("
                             CONCAT(
                                 COALESCE(apellido_paterno, ''),
                                 ' ',
@@ -1439,8 +1443,8 @@ class ActividadPnteController extends Controller
                                 COALESCE(nombres, '')
                             ) LIKE ?
                         ", ["%{$search}%"]);
-                    });
-                })
+                });
+            })
 
                 ->orderBy('created_at', 'desc');
 
@@ -2011,7 +2015,8 @@ class ActividadPnteController extends Controller
                 'slug',
                 'tema',
                 'fechas',
-                'nombre_actividad_id'
+                'nombre_actividad_id',
+                'descripcion'
             )
                 ->where('slug', $slug)
                 ->first();
@@ -2199,6 +2204,19 @@ class ActividadPnteController extends Controller
                         'nombre_original' => $rep->nombre_original,
                     ] : null,
 
+                    'feria_papa' => ($papa = $e?->feriasPapa?->firstWhere('actividad_id', $item->actividad_id)) ? [
+                        'prioridad_1' => $papa->prioridad_1,
+                        'prioridad_2' => $papa->prioridad_2,
+                        'imagenes' => collect([$papa->image1, $papa->image2])
+                            ->filter()
+                            ->map(fn ($img) => [
+                                'id' => $img->id,
+                                'nombre' => $img->name,
+                            ])
+                            ->values()
+                            ->all(),
+                    ] : null,
+
                     'emprendimiento' => ($emp = $item->emprendimiento) ? [
                         'empresario_id' => $emp->empresario_id,
                         'actividad_id' => $emp->actividad_id,
@@ -2270,6 +2288,28 @@ class ActividadPnteController extends Controller
             return response()->json([
                 'status' => 500,
                 'message' => 'Error al descargar el reporte tributario',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function verImagenPapa($image)
+    {
+        try {
+            $image = Image::where('from_origin', 'feria_papa')->findOrFail($image);
+
+            if (! str_starts_with($image->mime_type ?? '', 'image/') || ! Storage::disk('public')->exists($image->url)) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'La imagen no existe en el servidor.',
+                ], 404);
+            }
+
+            return Storage::disk('public')->response($image->url);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al mostrar la imagen',
                 'error' => $e->getMessage(),
             ], 500);
         }

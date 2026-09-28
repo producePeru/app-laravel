@@ -117,6 +117,11 @@ class Empresario extends Model
         return $this->hasMany(ArchivoFeria::class, 'empresario_id');
     }
 
+    public function feriasPapa(): HasMany
+    {
+        return $this->hasMany(ActividadPntePapa::class, 'empresario_id');
+    }
+
     public function archivos(): BelongsToMany
     {
         return $this->belongsToMany(

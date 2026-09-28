@@ -7,11 +7,13 @@ use App\Http\Requests\SedQuestionStoreRequest;
 use App\Http\Requests\StoreSedRequest;
 use App\Mail\FairSedInfoMail;
 use App\Models\ActividadPnte;
+use App\Models\ActividadPntePapa;
 use App\Models\Archivo;
 use App\Models\ArchivoFeria;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
 use App\Models\Empresario;
+use App\Models\Image;
 use App\Models\EmpresarioActividad;
 use App\Models\EmpresarioEmprendimiento;
 use App\Models\Fair;
@@ -688,12 +690,84 @@ class PublicEventsController extends Controller
                 ];
             }
 
+            // ─── 6. FERIA PAPA: PRIORIDADES + IMÁGENES ALUSIVAS ───
+            // Solo para ferias papa (el front envía estos campos únicamente en ese caso)
+            $feriaPapa = null;
+            $esFeriaPapa = ! empty($data['feria_principal']) || $request->hasFile('imagenes_papa');
+
+            if ($esFeriaPapa) {
+                $imagenIds = [null, null];
+
+                if ($request->hasFile('imagenes_papa')) {
+                    $imagenes = $request->file('imagenes_papa');
+                    $imagenes = is_array($imagenes) ? $imagenes : [$imagenes];
+                    $imagenes = array_slice(array_values($imagenes), 0, 2);
+
+                    foreach ($imagenes as $i => $img) {
+                        if (! $img || ! $img->isValid()) {
+                            continue;
+                        }
+
+                        $mime = $img->getMimeType() ?: '';
+                        if (! str_starts_with($mime, 'image/')) {
+                            return response()->json([
+                                'message' => 'Las imágenes alusivas deben ser archivos de imagen válidos.',
+                                'status' => 422,
+                            ], 422);
+                        }
+
+                        if ($img->getSize() > 5 * 1024 * 1024) {
+                            return response()->json([
+                                'message' => 'Cada imagen alusiva no debe superar los 5 MB.',
+                                'status' => 422,
+                            ], 422);
+                        }
+
+                        $ext = strtolower($img->getClientOriginalExtension() ?: 'jpg');
+                        $filename = 'papa_'.$data['numero_dni'].'_'.time().'_'.$i.'.'.$ext;
+                        $path = $img->storeAs('imagenes_papa', $filename, 'public');
+
+                        $image = Image::create([
+                            'name' => $img->getClientOriginalName(),
+                            'url' => $path,
+                            'mime_type' => $mime,
+                            'size' => $img->getSize(),
+                            'from_origin' => 'feria_papa',
+                            'id_origin' => $empresario->id,
+                        ]);
+
+                        $imagenIds[$i] = $image->id;
+                    }
+                }
+
+                $papaData = [
+                    'prioridad_1' => isset($data['feria_principal']) && $data['feria_principal'] !== '' ? $data['feria_principal'] : null,
+                    'prioridad_2' => isset($data['feria_opcional']) && $data['feria_opcional'] !== '' ? $data['feria_opcional'] : null,
+                ];
+
+                // Solo se reemplazan las imágenes si se subieron nuevas;
+                // si no, se conservan las ya vinculadas.
+                if ($request->hasFile('imagenes_papa')) {
+                    $papaData['id_image_1'] = $imagenIds[0];
+                    $papaData['id_image_2'] = $imagenIds[1];
+                }
+
+                $feriaPapa = ActividadPntePapa::updateOrCreate(
+                    [
+                        'actividad_id' => $actividad->id,
+                        'empresario_id' => $empresario->id,
+                    ],
+                    $papaData
+                );
+            }
+
             return response()->json([
                 'message' => 'Mype registrado exitosamente en la feria.',
                 'data' => [
                     'empresario' => $empresario,
                     'emprendimiento' => $emprendimiento,
                     'archivo' => $archivoInfo,
+                    'feria_papa' => $feriaPapa,
                 ],
                 'status' => 200,
             ], 201);

@@ -62,6 +62,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::GET('inscritos-feria/{slug}', 'inscritosFeriaPorSlug');
 
+    Route::GET('feria-papa-imagen/{image}', 'verImagenPapa');
+
     Route::GET('reporte-tributario/{archivo}', 'descargarReporteTributario');
 
 });
