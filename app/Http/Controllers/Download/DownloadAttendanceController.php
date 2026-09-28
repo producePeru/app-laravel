@@ -2628,26 +2628,27 @@ class DownloadAttendanceController extends Controller
                 'TIPO DE DOCUMENTO', 'NÚMERO DE DOCUMENTO',
                 'APELLIDO PATERNO', 'APELLIDO MATERNO', 'NOMBRES',
                 'GÉNERO', '¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'CORREO',
+                'REDES SOCIALES',
                 // EMPRENDIMIENTO
-                '¿Pertenece a algún gremio empresarial?', 'Nombre del gremio',
-                '¿Cuál es su capacidad de producción mensual?',
-                'Qué porcentaje de su producción lo realiza en: Planta propia',
-                'Qué porcentaje de su producción lo realiza en: Maquila',
-                '¿Cuenta con puntos de venta?', '¿Cuántos puntos de venta propios tiene?',
-                'Breve explicación del negocio (aspectos resaltantes, productos, valor diferencial)',
-                'Cuenta con el servicio de pagos electrónicos mediante POS (Tarjeta de crédito y/o Débito)',
-                'Su negocio cuenta con el servicio de pagos por medio de monederos electrónicos (Yape, PLIM, etc.)',
-                'Su negocio realiza ventas a través de tiendas virtuales, ya sea por medio de página web (Mercado Libre, Amazon, etc.), redes sociales, Whatsapp, etc',
-                'Nombre de la tienda virtual',
-                'Su negocio realiza entregas a domicilio (delivery)',
-                'Su negocio emite factura electrónica',
-                'Ha participado en algún servicio que ofrece PRODUCE (taller, capacitación, o asistencia técnica)',
-                'Nombre del servicio',
-                'Ha participado en alguna feria virtual/presencial y/o rueda de negocios en los últimos años? Especificar',
-                'Mencionar el evento que participó',
-                'Se ha formalizado a través del Programa Nacional Tu Empresa',
-                '¿Su marca se encuentra registrada en INDECOPI?',
-                'Comente los logros que ha obtenido con su empresa',
+                'PERTENECE A GREMIO', 'NOMBRE GREMIO',
+                'CAP. PRODUCCIÓN MENSUAL',
+                '% PROD. PLANTA PROPIA',
+                '% PROD. MAQUILA',
+                'TIENE PUNTOS DE VENTA', 'N° PUNTOS DE VENTA',
+                'DESCRIPCIÓN DEL NEGOCIO',
+                'PAGOS POS',
+                'YAPE / PLIN',
+                'VENTAS ONLINE',
+                'NOMBRE TIENDA VIRTUAL',
+                'DELIVERY',
+                'FACTURA ELECTRÓNICA',
+                'PARTICIPÓ PRODUCE',
+                'NOMBRE SERVICIO',
+                'PARTICIPÓ FERIA',
+                'EVENTO EN QUE PARTICIPÓ',
+                'FORMALIZADO TU EMPRESA',
+                'MARCA EN INDECOPI',
+                'LOGROS DE LA EMPRESA',
                 'REPORTE TRIBUTARIO',
             ]
         );
@@ -2748,6 +2749,8 @@ class DownloadAttendanceController extends Controller
                 $set($e?->celular);
                 $set($e?->correo_electronico);
 
+                $set($this->redesSocialesTexto($emp?->redes_sociales));
+
                 // EMPRENDIMIENTO
                 $set($this->sino($emp?->pertenece_gremio));
                 $set($emp?->nombre_gremio);
@@ -2781,6 +2784,15 @@ class DownloadAttendanceController extends Controller
         foreach (range(1, count($headers)) as $colIndex) {
             $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
             $sheet->getColumnDimension($letter)->setAutoSize(true);
+        }
+
+        // Columna de redes sociales: ancho fijo y salto de línea (una red por fila)
+        $redesColIndex = array_search('REDES SOCIALES', $headers, true);
+        if ($redesColIndex !== false) {
+            $redesLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($redesColIndex + 1);
+            $sheet->getColumnDimension($redesLetter)->setAutoSize(false)->setWidth(55);
+            $sheet->getStyle("{$redesLetter}2:{$redesLetter}{$sheet->getHighestRow()}")
+                ->getAlignment()->setWrapText(true);
         }
 
         return new StreamedResponse(function () use ($spreadsheet) {
@@ -2845,6 +2857,47 @@ class DownloadAttendanceController extends Controller
         }
 
         return $nombres[$value] ?? (string) $value;
+    }
+
+    private function redesSocialesTexto($redes): ?string
+    {
+        if (empty($redes) || ! is_array($redes)) {
+            return null;
+        }
+
+        $etiquetas = [
+            'facebook' => 'Facebook',
+            'instagram' => 'Instagram',
+            'tiktok' => 'TikTok',
+            'web' => 'Página web',
+        ];
+
+        $map = [];
+        foreach ($redes as $r) {
+            $r = is_array($r) ? $r : (array) $r;
+            $name = strtolower(trim($r['name'] ?? ''));
+            $link = trim($r['link'] ?? '');
+            if ($name !== '' && $link !== '') {
+                $map[$name] = $link;
+            }
+        }
+
+        if (! $map) {
+            return null;
+        }
+
+        $lineas = [];
+        foreach (array_keys($etiquetas) as $key) {
+            if (isset($map[$key])) {
+                $lineas[] = $etiquetas[$key].': '.$map[$key];
+                unset($map[$key]);
+            }
+        }
+        foreach ($map as $name => $link) {
+            $lineas[] = ucfirst($name).': '.$link;
+        }
+
+        return implode("\n", $lineas);
     }
 
     public function exportarInscritosParaCertificados(Request $request)
