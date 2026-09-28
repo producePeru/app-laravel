@@ -555,7 +555,7 @@ class ActividadPnteController extends Controller
                 'tema',
                 'fechas',
                 'nombre_actividad_id',
-                'especial'
+                'descripcion'
             )
                 ->where('slug', $slug)
                 ->first();

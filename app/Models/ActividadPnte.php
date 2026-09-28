@@ -49,7 +49,6 @@ class ActividadPnte extends Model
         'horario',
         'activo',
         'link',
-        'especial',
         'descripcion',
 
         'componente_id',
