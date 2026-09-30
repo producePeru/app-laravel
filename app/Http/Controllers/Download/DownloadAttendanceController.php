@@ -3201,7 +3201,8 @@ class DownloadAttendanceController extends Controller
                 ->chunk(2000, function ($items) use ($out, $preguntasPorSlug) {
                     foreach ($items as $item) {
                         $e = $item->empresario;
-                        $ratings = $item->ratings ?: [];
+                        // Valida ambos formatos de claves: rating_N y rating_id_N
+                        $ratings = $this->normalizarRatings($item->ratings);
                         $preguntas = $preguntasPorSlug[$item->slug] ?? [];
 
                         $row = [
@@ -3246,6 +3247,17 @@ class DownloadAttendanceController extends Controller
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
             'Cache-Control' => 'max-age=0',
         ]);
+    }
+
+    private function normalizarRatings($ratings): array
+    {
+        $ratings = (array) ($ratings ?? []);
+        $out = [];
+        for ($n = 1; $n <= 5; $n++) {
+            $out["rating_{$n}"] = $ratings["rating_{$n}"] ?? $ratings["rating_id_{$n}"] ?? null;
+        }
+
+        return $out;
     }
 
     private function ratingLabel($valor, $opciones): ?string
