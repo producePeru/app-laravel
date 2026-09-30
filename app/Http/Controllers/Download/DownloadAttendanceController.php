@@ -3224,10 +3224,18 @@ class DownloadAttendanceController extends Controller
                         ];
 
                         for ($n = 1; $n <= 5; $n++) {
-                            $pregunta = $preguntas["id_{$n}"] ?? [];
+                            // La pregunta puede tener id = "id_N" (nuevo) o "N" / N (antiguo).
+                            // Si no hay match por id, se usa la posición N-1 como fallback.
+                            $pregunta = $preguntas["id_{$n}"]
+                                ?? $preguntas[(string) $n]
+                                ?? $preguntas[$n]
+                                ?? array_values($preguntas)[$n - 1]
+                                ?? [];
                             $row[] = $pregunta['texto'] ?? "Pregunta {$n}";
                             $row[] = $this->ratingLabel(
-                                $ratings["rating_{$n}"] ?? null,
+                                // $ratings ya viene normalizado a rating_N,
+                                // pero se reintenta con rating_id_N por seguridad.
+                                $ratings["rating_{$n}"] ?? $ratings["rating_id_{$n}"] ?? null,
                                 $pregunta['opciones'] ?? []
                             );
                         }
@@ -3251,10 +3259,24 @@ class DownloadAttendanceController extends Controller
 
     private function normalizarRatings($ratings): array
     {
+        // Soporta ambos formatos históricos:
+        //   {"rating_1":5,...} y {"rating_id_1":5,...}
+        // Además tolera JSON en string y claves "id_N" / "N" sueltas.
+        if (is_string($ratings)) {
+            $decoded = json_decode($ratings, true);
+            $ratings = is_array($decoded) ? $decoded : [];
+        }
         $ratings = (array) ($ratings ?? []);
         $out = [];
         for ($n = 1; $n <= 5; $n++) {
-            $out["rating_{$n}"] = $ratings["rating_{$n}"] ?? $ratings["rating_id_{$n}"] ?? null;
+            $out["rating_{$n}"] = $ratings["rating_{$n}"]
+                ?? $ratings["rating_id_{$n}"]
+                ?? $ratings["id_{$n}"]
+                ?? $ratings[(string) $n]
+                ?? $ratings[$n]
+                ?? null;
+            // Clave espejo para que el lookup funcione con cualquiera de los dos prefijos.
+            $out["rating_id_{$n}"] = $out["rating_{$n}"];
         }
 
         return $out;
