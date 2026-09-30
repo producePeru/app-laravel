@@ -267,6 +267,10 @@ Route::prefix('event-pnte-public')->group(function () {
     require __DIR__.'/api/eventpnte.php';
 });
 
+Route::prefix('convenio')->middleware('auth:sanctum')->group(function () {
+    require __DIR__.'/api/convenio.php';
+});
+
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
     // Route::get('list',                                  [UserController::class, 'index']);                  // v2.0
@@ -414,6 +418,8 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('events', [DownloadEventsController::class, 'exportEvents']);
 
     Route::post('export-todos-inscritos', [DownloadAttendanceController::class, 'exportInscritos']);
+
+    Route::post('export-todos-ratings', [DownloadAttendanceController::class, 'exportRatings']);
 
     Route::post('export-todos-inscritos-mujer-produce', [DownloadAttendanceController::class, 'exportInscritosMujerProduce']);
 });

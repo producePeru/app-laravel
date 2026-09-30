@@ -95,7 +95,7 @@ class DownloadAttendanceController extends Controller
                 ->when($request->filled('asesor') && $user->rol == 1, function ($q) use ($request) {
                     $q->where('representante_id', $request->input('asesor'));
                 })
-                // ✅ FILTRO: aprobar → activo (0 = No aprobados, 1 = Aprobados)
+                // âœ… FILTRO: aprobar â†’ activo (0 = No aprobados, 1 = Aprobados)
                 // NOTA: no usar filled() porque es false cuando vale 0
                 ->when($request->has('aprobar') && $request->input('aprobar') !== null && $request->input('aprobar') !== '', function ($q) use ($request) {
                     $q->where('activo', (int) $request->input('aprobar'));
@@ -126,7 +126,7 @@ class DownloadAttendanceController extends Controller
                 $fechaMax = collect($fechas)->max();
                 $today = Carbon::today();
 
-                // 🛡️ Protección: evita Carbon::parse(null) si no hay fechas válidas
+                // ðŸ›¡ï¸ ProtecciÃ³n: evita Carbon::parse(null) si no hay fechas vÃ¡lidas
                 $fechaMinFmt = $fechaMin ? Carbon::parse($fechaMin)->format('d/m/Y') : '-';
                 $fechaMaxFmt = $fechaMax ? Carbon::parse($fechaMax)->format('d/m/Y') : '-';
                 $mesFmt = $fechaMin ? strtoupper(Carbon::parse($fechaMin)->translatedFormat('F')) : '-';
@@ -172,7 +172,7 @@ class DownloadAttendanceController extends Controller
                     strtoupper($item->entidad_organizadora ?? '-'),
                     strtoupper($item->entidad_aliada ?? '-'),
                     $representante,
-                    $item->requiere_pasaje ? 'SÍ' : 'NO',
+                    $item->requiere_pasaje ? 'SÃ' : 'NO',
                     $item->monto_gasto ?? 0,
                     $item->mypes_beneficiadas ?? 0,
                     $item->modalidad->name ?? null,
@@ -195,7 +195,7 @@ class DownloadAttendanceController extends Controller
 
             unset($actividades, $rows);
 
-            // 🛡️ Blindaje: recorre TODAS las fórmulas del template y neutraliza
+            // ðŸ›¡ï¸ Blindaje: recorre TODAS las fÃ³rmulas del template y neutraliza
             // cualquiera que falle al calcularse (evita "Formula Error" al guardar)
             foreach ($spreadsheet->getAllSheets() as $sheetIter) {
                 foreach ($sheetIter->getRowIterator() as $row) {
@@ -207,7 +207,7 @@ class DownloadAttendanceController extends Controller
                             try {
                                 $cell->getCalculatedValue();
                             } catch (\Throwable $e) {
-                                \Log::warning('Fórmula inválida neutralizada en export attendance', [
+                                \Log::warning('FÃ³rmula invÃ¡lida neutralizada en export attendance', [
                                     'sheet' => $sheetIter->getTitle(),
                                     'cell' => $cell->getCoordinate(),
                                     'formula' => $cell->getValue(),
@@ -225,8 +225,8 @@ class DownloadAttendanceController extends Controller
             }
 
             $writer = new Xlsx($spreadsheet);
-            // Ya no recalcula fórmulas rotas: fueron neutralizadas arriba,
-            // así que aquí SÍ podemos desactivar el recálculo con seguridad
+            // Ya no recalcula fÃ³rmulas rotas: fueron neutralizadas arriba,
+            // asÃ­ que aquÃ­ SÃ podemos desactivar el recÃ¡lculo con seguridad
             $writer->setPreCalculateFormulas(false);
 
             return new StreamedResponse(
@@ -247,7 +247,7 @@ class DownloadAttendanceController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Ocurrió un error al generar el reporte',
+                'message' => 'OcurriÃ³ un error al generar el reporte',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -316,7 +316,7 @@ class DownloadAttendanceController extends Controller
             'empresario.provincia:id,name',
             'empresario.distrito:id,name',
 
-            // 🔥 ESTOS FALTABAN
+            // ðŸ”¥ ESTOS FALTABAN
             'empresario.sectorEconomico:id,name',
             'empresario.rubro:id,name',
 
@@ -443,7 +443,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->distrito?->name ?? '', 'UTF-8'));
                 $col++;
 
-                // DIRECCIÓN
+                // DIRECCIÃ“N
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->direccion ?? '', 'UTF-8'));
                 $col++;
 
@@ -467,7 +467,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->nombres ?? '', 'UTF-8'));
                 $col++;
 
-                // GÉNERO
+                // GÃ‰NERO
                 $sheet->setCellValue("{$col}{$row}", $e?->genero?->avr ?? '');
                 $col++;
 
@@ -494,11 +494,11 @@ class DownloadAttendanceController extends Controller
                 );
                 $col++;
 
-                // ¿SE BRINDÓ ASESORÍA AL USUARIO DURANTE LA ACTIVIDAD?
+                // Â¿SE BRINDÃ“ ASESORÃA AL USUARIO DURANTE LA ACTIVIDAD?
                 $sheet->setCellValue("{$col}{$row}", $item->personal_asesoria == 1 ? 'SI' : '');
                 $col++;
 
-                // ¿SE FORMALIZO AL USUARIO DURANTE LA ACTIVIDAD?
+                // Â¿SE FORMALIZO AL USUARIO DURANTE LA ACTIVIDAD?
                 $sheet->setCellValue("{$col}{$row}", $item->personal_formalizacion == 1 ? 'SI' : '');
                 $col++;
 
@@ -516,7 +516,7 @@ class DownloadAttendanceController extends Controller
 
             $writer = new Xlsx($spreadsheet);
 
-            // 🔥 mejora rendimiento
+            // ðŸ”¥ mejora rendimiento
             $writer->setPreCalculateFormulas(false);
 
             $writer->save('php://output');
@@ -569,7 +569,7 @@ class DownloadAttendanceController extends Controller
                 'provincia' => $province->name,
                 'distrito' => $district->name,
                 'comercialActivity' => $item->comercialActivity ?? '-',            // rubro *
-                'tema' => $item->list->title,                                      // Tema de la capacitación *
+                'tema' => $item->list->title,                                      // Tema de la capacitaciÃ³n *
                 'place' => $attendance->address ?? '-',
                 'mercadoPertenece' => $item->mercado ?? '-',
             ];
@@ -604,7 +604,7 @@ class DownloadAttendanceController extends Controller
     {
         // Buscar todos los Attendance que pertenecen al eventsoffice_id
         $attendances = Attendance::where('eventsoffice_id', $eventsoffice_id)
-            ->orderBy('startDate', 'desc') // o 'created_at', según lo que prefieras
+            ->orderBy('startDate', 'desc') // o 'created_at', segÃºn lo que prefieras
             ->get();
 
         if ($attendances->isEmpty()) {
@@ -689,7 +689,7 @@ class DownloadAttendanceController extends Controller
 
             $user = Auth::user();
 
-            // ✅ Solo rol 1 puede descargar
+            // âœ… Solo rol 1 puede descargar
             if ($user->rol != 1) {
                 return response()->json([
                     'status' => 403,
@@ -697,7 +697,7 @@ class DownloadAttendanceController extends Controller
                 ], 403);
             }
 
-            // ✅ Helper para limpiar saltos de línea y tabs
+            // âœ… Helper para limpiar saltos de lÃ­nea y tabs
             $clean = fn ($value) => is_string($value)
                 ? str_replace(["\r\n", "\r", "\n", "\t"], ' ', trim($value))
                 : $value;
@@ -762,7 +762,7 @@ class DownloadAttendanceController extends Controller
                         ->when($filterDates, fn ($q) => $q->whereIn('fecha_seleccionada', $filterDates)),
                 ])
 
-                // ✅ FILTRO UNIDAD
+                // âœ… FILTRO UNIDAD
                 ->when(
                     $request->filled('unidad'),
                     fn ($q) => $q->where('unidad', $request->input('unidad'))
@@ -777,7 +777,7 @@ class DownloadAttendanceController extends Controller
                     fn ($q) => $q->where('fechas', 'LIKE', "%{$request->input('year')}%")
                 )
 
-                // ✅ Reutilizamos $filterDates en vez de recalcular el rango
+                // âœ… Reutilizamos $filterDates en vez de recalcular el rango
                 ->when($filterDates, function ($q) use ($filterDates) {
                     $q->where(function ($query) use ($filterDates) {
                         foreach ($filterDates as $day) {
@@ -807,7 +807,7 @@ class DownloadAttendanceController extends Controller
                     )
                 )
 
-                // ✅ FILTRO: aprobar → activo (0 = No aprobados, 1 = Aprobados)
+                // âœ… FILTRO: aprobar â†’ activo (0 = No aprobados, 1 = Aprobados)
                 ->when(
                     $request->has('aprobar') && $request->input('aprobar') !== null && $request->input('aprobar') !== '',
                     fn ($q) => $q->where('activo', (int) $request->input('aprobar'))
@@ -843,7 +843,7 @@ class DownloadAttendanceController extends Controller
             ])
                 ->whereIn('slug', $slugs)
 
-                // ✅ Si hay filtro de rango de fechas, solo traemos los inscritos
+                // âœ… Si hay filtro de rango de fechas, solo traemos los inscritos
                 //    cuya fecha_seleccionada caiga dentro del rango solicitado
                 ->when($filterDates, fn ($q) => $q->whereIn('fecha_seleccionada', $filterDates))
                 ->orderBy('slug')
@@ -851,12 +851,12 @@ class DownloadAttendanceController extends Controller
                 ->get()
                 ->groupBy('slug');
 
-            // ✅ CSV en memoria con BOM UTF-8
+            // âœ… CSV en memoria con BOM UTF-8
             $handle = fopen('php://temp', 'r+');
 
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // ✅ Cabecera
+            // âœ… Cabecera
             fputcsv($handle, [
                 'Nro.',
                 'UNIDAD',
@@ -872,9 +872,9 @@ class DownloadAttendanceController extends Controller
                 'DISTRITO DE LA ACTIVIDAD',
                 'LUGAR DE LA ACTIVIDAD',
                 'NOMBRE DE ENTIDAD ORGANIZADORA',
-                'NOMBRE DE ENTIDAD O INSTITUCIÓN ALIADA / PARTICIPANTE',
+                'NOMBRE DE ENTIDAD O INSTITUCIÃ“N ALIADA / PARTICIPANTE',
                 'REPRESENTANTE DE PRODUCE QUE PARTICIPA (APELLIDOS Y NOMBRES)',
-                '¿REQUERIRA PASAJES?  (SÍ / NO)',
+                'Â¿REQUERIRA PASAJES?  (SÃ / NO)',
                 'COLOCAR SOLO EL MONTO DE GASTOS EN PASAJES EN SOLES IDA + VUELTA (BUS Y/O AVION)',
                 'MYPE Y/O EMPRENDEDORES BENEFICIADOS ESPERADOS',
                 'MODALIDAD   (VIRTUAL / PRESENCIAL)',
@@ -898,15 +898,15 @@ class DownloadAttendanceController extends Controller
                 'NIVEL EDUCATIVO',
                 'CARGO EN LA EMPRESA',
                 'RUC',
-                'REGIÓN_MYPE',
+                'REGIÃ“N_MYPE',
                 'PROVINCIA_MYPE',
                 'DISTRITO_MYPE',
                 'SECTOR (COMERCIO, SERVICIOS O INDUSTRIA)',
                 'RUBRO / RUBRO',
                 'CELULAR',
                 'CORREO',
-                '¿SE BRINDÓ ASESORÍA AL USUARIO DURANTE LA ACTIVIDAD?  SI / NO',
-                '¿SE FORMALIZO AL USUARIO DURANTE LA ACTIVIDAD?  SI / NO',
+                'Â¿SE BRINDÃ“ ASESORÃA AL USUARIO DURANTE LA ACTIVIDAD?  SI / NO',
+                'Â¿SE FORMALIZO AL USUARIO DURANTE LA ACTIVIDAD?  SI / NO',
             ], ',');
 
             $globalIndex = 1;
@@ -923,8 +923,8 @@ class DownloadAttendanceController extends Controller
                     ? array_values(array_intersect($fechas, $filterDates))
                     : $fechas;
 
-                // Por seguridad, si por algún motivo la intersección quedara vacía
-                // (no debería pasar, ya que el WHERE ya garantiza al menos 1 coincidencia)
+                // Por seguridad, si por algÃºn motivo la intersecciÃ³n quedara vacÃ­a
+                // (no deberÃ­a pasar, ya que el WHERE ya garantiza al menos 1 coincidencia)
                 if (empty($fechasFiltradas)) {
                     $fechasFiltradas = $fechas;
                 }
@@ -932,7 +932,7 @@ class DownloadAttendanceController extends Controller
                 $fechaMin = collect($fechas)->min();
                 $fechaMax = collect($fechas)->max();
 
-                // ── ESTADO ───────────────────────────────────────────
+                // â”€â”€ ESTADO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if ($actividad->inscritos > 0) {
 
                     $estado = '4. FINALIZADOS';
@@ -967,7 +967,7 @@ class DownloadAttendanceController extends Controller
                     )
                     : null;
 
-                // ✅ TEXTO UNIDAD
+                // âœ… TEXTO UNIDAD
                 $unidadTexto = match ((int) $actividad->unidad) {
                     1 => 'UGO',
                     2 => 'UGSE',
@@ -975,7 +975,7 @@ class DownloadAttendanceController extends Controller
                     default => 'SIN UNIDAD',
                 };
 
-                // ── COLUMNAS FIJAS DE LA ACTIVIDAD ───────────────────
+                // â”€â”€ COLUMNAS FIJAS DE LA ACTIVIDAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 $colsActividad = [
                     $globalIndex,
                     $unidadTexto,
@@ -994,7 +994,7 @@ class DownloadAttendanceController extends Controller
                     $clean(strtoupper($actividad->entidad_organizadora ?? '-')),
                     $clean(strtoupper($actividad->entidad_aliada ?? '-')),
                     $clean($representante),
-                    $actividad->requiere_pasaje ? 'SÍ' : 'NO',
+                    $actividad->requiere_pasaje ? 'SÃ' : 'NO',
                     $actividad->monto_gasto ?? 0,
                     $actividad->mypes_beneficiadas ?? 0,
                     $clean($actividad->modalidad->name ?? null),
@@ -1119,7 +1119,7 @@ class DownloadAttendanceController extends Controller
             fputcsv($handle, [
                 // Evento
                 '#',
-                'Título del Evento',
+                'TÃ­tulo del Evento',
                 'Fecha del Evento',
                 'Modalidad',
                 'Ciudad del Evento',
@@ -1127,28 +1127,28 @@ class DownloadAttendanceController extends Controller
 
                 // Participante
                 'RUC',
-                'RAZÓN SOCIAL',
-                'SECTOR ECONÓMICO',
+                'RAZÃ“N SOCIAL',
+                'SECTOR ECONÃ“MICO',
                 'RUBRO',
                 'ACTIVIDAD COMERCIAL',
-                'REGIÓN',
+                'REGIÃ“N',
                 'PROVINCIA',
                 'DISTRITO',
 
                 'TIPO DOCUMENTO',
-                'N°. DOCUMENTO',
+                'NÂ°. DOCUMENTO',
                 'APELLIDO PATERNO',
                 'APELLIDO MATERNO',
                 'NOMBRES',
-                'PAÍS NACIMIENTO',
+                'PAÃS NACIMIENTO',
                 'FECHA DE NACIMIENTO',
-                'GÉNERO',
-                '¿TIENE UNA DISCAPACIDAD?',
-                'GRADO ACADÉMICO',
+                'GÃ‰NERO',
+                'Â¿TIENE UNA DISCAPACIDAD?',
+                'GRADO ACADÃ‰MICO',
                 'ESTADO CIVIL',
                 'CANTIDAD HIJOS',
-                'NÚMERO DE CELULAR',
-                'CORREO ELECTRÓNICO',
+                'NÃšMERO DE CELULAR',
+                'CORREO ELECTRÃ“NICO',
                 'ROL EN EMPRESA',
 
                 // Asistencia
@@ -1270,7 +1270,7 @@ class DownloadAttendanceController extends Controller
                             $row->phone,
                             $row->email,
                             $row->role_company,
-                            $row->attendance == 1 ? '✔️' : '-',
+                            $row->attendance == 1 ? 'âœ”ï¸' : '-',
                         ], ',');
                     }
                 });
@@ -1310,51 +1310,51 @@ class DownloadAttendanceController extends Controller
             ], 404);
         }
 
-        // MAPEO ESTÁTICO DE PREGUNTAS FIJAS (question_1 a question_5)
+        // MAPEO ESTÃTICO DE PREGUNTAS FIJAS (question_1 a question_5)
 
         $fixedQuestionsMap = [
             'question_1' => [
-                'label' => '¿Cómo planificas el crecimiento de tu negocio usando tecnología?',
+                'label' => 'Â¿CÃ³mo planificas el crecimiento de tu negocio usando tecnologÃ­a?',
                 'options' => [
-                    'sin_interes' => 'A. No tengo interés en la tecnología; mi negocio depende solo de mi presencia física y el boca a boca.',
+                    'sin_interes' => 'A. No tengo interÃ©s en la tecnologÃ­a; mi negocio depende solo de mi presencia fÃ­sica y el boca a boca.',
                     'redes_sociales' => 'B. Uso Facebook o WhatsApp porque otros lo hacen, pero no tengo un plan ni metas de ventas digitales.',
-                    'estrategia_digital' => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir qué comprar o vender.',
-                    'plan_transformacion' => 'D. Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
+                    'estrategia_digital' => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir quÃ© comprar o vender.',
+                    'plan_transformacion' => 'D. Tengo un Plan de TransformaciÃ³n Digital escrito y mi modelo de negocio se adapta rÃ¡pidamente a los cambios del mercado tecnolÃ³gico.',
                 ],
             ],
             'question_2' => [
-                'label' => '¿Cómo se involucra tu equipo o personal en el uso de herramientas digitales?',
+                'label' => 'Â¿CÃ³mo se involucra tu equipo o personal en el uso de herramientas digitales?',
                 'options' => [
                     'sin_interes' => 'A. Solo yo tomo las decisiones y no usamos herramientas digitales para coordinar el trabajo.',
-                    'redes_sociales' => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitación en herramientas de gestión.',
-                    'capacitacion' => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema común para registrar pedidos y tareas.',
-                    'lideres_digitales' => 'D. Contamos con líderes digitales en el equipo, todos tienen altas competencias digitales y tomamos decisiones basadas en reportes de datos en tiempo real.',
+                    'redes_sociales' => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitaciÃ³n en herramientas de gestiÃ³n.',
+                    'capacitacion' => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema comÃºn para registrar pedidos y tareas.',
+                    'lideres_digitales' => 'D. Contamos con lÃ­deres digitales en el equipo, todos tienen altas competencias digitales y tomamos decisiones basadas en reportes de datos en tiempo real.',
                 ],
             ],
             'question_3' => [
-                'label' => '¿Con qué herramientas tecnológicas y seguridad cuenta tu negocio para operar?',
+                'label' => 'Â¿Con quÃ© herramientas tecnolÃ³gicas y seguridad cuenta tu negocio para operar?',
                 'options' => [
-                    'celular' => 'A. Solo tengo un celular básico para llamadas y no confío en los pagos digitales ni en internet.',
-                    'internet_basico' => 'B. Tengo internet básico y uso computadoras personales para tareas simples (Word/Excel básico) sin protocolos de seguridad.',
-                    'internet_alta_velocidad' => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi información con contraseñas y respaldos frecuentes.',
-                    'nube' => 'D. Uso servicios en la nube (Cloud), mi infraestructura está integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
+                    'celular' => 'A. Solo tengo un celular bÃ¡sico para llamadas y no confÃ­o en los pagos digitales ni en internet.',
+                    'internet_basico' => 'B. Tengo internet bÃ¡sico y uso computadoras personales para tareas simples (Word/Excel bÃ¡sico) sin protocolos de seguridad.',
+                    'internet_alta_velocidad' => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi informaciÃ³n con contraseÃ±as y respaldos frecuentes.',
+                    'nube' => 'D. Uso servicios en la nube (Cloud), mi infraestructura estÃ¡ integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
                 ],
             ],
             'question_4' => [
-                'label' => '¿Cómo llevas el control de tus inventarios, producción y contabilidad?',
+                'label' => 'Â¿CÃ³mo llevas el control de tus inventarios, producciÃ³n y contabilidad?',
                 'options' => [
                     'anotado' => 'A. Todo lo anoto en cuadernos o lo tengo en la memoria; a veces pierdo el control de lo que falta.',
-                    'excel' => 'B. Registro mis ventas en Excel al final del día, pero mi inventario y contabilidad los llevo por separado o en físico.',
-                    'software' => 'C. Uso un software o App específica para controlar mi stock, mis ventas y emitir comprobantes electrónicos de forma automática.',
-                    'integrado' => 'D. Mi sistema está totalmente integrado: me avisa automáticamente cuando queda poco stock y genera reportes contables y de producción sin errores.',
+                    'excel' => 'B. Registro mis ventas en Excel al final del dÃ­a, pero mi inventario y contabilidad los llevo por separado o en fÃ­sico.',
+                    'software' => 'C. Uso un software o App especÃ­fica para controlar mi stock, mis ventas y emitir comprobantes electrÃ³nicos de forma automÃ¡tica.',
+                    'integrado' => 'D. Mi sistema estÃ¡ totalmente integrado: me avisa automÃ¡ticamente cuando queda poco stock y genera reportes contables y de producciÃ³n sin errores.',
                 ],
             ],
             'question_5' => [
-                'label' => '¿Cómo te encuentran los clientes nuevos?',
+                'label' => 'Â¿CÃ³mo te encuentran los clientes nuevos?',
                 'options' => [
                     'local' => 'A. Solo me encuentran si pasan por mi local; no guardo datos de contacto de quienes me compran.',
-                    'excel' => 'B. Respondo consultas por Facebook o WhatsApp, pero no tengo un catálogo digital ni analizo si los clientes están satisfechos.',
-                    'software' => 'C. Tengo presencia en Google Maps, uso catálogos digitales y acepto múltiples pagos (Yape, Plin, POS). Mido la satisfacción de mis clientes.',
+                    'excel' => 'B. Respondo consultas por Facebook o WhatsApp, pero no tengo un catÃ¡logo digital ni analizo si los clientes estÃ¡n satisfechos.',
+                    'software' => 'C. Tengo presencia en Google Maps, uso catÃ¡logos digitales y acepto mÃºltiples pagos (Yape, Plin, POS). Mido la satisfacciÃ³n de mis clientes.',
                     'integrado' => 'D. Tengo una tienda online o CRM donde el cliente compra directamente y utilizo sus datos para enviarles ofertas personalizadas.',
                 ],
             ],
@@ -1383,7 +1383,7 @@ class DownloadAttendanceController extends Controller
             ->get()
             ->keyBy('model');
 
-        // COLUMNAS DINÁMICAS
+        // COLUMNAS DINÃMICAS
 
         $dynamicColumns = sedQuestionAnswer::where('slug_sed', $slug)
             ->distinct()
@@ -1456,7 +1456,7 @@ class DownloadAttendanceController extends Controller
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        // HEADERS FIJOS EN FILA 2 (AM → AQ)
+        // HEADERS FIJOS EN FILA 2 (AM â†’ AQ)
         // AM=39, AN=40, AO=41, AP=42, AQ=43
 
         $sheet->setCellValue('AM2', $fixedQuestionsMap['question_1']['label']);
@@ -1469,7 +1469,7 @@ class DownloadAttendanceController extends Controller
             $sheet->getStyle($cell)->getAlignment()->setWrapText(true);
         }
 
-        // HEADERS DINÁMICOS EN FILA 2 (desde AR = índice 44)
+        // HEADERS DINÃMICOS EN FILA 2 (desde AR = Ã­ndice 44)
 
         $dynStartColIndex = 44; // AR
         foreach ($dynamicColumns as $i => $modelIdentifier) {
@@ -1562,7 +1562,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", $e->ruc);
                 $col++;
 
-                // RAZÓN SOCIAL
+                // RAZÃ“N SOCIAL
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->razon_social ?? '', 'UTF-8'));
                 $col++;
 
@@ -1570,7 +1570,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombre_comercial ?? '', 'UTF-8'));
                 $col++;
 
-                // SECTOR ECONÓMICO
+                // SECTOR ECONÃ“MICO
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8'));
                 $col++;
 
@@ -1594,7 +1594,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->distrito?->name ?? '', 'UTF-8'));
                 $col++;
 
-                // DIRECCIÓN
+                // DIRECCIÃ“N
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->direccion ?? '', 'UTF-8'));
                 $col++;
 
@@ -1618,7 +1618,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombres ?? '', 'UTF-8'));
                 $col++;
 
-                // GÉNERO
+                // GÃ‰NERO
                 $sheet->setCellValue("{$col}{$row}", $e->genero?->avr);
                 $col++;
 
@@ -1649,7 +1649,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", $e->edad ?? '');
                 $col++;
 
-                // CÓMO SE ENTERÓ DEL EVENTO
+                // CÃ“MO SE ENTERÃ“ DEL EVENTO
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($sq?->propagandaMedia?->name ?? '', 'UTF-8'));
                 $col++;
 
@@ -1687,7 +1687,7 @@ class DownloadAttendanceController extends Controller
                     $sheet->getStyle("{$c}{$row}")->getAlignment()->setWrapText(true);
                 }
 
-                // PREGUNTAS DINÁMICAS: desde AR (índice 44) en adelante
+                // PREGUNTAS DINÃMICAS: desde AR (Ã­ndice 44) en adelante
 
                 $answersIndexed = $sedAnswers
                     ->get($e->numero_dni, collect())
@@ -1805,7 +1805,7 @@ class DownloadAttendanceController extends Controller
                     'tipo_empresa_id',
                     'cargo_empresa_id',
                     'fecha_nacimiento',
-                    // 🔥 FALTABAN: se usan más abajo pero no estaban seleccionados
+                    // ðŸ”¥ FALTABAN: se usan mÃ¡s abajo pero no estaban seleccionados
                     'venta_anual',
                     'medio_entero',
                     'academicdegree_id',
@@ -1827,7 +1827,7 @@ class DownloadAttendanceController extends Controller
         ])
             ->where('slug', $slug)
 
-            // ✅ FILTRO POR FECHA SELECCIONADA
+            // âœ… FILTRO POR FECHA SELECCIONADA
             ->when($request->filled('dateEvent'), function ($q) use ($request) {
                 $q->where('fecha_seleccionada', $request->input('dateEvent'));
             })
@@ -1856,12 +1856,12 @@ class DownloadAttendanceController extends Controller
         $testSalidaPreguntas = $pntTest?->test_salida ?? [];
         $totalRatings = count($testSalidaPreguntas);
 
-        // Helper para convertir número de columna a letra (soporta más allá de Z)
+        // Helper para convertir nÃºmero de columna a letra (soporta mÃ¡s allÃ¡ de Z)
         $colLetter = function (int $index) {
             return \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index);
         };
 
-        $lastFixedColIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString('AN'); // 👈 AJUSTA esta letra a la última columna fija real de tu plantilla
+        $lastFixedColIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString('AN'); // ðŸ‘ˆ AJUSTA esta letra a la Ãºltima columna fija real de tu plantilla
 
         $headerRow = 2;
         $colIndex = $lastFixedColIndex;
@@ -1897,8 +1897,8 @@ class DownloadAttendanceController extends Controller
             $colIndex++;
         }
 
-        // CASO PRÁCTICO
-        $sheet->setCellValue($colLetter($colIndex).$headerRow, 'CASO PRÁCTICO');
+        // CASO PRÃCTICO
+        $sheet->setCellValue($colLetter($colIndex).$headerRow, 'CASO PRÃCTICO');
         $colIndex++;
 
         // RATINGS
@@ -2031,7 +2031,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->distrito?->name ?? '', 'UTF-8'));
                 $col++;
 
-                // DIRECCIÓN
+                // DIRECCIÃ“N
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->direccion ?? '', 'UTF-8'));
                 $col++;
 
@@ -2055,7 +2055,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e?->nombres ?? '', 'UTF-8'));
                 $col++;
 
-                // GÉNERO
+                // GÃ‰NERO
                 $sheet->setCellValue("{$col}{$row}", $e?->genero?->avr ?? '');
                 $col++;
 
@@ -2095,13 +2095,13 @@ class DownloadAttendanceController extends Controller
                     1 => 's/ 54,601.00 hasta s/ 100,000.00',
                     2 => 's/ 100,001.00 hasta s/ 300,000.00',
                     3 => 's/ 300,001.00 hasta s/ 645,000.00',
-                    4 => 'más de s/ 645,000.00',
+                    4 => 'mÃ¡s de s/ 645,000.00',
                     default => '',
                 };
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($ventaAnual, 'UTF-8'));
                 $col++;
 
-                // MEDIO POR EL QUE SE ENTERÓ
+                // MEDIO POR EL QUE SE ENTERÃ“
                 $medioEntero = match ($e?->medio_entero) {
                     1 => 'SMS - mensajes al celular',
                     2 => 'Mailing - correo publicitario de convocatoria',
@@ -2199,11 +2199,11 @@ class DownloadAttendanceController extends Controller
                     $col++;
                 }
 
-                // CASO PRÁCTICO
+                // CASO PRÃCTICO
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($item->caso_practico ?? '', 'UTF-8'));
                 $col++;
 
-                // RATINGS dinámicos desde test_salida
+                // RATINGS dinÃ¡micos desde test_salida
                 $ratingsItem = $item->ratings ?? [];
 
                 foreach ($testSalidaPreguntas as $i => $pregunta) {
@@ -2321,13 +2321,13 @@ class DownloadAttendanceController extends Controller
             'empresario.provincia:id,name',
             'empresario.distrito:id,name',
 
-            // 🔥 ESTOS FALTABAN
+            // ðŸ”¥ ESTOS FALTABAN
             'empresario.sectorEconomico:id,name',
             'empresario.rubro:id,name',
         ])
             ->where('slug', $slug)
 
-            // ✅ FILTRO POR FECHA SELECCIONADA (CORREGIDO)
+            // âœ… FILTRO POR FECHA SELECCIONADA (CORREGIDO)
             ->when($request->filled('dateEvent'), function ($q) use ($request) {
                 $q->where('fecha_seleccionada', $request->input('dateEvent'));
             })
@@ -2437,7 +2437,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", $e->ruc);
                 $col++;
 
-                // RAZÓN SOCIAL
+                // RAZÃ“N SOCIAL
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->razon_social ?? '', 'UTF-8'));
                 $col++;
 
@@ -2445,7 +2445,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombre_comercial ?? '', 'UTF-8'));
                 $col++;
 
-                // SECTOR ECONÓMICO
+                // SECTOR ECONÃ“MICO
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8'));
                 $col++;
 
@@ -2469,7 +2469,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->distrito?->name ?? '', 'UTF-8'));
                 $col++;
 
-                // DIRECCIÓN
+                // DIRECCIÃ“N
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->direccion ?? '', 'UTF-8'));
                 $col++;
 
@@ -2493,7 +2493,7 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombres ?? '', 'UTF-8'));
                 $col++;
 
-                // GÉNERO
+                // GÃ‰NERO
                 $sheet->setCellValue("{$col}{$row}", $e->genero?->avr);
                 $col++;
 
@@ -2527,7 +2527,7 @@ class DownloadAttendanceController extends Controller
 
             $writer = new Xlsx($spreadsheet);
 
-            // 🔥 mejora rendimiento
+            // ðŸ”¥ mejora rendimiento
             $writer->setPreCalculateFormulas(false);
 
             $writer->save('php://output');
@@ -2619,33 +2619,33 @@ class DownloadAttendanceController extends Controller
 
         // Mismas columnas y orden que la tabla del frontend (ferias-inscritos.vue)
         $headers = array_merge(
-            ['N°', 'APROBADOS'],
+            ['NÂ°', 'APROBADOS'],
             $esPapa ? ['LUGAR DE PRIORIDAD 1', 'LUGAR DE PRIORIDAD 2'] : [],
             [
-                'RUC', 'RAZÓN SOCIAL', 'NOMBRE COMERCIAL',
-                'SECTOR ECONÓMICO', 'RUBRO', 'ACTIVIDAD COMERCIAL',
-                'PAÍS NACIMIENTO', 'REGIÓN', 'PROVINCIA', 'DISTRITO', 'DIRECCIÓN',
-                'TIPO DE DOCUMENTO', 'NÚMERO DE DOCUMENTO',
+                'RUC', 'RAZÃ“N SOCIAL', 'NOMBRE COMERCIAL',
+                'SECTOR ECONÃ“MICO', 'RUBRO', 'ACTIVIDAD COMERCIAL',
+                'PAÃS NACIMIENTO', 'REGIÃ“N', 'PROVINCIA', 'DISTRITO', 'DIRECCIÃ“N',
+                'TIPO DE DOCUMENTO', 'NÃšMERO DE DOCUMENTO',
                 'APELLIDO PATERNO', 'APELLIDO MATERNO', 'NOMBRES',
-                'GÉNERO', '¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'CORREO',
+                'GÃ‰NERO', 'Â¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'CORREO',
                 'REDES SOCIALES',
                 // EMPRENDIMIENTO
                 'PERTENECE A GREMIO', 'NOMBRE GREMIO',
-                'CAP. PRODUCCIÓN MENSUAL',
+                'CAP. PRODUCCIÃ“N MENSUAL',
                 '% PROD. PLANTA PROPIA',
                 '% PROD. MAQUILA',
-                'TIENE PUNTOS DE VENTA', 'N° PUNTOS DE VENTA',
-                'DESCRIPCIÓN DEL NEGOCIO',
+                'TIENE PUNTOS DE VENTA', 'NÂ° PUNTOS DE VENTA',
+                'DESCRIPCIÃ“N DEL NEGOCIO',
                 'PAGOS POS',
                 'YAPE / PLIN',
                 'VENTAS ONLINE',
                 'NOMBRE TIENDA VIRTUAL',
                 'DELIVERY',
-                'FACTURA ELECTRÓNICA',
-                'PARTICIPÓ PRODUCE',
+                'FACTURA ELECTRÃ“NICA',
+                'PARTICIPÃ“ PRODUCE',
                 'NOMBRE SERVICIO',
-                'PARTICIPÓ FERIA',
-                'EVENTO EN QUE PARTICIPÓ',
+                'PARTICIPÃ“ FERIA',
+                'EVENTO EN QUE PARTICIPÃ“',
                 'FORMALIZADO TU EMPRESA',
                 'MARCA EN INDECOPI',
                 'LOGROS DE LA EMPRESA',
@@ -2780,13 +2780,13 @@ class DownloadAttendanceController extends Controller
             }
         });
 
-        // Auto-ancho opcional (puede ser lento con muchas columnas/filas; quítalo si el listado es grande)
+        // Auto-ancho opcional (puede ser lento con muchas columnas/filas; quÃ­talo si el listado es grande)
         foreach (range(1, count($headers)) as $colIndex) {
             $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
             $sheet->getColumnDimension($letter)->setAutoSize(true);
         }
 
-        // Columna de redes sociales: ancho fijo y salto de línea (una red por fila)
+        // Columna de redes sociales: ancho fijo y salto de lÃ­nea (una red por fila)
         $redesColIndex = array_search('REDES SOCIALES', $headers, true);
         if ($redesColIndex !== false) {
             $redesLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($redesColIndex + 1);
@@ -2846,10 +2846,10 @@ class DownloadAttendanceController extends Controller
     private function feriaNombre($value): ?string
     {
         $nombres = [
-            1 => 'Perú Produce Lima',
-            2 => 'Perú Produce Lambayeque',
-            3 => 'Perú Produce Ucayali',
-            4 => 'Perú Produce Cusco',
+            1 => 'PerÃº Produce Lima',
+            2 => 'PerÃº Produce Lambayeque',
+            3 => 'PerÃº Produce Ucayali',
+            4 => 'PerÃº Produce Cusco',
         ];
 
         if (is_null($value) || $value === '') {
@@ -2869,7 +2869,7 @@ class DownloadAttendanceController extends Controller
             'facebook' => 'Facebook',
             'instagram' => 'Instagram',
             'tiktok' => 'TikTok',
-            'web' => 'Página web',
+            'web' => 'PÃ¡gina web',
         ];
 
         $map = [];
@@ -2964,14 +2964,14 @@ class DownloadAttendanceController extends Controller
             $actividadesPorSlug = $actividades->keyBy('slug');
 
             // Banco de preguntas por actividad (en inscritosPP093PorSlug el banco
-            // de salida también es test_entrada: se mantiene ese criterio)
+            // de salida tambiÃ©n es test_entrada: se mantiene ese criterio)
             $bancosPorSlug = PntTest::whereIn('slug', $slugs)->get()->keyBy('slug');
 
             $componentes = [
                 1 => 'ACCESO AL FINANCIAMIENTO',
                 2 => 'DESARROLLO PRODUCTIVO',
-                3 => 'DIGITALIZACIÓN',
-                4 => 'GESTIÓN EMPRESARIAL',
+                3 => 'DIGITALIZACIÃ“N',
+                4 => 'GESTIÃ“N EMPRESARIAL',
             ];
 
             $templatePath = storage_path('app/plantillas/pp093_listado_certificados.xlsx');
@@ -3133,9 +3133,132 @@ class DownloadAttendanceController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Ocurrió un error al generar el reporte',
+                'message' => 'OcurriÃ³ un error al generar el reporte',
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    // RATINGS PP093
+
+    public function exportRatings(Request $request)
+    {
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
+
+        // Preguntas por actividad (slug => [id_N => opciones[]]).
+        // rating_N hace match con la pregunta id_N y el valor (1-5)
+        // es la posiciÃ³n 1-based dentro de sus opciones.
+        $preguntasPorSlug = [];
+        \App\Models\PntTest::select('slug', 'test_salida', 'test_entrada')
+            ->chunk(500, function ($tests) use (&$preguntasPorSlug) {
+                foreach ($tests as $test) {
+                    $preguntas = $test->test_salida ?: ($test->test_entrada ?: []);
+                    $map = [];
+                    foreach ((array) $preguntas as $p) {
+                        $p = is_array($p) ? $p : (array) $p;
+                        if (isset($p['id'])) {
+                            $map[$p['id']] = [
+                                'texto' => $p['texto'] ?? null,
+                                'opciones' => $p['opciones'] ?? [],
+                            ];
+                        }
+                    }
+                    $preguntasPorSlug[$test->slug] = $map;
+                }
+            });
+
+        $headers = [
+            'TEMA', 'RUC', 'RAZÓN SOCIAL', 'NOMBRE COMERCIAL',
+            'REGIÓN', 'PROVINCIA', 'DISTRITO', 'TIPO DOCUMENTO',
+            'NÚMERO DNI', 'APELLIDO PATERNO', 'APELLIDO MATERNO', 'NOMBRES',
+            'CELULAR', 'CORREO ELECTRÓNICO',
+            'PREGUNTA 1', 'RESPUESTA 1',
+            'PREGUNTA 2', 'RESPUESTA 2',
+            'PREGUNTA 3', 'RESPUESTA 3',
+            'PREGUNTA 4', 'RESPUESTA 4',
+            'PREGUNTA 5', 'RESPUESTA 5',
+        ];
+
+        $filename = 'ratings-'.now()->format('Ymd-His').'.csv';
+
+        return response()->stream(function () use ($headers, $preguntasPorSlug) {
+            $out = fopen('php://output', 'w');
+            // BOM para que Excel abra el UTF-8 correctamente
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, $headers, ';');
+
+            \App\Models\EmpresarioActividad::with([
+                'empresario:id,ruc,razon_social,nombre_comercial,region_id,provincia_id,distrito_id,tipo_documento_id,numero_dni,apellido_paterno,apellido_materno,nombres,celular,correo_electronico',
+                'empresario.region:id,name',
+                'empresario.provincia:id,name',
+                'empresario.distrito:id,name',
+                'empresario.tipoDocumento:id,avr',
+                'actividadPnte:slug,tema',
+            ])
+                ->whereNotNull('ratings')
+                ->orderBy('id')
+                ->chunk(2000, function ($items) use ($out, $preguntasPorSlug) {
+                    foreach ($items as $item) {
+                        $e = $item->empresario;
+                        $ratings = $item->ratings ?: [];
+                        $preguntas = $preguntasPorSlug[$item->slug] ?? [];
+
+                        $row = [
+                            $item->actividadPnte?->tema,
+                            $e?->ruc,
+                            $e?->razon_social,
+                            $e?->nombre_comercial,
+                            $e?->region?->name,
+                            $e?->provincia?->name,
+                            $e?->distrito?->name,
+                            $e?->tipoDocumento?->avr,
+                            $e?->numero_dni,
+                            $e?->apellido_paterno,
+                            $e?->apellido_materno,
+                            $e?->nombres,
+                            $e?->celular,
+                            $e?->correo_electronico,
+                        ];
+
+                        for ($n = 1; $n <= 5; $n++) {
+                            $pregunta = $preguntas["id_{$n}"] ?? [];
+                            $row[] = $pregunta['texto'] ?? "Pregunta {$n}";
+                            $row[] = $this->ratingLabel(
+                                $ratings["rating_{$n}"] ?? null,
+                                $pregunta['opciones'] ?? []
+                            );
+                        }
+
+                        fputcsv($out, $row, ';');
+                    }
+                    fflush($out);
+                    if (ob_get_level() > 0) {
+                        ob_flush();
+                    }
+                    flush();
+                });
+
+            fclose($out);
+        }, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    private function ratingLabel($valor, $opciones): ?string
+    {
+        if (is_null($valor) || $valor === '') {
+            return null;
+        }
+        $idx = ((int) $valor) - 1;
+        $opciones = array_values((array) $opciones);
+        if (! isset($opciones[$idx])) {
+            return (string) $valor;
+        }
+        $op = $opciones[$idx];
+
+        return is_array($op) ? ($op['label'] ?? (string) $valor) : (string) $op;
     }
 }

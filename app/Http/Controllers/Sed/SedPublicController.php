@@ -321,7 +321,7 @@ class SedPublicController extends Controller
                     'nombres' => $empresario->nombres,
                     'genero_id' => $empresario->genero_id,
                     'discapacidad' => $empresario->discapacidad,
-                    'celular' => $celular,
+                    // 'celular' => $celular,
                     'correo_electronico' => $empresario->correo_electronico,
                     'cargo_empresa_id' => $empresario->cargo_empresa_id,
                     'fecha_nacimiento' => $empresario->fecha_nacimiento,
