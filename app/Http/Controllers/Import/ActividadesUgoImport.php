@@ -46,10 +46,14 @@ class ActividadesUgoImport extends Controller
             $actualizados = 0;
             $errores = [];
 
+            // Layout cooperativa: W/X/Y en vez de X/Y/Z (ver mapeo abajo).
+            $esCoop = $request->boolean('is_cooperativa');
+
             DB::transaction(function () use (
                 $rows,
                 $actividad,
                 $slug,
+                $esCoop,
                 &$registrados,
                 &$actualizados,
                 &$errores
@@ -180,12 +184,25 @@ class ActividadesUgoImport extends Controller
                     $correo = strtolower(trim((string) ($row['T'] ?? '')));
                     $personalAsesoria = strtoupper(trim((string) ($row['U'] ?? '')));
                     $personalFormalizacion = strtoupper(trim((string) ($row['V'] ?? '')));
-                    $nombreMercado = trim((string) ($row['W'] ?? ''));
 
-                    // ─── COLUMNAS COOPERATIVA (X, Y, Z) ──────────────────────
-                    $coopRuc = trim((string) ($row['X'] ?? ''));
-                    $coopRazonSocial = trim((string) ($row['Y'] ?? ''));
-                    $coopRolNombre = strtoupper(trim((string) ($row['Z'] ?? '')));
+                    // ─── COLUMNAS FINALES ────────────────────────────────────
+                    // Layout normal: W = mercado, X/Y/Z = cooperativa.
+                    // Layout cooperativa (is_cooperativa=1): W = NÚMERO DE RUC
+                    // DE COOPERATIVA, X = RAZÓN SOCIAL DE LA COOPERATIVA,
+                    // Y = ROL EN LA COOPERATIVA (sin columna Z).
+                    $nombreMercado = $esCoop
+                        ? null
+                        : trim((string) ($row['W'] ?? ''));
+
+                    $coopRuc = trim((string) ($esCoop
+                        ? ($row['W'] ?? '')
+                        : ($row['X'] ?? '')));
+                    $coopRazonSocial = trim((string) ($esCoop
+                        ? ($row['X'] ?? '')
+                        : ($row['Y'] ?? '')));
+                    $coopRolNombre = strtoupper(trim((string) ($esCoop
+                        ? ($row['Y'] ?? '')
+                        : ($row['Z'] ?? ''))));
 
                     // Resolver el id del rol ('dir', 'soc', 'mie') o null si vacío
                     $coopRolId = ! empty($coopRolNombre)
