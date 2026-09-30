@@ -271,6 +271,15 @@ Route::prefix('convenio')->middleware('auth:sanctum')->group(function () {
     require __DIR__.'/api/convenio.php';
 });
 
+Route::prefix('upload')->middleware('auth:sanctum')->group(function () {
+    require __DIR__.'/api/upload.php';
+});
+
+// Alias por typo histórico
+Route::prefix('uplaod')->middleware('auth:sanctum')->group(function () {
+    require __DIR__.'/api/upload.php';
+});
+
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
     // Route::get('list',                                  [UserController::class, 'index']);                  // v2.0

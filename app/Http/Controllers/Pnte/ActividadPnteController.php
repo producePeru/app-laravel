@@ -555,7 +555,8 @@ class ActividadPnteController extends Controller
                 'tema',
                 'fechas',
                 'nombre_actividad_id',
-                'descripcion'
+                'descripcion',
+                'switch_asistencias'
             )
                 ->where('slug', $slug)
                 ->first();
@@ -1091,6 +1092,15 @@ class ActividadPnteController extends Controller
                     'status' => 404,
                     'message' => 'No se encontró el registro.',
                 ], 404);
+            }
+
+            // Apagado (0/null) = bloqueado: no se puede marcar/desmarcar asistencia.
+            $actividad = ActividadPnte::where('slug', $request->slug)->first();
+            if (! $actividad || ! $actividad->switch_asistencias) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'La marcación de asistencias está desactivada.',
+                ], 403);
             }
 
             $registro->update([
