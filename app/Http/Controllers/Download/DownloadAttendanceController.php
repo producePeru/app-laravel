@@ -3201,6 +3201,7 @@ class DownloadAttendanceController extends Controller
                 ->whereNull('act.deleted_at')
                 ->whereNotNull('empresario_actividad.ratings')
                 ->orderBy('act.tema')
+                ->orderBy('empresario_actividad.fecha_seleccionada')
                 ->orderBy('empresario_actividad.slug')
                 ->orderBy('empresario_actividad.id')
                 ->select('empresario_actividad.*')
