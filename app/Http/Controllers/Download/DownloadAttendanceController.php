@@ -3169,7 +3169,7 @@ class DownloadAttendanceController extends Controller
             });
 
         $headers = [
-            'TEMA', 'RUC', 'RAZÓN SOCIAL', 'NOMBRE COMERCIAL',
+            'ID', 'TEMA', 'RUC', 'RAZÓN SOCIAL', 'NOMBRE COMERCIAL',
             'REGIÓN', 'PROVINCIA', 'DISTRITO', 'TIPO DOCUMENTO',
             'NÚMERO DNI', 'APELLIDO PATERNO', 'APELLIDO MATERNO', 'NOMBRES',
             'CELULAR', 'CORREO ELECTRÓNICO',
@@ -3205,6 +3205,7 @@ class DownloadAttendanceController extends Controller
                         $preguntas = $preguntasPorSlug[$item->slug] ?? [];
 
                         $row = [
+                            $item->id,
                             $item->actividadPnte?->tema,
                             $e?->ruc,
                             $e?->razon_social,
