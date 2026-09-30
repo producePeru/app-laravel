@@ -3169,7 +3169,7 @@ class DownloadAttendanceController extends Controller
             });
 
         $headers = [
-            'ID', 'TEMA', 'RUC', 'RAZÓN SOCIAL', 'NOMBRE COMERCIAL',
+            'TEMA', 'FECHA SELECCIONADA', 'RUC', 'RAZÓN SOCIAL', 'NOMBRE COMERCIAL',
             'REGIÓN', 'PROVINCIA', 'DISTRITO', 'TIPO DOCUMENTO',
             'NÚMERO DNI', 'APELLIDO PATERNO', 'APELLIDO MATERNO', 'NOMBRES',
             'CELULAR', 'CORREO ELECTRÓNICO',
@@ -3196,8 +3196,14 @@ class DownloadAttendanceController extends Controller
                 'empresario.tipoDocumento:id,avr',
                 'actividadPnte:slug,tema',
             ])
-                ->whereNotNull('ratings')
-                ->orderBy('id')
+                // Agrupado por TEMA: mismo tema => filas contiguas.
+                ->join('actividades_pnte as act', 'act.slug', '=', 'empresario_actividad.slug')
+                ->whereNull('act.deleted_at')
+                ->whereNotNull('empresario_actividad.ratings')
+                ->orderBy('act.tema')
+                ->orderBy('empresario_actividad.slug')
+                ->orderBy('empresario_actividad.id')
+                ->select('empresario_actividad.*')
                 ->chunk(2000, function ($items) use ($out, $preguntasPorSlug) {
                     foreach ($items as $item) {
                         $e = $item->empresario;
@@ -3206,8 +3212,10 @@ class DownloadAttendanceController extends Controller
                         $preguntas = $preguntasPorSlug[$item->slug] ?? [];
 
                         $row = [
-                            $item->id,
                             $item->actividadPnte?->tema,
+                            $item->fecha_seleccionada
+                                ? \Carbon\Carbon::parse($item->fecha_seleccionada)->format('d/m/Y')
+                                : null,
                             $e?->ruc,
                             $e?->razon_social,
                             $e?->nombre_comercial,
