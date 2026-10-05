@@ -2619,33 +2619,33 @@ class DownloadAttendanceController extends Controller
 
         // Mismas columnas y orden que la tabla del frontend (ferias-inscritos.vue)
         $headers = array_merge(
-            ['NÂ°', 'APROBADOS'],
+            ['N°', 'APROBADOS'],
             $esPapa ? ['LUGAR DE PRIORIDAD 1', 'LUGAR DE PRIORIDAD 2'] : [],
             [
-                'RUC', 'RAZÃ“N SOCIAL', 'NOMBRE COMERCIAL',
-                'SECTOR ECONÃ“MICO', 'RUBRO', 'ACTIVIDAD COMERCIAL',
-                'PAÃS NACIMIENTO', 'REGIÃ“N', 'PROVINCIA', 'DISTRITO', 'DIRECCIÃ“N',
-                'TIPO DE DOCUMENTO', 'NÃšMERO DE DOCUMENTO',
+                'RUC', 'RAZÓN SOCIAL', 'NOMBRE COMERCIAL',
+                'SECTOR ECONÓMICO', 'RUBRO', 'ACTIVIDAD COMERCIAL',
+                'PAÍS NACIMIENTO', 'REGIÓN', 'PROVINCIA', 'DISTRITO', 'DIRECCIÓN',
+                'TIPO DE DOCUMENTO', 'NÚMERO DE DOCUMENTO',
                 'APELLIDO PATERNO', 'APELLIDO MATERNO', 'NOMBRES',
-                'GÃ‰NERO', 'Â¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'CORREO',
+                'GÉNERO', '¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'CORREO',
                 'REDES SOCIALES',
                 // EMPRENDIMIENTO
                 'PERTENECE A GREMIO', 'NOMBRE GREMIO',
-                'CAP. PRODUCCIÃ“N MENSUAL',
+                'CAP. PRODUCCIÓN MENSUAL',
                 '% PROD. PLANTA PROPIA',
                 '% PROD. MAQUILA',
-                'TIENE PUNTOS DE VENTA', 'NÂ° PUNTOS DE VENTA',
-                'DESCRIPCIÃ“N DEL NEGOCIO',
+                'TIENE PUNTOS DE VENTA', 'N° PUNTOS DE VENTA',
+                'DESCRIPCIÓN DEL NEGOCIO',
                 'PAGOS POS',
                 'YAPE / PLIN',
                 'VENTAS ONLINE',
                 'NOMBRE TIENDA VIRTUAL',
                 'DELIVERY',
-                'FACTURA ELECTRÃ“NICA',
-                'PARTICIPÃ“ PRODUCE',
+                'FACTURA ELECTRÓNICA',
+                'PARTICIPÓ PRODUCE',
                 'NOMBRE SERVICIO',
-                'PARTICIPÃ“ FERIA',
-                'EVENTO EN QUE PARTICIPÃ“',
+                'PARTICIPÓ FERIA',
+                'EVENTO EN QUE PARTICIPÓ',
                 'FORMALIZADO TU EMPRESA',
                 'MARCA EN INDECOPI',
                 'LOGROS DE LA EMPRESA',
@@ -2703,7 +2703,12 @@ class DownloadAttendanceController extends Controller
                 $col = 1;
                 $set = function ($value) use (&$col, $sheet, &$row) {
                     $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
-                    $sheet->setCellValue("{$letter}{$row}", $this->excelSafe($value));
+                    $v = $this->excelSafe($value);
+                    // Valores no seteados (null o vacío) llevan guion
+                    if ($v === null || (is_string($v) && trim($v) === '')) {
+                        $v = '-';
+                    }
+                    $sheet->setCellValue("{$letter}{$row}", $v);
                     $col++;
                 };
 
@@ -2780,19 +2785,79 @@ class DownloadAttendanceController extends Controller
             }
         });
 
-        // Auto-ancho opcional (puede ser lento con muchas columnas/filas; quÃ­talo si el listado es grande)
+        // Todas las columnas en ancho 15; Lugar de prioridad 1 y 2 en ancho 26
+        $anchos26 = ['LUGAR DE PRIORIDAD 1', 'LUGAR DE PRIORIDAD 2'];
         foreach (range(1, count($headers)) as $colIndex) {
             $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
-            $sheet->getColumnDimension($letter)->setAutoSize(true);
+            $ancho = in_array($headers[$colIndex - 1] ?? null, $anchos26, true) ? 26 : 15;
+            $sheet->getColumnDimension($letter)->setAutoSize(false)->setWidth($ancho);
         }
 
-        // Columna de redes sociales: ancho fijo y salto de lÃ­nea (una red por fila)
+        // Columna de redes sociales: sin ajuste de texto automático
         $redesColIndex = array_search('REDES SOCIALES', $headers, true);
         if ($redesColIndex !== false) {
             $redesLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($redesColIndex + 1);
-            $sheet->getColumnDimension($redesLetter)->setAutoSize(false)->setWidth(55);
             $sheet->getStyle("{$redesLetter}2:{$redesLetter}{$sheet->getHighestRow()}")
-                ->getAlignment()->setWrapText(true);
+                ->getAlignment()->setWrapText(false);
+        }
+
+        // Bloque RUC → DIRECCIÓN: ancho 15 y fondo azul para diferenciarlo
+        $idxRuc = array_search('RUC', $headers, true);
+        $idxDir = array_search('DIRECCIÓN', $headers, true);
+        if ($idxRuc !== false && $idxDir !== false && $idxDir >= $idxRuc) {
+            for ($c = $idxRuc + 1; $c <= $idxDir + 1; $c++) {
+                $letra = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($c);
+                $sheet->getColumnDimension($letra)->setAutoSize(false)->setWidth(15);
+            }
+            $ini = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idxRuc + 1);
+            $fin = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idxDir + 1);
+            // Solo la cabecera del bloque en azul (los datos quedan sin fondo)
+            $sheet->getStyle("{$ini}{$headerRow}:{$fin}{$headerRow}")->applyFromArray([
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'FF2E75B6'],
+                ],
+            ]);
+        }
+
+        // Bloque TIPO DE DOCUMENTO → CORREO: ancho 15 y cabecera naranja oscuro al 70%
+        $idxDoc = array_search('TIPO DE DOCUMENTO', $headers, true);
+        $idxCorreo = array_search('CORREO', $headers, true);
+        if ($idxDoc !== false && $idxCorreo !== false && $idxCorreo >= $idxDoc) {
+            for ($c = $idxDoc + 1; $c <= $idxCorreo + 1; $c++) {
+                $letra = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($c);
+                $sheet->getColumnDimension($letra)->setAutoSize(false)->setWidth(15);
+            }
+            $iniN = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idxDoc + 1);
+            $finN = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idxCorreo + 1);
+            // Solo la cabecera en naranja oscuro al 70% (los datos quedan sin fondo)
+            $sheet->getStyle("{$iniN}{$headerRow}:{$finN}{$headerRow}")->applyFromArray([
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'B2ED7D31'],
+                ],
+            ]);
+        }
+
+        // Contenido centrado (solo datos, la cabecera ya está centrada)
+        $centradas = [
+            'N°', 'APROBADOS', 'RUC', 'SECTOR ECONÓMICO', 'PAÍS NACIMIENTO',
+            'TIPO DE DOCUMENTO', 'NÚMERO DE DOCUMENTO', 'GÉNERO',
+            '¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'PERTENECE A GREMIO',
+            'TIENE PUNTOS DE VENTA', 'N° PUNTOS DE VENTA', 'PAGOS POS',
+            'YAPE / PLIN', 'VENTAS ONLINE', 'DELIVERY', 'FACTURA ELECTRÓNICA',
+            'PARTICIPÓ PRODUCE', 'PARTICIPÓ FERIA', 'FORMALIZADO TU EMPRESA',
+            'MARCA EN INDECOPI',
+        ];
+        $ultimaFilaC = max(2, $sheet->getHighestRow());
+        foreach ($centradas as $titulo) {
+            $idxC = array_search($titulo, $headers, true);
+            if ($idxC === false) {
+                continue;
+            }
+            $letraC = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idxC + 1);
+            $sheet->getStyle("{$letraC}2:{$letraC}{$ultimaFilaC}")
+                ->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         }
 
         return new StreamedResponse(function () use ($spreadsheet) {
@@ -2846,10 +2911,10 @@ class DownloadAttendanceController extends Controller
     private function feriaNombre($value): ?string
     {
         $nombres = [
-            1 => 'PerÃº Produce Lima',
-            2 => 'PerÃº Produce Lambayeque',
-            3 => 'PerÃº Produce Ucayali',
-            4 => 'PerÃº Produce Cusco',
+            1 => 'Perú Produce Lima',
+            2 => 'Perú Produce Lambayeque',
+            3 => 'Perú Produce Ucayali',
+            4 => 'Perú Produce Cusco',
         ];
 
         if (is_null($value) || $value === '') {
@@ -2869,7 +2934,7 @@ class DownloadAttendanceController extends Controller
             'facebook' => 'Facebook',
             'instagram' => 'Instagram',
             'tiktok' => 'TikTok',
-            'web' => 'PÃ¡gina web',
+            'web' => 'Página web',
         ];
 
         $map = [];
