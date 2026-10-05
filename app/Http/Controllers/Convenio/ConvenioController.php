@@ -14,6 +14,76 @@ use Illuminate\Support\Facades\Log;
 
 class ConvenioController extends Controller
 {
+    public function index(Request $request)
+    {
+        $perPage = min((int) $request->input('pageSize', 12), 100);
+        $search = trim((string) $request->input('search', ''));
+        $estado = trim((string) $request->input('estado', ''));
+
+        $query = Convenio::withCount([
+            'contactos',
+            'compromisos',
+            'adendas',
+            'archivos',
+            'compromisos as realizados_count' => fn ($q) => $q->where('realizado', 'SI'),
+        ])
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($w) use ($search) {
+                    $w->where('institucion', 'LIKE', "%{$search}%")
+                        ->orWhere('nombre_convenio', 'LIKE', "%{$search}%")
+                        ->orWhere('objeto', 'LIKE', "%{$search}%");
+                });
+            })
+            ->when($estado !== '', fn ($q) => $q->where('estado', $estado))
+            ->orderByDesc('id');
+
+        $data = $query->paginate($perPage);
+
+        $hoy = now()->startOfDay();
+        $data->getCollection()->transform(function ($c) use ($hoy) {
+            $venc = $c->vencimiento ? \Carbon\Carbon::parse($c->vencimiento)->startOfDay() : null;
+
+            return [
+                'id' => $c->id,
+                'institucion' => $c->institucion,
+                'nombre_convenio' => $c->nombre_convenio,
+                'objeto' => $c->objeto,
+                'fecha_emision' => $c->fecha_emision?->format('Y-m-d'),
+                'inicio_vigencia' => $c->inicio_vigencia?->format('Y-m-d'),
+                'vencimiento' => $c->vencimiento?->format('Y-m-d'),
+                'tipo_renovacion' => $c->tipo_renovacion,
+                'plazo_renovacion_anios' => $c->plazo_renovacion_anios,
+                'estado' => $c->estado,
+                'dias_restantes' => $venc ? $hoy->diffInDays($venc, false) : null,
+                'contactos_count' => $c->contactos_count,
+                'compromisos_count' => $c->compromisos_count,
+                'archivos_count' => $c->archivos_count,
+                'realizados_count' => $c->realizados_count,
+                'avance_pct' => $c->compromisos_count > 0
+                    ? (int) round($c->realizados_count * 100 / $c->compromisos_count)
+                    : 0,
+                'adendas_count' => $c->adendas_count,
+                'created_at' => $c->created_at?->format('Y-m-d H:i'),
+            ];
+        });
+
+        $resumen = Convenio::selectRaw('estado, COUNT(*) as total')
+            ->groupBy('estado')
+            ->pluck('total', 'estado');
+
+        return response()->json([
+            'status' => 200,
+            'data' => $data,
+            'resumen' => [
+                'total' => (int) Convenio::count(),
+                'vigente' => (int) ($resumen['VIGENTE'] ?? 0),
+                'por_vencer' => (int) ($resumen['POR VENCER'] ?? 0),
+                'vencido' => (int) ($resumen['VENCIDO'] ?? 0),
+                'resuelto' => (int) ($resumen['RESUELTO'] ?? 0),
+            ],
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate($this->reglas());
@@ -136,6 +206,9 @@ class ConvenioController extends Controller
             'paraResolucion' => 'nullable|string',
             'responsableProduce' => 'nullable|integer|exists:users,id',
             'responsableContraparte' => 'nullable|string|max:255',
+            'responsableContraparteCargo' => 'nullable|string|max:255',
+            'responsableContraparteCorreo' => 'nullable|email|max:255',
+            'responsableContraparteCelular' => 'nullable|string|max:20',
             'avances' => 'nullable|string',
             'observaciones' => 'nullable|string',
         ];
@@ -218,6 +291,9 @@ class ConvenioController extends Controller
             || trim((string) $request->input('plazoReportes', '')) !== ''
             || trim((string) $request->input('paraResolucion', '')) !== ''
             || trim((string) $request->input('responsableContraparte', '')) !== ''
+            || trim((string) $request->input('responsableContraparteCargo', '')) !== ''
+            || trim((string) $request->input('responsableContraparteCorreo', '')) !== ''
+            || trim((string) $request->input('responsableContraparteCelular', '')) !== ''
             || trim((string) $request->input('avances', '')) !== ''
             || trim((string) $request->input('observaciones', '')) !== ''
             || ! empty($request->input('responsableProduce'));
@@ -235,6 +311,9 @@ class ConvenioController extends Controller
                     'para_resolucion' => $request->input('paraResolucion'),
                     'responsable_produce' => $responsableProduce !== '' ? $responsableProduce : null,
                     'responsable_contraparte' => $request->input('responsableContraparte'),
+                    'responsable_contraparte_cargo' => $request->input('responsableContraparteCargo'),
+                    'responsable_contraparte_correo' => $request->input('responsableContraparteCorreo'),
+                    'responsable_contraparte_celular' => $request->input('responsableContraparteCelular'),
                     'avances' => $request->input('avances'),
                     'observaciones' => $request->input('observaciones'),
                 ]

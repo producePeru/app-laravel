@@ -4,6 +4,7 @@ use App\Http\Controllers\Download\ActividadesUgoController;
 use App\Http\Controllers\Download\CyberWowCarpetaLiderController;
 use App\Http\Controllers\Download\CyberWowParticipantesController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
+use App\Http\Controllers\Download\DownloadConvenioController;
 use App\Http\Controllers\Download\DownloadComprasPeruController;
 use App\Http\Controllers\Download\DownloadCyberWowMarcaController;
 use App\Http\Controllers\Download\DownloadExportDiagnosticMP;
@@ -68,6 +69,12 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
     Route::POST('export-inscritos-ferias/{slug}', 'exportInscritosFeriaPorSlug');
 
     Route::POST('export-inscritos-certificados-pp093', 'exportarInscritosParaCertificados');
+
+});
+
+Route::controller(DownloadConvenioController::class)->group(function () {
+
+    Route::post('reporte-convenio/{id}', 'exportReporte');
 
 });
 

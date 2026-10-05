@@ -23,8 +23,10 @@ class ConvenioContacto extends Model
     public const TIPOS = [
         'repProduce',
         'repContraparte',
+        'repContraparte2',
         'coordProduce',
         'coordContraparte',
+        'coordContraparte2',
     ];
 
     // ─── RELACIONES ───────────────────────────────────────────────

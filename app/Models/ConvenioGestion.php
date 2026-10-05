@@ -22,6 +22,9 @@ class ConvenioGestion extends Model
         'para_resolucion',
         'responsable_produce',
         'responsable_contraparte',
+        'responsable_contraparte_cargo',
+        'responsable_contraparte_correo',
+        'responsable_contraparte_celular',
         'avances',
         'observaciones',
     ];

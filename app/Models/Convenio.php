@@ -53,4 +53,9 @@ class Convenio extends Model
     {
         return $this->hasOne(ConvenioGestion::class, 'convenio_id');
     }
+
+    public function archivos(): HasMany
+    {
+        return $this->hasMany(ConvenioArchivo::class, 'convenio_id')->orderBy('id');
+    }
 }
