@@ -10,6 +10,8 @@
 .htaccessx
 .david.pug
 
+/database/migrations/
+
 /public/storage/images
 /public/exports
 /public/storage/images/cyberwow
