@@ -205,6 +205,10 @@ class ActividadPnteController extends Controller
         $validated['mes'] = (int) $fechaMinima->format('n');
         $validated['cantidad_dias'] = count($validated['fechas']);
 
+        // Cronograma previo para sincronizar Google Calendar después de guardar
+        $horarioAnterior = is_array($actividad->horario) ? $actividad->horario : [];
+        $sincronizarGoogle = array_key_exists('horario', $validated);
+
         try {
             DB::transaction(function () use ($actividad, $validated) {
                 $validated['actualizado_por_id'] = Auth::id();
@@ -218,6 +222,28 @@ class ActividadPnteController extends Controller
 
                 $actividad->update($validated);
             });
+
+            // El drawer envía el cronograma completo: sesiones quitadas se eliminan
+            // de Google, las existentes se actualizan (patch) y las nuevas se crean.
+            if ($sincronizarGoogle) {
+                try {
+                    $actividad->load('representante');
+                    $resultado = (new GoogleMeetCalendarService)->sincronizarEventosParaActividad(
+                        $actividad,
+                        $horarioAnterior,
+                        is_array($validated['horario']) ? $validated['horario'] : [],
+                        $validated['tema'] ?? $actividad->tema
+                    );
+
+                    $actividad->horario = $resultado['horarioActualizado'];
+                    if (empty($actividad->link) && ! empty($resultado['meetLink'])) {
+                        $actividad->link = $resultado['meetLink'];
+                    }
+                    $actividad->save();
+                } catch (Throwable $eCalendar) {
+                    Log::error('Error al sincronizar en Google Calendar: '.$eCalendar->getMessage());
+                }
+            }
 
             return response()->json([
                 'status' => 200,
