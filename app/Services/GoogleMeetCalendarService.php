@@ -11,6 +11,10 @@ use Google\Service\Calendar\ConferenceSolutionKey;
 use Google\Service\Calendar\CreateConferenceRequest;
 use Google\Service\Calendar\Event as GoogleEvent;
 use Google\Service\Calendar\EventDateTime;
+use Google\Service\Meet as GoogleMeetApi;
+use Google\Service\Meet\ModerationRestrictions as MeetModerationRestrictions;
+use Google\Service\Meet\Space as MeetSpace;
+use Google\Service\Meet\SpaceConfig as MeetSpaceConfig;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -18,6 +22,7 @@ class GoogleMeetCalendarService
 {
   protected GoogleClient $client;
   protected GoogleCalendarApi $service;
+  protected ?GoogleMeetApi $meet = null;
   protected string $calendarId;
   protected string $timezone;
 
@@ -45,6 +50,78 @@ class GoogleMeetCalendarService
     $this->service = new GoogleCalendarApi($this->client);
   }
 
+  /**
+   * Cliente de la API de Meet (controles del anfitrión).
+   * Requiere que el refresh token tenga el scope meetings.space.settings
+   * (si devuelve 403, el dueño de la cuenta debe re-autorizar con ese scope).
+   */
+  protected function meet(): GoogleMeetApi
+  {
+    if (! $this->meet) {
+      $client = new GoogleClient();
+      $client->setClientId(config('services.google.client_id'));
+      $client->setClientSecret(config('services.google.client_secret'));
+      $client->setRedirectUri(config('services.google.redirect_uri'));
+      $client->setAccessType('offline');
+      $client->addScope(GoogleCalendarApi::CALENDAR_EVENTS);
+      $client->addScope(GoogleMeetApi::MEETINGS_SPACE_SETTINGS);
+      $client->addScope(GoogleMeetApi::MEETINGS_SPACE_READONLY);
+
+      $refreshToken = config('services.google.refresh_token');
+      if (! $refreshToken) {
+        throw new \RuntimeException('Falta GOOGLE_OAUTH_REFRESH_TOKEN en .env.');
+      }
+
+      $client->fetchAccessTokenWithRefreshToken($refreshToken);
+      $this->meet = new GoogleMeetApi($client);
+    }
+
+    return $this->meet;
+  }
+
+  /**
+   * Deja habilitados los controles del anfitrión en la sala Meet:
+   * - Administración del anfitrión: activada
+   * - Compartir pantalla: permitido a colaboradores
+   * - Enviar reacciones: permitido a colaboradores
+   * - Mensajes de participantes: permitidos
+   * - Tipo de acceso: Abierta
+   * - Seguimiento de asistencia: genera informe por correo
+   *
+   * No tienen equivalente en la API y quedan con su valor por defecto:
+   * "Chat continuo" y "El anfitrión debe unirse antes que los demás".
+   */
+  public function aplicarControlesAnfitrion(?string $meetLink): bool
+  {
+    if (! $meetLink || ! preg_match('~meet\.google\.com/([a-z0-9\-]+)~i', $meetLink, $m)) {
+      return false;
+    }
+
+    try {
+      $config = new MeetSpaceConfig();
+      $config->setAccessType('OPEN');
+      $config->setModeration('ON');
+      $config->setModerationRestrictions(new MeetModerationRestrictions([
+        'chatRestriction'     => 'NO_RESTRICTION',
+        'presentRestriction'  => 'NO_RESTRICTION',
+        'reactionRestriction' => 'NO_RESTRICTION',
+      ]));
+      $config->setAttendanceReportGenerationType('GENERATE_REPORT');
+
+      $space = new MeetSpace();
+      $space->setConfig($config);
+
+      $this->meet()->spaces->patch('spaces/' . $m[1], $space, [
+        'updateMask' => 'config.accessType,config.moderation,config.moderationRestrictions,config.attendanceReportGenerationType',
+      ]);
+
+      return true;
+    } catch (Throwable $e) {
+      Log::error("GoogleCalendarService: no se pudo aplicar controles de anfitrión a {$meetLink}: " . $e->getMessage());
+      return false;
+    }
+  }
+
   protected function obtenerNombreComponente(?int $componenteId): string
   {
     $componentes = [
@@ -65,6 +142,7 @@ class GoogleMeetCalendarService
 
   /**
    * Crea eventos en Google Calendar y mapea los IDs generados dentro del array de horario.
+   * Cada sesión obtiene su PROPIA sala de Meet (guardada en meetLink del item).
    *
    * @return array{meetLink: string|null, horarioActualizado: array}
    */
@@ -81,10 +159,9 @@ class GoogleMeetCalendarService
       ?? $actividad->representante->nombre
       ?? 'Por asignar';
 
-    $meetLink             = null;
-    $conferenceDataCreada = null;
-    $eventosInsertados    = [];
-    $horarioActualizado   = $horario; // Copia para actualizar los IDs
+    $meetLink           = null;
+    $eventosInsertados  = [];
+    $horarioActualizado = array_values($horario); // Copia para actualizar los IDs
 
     foreach (array_values($horario) as $index => $item) {
       $fecha      = $item['fecha'];
@@ -109,50 +186,46 @@ class GoogleMeetCalendarService
         ]),
       ]);
 
-      $params = [];
-
-      if ($index === 0) {
-        $event->setConferenceData(new ConferenceData([
-          'createRequest' => new CreateConferenceRequest([
-            'requestId'             => 'meet-' . $actividad->id . '-' . uniqid(),
-            'conferenceSolutionKey' => new ConferenceSolutionKey([
-              'type' => 'hangoutsMeet',
-            ]),
+      // Cada sesión tiene su PROPIA sala de Meet (una por fecha+horario)
+      $event->setConferenceData(new ConferenceData([
+        'createRequest' => new CreateConferenceRequest([
+          'requestId'             => 'meet-' . $actividad->id . '-' . $index . '-' . uniqid(),
+          'conferenceSolutionKey' => new ConferenceSolutionKey([
+            'type' => 'hangoutsMeet',
           ]),
-        ]));
-        $params['conferenceDataVersion'] = 1;
-      } elseif ($conferenceDataCreada) {
-        $event->setConferenceData($conferenceDataCreada);
-        $params['conferenceDataVersion'] = 1;
-      }
+        ]),
+      ]));
+      $params = ['conferenceDataVersion' => 1];
 
       try {
         $eventoCreado = $this->service->events->insert($this->calendarId, $event, $params);
         $eventosInsertados[] = $eventoCreado;
 
         // REEMPLAZAMOS EL ID TEMPORAL POR EL ID OFICIAL DE GOOGLE CALENDAR
+        // y guardamos el link de SU propia sala de Meet en la sesión
         $horarioActualizado[$index]['id'] = $eventoCreado->getId();
+        $horarioActualizado[$index]['meetLink'] = $eventoCreado->getHangoutLink();
+        $this->aplicarControlesAnfitrion($eventoCreado->getHangoutLink());
 
         if ($index === 0) {
-          $conferenceDataCreada = $eventoCreado->getConferenceData();
-          $meetLink             = $eventoCreado->getHangoutLink();
+          $meetLink = $eventoCreado->getHangoutLink();
         }
       } catch (Throwable $e) {
         Log::error("GoogleCalendarService: error creando evento (actividad {$actividad->id}, fecha {$fecha}): " . $e->getMessage());
       }
     }
 
-    // Si tenemos link de Meet, actualizamos la descripción de los eventos creados
-    if ($meetLink) {
-      $descripcionCompleta = "TEMA:\n{$temaTexto}\n\nEXPOSITOR:\n{$expositorNombre}\n\nENLACE A LA SALA MEET:\n{$meetLink}";
-
-      foreach ($eventosInsertados as $evento) {
-        try {
-          $evento->setDescription($descripcionCompleta);
-          $this->service->events->patch($this->calendarId, $evento->getId(), $evento);
-        } catch (Throwable $eUpdate) {
-          Log::error("GoogleCalendarService: error actualizando descripción del evento {$evento->getId()}: " . $eUpdate->getMessage());
-        }
+    // Cada evento lleva en su descripción el link de SU propia sala de Meet
+    foreach ($eventosInsertados as $evento) {
+      $linkEvento = $evento->getHangoutLink();
+      if (! $linkEvento) {
+        continue;
+      }
+      try {
+        $evento->setDescription("TEMA:\n{$temaTexto}\n\nEXPOSITOR:\n{$expositorNombre}\n\nENLACE A LA SALA MEET:\n{$linkEvento}");
+        $this->service->events->patch($this->calendarId, $evento->getId(), $evento);
+      } catch (Throwable $eUpdate) {
+        Log::error("GoogleCalendarService: Error actualizando descripción del evento {$evento->getId()}: " . $eUpdate->getMessage());
       }
     }
 
@@ -245,19 +318,17 @@ class GoogleMeetCalendarService
   }
 
   /**
-   * Inserta una sesión nueva en Google Calendar (reutiliza el Meet existente).
+   * Inserta una sesión nueva en Google Calendar con su PROPIA sala de Meet.
    *
-   * @return string|null ID de Google del evento creado
+   * @return array{id: string|null, meetLink: string|null}
    */
   protected function insertarSesion(
     ActividadPnte $actividad,
     array $sesion,
-    ?string $tema,
-    ?string $meetLink,
-    bool $crearMeet = false
-  ): ?string {
+    ?string $tema
+  ): array {
     try {
-      [$titulo, $descripcion, $inicio, $fin] = $this->datosSesion($actividad, $sesion, $tema, $meetLink);
+      [$titulo, $descripcion, $inicio, $fin] = $this->datosSesion($actividad, $sesion, $tema, null);
 
       $event = new GoogleEvent([
         'summary'     => $titulo,
@@ -272,40 +343,33 @@ class GoogleMeetCalendarService
         ]),
       ]);
 
-      $params = [];
-      if ($crearMeet) {
-        $event->setConferenceData(new ConferenceData([
-          'createRequest' => new CreateConferenceRequest([
-            'requestId'             => 'meet-' . $actividad->id . '-' . uniqid(),
-            'conferenceSolutionKey' => new ConferenceSolutionKey([
-              'type' => 'hangoutsMeet',
-            ]),
+      // Sala de Meet propia para esta fecha+horario
+      $event->setConferenceData(new ConferenceData([
+        'createRequest' => new CreateConferenceRequest([
+          'requestId'             => 'meet-' . $actividad->id . '-' . uniqid(),
+          'conferenceSolutionKey' => new ConferenceSolutionKey([
+            'type' => 'hangoutsMeet',
           ]),
-        ]));
-        $params['conferenceDataVersion'] = 1;
-      }
+        ]),
+      ]));
 
-      $creado = $this->service->events->insert($this->calendarId, $event, $params);
+      $creado = $this->service->events->insert($this->calendarId, $event, ['conferenceDataVersion' => 1]);
+      $link = $creado->getHangoutLink();
+      $this->aplicarControlesAnfitrion($link);
 
-      if ($crearMeet && ($link = $creado->getHangoutLink())) {
+      if ($link) {
         try {
           $creado->setDescription($descripcion . "\n\nENLACE A LA SALA MEET:\n{$link}");
           $this->service->events->patch($this->calendarId, $creado->getId(), $creado);
         } catch (Throwable $eDesc) {
           Log::error("GoogleCalendarService: Error actualizando descripción del evento {$creado->getId()}: " . $eDesc->getMessage());
         }
-        // Refresca el link por si el patch lo modificó
-        try {
-          $creado = $this->service->events->get($this->calendarId, $creado->getId());
-        } catch (Throwable $eGet) {
-          Log::error("GoogleCalendarService: Error releyendo evento {$creado->getId()}: " . $eGet->getMessage());
-        }
       }
 
-      return $creado->getId();
+      return ['id' => $creado->getId(), 'meetLink' => $link];
     } catch (Throwable $e) {
       Log::error("GoogleCalendarService: Error creando sesión (actividad {$actividad->id}): " . $e->getMessage());
-      return null;
+      return ['id' => null, 'meetLink' => null];
     }
   }
 
@@ -313,7 +377,7 @@ class GoogleMeetCalendarService
    * Sincroniza Google Calendar con el cronograma editado:
    * - sesiones quitadas del drawer → se eliminan de Google,
    * - sesiones existentes (con ID de Google) → se actualizan (patch),
-   * - sesiones nuevas (ID temporal) → se crean reutilizando el Meet.
+   * - sesiones nuevas (ID temporal) → se crean con su PROPIA sala de Meet.
    *
    * @return array{meetLink: string|null, horarioActualizado: array}
    */
@@ -347,28 +411,24 @@ class GoogleMeetCalendarService
       }
     }
 
-    // 2. Existentes → patch, nuevas → insert (reutilizando el Meet)
+    // 2. Existentes → patch (con el link de SU sesión), nuevas → insert con Meet propio
     $meetLink = $actividad->link;
     $horarioActualizado = $horarioNuevo;
 
     foreach ($horarioActualizado as $index => &$item) {
       $gid = (string) ($item['id'] ?? '');
       if ($gid !== '' && in_array($gid, $idsAnteriores, true) && $this->esIdGoogle($gid)) {
-        $this->actualizarEvento($gid, $actividad, $item, $tema, $meetLink);
+        $this->actualizarEvento($gid, $actividad, $item, $tema, $item['meetLink'] ?? $meetLink);
         continue;
       }
 
-      $nuevoId = $this->insertarSesion($actividad, $item, $tema, $meetLink, $crearMeet = empty($meetLink));
-      if ($nuevoId) {
-        $item['id'] = $nuevoId;
+      $creado = $this->insertarSesion($actividad, $item, $tema);
+      if (! empty($creado['id'])) {
+        $item['id'] = $creado['id'];
+        $item['meetLink'] = $creado['meetLink'];
         if (empty($meetLink)) {
-          // Si no había Meet, el primero creado lo genera
-          try {
-            $ev = $this->service->events->get($this->calendarId, $nuevoId);
-            $meetLink = $ev->getHangoutLink() ?: $meetLink;
-          } catch (Throwable $eGet) {
-            Log::error("GoogleCalendarService: Error releyendo evento {$nuevoId}: " . $eGet->getMessage());
-          }
+          // meetLink global (compatibilidad): el de la primera sesión con sala
+          $meetLink = $creado['meetLink'];
         }
       }
     }
