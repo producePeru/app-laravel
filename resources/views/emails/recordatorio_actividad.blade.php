@@ -40,12 +40,12 @@
                     <span class="info-label">⏰ Horario:</span> {{ $actividad['horario_inicio'] }} - {{ $actividad['horario_fin'] }}<br>
                     <span class="info-label">🏢 Organiza:</span> {{ $actividad['entidad_organizadora'] }}<br><br>
 
-                    {{-- @if(!empty($actividad['link_meet']))
+                    @if(!empty($actividad['link_meet']))
                         <a href="{{ $actividad['link_meet'] }}" target="_blank" class="btn-meet">
                             💻 UNIRSE A LA SESIÓN EN VIVO
                         </a>
                         <br>
-                    @endif --}}
+                    @endif
 
                     @if(!empty($actividad['link_test']))
                         <a href="{{ $actividad['link_test'] }}" target="_blank" class="btn-test">

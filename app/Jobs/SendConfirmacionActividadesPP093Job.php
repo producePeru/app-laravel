@@ -60,8 +60,14 @@ class SendConfirmacionActividadesPP093Job implements ShouldQueue
             'entidad_organizadora' => $actividadBase->entidad_organizadora ?? 'Plataforma PNTE',
             'lugar'                => $actividadBase->lugar ?? 'Virtual',
 
-            // EL LINK DE MEET SE MANTIENE EXACTAMENTE IGUAL PARA AMBOS CORREOS
-            'link_meet'            => $actividadBase->link,
+            // Cada sesión tiene su PROPIA sala Meet (horario[].meetLink):
+            // se resuelve por fecha + horario inscrito, con fallback al link global.
+            'link_meet'            => self::resolverMeetLinkPorSesion(
+                $actividadBase,
+                $act['fecha_seleccionada'] ?? null,
+                $act['horario_inicio'] ?? null,
+                $act['horario_fin'] ?? null
+            ),
 
             // Enlace hacia la evaluación / test de entrada
             'link_test' => 'https://inscripcion.soporte-pnte.com/pp093-test-entrada/'
@@ -121,5 +127,61 @@ class SendConfirmacionActividadesPP093Job implements ShouldQueue
       Log::error("Error al ejecutar SendConfirmacionActividadesPP093Job para {$correoDestino}: " . $e->getMessage());
       throw $e;
     }
+  }
+
+  /**
+   * Resuelve la sala Meet de la sesión (fecha + horario) con fallback al link global.
+   */
+  private static function resolverMeetLinkPorSesion(
+    ActividadPnte $actividad,
+    $fechaSeleccionada,
+    $horaInicio = null,
+    $horaFin = null
+  ): ?string {
+    $normalizarHora = fn ($h) => $h ? substr(trim((string) $h), 0, 5) : null;
+
+    try {
+      $fecha = Carbon::parse($fechaSeleccionada)->format('Y-m-d');
+    } catch (\Exception $e) {
+      $fecha = is_string($fechaSeleccionada) ? substr($fechaSeleccionada, 0, 10) : null;
+    }
+
+    $inicio = $normalizarHora($horaInicio);
+    $fin = $normalizarHora($horaFin);
+    $horario = is_array($actividad->horario) ? $actividad->horario : [];
+
+    foreach ($horario as $sesion) {
+      if (empty($sesion['meetLink'])) {
+        continue;
+      }
+      $f = isset($sesion['fecha']) ? substr((string) $sesion['fecha'], 0, 10) : null;
+      if ($f === $fecha
+        && $normalizarHora($sesion['horaInicio'] ?? null) === $inicio
+        && $normalizarHora($sesion['horaFin'] ?? null) === $fin) {
+        return $sesion['meetLink'];
+      }
+    }
+
+    foreach ($horario as $sesion) {
+      if (empty($sesion['meetLink'])) {
+        continue;
+      }
+      $f = isset($sesion['fecha']) ? substr((string) $sesion['fecha'], 0, 10) : null;
+      if ($f === $fecha && $normalizarHora($sesion['horaInicio'] ?? null) === $inicio) {
+        return $sesion['meetLink'];
+      }
+    }
+
+    foreach ($horario as $sesion) {
+      if (empty($sesion['meetLink'])) {
+        continue;
+      }
+      $f = isset($sesion['fecha']) ? substr((string) $sesion['fecha'], 0, 10) : null;
+      if ($f === $fecha) {
+        return $sesion['meetLink'];
+      }
+    }
+
+    return $actividad->link;
   }
 }

@@ -1816,7 +1816,15 @@ class ActividadPnteController extends Controller
                     'tema' => $actividad->tema,
                     'entidad_organizadora' => $actividad->entidad_organizadora ?? 'Plataforma PNTE',
                     'lugar' => $actividad->lugar ?? 'Virtual',
-                    'link_meet' => $actividad->link,
+                    // Cada sesión del cronograma tiene su PROPIA sala Meet
+                    // (ActividadPnte.horario[].meetLink). Se resuelve por
+                    // fecha + horario del inscrito, con fallback al link global.
+                    'link_meet' => $this->resolverMeetLinkPorSesion(
+                        $actividad,
+                        $inscrito->fecha_seleccionada,
+                        $inscrito->horario_inicio,
+                        $inscrito->horario_fin
+                    ),
                     'link_test' => 'https://inscripcion.soporte-pnte.com/pp093-test-entrada/'
                         .$actividad->slug
                         .'?'
@@ -1859,6 +1867,80 @@ class ActividadPnteController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Resuelve la sala Meet correcta para un inscrito.
+     *
+     * Cada sesión del cronograma (ActividadPnte.horario[]) tiene su PROPIO
+     * meetLink generado en Google Calendar. El campo ActividadPnte.link es
+     * solo el de la primera sesión (compatibilidad) y NO debe usarse
+     * directamente cuando hay varias fechas/horarios.
+     *
+     * Prioridad de coincidencia:
+     *  1. fecha + horaInicio + horaFin
+     *  2. fecha + horaInicio
+     *  3. solo fecha (primera sesión de ese día con sala)
+     *  4. fallback: $actividad->link
+     */
+    private function resolverMeetLinkPorSesion(
+        ActividadPnte $actividad,
+        $fechaSeleccionada,
+        $horaInicio = null,
+        $horaFin = null
+    ): ?string {
+        $normalizarHora = fn ($h) => $h ? substr(trim((string) $h), 0, 5) : null;
+
+        try {
+            $fecha = Carbon::parse($fechaSeleccionada)->format('Y-m-d');
+        } catch (Throwable $e) {
+            $fecha = is_string($fechaSeleccionada) ? substr($fechaSeleccionada, 0, 10) : null;
+        }
+
+        $inicio = $normalizarHora($horaInicio);
+        $fin = $normalizarHora($horaFin);
+
+        $horario = is_array($actividad->horario) ? $actividad->horario : [];
+
+        // 1. Coincidencia exacta fecha + inicio + fin
+        foreach ($horario as $sesion) {
+            if (empty($sesion['meetLink'])) {
+                continue;
+            }
+            $f = isset($sesion['fecha']) ? substr((string) $sesion['fecha'], 0, 10) : null;
+            if ($f !== $fecha) {
+                continue;
+            }
+            if ($normalizarHora($sesion['horaInicio'] ?? null) === $inicio
+                && $normalizarHora($sesion['horaFin'] ?? null) === $fin) {
+                return $sesion['meetLink'];
+            }
+        }
+
+        // 2. Coincidencia fecha + hora de inicio
+        foreach ($horario as $sesion) {
+            if (empty($sesion['meetLink'])) {
+                continue;
+            }
+            $f = isset($sesion['fecha']) ? substr((string) $sesion['fecha'], 0, 10) : null;
+            if ($f === $fecha && $normalizarHora($sesion['horaInicio'] ?? null) === $inicio) {
+                return $sesion['meetLink'];
+            }
+        }
+
+        // 3. Primera sesión de ese día con sala
+        foreach ($horario as $sesion) {
+            if (empty($sesion['meetLink'])) {
+                continue;
+            }
+            $f = isset($sesion['fecha']) ? substr((string) $sesion['fecha'], 0, 10) : null;
+            if ($f === $fecha) {
+                return $sesion['meetLink'];
+            }
+        }
+
+        // 4. Fallback global (primera sesión, compatibilidad)
+        return $actividad->link;
     }
 
     // IMPORTAR PARA LAS FERIAS EN FORMATO JSON

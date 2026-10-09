@@ -16,7 +16,7 @@
         .info-grid { font-size: 14px; line-height: 1.6; }
         .info-label { font-weight: bold; color: #475569; }
         .btn-meet { display: inline-block; background-color: #16a34a; color: #ffffff !important; text-decoration: none; padding: 12px 24px; font-weight: bold; border-radius: 5px; margin-top: 15px; font-size: 15px; }
-        .btn-test { display: inline-block; background-color: #00a6db; color: #ffffff !important; text-decoration: none; padding: 10px 18px; font-weight: bold; border-radius: 5px; margin-top: 10px; font-size: 16px; }
+        .btn-test { display: inline-block; background-color: #00a6db; color: #ffffff !important; text-decoration: none;     padding: 14px 50px; font-weight: bold; border-radius: 5px; margin-top: 10px; font-size: 16px; }
         .footer { background-color: #f1f5f9; text-align: center; padding: 15px; font-size: 12px; color: #64748b; }
     </style>
 </head>
@@ -40,9 +40,11 @@
                     <span class="info-label">⏰ Horario:</span> {{ $actividad['horario_inicio'] }} - {{ $actividad['horario_fin'] }}<br>
                     <span class="info-label">🏢 Organiza:</span> {{ $actividad['entidad_organizadora'] }}<br><br>
 
-                        <a href="{{ $actividad['link_test'] }}" target="_blank" class="btn-test">
-                            📝 Confirmar Asistencia
-                        </a>
+                
+                    <a href="{{ $actividad['link_test'] }}" target="_blank" class="btn-test">
+                        📝 Confirmar Asistencia
+                    </a>
+                   
                 
                 </div>
             </div>
