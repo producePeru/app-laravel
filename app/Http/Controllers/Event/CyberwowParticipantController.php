@@ -75,6 +75,8 @@ class CyberwowParticipantController extends Controller
                 'question_5' => $request->question_5,
                 'question_6' => $request->question_6,
                 'question_7' => $request->question_7,
+                'tiene_tienda' => $request->tiene_tienda,
+                'link_tienda' => $request->tiene_tienda === 's' ? $request->link_tienda : null,
                 'howKnowEvent_id' => $request->howKnowEvent_id,
                 'autorization' => $request->autorization ?? 0,
             ]);

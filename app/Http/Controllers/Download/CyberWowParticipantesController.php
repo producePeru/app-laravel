@@ -95,7 +95,10 @@ class CyberWowParticipantesController extends Controller
                     $item->question_6,
                     $item->question_7,
 
-                    $item->medioEntero->name
+                    $item->medioEntero->name,
+
+                    $item->tiene_tienda === 's' ? 'Sí' : ($item->tiene_tienda === 'n' ? 'No' : '-'),
+                    $item->link_tienda ?? '-',
                 ];
             });
 
@@ -104,6 +107,10 @@ class CyberWowParticipantesController extends Controller
             $templatePath = storage_path('app/plantillas/cyberwow_template.xlsx');
             $spreadsheet = IOFactory::load($templatePath);
             $sheet = $spreadsheet->getActiveSheet();
+
+            // Cabeceras para las nuevas columnas (después de "¿Cómo se enteró del evento?")
+            $sheet->setCellValue('AL1', '¿TIENE TIENDA VIRTUAL?');
+            $sheet->setCellValue('AM1', 'LINK DE TIENDA VIRTUAL');
 
             $startRow = 2;
 

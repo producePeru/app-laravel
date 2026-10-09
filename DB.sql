@@ -273,3 +273,12 @@
 
 --     INDEX idx_convenios_archivos_convenio (convenio_id)
 -- );
+
+
+
+-- ALTER TABLE `cyberwowparticipants`
+-- ADD COLUMN `link_tienda` VARCHAR(255) NULL AFTER `disclaimer`;
+
+
+-- ALTER TABLE `cyberwowparticipants`
+-- ADD COLUMN `tiene_tienda` ENUM('s', 'n') NULL AFTER `disclaimer`;

@@ -55,17 +55,17 @@ class CyberwowParticipant extends Model
         'poso2',
         'paso3',
 
-        'disclaimer'
-    ];
+        'disclaimer',
 
+        'link_tienda',
+        'tiene_tienda',
+    ];
 
     protected $casts = [
         'socials' => 'array',      // convierte JSON a array automáticamente
         'autorization' => 'boolean',
         'birthday' => 'date',
     ];
-
-
 
     public function region()
     {
@@ -121,7 +121,6 @@ class CyberwowParticipant extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
 
     public function brands()
     {

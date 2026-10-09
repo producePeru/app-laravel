@@ -62,6 +62,9 @@ class StoreCyberwowParticipantRequest extends FormRequest
             'question_6' => 'required|string',
             'question_7' => 'required|string',
 
+            'tiene_tienda' => 'required|in:s,n',
+            'link_tienda' => 'required_if:tiene_tienda,s|nullable|url|max:255',
+
             'howKnowEvent_id' => 'required|exists:propagandamedia,id',
             'autorization' => 'required|boolean',
         ];
