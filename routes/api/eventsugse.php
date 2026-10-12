@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Event\CyberwowDisclainerController;
 use App\Http\Controllers\Event\CyberWowController;
 use App\Http\Controllers\Event\CyberwowParticipantController;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +55,14 @@ Route::controller(UgsePostulanteController::class)->group(function () {
 Route::controller(CyberwowParticipantController::class)->group(function () {
 
     Route::put('update-participant-data/{id}', 'updateParticipantData');
+});
+
+
+Route::controller(CyberwowDisclainerController::class)->group(function () {
+
+    Route::get('cyber-wow-disclaimer/{idFair}', 'show');
+
+    Route::post('cyber-wow-disclaimer', 'store');
 });
 
 

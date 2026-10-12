@@ -41,6 +41,8 @@ Route::controller(ForoController::class)->group(function () {
 
 Route::controller(DisclaimerController::class)->group(function () {
 
+    Route::get('disclaimer-cw/{slug}', 'getDisclaimerBySlug');
+
     Route::post('save-disclaimer-cw', 'saveDisclaimer');
 });
 

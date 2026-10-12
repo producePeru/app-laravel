@@ -282,3 +282,21 @@
 
 -- ALTER TABLE `cyberwowparticipants`
 -- ADD COLUMN `tiene_tienda` ENUM('s', 'n') NULL AFTER `disclaimer`;
+
+
+CREATE TABLE `cyberwow_disclainer` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `descripcion` TEXT NULL,
+    `id_fair` BIGINT UNSIGNED NOT NULL,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT `fk_cyberwow_disclainer_fair`
+        FOREIGN KEY (`id_fair`) REFERENCES `fairs`(`id`)
+        ON DELETE CASCADE,
+
+    CONSTRAINT `fk_cyberwow_disclainer_user`
+        FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+        ON DELETE CASCADE
+);
