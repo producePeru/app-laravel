@@ -87,39 +87,38 @@ class DownloadMPParticipantesController extends Controller
                 return [
                     $index + 1, // N°
                     $e->date ? Carbon::parse($e->date)->format('d/m/Y') : null, // FECHA CAPACITACIÓN
-                    $e->title, // TEMA CAPACITACIÓN
-                    $e->component == 1 ? 'GESTIÓN EMPRESARIAL' : 'HABILIDADES PERSONALES', // COMPONENTE DE CAPACITACIÓN
-                    $duracionHoras, // DURACIÓN DE LA CAPACITACION (HORAS) = hourEnd - hourStart
-                    $e->modality->name ?? null, // MODALIDAD
                     $e->capacitador->name ?? null, // NOMBRE CAPACITADOR
-                    $e->city->name ?? null, // REGION DE CAPACITACION (SOLO EN CAPACITACIÓN PRESENCIAL)
-                    $e?->district?->name ?? null, // DISTRITO CAPACITACION (SOLO EN CAPACITACIÓN PRESENCIAL)
-                    $e->place ?? null, // UBICACIÓN (LOCAL,SEDE)
-
                     $p->ruc ?? '-', // RUC
-                    $p->social_reason, // RAZÓN SOCIAL
-                    $p->comercialActivity->name ?? null, // ACTIVIDAD COMERCIAL
-                    $p->rubro->name ?? null, // RUBRO DE LA MYPE
-                    $p->economicSector->name ?? null, // SECTOR ECONÓMICO
                     $p->city->name ?? null, // REGIÓN (MYPE)
                     $p->province->name ?? null, // PROVINCIA (MYPE)
                     $p->dictrict->name ?? null, // DISTRITO (MYPE)
-                    $p->roleCompany->name ?? null, // VINCULACIÓN CON LA MYPE
                     $p->typeDocument->avr ?? null, // TIPO DE DOCUMENTO
                     $p->doc_number, // N DOCUMENTO
+                    $p->country->name ?? null, // PAÍS DE NACIMIENTO
+                    $p->date_of_birth ? Carbon::parse($p->date_of_birth)->format('d/m/Y') : null, // FECHA NACIMIENTO
                     $p->names, // NOMBRES
                     $p->last_name, // APELLIDO PATERNO
                     $p->middle_name, // APELLIDO MATERNO
-                    $p->date_of_birth ? Carbon::parse($p->date_of_birth)->format('d/m/Y') : null, // FECHA NACIMIENTO
-                    $p->country->name ?? null, // PAÍS DE NACIMIENTO
+                    $p->roleCompany->name ?? null, // VINCULACIÓN CON LA MYPE
+                    $p->civilStatus->name ?? null, // ESTADO CIVIL
+                    $p->num_soons, // NÚMERO DE HIJOS
                     $p->gender->name ?? null, // GÉNERO
                     $p->sick, // DISCAPACIDAD FÍSICA (SI/NO)
                     $p->degree->name ?? null, // NIVEL EDUCATIVO
-                    $p->civilStatus->name ?? null, // ESTADO CIVIL
-                    $p->num_soons, // NÚMERO DE HIJOS
                     $p->phone, // CELULAR
                     $p->email, // CORREO ELECTRÓNICO
-
+                    $p->comercialActivity->name ?? null, // ACTIVIDAD COMERCIAL
+                    $p->rubro->name ?? null, // RUBRO DE LA MYPE
+                    $p->economicSector->name ?? null, // SECTOR ECONÓMICO
+                    $p->social_reason, // RAZÓN SOCIAL
+                    $e->modality->name ?? null, // MODALIDAD
+                    $e->city->name ?? null, // REGION DE CAPACITACION (SOLO EN CAPACITACIÓN PRESENCIAL)
+                    $e->province->name ?? null, // PROVINCIA DE CAPACITACION (SOLO EN CAPACITACIÓN PRESENCIAL)
+                    $e?->district?->name ?? null, // DISTRITO CAPACITACION (SOLO EN CAPACITACIÓN PRESENCIAL)
+                    $e->place ?? null, // UBICACIÓN (LOCAL,SEDE)
+                    $duracionHoras, // DURACIÓN DE LA CAPACITACION (HORAS) = hourEnd - hourStart
+                    $e->component == 1 ? 'GESTIÓN EMPRESARIAL' : 'HABILIDADES PERSONALES', // COMPONENTE DE CAPACITACIÓN
+                    $e->title, // TEMA CAPACITACIÓN
                     $item->attendance ? '✔' : '✖', // ASISTENCIA (check o x)
                     $item->attendance && $item->updated_at ? Carbon::parse($item->updated_at)->format('d/m/Y H:i:s') : '', // FECHA Y HORA DE ASISTENCIA (updated_at de MPAttendance)
                 ];
