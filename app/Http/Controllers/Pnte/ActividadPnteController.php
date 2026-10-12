@@ -1338,7 +1338,7 @@ class ActividadPnteController extends Controller
             'tipo_actividad_id' => 'required|exists:tipo_actividad,id',
             'nombre_actividad_id' => 'required|exists:nombre_actividad,id',
 
-            'tema' => 'nullable|string|max:255',
+            'tema' => 'nullable|string',
 
             'region' => 'required|exists:cities,id',
             'provincia' => 'required|exists:provinces,id',
