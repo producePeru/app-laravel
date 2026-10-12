@@ -5,6 +5,7 @@ use App\Http\Controllers\Download\CyberWowCarpetaLiderController;
 use App\Http\Controllers\Download\CyberWowParticipantesController;
 use App\Http\Controllers\Download\DownloadAttendanceController;
 use App\Http\Controllers\Download\DownloadConvenioController;
+use App\Http\Controllers\Download\DownloadUgseConveniosController;
 use App\Http\Controllers\Download\DownloadComprasPeruController;
 use App\Http\Controllers\Download\DownloadCyberWowMarcaController;
 use App\Http\Controllers\Download\DownloadExportDiagnosticMP;
@@ -75,6 +76,12 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
 Route::controller(DownloadConvenioController::class)->group(function () {
 
     Route::post('reporte-convenio/{id}', 'exportReporte');
+
+});
+
+Route::controller(DownloadUgseConveniosController::class)->group(function () {
+
+    Route::post('export-convenios-ugse', 'exportExcel');
 
 });
 
