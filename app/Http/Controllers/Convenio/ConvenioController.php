@@ -27,6 +27,7 @@ class ConvenioController extends Controller
             'archivos',
             'compromisos as realizados_count' => fn ($q) => $q->where('realizado', 'SI'),
         ])
+            ->with(['gestion.responsableProduce'])
             ->when($search !== '', function ($q) use ($search) {
                 $q->where(function ($w) use ($search) {
                     $w->where('institucion', 'LIKE', "%{$search}%")
@@ -42,6 +43,7 @@ class ConvenioController extends Controller
         $hoy = now()->startOfDay();
         $data->getCollection()->transform(function ($c) use ($hoy) {
             $venc = $c->vencimiento ? \Carbon\Carbon::parse($c->vencimiento)->startOfDay() : null;
+            $resp = $c->gestion?->responsableProduce;
 
             return [
                 'id' => $c->id,
@@ -55,6 +57,9 @@ class ConvenioController extends Controller
                 'plazo_renovacion_anios' => $c->plazo_renovacion_anios,
                 'estado' => $c->estado,
                 'dias_restantes' => $venc ? $hoy->diffInDays($venc, false) : null,
+                'responsable_produce_nombre' => $resp
+                    ? trim("{$resp->lastname} {$resp->middlename} {$resp->name}")
+                    : null,
                 'contactos_count' => $c->contactos_count,
                 'compromisos_count' => $c->compromisos_count,
                 'archivos_count' => $c->archivos_count,
@@ -209,6 +214,14 @@ class ConvenioController extends Controller
             'responsableContraparteCargo' => 'nullable|string|max:255',
             'responsableContraparteCorreo' => 'nullable|email|max:255',
             'responsableContraparteCelular' => 'nullable|string|max:20',
+            'responsableContraparte2' => 'nullable|string|max:255',
+            'responsableContraparteCargo2' => 'nullable|string|max:255',
+            'responsableContraparteCorreo2' => 'nullable|email|max:255',
+            'responsableContraparteCelular2' => 'nullable|string|max:20',
+            'responsableContraparte3' => 'nullable|string|max:255',
+            'responsableContraparteCargo3' => 'nullable|string|max:255',
+            'responsableContraparteCorreo3' => 'nullable|email|max:255',
+            'responsableContraparteCelular3' => 'nullable|string|max:20',
             'avances' => 'nullable|string',
             'observaciones' => 'nullable|string',
         ];
@@ -294,6 +307,14 @@ class ConvenioController extends Controller
             || trim((string) $request->input('responsableContraparteCargo', '')) !== ''
             || trim((string) $request->input('responsableContraparteCorreo', '')) !== ''
             || trim((string) $request->input('responsableContraparteCelular', '')) !== ''
+            || trim((string) $request->input('responsableContraparte2', '')) !== ''
+            || trim((string) $request->input('responsableContraparteCargo2', '')) !== ''
+            || trim((string) $request->input('responsableContraparteCorreo2', '')) !== ''
+            || trim((string) $request->input('responsableContraparteCelular2', '')) !== ''
+            || trim((string) $request->input('responsableContraparte3', '')) !== ''
+            || trim((string) $request->input('responsableContraparteCargo3', '')) !== ''
+            || trim((string) $request->input('responsableContraparteCorreo3', '')) !== ''
+            || trim((string) $request->input('responsableContraparteCelular3', '')) !== ''
             || trim((string) $request->input('avances', '')) !== ''
             || trim((string) $request->input('observaciones', '')) !== ''
             || ! empty($request->input('responsableProduce'));
@@ -314,6 +335,14 @@ class ConvenioController extends Controller
                     'responsable_contraparte_cargo' => $request->input('responsableContraparteCargo'),
                     'responsable_contraparte_correo' => $request->input('responsableContraparteCorreo'),
                     'responsable_contraparte_celular' => $request->input('responsableContraparteCelular'),
+                    'responsable_contraparte2' => $request->input('responsableContraparte2'),
+                    'responsable_contraparte_cargo2' => $request->input('responsableContraparteCargo2'),
+                    'responsable_contraparte_correo2' => $request->input('responsableContraparteCorreo2'),
+                    'responsable_contraparte_celular2' => $request->input('responsableContraparteCelular2'),
+                    'responsable_contraparte3' => $request->input('responsableContraparte3'),
+                    'responsable_contraparte_cargo3' => $request->input('responsableContraparteCargo3'),
+                    'responsable_contraparte_correo3' => $request->input('responsableContraparteCorreo3'),
+                    'responsable_contraparte_celular3' => $request->input('responsableContraparteCelular3'),
                     'avances' => $request->input('avances'),
                     'observaciones' => $request->input('observaciones'),
                 ]

@@ -648,6 +648,7 @@ class ActividadPnteController extends Controller
                     'slug' => $item->slug,
                     'fecha_asistencia' => $item->fecha_asistencia ? true : false,
                     'asistire' => $item->asistire,
+                    'created_at' => $item->created_at?->format('Y-m-d H:i:s'),
                     'numero_dni' => $item->numero_dni,
 
                     // 🔥 DATOS EMPRESARIO
@@ -2216,6 +2217,7 @@ class ActividadPnteController extends Controller
                     'slug' => $item->slug,
                     'fecha_asistencia' => $item->fecha_asistencia ? true : false,
                     'asistire' => $item->asistire,
+                    'created_at' => $item->created_at?->format('Y-m-d H:i:s'),
                     'numero_dni' => $item->numero_dni,
 
                     // 🔥 DATOS EMPRESARIO

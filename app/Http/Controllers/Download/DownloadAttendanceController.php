@@ -2650,6 +2650,7 @@ class DownloadAttendanceController extends Controller
                 'MARCA EN INDECOPI',
                 'LOGROS DE LA EMPRESA',
                 'REPORTE TRIBUTARIO',
+                'FECHA Y HORA DE INSCRIPCIÓN',
             ]
         );
 
@@ -2781,6 +2782,8 @@ class DownloadAttendanceController extends Controller
 
                 $set($e?->archivosFerias?->sortByDesc('id')->first()?->archivo?->nombre_original);
 
+                $set($item->created_at?->format('d/m/Y h:i a'));
+
                 $row++;
             }
         });
@@ -2847,7 +2850,7 @@ class DownloadAttendanceController extends Controller
             'TIENE PUNTOS DE VENTA', 'N° PUNTOS DE VENTA', 'PAGOS POS',
             'YAPE / PLIN', 'VENTAS ONLINE', 'DELIVERY', 'FACTURA ELECTRÓNICA',
             'PARTICIPÓ PRODUCE', 'PARTICIPÓ FERIA', 'FORMALIZADO TU EMPRESA',
-            'MARCA EN INDECOPI',
+            'MARCA EN INDECOPI', 'FECHA Y HORA DE INSCRIPCIÓN',
         ];
         $ultimaFilaC = max(2, $sheet->getHighestRow());
         foreach ($centradas as $titulo) {

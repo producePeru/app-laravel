@@ -155,14 +155,22 @@ class DownloadUgseConveniosController extends Controller
             return '-';
         }
 
-        $datos = array_filter([
-            $gestion->responsable_contraparte,
-            $gestion->responsable_contraparte_cargo,
-            $gestion->responsable_contraparte_correo,
-            $gestion->responsable_contraparte_celular,
-        ]);
+        $bloques = [];
 
-        return $datos ? implode(' / ', $datos) : '-';
+        foreach (['', '2', '3'] as $sufijo) {
+            $datos = array_filter([
+                $gestion->{"responsable_contraparte{$sufijo}"},
+                $gestion->{"responsable_contraparte_cargo{$sufijo}"},
+                $gestion->{"responsable_contraparte_correo{$sufijo}"},
+                $gestion->{"responsable_contraparte_celular{$sufijo}"},
+            ]);
+
+            if ($datos) {
+                $bloques[] = implode(' / ', $datos);
+            }
+        }
+
+        return $bloques ? implode("\n", $bloques) : '-';
     }
 
     private function fecha($value): string
