@@ -2650,7 +2650,7 @@ class DownloadAttendanceController extends Controller
                 'MARCA EN INDECOPI',
                 'LOGROS DE LA EMPRESA',
                 'REPORTE TRIBUTARIO',
-                'FECHA Y HORA DE INSCRIPCIÓN',
+                // 'FECHA Y HORA DE INSCRIPCIÓN',
             ]
         );
 
@@ -2782,7 +2782,7 @@ class DownloadAttendanceController extends Controller
 
                 $set($e?->archivosFerias?->sortByDesc('id')->first()?->archivo?->nombre_original);
 
-                $set($item->created_at?->format('d/m/Y h:i a'));
+                // $set($item->created_at?->format('d/m/Y h:i a'));
 
                 $row++;
             }

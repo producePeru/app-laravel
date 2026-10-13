@@ -87,6 +87,9 @@ class ActividadPnteController extends Controller
 
         $validated['cantidad_dias'] = count($validated['fechas']);
 
+        // Al crear el evento, el formulario de registro queda prendido
+        $validated['prendido'] = 1;
+
         try {
 
             $actividad = DB::transaction(function () use ($validated) {
