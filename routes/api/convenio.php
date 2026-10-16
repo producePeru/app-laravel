@@ -35,6 +35,8 @@ Route::controller(ConvenioArchivoController::class)->group(function () {
 
     Route::post('{convenioId}/archivos', 'store');
 
+    Route::put('archivos/{id}', 'update');
+
     Route::delete('archivos/{id}', 'destroy');
 
 });

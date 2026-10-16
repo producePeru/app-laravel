@@ -102,6 +102,77 @@ class ConvenioArchivoController extends Controller
         }
     }
 
+    /**
+     * Renombra solo el nombre visual del documento.
+     * La extensión se preserva en el servidor para no romper
+     * el tipo de archivo, la previsualización ni la descarga.
+     * No se toca el archivo físico (ruta con uuid).
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nombre' => [
+                'required',
+                'string',
+                'min:1',
+                'max:150',
+                // Sin separadores de ruta ni caracteres problemáticos en Windows/URLs.
+                'regex:/^[^\/\\\\:*?"<>|]+$/',
+            ],
+        ], [
+            'nombre.regex' => 'El nombre no puede contener / \\ : * ? " < > |',
+        ]);
+
+        $archivo = ConvenioArchivo::find($id);
+
+        if (! $archivo) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Archivo no encontrado.',
+            ], 404);
+        }
+
+        // Extensión real: se toma del registro actual (o de la ruta física),
+        // nunca de lo que escriba el usuario.
+        $extension = strtolower(pathinfo((string) $archivo->nombre_original, PATHINFO_EXTENSION));
+        if (! $extension) {
+            $extension = strtolower(pathinfo((string) $archivo->ruta, PATHINFO_EXTENSION));
+        }
+
+        // El usuario manda solo la base: si igual manda "informe.pdf",
+        // se recorta la extensión para no duplicarla.
+        $base = trim((string) $request->input('nombre'));
+        $baseSinExt = $extension
+            ? preg_replace('/\.'.preg_quote($extension, '/').'$/i', '', $base)
+            : $base;
+        $baseSinExt = trim(preg_replace('/\s+/', ' ', (string) $baseSinExt));
+
+        if ($baseSinExt === '') {
+            return response()->json([
+                'status' => 422,
+                'message' => 'El nombre no puede quedar vacío.',
+            ], 422);
+        }
+
+        $archivo->nombre_original = $extension
+            ? $baseSinExt.'.'.$extension
+            : $baseSinExt;
+        $archivo->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Nombre actualizado.',
+            'data' => [
+                'id' => $archivo->id,
+                'nombre' => $archivo->nombre_original,
+                'url' => asset($archivo->ruta),
+                'mime' => $archivo->mime,
+                'tamano' => $archivo->tamano,
+                'created_at' => $archivo->created_at?->format('d/m/Y H:i'),
+            ],
+        ]);
+    }
+
     public function destroy($id)
     {
         $archivo = ConvenioArchivo::find($id);

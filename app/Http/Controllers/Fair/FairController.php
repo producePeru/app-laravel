@@ -264,22 +264,17 @@ class FairController extends Controller
             }
 
             /**
-             * INSCRIPCIONES CERRADAS (prendido = 0)
+             * CONTROL DE INSCRIPCIONES (columna `prendido` de actividades_pnte)
+             *  - prendido = 0 (o null) -> cerrado: si la fecha fin ya pasó
+             *    responde 404 Finalizado, si no 403 Cerradas (cierre anticipado).
+             *  - prendido = 1 + fecha vigente -> abierto.
+             *  - prendido = 1 + fecha vencida -> abierto SOLO si el registro
+             *    fue guardado después del vencimiento (reapertura manual:
+             *    toggle OFF->ON o cualquier guardado posterior); si no,
+             *    404 Finalizado (cierre automático por fecha).
+             *  - mode=ugger omite el vencimiento (vista previa admin).
              */
-            if ($actividad->prendido == 0) {
-
-                return response()->json([
-                    'data' => [
-                        'title' => '¡Inscripciones Cerradas!',
-                        'message' => 'Las inscripciones para este evento se encuentran cerradas en este momento.<br>
-                            No te preocupes, estamos preparando nuevas oportunidades para ti.<br>
-                            Mantente atento(a) a nuestros próximos talleres, capacitaciones y eventos<br>
-                            para seguir impulsando tu negocio.',
-                        'status' => 403,
-                        'prendido' => false,
-                    ],
-                ]);
-            }
+            $prendido = $actividad->prendido;
 
             // Fechas puede venir como array o JSON
             $fechas = is_array($actividad->fechas)
@@ -289,32 +284,74 @@ class FairController extends Controller
             // Tomar la fecha más reciente
             $fechaFin = collect($fechas)->max();
 
-            /**
-             * EVENTO FINALIZADO
-             * Se omite esta validación cuando mode=ugger
-             */
-            if (! empty($fechaFin) && ! $ignoreExpiration) {
-
-                $fechaEvento = Carbon::parse($fechaFin)->endOfDay();
-
-                if ($today->gt($fechaEvento)) {
-
-                    return response()->json([
-                        'data' => [
-                            'title' => '¡Evento Finalizado!',
-                            'message' => $descripcion?->mensaje_finalizacion
-                                ?? '
-                            El evento que estabas buscando ya ha finalizado o no se encuentra disponible en este momento.<br>
-                            Pero no te detengas 🚀,<br>
-                            nuevas oportunidades están en camino.<br>
-                            Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos<br>
-                            para seguir fortaleciendo tu emprendimiento.
-                            ',
-                            'status' => 404,
-                            'finalizado' => true,
-                        ],
-                    ]);
+            $finDia = null;
+            $expirado = false;
+            if (! empty($fechaFin)) {
+                try {
+                    $finDia = Carbon::parse($fechaFin)->endOfDay();
+                    $expirado = $today->gt($finDia);
+                } catch (\Throwable $e) {
+                    $finDia = null;
+                    $expirado = false;
                 }
+            }
+
+            $respuestaCerrado = [
+                'data' => [
+                    'title' => '¡Inscripciones Cerradas!',
+                    'message' => 'Las inscripciones para este evento se encuentran cerradas en este momento.<br>
+                        No te preocupes, estamos preparando nuevas oportunidades para ti.<br>
+                        Mantente atento(a) a nuestros próximos talleres, capacitaciones y eventos<br>
+                        para seguir impulsando tu negocio.',
+                    'status' => 403,
+                    'prendido' => false,
+                    'activo' => (int) $actividad->activo,
+                ],
+            ];
+
+            $respuestaFinalizado = [
+                'data' => [
+                    'title' => '¡Evento Finalizado!',
+                    'message' => $descripcion?->mensaje_finalizacion
+                        ?? '
+                    El evento que estabas buscando ya ha finalizado o no se encuentra disponible en este momento.<br>
+                    Pero no te detengas 🚀,<br>
+                    nuevas oportunidades están en camino.<br>
+                    Sigue atento(a) a nuestros próximos talleres, capacitaciones y eventos<br>
+                    para seguir fortaleciendo tu emprendimiento.
+                    ',
+                    'status' => 404,
+                    'finalizado' => true,
+                    'prendido' => (int) $prendido,
+                ],
+            ];
+
+            // 1. Apagado (en PHP `null == 0` es true: sin flag también cierra,
+            //    igual que antes): bloquea aunque no llegue la fecha fin.
+            //    Si además ya venció, se muestra como Finalizado.
+            if ($prendido == 0) {
+                if ($expirado && ! $ignoreExpiration) {
+                    return response()->json($respuestaFinalizado);
+                }
+
+                return response()->json($respuestaCerrado);
+            }
+
+            // 2. Prendido = 1 con fecha vencida: solo reabre si hubo
+            //    reapertura manual (algún guardado posterior al vencimiento,
+            //    ej. toggle del switch OFF -> ON). Si el registro quedó
+            //    intacto desde antes del vencimiento, cierre automático.
+            $reaperturaManual = false;
+            if ($prendido == 1 && $expirado && ! $ignoreExpiration) {
+                $tocadoTrasVencer = $finDia
+                    && $actividad->updated_at
+                    && Carbon::parse($actividad->updated_at)->gt($finDia);
+
+                if (! $tocadoTrasVencer) {
+                    return response()->json($respuestaFinalizado);
+                }
+
+                $reaperturaManual = true;
             }
 
             /**
@@ -353,6 +390,11 @@ class FairController extends Controller
                     'cancelado' => false,
 
                     'especial' => $actividad->descripcion,
+
+                    'activo' => (int) $actividad->activo,
+                    'prendido' => (int) $prendido,
+                    'fecha_fin' => $fechaFin ?? null,
+                    'reapertura_manual' => $reaperturaManual,
                 ],
             ]);
         } catch (\Exception $e) {

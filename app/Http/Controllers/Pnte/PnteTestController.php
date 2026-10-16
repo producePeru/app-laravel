@@ -179,7 +179,7 @@ class PnteTestController extends Controller
                 ]);
             }
 
-            $actividad = ActividadPnte::select('tema', 'link')
+            $actividad = ActividadPnte::select('tema', 'link', 'horario')
                 ->where('slug', $slug)
                 ->first();
 
@@ -206,7 +206,12 @@ class PnteTestController extends Controller
                 'data' => [
                     'slug' => $slug,
                     'tema' => optional($actividad)->tema,
-                    'link' => optional($actividad)->link,
+                    'link' => $this->resolverMeetLinkPorSesion(
+                        $actividad,
+                        $request->date,
+                        $request->hourStart,
+                        $request->hourEnd
+                    ),
                     'fields' => $fields,
                 ],
             ]);
@@ -253,7 +258,7 @@ class PnteTestController extends Controller
                 ]);
             }
 
-            $actividad = ActividadPnte::select('tema', 'link')
+            $actividad = ActividadPnte::select('tema', 'link', 'horario')
                 ->where('slug', $slug)
                 ->first();
 
@@ -348,7 +353,12 @@ class PnteTestController extends Controller
                 'data' => [
                     'slug' => $slug,
                     'tema' => optional($actividad)->tema,
-                    'link' => optional($actividad)->link,
+                    'link' => $this->resolverMeetLinkPorSesion(
+                        $actividad,
+                        $request->date,
+                        $request->hourStart,
+                        $request->hourEnd
+                    ),
                     'fields' => $fields,
                 ],
             ]);
@@ -371,21 +381,32 @@ class PnteTestController extends Controller
             'ruc' => 'required|string|max:11',
             'dni' => 'required|string|max:12',
             'date' => 'required|date',
+            'hourStart' => 'nullable|date_format:H:i',
+            'hourEnd' => 'nullable|date_format:H:i',
         ]);
 
         try {
 
-            $registro = EmpresarioActividad::with([
+            $query = EmpresarioActividad::with([
                 'empresario',
-                'actividadPnte:id,slug,link,tema',
+                'actividadPnte:id,slug,link,tema,horario',
             ])
                 ->where('slug', $request->slug)
                 ->whereDate('fecha_seleccionada', $request->date)
                 ->whereHas('empresario', function ($query) use ($request) {
                     $query->where('ruc', $request->ruc)
                         ->where('numero_dni', $request->dni);
-                })
-                ->first();
+                });
+
+            // Si viene el horario, filtramos la sesión exacta (un mismo día puede tener varias salas)
+            if ($request->filled('hourStart')) {
+                $query->where('horario_inicio', substr(trim((string) $request->hourStart), 0, 5));
+            }
+            if ($request->filled('hourEnd')) {
+                $query->where('horario_fin', substr(trim((string) $request->hourEnd), 0, 5));
+            }
+
+            $registro = $query->first();
 
             if (! $registro) {
                 return response()->json([
@@ -393,6 +414,14 @@ class PnteTestController extends Controller
                     'message' => 'No se encontró un participante registrado con los datos proporcionados para la fecha indicada.',
                 ]);
             }
+
+            // Sala correcta según fecha + hora de la inscripción (meetLink de la sesión)
+            $linkSala = $this->resolverMeetLinkPorSesion(
+                $registro->actividadPnte,
+                $registro->fecha_seleccionada,
+                $registro->horario_inicio,
+                $registro->horario_fin
+            );
 
             // Validar estado del test de entrada
             if (is_null($registro->test_entrada)) {
@@ -410,7 +439,7 @@ class PnteTestController extends Controller
                         'ruc' => $registro->empresario->ruc,
                         'dni' => $registro->empresario->numero_dni,
                         'email' => $registro->empresario->correo_electronico,
-                        'link' => optional($registro->actividadPnte)->link,
+                        'link' => $linkSala,
                         'nombres' => trim(
                             $registro->empresario->nombres.' '.
                                 $registro->empresario->apellido_paterno.' '.
@@ -434,7 +463,7 @@ class PnteTestController extends Controller
                     'ruc' => $registro->empresario->ruc,
                     'dni' => $registro->empresario->numero_dni,
                     'email' => $registro->empresario->correo_electronico,
-                    'link' => optional($registro->actividadPnte)->link,
+                    'link' => $linkSala,
                     'nombres' => trim(
                         $registro->empresario->nombres.' '.
                             $registro->empresario->apellido_paterno.' '.
@@ -739,5 +768,78 @@ class PnteTestController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Resuelve la sala Meet correcta para una fecha + horario.
+     *
+     * Cada sesión del cronograma (ActividadPnte.horario[]) tiene su PROPIO
+     * meetLink. El campo ActividadPnte.link es solo compatibilidad con la
+     * primera sesión y NO debe usarse cuando hay varias fechas/horarios.
+     *
+     * Prioridad: 1. fecha + inicio + fin / 2. fecha + inicio / 3. solo fecha / 4. link global.
+     */
+    private function resolverMeetLinkPorSesion(
+        $actividad,
+        $fechaSeleccionada,
+        $horaInicio = null,
+        $horaFin = null
+    ): ?string {
+        $normalizarHora = fn ($h) => $h ? substr(trim((string) $h), 0, 5) : null;
+
+        try {
+            $fecha = Carbon::parse($fechaSeleccionada)->format('Y-m-d');
+        } catch (\Throwable $e) {
+            $fecha = is_string($fechaSeleccionada) ? substr($fechaSeleccionada, 0, 10) : null;
+        }
+
+        if (! $actividad || ! $fecha) {
+            return $actividad->link ?? null;
+        }
+
+        $inicio = $normalizarHora($horaInicio);
+        $fin = $normalizarHora($horaFin);
+
+        $horario = is_array($actividad->horario) ? $actividad->horario : [];
+
+        // 1. Coincidencia exacta fecha + inicio + fin
+        foreach ($horario as $sesion) {
+            if (empty($sesion['meetLink'])) {
+                continue;
+            }
+            $f = isset($sesion['fecha']) ? substr((string) $sesion['fecha'], 0, 10) : null;
+            if ($f !== $fecha) {
+                continue;
+            }
+            if ($normalizarHora($sesion['horaInicio'] ?? null) === $inicio
+                && $normalizarHora($sesion['horaFin'] ?? null) === $fin) {
+                return $sesion['meetLink'];
+            }
+        }
+
+        // 2. Coincidencia fecha + hora de inicio
+        foreach ($horario as $sesion) {
+            if (empty($sesion['meetLink'])) {
+                continue;
+            }
+            $f = isset($sesion['fecha']) ? substr((string) $sesion['fecha'], 0, 10) : null;
+            if ($f === $fecha && $normalizarHora($sesion['horaInicio'] ?? null) === $inicio) {
+                return $sesion['meetLink'];
+            }
+        }
+
+        // 3. Primera sesión de ese día con sala
+        foreach ($horario as $sesion) {
+            if (empty($sesion['meetLink'])) {
+                continue;
+            }
+            $f = isset($sesion['fecha']) ? substr((string) $sesion['fecha'], 0, 10) : null;
+            if ($f === $fecha) {
+                return $sesion['meetLink'];
+            }
+        }
+
+        // 4. Fallback global (compatibilidad)
+        return $actividad->link;
     }
 }
