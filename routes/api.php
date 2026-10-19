@@ -280,6 +280,10 @@ Route::prefix('uplaod')->middleware('auth:sanctum')->group(function () {
     require __DIR__.'/api/upload.php';
 });
 
+Route::prefix('retroalimentacion')->middleware('auth:sanctum')->group(function () {
+    require __DIR__.'/api/retroalimentacion.php';
+});
+
 Route::group(['prefix' => 'user', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {
 
     // Route::get('list',                                  [UserController::class, 'index']);                  // v2.0

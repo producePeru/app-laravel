@@ -10,6 +10,7 @@ use App\Http\Controllers\Download\DownloadComprasPeruController;
 use App\Http\Controllers\Download\DownloadCyberWowMarcaController;
 use App\Http\Controllers\Download\DownloadExportDiagnosticMP;
 use App\Http\Controllers\Download\DownloadFormalizationsController;
+use App\Http\Controllers\Download\DownloadRetroAlimentacionController;
 use App\Http\Controllers\Download\DownloadLiderAsesorController;
 use App\Http\Controllers\Download\DownloadMPParticipantesController;
 use App\Http\Controllers\Download\DownloadTemplateUgoActividadesController;
@@ -136,6 +137,12 @@ Route::controller(ActividadPnteController::class)->group(function () {
     Route::post('pantilla-para-inscritos', 'descargarPantillaInscritos');
 
     Route::post('ugsc-pantilla-para-inscritos', 'descargarPantillaInscritosUgsc');
+});
+
+Route::controller(DownloadRetroAlimentacionController::class)->group(function () {
+
+    Route::post('reporte-retroalimentacion/{id}', 'exportReporte');
+
 });
 
 // download

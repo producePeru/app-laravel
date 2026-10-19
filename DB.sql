@@ -1,0 +1,71 @@
+-- =====================================================
+-- MÓDULO RETROALIMENTACIÓN / TEMAS DE CAPACITACIÓN
+-- =====================================================
+-- Flujo:
+--  1) Un usuario logueado crea un tema (tema, fecha, hora).
+--     Se guarda user_id = creador.
+--  2) Sus colegas (logueados) califican la sesión:
+--     6 preguntas rating 1-5 + 3 preguntas texto
+--     (DETENER / CONTINUAR / EMPEZAR).
+-- =====================================================
+
+-- CREATE TABLE IF NOT EXISTS `retro_temas` (
+--   `id`          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+--   `tema`        VARCHAR(255) NOT NULL,
+--   `descripcion` TEXT NULL,
+--   `fecha`       DATE NOT NULL,
+--   `hora`        TIME NOT NULL,
+--   `user_id`     BIGINT UNSIGNED NOT NULL COMMENT 'Creador del tema (users.id)',
+--   `estado`      TINYINT NOT NULL DEFAULT 1 COMMENT '1=abierto (recibe calificaciones), 0=cerrado',
+--   `compromisos` TEXT NULL COMMENT 'Compromisos de mejora personal del expositor (creador), visibles para el super admin',
+--   `created_at`  TIMESTAMP NULL DEFAULT NULL,
+--   `updated_at`  TIMESTAMP NULL DEFAULT NULL,
+--   PRIMARY KEY (`id`),
+--   KEY `idx_retro_temas_user` (`user_id`),
+--   KEY `idx_retro_temas_fecha` (`fecha`),
+--   CONSTRAINT `fk_retro_temas_user`
+--     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+--     ON DELETE CASCADE ON UPDATE CASCADE
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -- Migración: si `retro_temas` ya existía sin la columna de compromisos.
+-- ALTER TABLE `retro_temas`
+--   ADD COLUMN `compromisos` TEXT NULL
+--   COMMENT 'Compromisos de mejora personal del expositor (creador), visibles para el super admin'
+--   AFTER `estado`;
+
+-- CREATE TABLE IF NOT EXISTS `retro_calificaciones` (
+--   `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+--   `retro_tema_id` BIGINT UNSIGNED NOT NULL,
+--   `user_id`       BIGINT UNSIGNED NOT NULL COMMENT 'Colega que califica (users.id)',
+--   -- Eje Técnico (Contenido) --
+--   `r1_dominio`        TINYINT NOT NULL COMMENT '1-5: dominio del tema claro, preciso y actualizado',
+--   `r2_valor_mype`     TINYINT NOT NULL COMMENT '1-5: valor real y aplicable a la gestión MYPE',
+--   `r3_formalizacion`  TINYINT NOT NULL COMMENT '1-5: vínculo con metas de formalización',
+--   -- Eje Didáctico y Forma (Habilidades Blandas) --
+--   `r4_tiempo`         TINYINT NOT NULL COMMENT '1-5: manejo estricto del tiempo (3min + 10min)',
+--   `r5_claridad`       TINYINT NOT NULL COMMENT '1-5: claridad, modulación y síntesis',
+--   `r6_ppt`            TINYINT NOT NULL COMMENT '1-5: calidad visual de la PPT',
+--   -- Retro cualitativa --
+--   `detener`   TEXT NULL COMMENT 'Qué debe dejar de hacer',
+--   `continuar` TEXT NULL COMMENT 'Qué debe mantener como estándar',
+--   `empezar`   TEXT NULL COMMENT 'Qué debería incorporar',
+--   `created_at` TIMESTAMP NULL DEFAULT NULL,
+--   `updated_at` TIMESTAMP NULL DEFAULT NULL,
+--   PRIMARY KEY (`id`),
+--   UNIQUE KEY `uq_retro_tema_user` (`retro_tema_id`, `user_id`),
+--   KEY `idx_retro_calif_tema` (`retro_tema_id`),
+--   KEY `idx_retro_calif_user` (`user_id`),
+--   CONSTRAINT `fk_retro_calif_tema`
+--     FOREIGN KEY (`retro_tema_id`) REFERENCES `retro_temas` (`id`)
+--     ON DELETE CASCADE ON UPDATE CASCADE,
+--   CONSTRAINT `fk_retro_calif_user`
+--     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+--     ON DELETE CASCADE ON UPDATE CASCADE,
+--   CONSTRAINT `ck_retro_r1` CHECK (`r1_dominio` BETWEEN 1 AND 5),
+--   CONSTRAINT `ck_retro_r2` CHECK (`r2_valor_mype` BETWEEN 1 AND 5),
+--   CONSTRAINT `ck_retro_r3` CHECK (`r3_formalizacion` BETWEEN 1 AND 5),
+--   CONSTRAINT `ck_retro_r4` CHECK (`r4_tiempo` BETWEEN 1 AND 5),
+--   CONSTRAINT `ck_retro_r5` CHECK (`r5_claridad` BETWEEN 1 AND 5),
+--   CONSTRAINT `ck_retro_r6` CHECK (`r6_ppt` BETWEEN 1 AND 5)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
