@@ -30,6 +30,7 @@ return [
     'allowed_origins' => [
         'https://reporte.soportepnte.com',
         'https://soportepnte.com',
+        'https://capacitaciones.soportepnte.com',
     ],
 
     'allowed_origins_patterns' => [],

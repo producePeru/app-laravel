@@ -58,7 +58,7 @@ class ActividadPnteController extends Controller
 
             'horario' => 'nullable|string',
 
-            'link' => 'nullable|string',
+            'link' => 'nullable|string|max:255|required_if:modalidad_id,2',
 
             'componente_id' => 'nullable',
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
@@ -194,7 +194,7 @@ class ActividadPnteController extends Controller
 
             // ✨ Cambiado de string a array para soportar tu estructura estructurada
             'horario' => 'nullable',
-            'link' => 'nullable|string',
+            'link' => 'nullable|string|max:255|required_if:modalidad_id,2',
             'componente_id' => 'nullable|integer',
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
         ]);
@@ -210,7 +210,7 @@ class ActividadPnteController extends Controller
 
         // Cronograma previo para sincronizar Google Calendar después de guardar
         $horarioAnterior = is_array($actividad->horario) ? $actividad->horario : [];
-        $sincronizarGoogle = array_key_exists('horario', $validated);
+        $sincronizarGoogle = is_array($validated['horario'] ?? null);
 
         try {
             DB::transaction(function () use ($actividad, $validated) {
