@@ -65,7 +65,15 @@ class ActividadPnteController extends Controller
 
             'tipo_mercado' => 'nullable',
             'tipo_gestion' => 'nullable',
+
+            'activo' => 'nullable|boolean',
         ]);
+
+        if ((int) $validated['unidad'] === 3) {
+            $validated['activo'] = (int) ($validated['activo'] ?? 0);
+        } else {
+            unset($validated['activo']);
+        }
 
         $validated['representante_id'] =
             $validated['representante_id'] ?? Auth::id();
@@ -197,7 +205,15 @@ class ActividadPnteController extends Controller
             'link' => 'nullable|string|max:255|required_if:modalidad_id,2',
             'componente_id' => 'nullable|integer',
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
+
+            'activo' => 'nullable|boolean',
         ]);
+
+        if ((int) $validated['unidad'] === 3) {
+            $validated['activo'] = (int) ($validated['activo'] ?? $actividad->activo);
+        } else {
+            unset($validated['activo']);
+        }
 
         // ✅ Obtener mes de la fecha mínima de forma segura
         $fechaMinima = collect($validated['fechas'])

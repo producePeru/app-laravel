@@ -7,6 +7,8 @@ use App\Mail\EmailParticipacionCooperativasUgsecoMail;
 use App\Models\ActividadPnte;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
+use App\Models\UgsecoDiagnostico;
+use App\Models\UgsecoDiagnosticoPregunta;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -920,6 +922,7 @@ class ActividadPublicPnteController extends Controller
             'modalidad:id,name',
         ])
             ->where('unidad', 3)
+            ->where('activo', 1)
             ->get();
 
         $hoy = Carbon::today();
@@ -942,6 +945,7 @@ class ActividadPublicPnteController extends Controller
                 return [
                     'id' => $actividad->id,
                     'slug' => $actividad->slug,
+                    'activo' => (int) $actividad->activo,
                     'fechas' => $fechasProximas->all(),
                     'cantidad_dias' => $actividad->cantidad_dias,
                     'tipo_actividad' => $actividad->tipoActividad->name ?? null,
@@ -1102,5 +1106,140 @@ class ActividadPublicPnteController extends Controller
             'direccion' => $esPresencial ? ($actividad->lugar ?: null) : null,
             'link' => $esVirtual ? ($link ?: null) : null,
         ];
+    }
+
+    // preguntas del diagnostico de UGSECO
+
+    public function diagnosticoPreguntasUgseco(): JsonResponse
+    {
+        $preguntas = UgsecoDiagnosticoPregunta::with('opciones')
+            ->orderBy('orden')
+            ->get()
+            ->map(fn (UgsecoDiagnosticoPregunta $pregunta) => [
+                'id' => $pregunta->id,
+                'componente' => $pregunta->componente,
+                'numero' => $pregunta->numero,
+                'pregunta' => $pregunta->pregunta,
+                'opciones' => $pregunta->opciones->map(fn ($opcion) => [
+                    'id' => $opcion->id,
+                    'letra' => $opcion->letra,
+                    'texto' => $opcion->texto,
+                ])->values(),
+            ])
+            ->values();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Preguntas del diagnostico UGSEco obtenidas correctamente.',
+            'data' => $preguntas,
+        ]);
+    }
+
+    public function storeDiagnosticoUgseco(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'tipo_documento_id' => 'required|integer|exists:typedocuments,id',
+            'numero_documento' => 'required|string|max:12',
+            'ruc' => 'nullable|digits:11',
+            'respuestas' => 'required|array|min:1',
+            'respuestas.*.pregunta_id' => 'required|integer|distinct|exists:ugseco_diag_preguntas,id',
+            'respuestas.*.opcion_id' => 'required|integer|exists:ugseco_diag_opciones,id',
+        ], [
+            'tipo_documento_id.required' => 'Seleccione el tipo de documento.',
+            'tipo_documento_id.exists' => 'El tipo de documento seleccionado no es valido.',
+            'numero_documento.required' => 'Ingrese el numero de documento.',
+            'numero_documento.max' => 'El numero de documento no debe superar los 12 caracteres.',
+            'ruc.digits' => 'El RUC debe tener 11 digitos.',
+            'respuestas.required' => 'Debe responder las preguntas del diagnostico.',
+            'respuestas.min' => 'Debe responder las preguntas del diagnostico.',
+            'respuestas.*.pregunta_id.distinct' => 'No se puede responder dos veces la misma pregunta.',
+            'respuestas.*.pregunta_id.exists' => 'Una de las preguntas enviadas no existe.',
+            'respuestas.*.opcion_id.exists' => 'Una de las alternativas enviadas no existe.',
+        ]);
+
+        $preguntas = UgsecoDiagnosticoPregunta::with('opciones')
+            ->orderBy('orden')
+            ->get();
+
+        if ($preguntas->isEmpty()) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'El diagnostico no tiene preguntas configuradas.',
+            ], 500);
+        }
+
+        $respuestas = collect($validated['respuestas'])->keyBy('pregunta_id');
+
+        if (
+            $respuestas->count() !== $preguntas->count() ||
+            $preguntas->contains(fn (UgsecoDiagnosticoPregunta $pregunta) => ! $respuestas->has($pregunta->id))
+        ) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Debe responder todas las preguntas del diagnostico.',
+            ], 422);
+        }
+
+        foreach ($preguntas as $pregunta) {
+            $opcionId = (int) $respuestas[$pregunta->id]['opcion_id'];
+
+            if (! $pregunta->opciones->contains('id', $opcionId)) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'La alternativa seleccionada no pertenece a la pregunta enviada.',
+                ], 422);
+            }
+        }
+
+        $numeroDocumento = trim($validated['numero_documento']);
+        $ruc = $validated['ruc'] ?? null;
+
+        $empresario = Empresario::where('numero_dni', $numeroDocumento)
+            ->when($ruc, fn ($query) => $query->where('ruc', $ruc))
+            ->latest('id')
+            ->first();
+
+        if (! $empresario && $ruc) {
+            $empresario = Empresario::where('ruc', $ruc)->latest('id')->first();
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $diagnostico = UgsecoDiagnostico::create([
+                'empresario_id' => $empresario?->id,
+                'tipo_documento_id' => $validated['tipo_documento_id'],
+                'numero_documento' => $numeroDocumento,
+                'ruc' => $ruc,
+            ]);
+
+            $diagnostico->respuestas()->createMany(
+                $preguntas->map(fn (UgsecoDiagnosticoPregunta $pregunta) => [
+                    'pregunta_id' => $pregunta->id,
+                    'opcion_id' => (int) $respuestas[$pregunta->id]['opcion_id'],
+                ])->all()
+            );
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Diagnostico registrado correctamente.',
+                'data' => [
+                    'id' => $diagnostico->id,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            Log::error('Error al registrar el diagnostico UGSEco: '.$e->getMessage(), [
+                'payload' => $request->except('respuestas'),
+            ]);
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'No se pudo registrar el diagnostico.',
+            ], 500);
+        }
     }
 }

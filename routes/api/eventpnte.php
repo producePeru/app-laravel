@@ -101,6 +101,10 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
 
     Route::GET('email-participacion-cooperativas-ugseco', 'emailParticipacionCooperativasUgseco');
 
+    Route::GET('diagnostico-preguntas', 'diagnosticoPreguntasUgseco');
+
+    Route::POST('diagnostico', 'storeDiagnosticoUgseco');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {
