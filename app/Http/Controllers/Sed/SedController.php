@@ -9,98 +9,12 @@ use App\Models\Question;
 use App\Models\QuestionOption;
 use App\Models\SedSurvey;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class SedController extends Controller
 {
-    // public function storeSedSurvey(Request $request)
-    // {
-    //     DB::beginTransaction();
-
-    //     try {
-
-    //         $payload = $request->all();
-
-    //         $tableName = $payload['table'] ?? 'sed';
-
-    //         // 1. Obtener SED
-    //         $fair = Fair::where('slug', $payload['slug'])->firstOrFail();
-    //         $sedId = $fair->id;
-
-    //         foreach ($payload['questions'] as $q) {
-
-    //             // 2. Buscar pregunta por label
-    //             $question = Question::where('label', $q['label'])->first();
-
-    //             if (!$question) {
-
-    //                 // generar model único
-    //                 $nextId = Question::max('id') + 1;
-    //                 $model = "question_" . $nextId;
-
-    //                 $question = Question::create([
-    //                     // 'tableName' => 'sed',
-    //                     'tableName' => $tableName,
-    //                     'label' => $q['label'],
-    //                     'type' => $q['type'],
-    //                     'model' => $model,
-    //                     'required'  => $q['required'] ? 1 : 0
-    //                 ]);
-    //             }
-
-    //             // 3. Opciones
-    //             if (!empty($q['options'])) {
-
-    //                 foreach ($q['options'] as $opt) {
-
-    //                     QuestionOption::updateOrCreate(
-    //                         [
-    //                             'question_id' => $question->id,
-    //                             'value' => $opt['value']
-    //                         ],
-    //                         [
-    //                             'label' => $opt['label'],
-    //                             'status' => $opt['status'] ?? 1
-    //                         ]
-    //                     );
-    //                 }
-    //             }
-
-    //             // 4. Relación SedSurvey (sin title)
-    //             SedSurvey::updateOrCreate(
-    //                 [
-    //                     'sed_id' => $sedId,
-    //                     'question_id' => $question->id
-    //                 ],
-    //                 []
-    //             );
-    //         }
-
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'status' => 200,
-    //             'message' => 'Encuesta registrada correctamente'
-    //         ]);
-    //     } catch (\Throwable $e) {
-
-    //         DB::rollBack();
-
-    //         Log::error('Error registrando encuesta SED', [
-    //             'error' => $e->getMessage(),
-    //             'line' => $e->getLine(),
-    //             'file' => $e->getFile()
-    //         ]);
-
-    //         return response()->json([
-    //             'status' => 500,
-    //             'message' => 'Ocurrió un error al registrar la encuesta.',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
     public function storeSedSurvey(Request $request)
     {
         $request->validate([
@@ -480,5 +394,32 @@ class SedController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function sedFinalizarEvento(Request $request, $slug)
+    {
+
+        $actividad = ActividadPnte::where('slug', $slug)->first();
+
+        if (! $actividad) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Actividad no encontrada.',
+            ], 404);
+        }
+
+        $actividad->especial = Auth::id();
+        $actividad->prendido = 0;
+        $actividad->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Evento finalizado correctamente.',
+            'data' => [
+                'slug' => $actividad->slug,
+                'especial' => $actividad->especial,
+                'prendido' => $actividad->prendido,
+            ],
+        ]);
     }
 }

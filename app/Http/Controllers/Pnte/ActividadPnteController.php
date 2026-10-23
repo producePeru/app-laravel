@@ -58,7 +58,7 @@ class ActividadPnteController extends Controller
 
             'horario' => 'nullable|string',
 
-            'link' => 'nullable|string|max:255|required_if:modalidad_id,2',
+            'link' => 'nullable|string|max:255',
 
             'componente_id' => 'nullable',
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
@@ -202,7 +202,7 @@ class ActividadPnteController extends Controller
 
             // ✨ Cambiado de string a array para soportar tu estructura estructurada
             'horario' => 'nullable',
-            'link' => 'nullable|string|max:255|required_if:modalidad_id,2',
+            'link' => 'nullable|string|max:255',
             'componente_id' => 'nullable|integer',
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
 
@@ -601,7 +601,8 @@ class ActividadPnteController extends Controller
                 'fechas',
                 'nombre_actividad_id',
                 'descripcion',
-                'switch_asistencias'
+                'switch_asistencias',
+                'especial'
             )
                 ->where('slug', $slug)
                 ->first();
@@ -973,6 +974,22 @@ class ActividadPnteController extends Controller
         return response()->download(
             $path,
             'plantilla_ugsc_upload.xlsx'
+        );
+    }
+
+    public function descargarPantillaInscritosSed()
+    {
+        $path = storage_path('app/plantillas/platilla_sed_import.xlsx');
+
+        if (! file_exists($path)) {
+            return response()->json([
+                'message' => 'Archivo no encontrado',
+            ], 404);
+        }
+
+        return response()->download(
+            $path,
+            'platilla_sed_import.xlsx'
         );
     }
 

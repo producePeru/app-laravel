@@ -53,6 +53,7 @@ class ActividadPnte extends Model
 
         'componente_id',
         'trainer_id',
+        'especial',
 
         'tipo_mercado',
         'tipo_gestion',

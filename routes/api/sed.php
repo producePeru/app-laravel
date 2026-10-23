@@ -15,6 +15,9 @@ Route::controller(SedController::class)->group(function () {
     Route::delete('delete-sed-survey/{id}', 'deleteSedQuestion');
 
     Route::post('store-question', 'storeSedQuestion');
+
+    Route::post('sed-finalizar-evento/{slug}', 'sedFinalizarEvento')->middleware('auth:sanctum');
+
 });
 
 Route::controller(SedPublicController::class)->group(function () {
