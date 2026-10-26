@@ -21,8 +21,10 @@ use App\Models\sedQuestionAnswer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Settings;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -1287,6 +1289,7 @@ class DownloadAttendanceController extends Controller
     {
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
+        Settings::setLocale('es_PE');
 
         $asistencia = $request->input('asistencia');
 
@@ -1314,49 +1317,82 @@ class DownloadAttendanceController extends Controller
 
         $fixedQuestionsMap = [
             'question_1' => [
-                'label' => 'Â¿CÃ³mo planificas el crecimiento de tu negocio usando tecnologÃ­a?',
+                'label' => '¿Cómo planificas el crecimiento de tu negocio usando tecnología?',
                 'options' => [
-                    'sin_interes' => 'A. No tengo interÃ©s en la tecnologÃ­a; mi negocio depende solo de mi presencia fÃ­sica y el boca a boca.',
+                    'sin_interes' => 'A. No tengo interés en la tecnología; mi negocio depende solo de mi presencia física y el boca a boca.',
                     'redes_sociales' => 'B. Uso Facebook o WhatsApp porque otros lo hacen, pero no tengo un plan ni metas de ventas digitales.',
-                    'estrategia_digital' => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir quÃ© comprar o vender.',
-                    'plan_transformacion' => 'D. Tengo un Plan de TransformaciÃ³n Digital escrito y mi modelo de negocio se adapta rÃ¡pidamente a los cambios del mercado tecnolÃ³gico.',
+                    'estrategia_digital' => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir qué comprar o vender.',
+                    'plan_transformacion' => 'D. Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
                 ],
             ],
             'question_2' => [
-                'label' => 'Â¿CÃ³mo se involucra tu equipo o personal en el uso de herramientas digitales?',
+                'label' => '¿Cómo se involucra tu equipo o personal en el uso de herramientas digitales?',
                 'options' => [
                     'sin_interes' => 'A. Solo yo tomo las decisiones y no usamos herramientas digitales para coordinar el trabajo.',
-                    'redes_sociales' => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitaciÃ³n en herramientas de gestiÃ³n.',
-                    'capacitacion' => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema comÃºn para registrar pedidos y tareas.',
-                    'lideres_digitales' => 'D. Contamos con lÃ­deres digitales en el equipo, todos tienen altas competencias digitales y tomamos decisiones basadas en reportes de datos en tiempo real.',
+                    'redes_sociales' => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitación en herramientas de gestión.',
+                    'capacitacion' => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema común para registrar pedidos y tareas.',
+                    'lideres_digitales' => 'D. Contamos con líderes digitales en el equipo, todos tienen altas competencias digitales y tomamos decisiones basadas en reportes de datos en tiempo real.',
                 ],
             ],
             'question_3' => [
-                'label' => 'Â¿Con quÃ© herramientas tecnolÃ³gicas y seguridad cuenta tu negocio para operar?',
+                'label' => '¿Con qué herramientas tecnológicas y seguridad cuenta tu negocio para operar?',
                 'options' => [
-                    'celular' => 'A. Solo tengo un celular bÃ¡sico para llamadas y no confÃ­o en los pagos digitales ni en internet.',
-                    'internet_basico' => 'B. Tengo internet bÃ¡sico y uso computadoras personales para tareas simples (Word/Excel bÃ¡sico) sin protocolos de seguridad.',
-                    'internet_alta_velocidad' => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi informaciÃ³n con contraseÃ±as y respaldos frecuentes.',
-                    'nube' => 'D. Uso servicios en la nube (Cloud), mi infraestructura estÃ¡ integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
+                    'celular' => 'A. Solo tengo un celular básico para llamadas y no confío en los pagos digitales ni en internet.',
+                    'internet_basico' => 'B. Tengo internet básico y uso computadoras personales para tareas simples (Word/Excel básico) sin protocolos de seguridad.',
+                    'internet_alta_velocidad' => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi información con contraseñas y respaldos frecuentes.',
+                    'nube' => 'D. Uso servicios en la nube (Cloud), mi infraestructura está integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
                 ],
             ],
             'question_4' => [
-                'label' => 'Â¿CÃ³mo llevas el control de tus inventarios, producciÃ³n y contabilidad?',
+                'label' => '¿Cómo llevas el control de tus inventarios, producción y contabilidad?',
                 'options' => [
                     'anotado' => 'A. Todo lo anoto en cuadernos o lo tengo en la memoria; a veces pierdo el control de lo que falta.',
-                    'excel' => 'B. Registro mis ventas en Excel al final del dÃ­a, pero mi inventario y contabilidad los llevo por separado o en fÃ­sico.',
-                    'software' => 'C. Uso un software o App especÃ­fica para controlar mi stock, mis ventas y emitir comprobantes electrÃ³nicos de forma automÃ¡tica.',
-                    'integrado' => 'D. Mi sistema estÃ¡ totalmente integrado: me avisa automÃ¡ticamente cuando queda poco stock y genera reportes contables y de producciÃ³n sin errores.',
+                    'excel' => 'B. Registro mis ventas en Excel al final del día, pero mi inventario y contabilidad los llevo por separado o en físico.',
+                    'software' => 'C. Uso un software o App específica para controlar mi stock, mis ventas y emitir comprobantes electrónicos de forma automática.',
+                    'integrado' => 'D. Mi sistema está totalmente integrado: me avisa automáticamente cuando queda poco stock y genera reportes contables y de producción sin errores.',
                 ],
             ],
             'question_5' => [
-                'label' => 'Â¿CÃ³mo te encuentran los clientes nuevos?',
+                'label' => '¿Cómo te encuentran los clientes nuevos?',
                 'options' => [
                     'local' => 'A. Solo me encuentran si pasan por mi local; no guardo datos de contacto de quienes me compran.',
-                    'excel' => 'B. Respondo consultas por Facebook o WhatsApp, pero no tengo un catÃ¡logo digital ni analizo si los clientes estÃ¡n satisfechos.',
-                    'software' => 'C. Tengo presencia en Google Maps, uso catÃ¡logos digitales y acepto mÃºltiples pagos (Yape, Plin, POS). Mido la satisfacciÃ³n de mis clientes.',
+                    'excel' => 'B. Respondo consultas por Facebook o WhatsApp, pero no tengo un catálogo digital ni analizo si los clientes están satisfechos.',
+                    'software' => 'C. Tengo presencia en Google Maps, uso catálogos digitales y acepto múltiples pagos (Yape, Plin, POS). Mido la satisfacción de mis clientes.',
                     'integrado' => 'D. Tengo una tienda online o CRM donde el cliente compra directamente y utilizo sus datos para enviarles ofertas personalizadas.',
                 ],
+            ],
+        ];
+
+        $newYesNoOptions = [
+            'si' => 'SI',
+            'sí' => 'SI',
+            's' => 'SI',
+            'no' => 'NO',
+            'n' => 'NO',
+            'personal' => 'PERSONAL',
+            'a nivel personal' => 'PERSONAL',
+        ];
+
+        $newQuestionsMap = [
+            'question_1' => [
+                'label' => '¿Usa redes sociales para su negocio?',
+                'options' => $newYesNoOptions,
+            ],
+            'question_2' => [
+                'label' => '¿Tiene página web o tienda virtual?',
+                'options' => $newYesNoOptions,
+            ],
+            'question_3' => [
+                'label' => '¿Tu negocio usa pagos digitales (yape, plim, POS, etc.)?',
+                'options' => $newYesNoOptions,
+            ],
+            'question_4' => [
+                'label' => '¿Usas software para contabilidad/inventario?',
+                'options' => $newYesNoOptions,
+            ],
+            'question_5' => [
+                'label' => '¿Qué espera aprender en esta capacitación?',
+                'options' => [],
             ],
         ];
 
@@ -1366,6 +1402,8 @@ class DownloadAttendanceController extends Controller
             ->where('slug', $slug)
             ->get()
             ->keyBy('documentnumber');
+
+        $questionsMap = $this->usaPreguntasNuevasSed($sedQuestions) ? $newQuestionsMap : $fixedQuestionsMap;
 
         // PRE-CARGAR SedQuestionAnswers agrupadas por DNI
 
@@ -1407,6 +1445,7 @@ class DownloadAttendanceController extends Controller
                     'sector_economico_id',
                     'rubro_id',
                     'actividad_comercial_id',
+                    'actividad_comercial_nombre',
                     'region_id',
                     'provincia_id',
                     'distrito_id',
@@ -1459,11 +1498,11 @@ class DownloadAttendanceController extends Controller
         // HEADERS FIJOS EN FILA 2 (AM â†’ AQ)
         // AM=39, AN=40, AO=41, AP=42, AQ=43
 
-        $sheet->setCellValue('AM2', $fixedQuestionsMap['question_1']['label']);
-        $sheet->setCellValue('AN2', $fixedQuestionsMap['question_2']['label']);
-        $sheet->setCellValue('AO2', $fixedQuestionsMap['question_3']['label']);
-        $sheet->setCellValue('AP2', $fixedQuestionsMap['question_4']['label']);
-        $sheet->setCellValue('AQ2', $fixedQuestionsMap['question_5']['label']);
+        $sheet->setCellValue('AM2', $questionsMap['question_1']['label']);
+        $sheet->setCellValue('AN2', $questionsMap['question_2']['label']);
+        $sheet->setCellValue('AO2', $questionsMap['question_3']['label']);
+        $sheet->setCellValue('AP2', $questionsMap['question_4']['label']);
+        $sheet->setCellValue('AQ2', $questionsMap['question_5']['label']);
 
         foreach (['AM2', 'AN2', 'AO2', 'AP2', 'AQ2'] as $cell) {
             $sheet->getStyle($cell)->getAlignment()->setWrapText(true);
@@ -1495,7 +1534,7 @@ class DownloadAttendanceController extends Controller
             $sedAnswers,
             $dynamicColumns,
             $questions,
-            $fixedQuestionsMap,
+            $questionsMap,
             $dynStartColIndex
         ) {
             foreach ($items as $item) {
@@ -1579,7 +1618,8 @@ class DownloadAttendanceController extends Controller
                 $col++;
 
                 // ACTIVIDAD COMERCIAL
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->actividadComercial?->name ?? '', 'UTF-8'));
+                $actividadComercial = $e->actividadComercial?->name ?: $e->actividad_comercial_nombre;
+                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($actividadComercial ?? '', 'UTF-8'));
                 $col++;
 
                 // REGION (empresario)
@@ -1667,20 +1707,11 @@ class DownloadAttendanceController extends Controller
                 // PREGUNTAS FIJAS: hardcodeadas en AM, AN, AO, AP, AQ
                 // NO usan $col para evitar colisiones
 
-                $q1Val = $sq?->question_1;
-                $sheet->setCellValue("AM{$row}", $fixedQuestionsMap['question_1']['options'][$q1Val] ?? $q1Val ?? '');
-
-                $q2Val = $sq?->question_2;
-                $sheet->setCellValue("AN{$row}", $fixedQuestionsMap['question_2']['options'][$q2Val] ?? $q2Val ?? '');
-
-                $q3Val = $sq?->question_3;
-                $sheet->setCellValue("AO{$row}", $fixedQuestionsMap['question_3']['options'][$q3Val] ?? $q3Val ?? '');
-
-                $q4Val = $sq?->question_4;
-                $sheet->setCellValue("AP{$row}", $fixedQuestionsMap['question_4']['options'][$q4Val] ?? $q4Val ?? '');
-
-                $q5Val = $sq?->question_5;
-                $sheet->setCellValue("AQ{$row}", $fixedQuestionsMap['question_5']['options'][$q5Val] ?? $q5Val ?? '');
+                $sheet->setCellValue("AM{$row}", $this->valorPreguntaSed($questionsMap['question_1'], $sq?->question_1));
+                $sheet->setCellValue("AN{$row}", $this->valorPreguntaSed($questionsMap['question_2'], $sq?->question_2));
+                $sheet->setCellValue("AO{$row}", $this->valorPreguntaSed($questionsMap['question_3'], $sq?->question_3));
+                $sheet->setCellValue("AP{$row}", $this->valorPreguntaSed($questionsMap['question_4'], $sq?->question_4));
+                $sheet->setCellValue("AQ{$row}", $this->valorPreguntaSed($questionsMap['question_5'], $sq?->question_5));
 
                 // Wrap text en celdas fijas
                 foreach (['AM', 'AN', 'AO', 'AP', 'AQ'] as $c) {
@@ -1747,6 +1778,70 @@ class DownloadAttendanceController extends Controller
             'Content-Disposition' => 'attachment; filename="lista-inscritos-ugo.xlsx"',
             'Cache-Control' => 'max-age=0',
         ]);
+    }
+
+    private function usaPreguntasNuevasSed(iterable $sedQuestions): bool
+    {
+        $valoresNuevos = ['si', 'sí', 's', 'no', 'n', 'personal', 'a nivel personal'];
+        $valoresAnteriores = [
+            'sin_interes',
+            'redes_sociales',
+            'estrategia_digital',
+            'plan_transformacion',
+            'capacitacion',
+            'lideres_digitales',
+            'celular',
+            'internet_basico',
+            'internet_alta_velocidad',
+            'nube',
+            'anotado',
+            'excel',
+            'software',
+            'integrado',
+        ];
+
+        $nuevas = 0;
+        $anteriores = 0;
+
+        foreach ($sedQuestions as $sedQuestion) {
+            foreach (['question_1', 'question_2', 'question_3', 'question_4'] as $campo) {
+                $valor = Str::lower(trim((string) ($sedQuestion->{$campo} ?? '')));
+
+                if ($valor === '') {
+                    continue;
+                }
+
+                if (in_array($valor, $valoresNuevos, true)) {
+                    $nuevas++;
+                } elseif (in_array($valor, $valoresAnteriores, true)) {
+                    $anteriores++;
+                }
+            }
+        }
+
+        return $nuevas > $anteriores;
+    }
+
+    private function valorPreguntaSed(array $pregunta, $valor): string
+    {
+        $texto = $valor !== null ? trim((string) $valor) : '';
+
+        if ($texto === '') {
+            return '';
+        }
+
+        $opciones = $pregunta['options'] ?? [];
+        $clave = Str::lower($texto);
+
+        if (array_key_exists($clave, $opciones)) {
+            return $opciones[$clave];
+        }
+
+        if (array_key_exists($texto, $opciones)) {
+            return $opciones[$texto];
+        }
+
+        return $texto;
     }
 
     // PP093 ***********************************************************
