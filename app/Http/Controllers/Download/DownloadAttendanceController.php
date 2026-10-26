@@ -1425,7 +1425,22 @@ class DownloadAttendanceController extends Controller
             ->get()
             ->keyBy('model');
 
-        // COLUMNAS DINÃƒÂMICAS
+        $questions->put('question_0', new Question([
+            'tableName' => 'sed',
+            'label' => 'Número de trabajadores',
+            'type' => 'text',
+            'model' => 'question_0',
+            'position' => 999999999,
+        ]));
+
+        $question0Options = [
+            '1-5' => '1-5',
+            '6-10' => '6-10',
+            '11-20' => '11-20',
+            '+ de 20' => 'Más de 20',
+            'más de 20' => 'Más de 20',
+            'mas de 20' => 'Más de 20',
+        ];
 
         $resolveQuestion = function ($modelIdentifier) use ($questions) {
             $normalized = preg_replace('/^questions_/', 'question_', $modelIdentifier);
@@ -1572,7 +1587,7 @@ class DownloadAttendanceController extends Controller
                     $sheet->mergeCells($headerRange);
                 }
 
-                $titulo = $tipo === 'satisfaccion' ? 'PREGUNTAS DE SATISFACCIÃ“N' : 'ENCUESTA DE SEGUIMIENTO';
+                $titulo = $tipo === 'satisfaccion' ? 'PREGUNTAS DE SATISFACCIÓN' : 'ENCUESTA DE SEGUIMIENTO';
                 $color = $tipo === 'satisfaccion' ? 'FFC00000' : 'FF5E35B1';
 
                 $sheet->setCellValue("{$bloque['startCol']}1", $titulo);
@@ -1651,6 +1666,7 @@ class DownloadAttendanceController extends Controller
             $dynamicColumns,
             $questions,
             $questionsMap,
+            $question0Options,
             $dynStartColIndex
         ) {
             foreach ($items as $item) {
@@ -1850,6 +1866,9 @@ class DownloadAttendanceController extends Controller
 
                     if ($rawValue === null || $rawValue === '') {
                         $cellValue = '';
+                    } elseif ($normalizedModel === 'question_0') {
+                        $clave = Str::lower(trim((string) $rawValue));
+                        $cellValue = $question0Options[$clave] ?? $rawValue;
                     } elseif ($question && in_array($question->type, ['radio', 'checkbox-multiple', 'select'])) {
                         $decoded = json_decode($rawValue, true);
                         $selectedValues = (json_last_error() === JSON_ERROR_NONE && is_array($decoded))
