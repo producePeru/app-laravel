@@ -51,6 +51,39 @@ class SedInscritosController extends Controller
         'REPRESENTANTE LEGAL' => 'GERENTE GENERAL',
     ];
 
+    private const SED_QUESTION_OPTIONS = [
+        'question_1' => [
+            'sin_interes' => 'A. No tengo interés en la tecnología; mi negocio depende solo de mi presencia física y el boca a boca.',
+            'redes_sociales' => 'B. Uso Facebook o WhatsApp porque otros lo hacen, pero no tengo un plan ni metas de ventas digitales.',
+            'estrategia_digital' => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir qué comprar o vender.',
+            'plan_transformacion' => 'D. Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
+        ],
+        'question_2' => [
+            'sin_interes' => 'A. Solo yo tomo las decisiones y no usamos herramientas digitales para coordinar el trabajo.',
+            'redes_sociales' => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitación en herramientas de gestión.',
+            'capacitacion' => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema común para registrar pedidos y tareas.',
+            'lideres_digitales' => 'D. Contamos con líderes digitales en el equipo, todos tienen altas competencias digitales y tomamos decisiones basadas en reportes de datos en tiempo real.',
+        ],
+        'question_3' => [
+            'celular' => 'A. Solo tengo un celular básico para llamadas y no confío en los pagos digitales ni en internet.',
+            'internet_basico' => 'B. Tengo internet básico y uso computadoras personales para tareas simples (Word/Excel básico) sin protocolos de seguridad.',
+            'internet_alta_velocidad' => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi información con contraseñas y respaldos frecuentes.',
+            'nube' => 'D. Uso servicios en la nube (Cloud), mi infraestructura está integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
+        ],
+        'question_4' => [
+            'anotado' => 'A. Todo lo anoto en cuadernos o lo tengo en la memoria; a veces pierdo el control de lo que falta.',
+            'excel' => 'B. Registro mis ventas en Excel al final del día, pero mi inventario y contabilidad los llevo por separado o en físico.',
+            'software' => 'C. Uso un software o App específica para controlar mi stock, mis ventas y emitir comprobantes electrónicos de forma automática.',
+            'integrado' => 'D. Mi sistema está totalmente integrado: me avisa automáticamente cuando queda poco stock y genera reportes contables y de producción sin errores.',
+        ],
+        'question_5' => [
+            'local' => 'A. Solo me encuentran si pasan por mi local; no guardo datos de contacto de quienes me compran.',
+            'excel' => 'B. Respondo consultas por Facebook o WhatsApp, pero no tengo un catálogo digital ni analizo si los clientes están satisfechos.',
+            'software' => 'C. Tengo presencia en Google Maps, uso catálogos digitales y acepto múltiples pagos (Yape, Plin, POS). Mido la satisfacción de mis clientes.',
+            'integrado' => 'D. Tengo una tienda online o CRM donde el cliente compra directamente y utilizo sus datos para enviarles ofertas personalizadas.',
+        ],
+    ];
+
     public function importarInscritosSed(Request $request, string $slug): JsonResponse
     {
         $request->validate([
@@ -314,11 +347,11 @@ class SedInscritosController extends Controller
         $medioNombre = $this->normalizeKey($row['W'] ?? null);
         $tipoAsistenteNombre = $this->normalizeKey($row['X'] ?? null);
 
-        $question1 = $this->textoONull($row['Y'] ?? null);
-        $question2 = $this->textoONull($row['Z'] ?? null);
-        $question3 = $this->textoONull($row['AA'] ?? null);
-        $question4 = $this->textoONull($row['AB'] ?? null);
-        $question5 = $this->textoONull($row['AC'] ?? null);
+        $question1 = $this->mapearRespuestaSed('question_1', $row['Y'] ?? null);
+        $question2 = $this->mapearRespuestaSed('question_2', $row['Z'] ?? null);
+        $question3 = $this->mapearRespuestaSed('question_3', $row['AA'] ?? null);
+        $question4 = $this->mapearRespuestaSed('question_4', $row['AB'] ?? null);
+        $question5 = $this->mapearRespuestaSed('question_5', $row['AC'] ?? null);
 
         if ($ruc !== '' && strlen($ruc) !== 11) {
             $this->agregarError($errores, $fila, 'A', 'RUC', $ruc, 'El RUC debe tener 11 dígitos');
@@ -550,6 +583,49 @@ class SedInscritosController extends Controller
         $texto = preg_replace('/ {2,}/u', ' ', $texto) ?? $texto;
 
         return trim($texto);
+    }
+
+    private function mapearRespuestaSed(string $pregunta, $valor): ?string
+    {
+        $texto = $this->textoONull($valor);
+
+        if ($texto === null) {
+            return null;
+        }
+
+        $opciones = self::SED_QUESTION_OPTIONS[$pregunta] ?? [];
+
+        if ($opciones === []) {
+            return $texto;
+        }
+
+        $normalizado = $this->normalizeKey($texto);
+
+        foreach (array_keys($opciones) as $opcionValor) {
+            if ($this->normalizeKey($opcionValor) === $normalizado) {
+                return $opcionValor;
+            }
+        }
+
+        $sinLetra = preg_replace('/^[A-D]\s+/', '', $normalizado) ?? $normalizado;
+
+        foreach ($opciones as $opcionValor => $etiqueta) {
+            $etiquetaNormalizada = $this->normalizeKey($etiqueta);
+            $etiquetaSinLetra = preg_replace('/^[A-D]\s+/', '', $etiquetaNormalizada) ?? $etiquetaNormalizada;
+
+            if ($etiquetaNormalizada === $normalizado || $etiquetaSinLetra === $sinLetra) {
+                return $opcionValor;
+            }
+        }
+
+        if (preg_match('/^([A-D])\b/u', $normalizado, $coincidencia)) {
+            $indice = ord($coincidencia[1]) - ord('A');
+            $valores = array_keys($opciones);
+
+            return $valores[$indice] ?? $texto;
+        }
+
+        return $texto;
     }
 
     private function aplicarAlias(string $key, array $aliases): string
