@@ -1452,34 +1452,40 @@ class DownloadAttendanceController extends Controller
             })
             ->values();
 
-        // BLOQUE DE ENCUESTA DE SEGUIMIENTO (PREGUNTAS CON tableName = "seg")
+        // BLOQUES DE PREGUNTAS DINÁMICAS (SATISFACCIÓN = "sed", SEGUIMIENTO = "seg")
 
         $dynStartColIndex = 44; // AR
 
-        $segIndexes = $dynamicColumns
-            ->map(fn ($modelIdentifier) => $resolveQuestion($modelIdentifier)?->tableName === 'seg')
-            ->filter()
-            ->keys()
-            ->values();
+        $detectarBloqueDinamico = function ($tableName) use ($dynamicColumns, $dynStartColIndex, $resolveQuestion) {
+            $indexes = $dynamicColumns
+                ->map(fn ($modelIdentifier) => $resolveQuestion($modelIdentifier)?->tableName === $tableName)
+                ->filter()
+                ->keys()
+                ->values();
 
-        $tieneEncuestaSeguimiento = false;
-        $segStartColIndex = null;
-        $segEndColIndex = null;
-        $segStartCol = null;
-        $segEndCol = null;
-
-        if ($segIndexes->isNotEmpty()) {
-            $firstSegIndex = (int) $segIndexes->first();
-            $lastSegIndex = (int) $segIndexes->last();
-
-            if (($lastSegIndex - $firstSegIndex + 1) === $segIndexes->count()) {
-                $tieneEncuestaSeguimiento = true;
-                $segStartColIndex = $dynStartColIndex + $firstSegIndex;
-                $segEndColIndex = $dynStartColIndex + $lastSegIndex;
-                $segStartCol = Coordinate::stringFromColumnIndex($segStartColIndex);
-                $segEndCol = Coordinate::stringFromColumnIndex($segEndColIndex);
+            if ($indexes->isEmpty()) {
+                return null;
             }
-        }
+
+            $firstIndex = (int) $indexes->first();
+            $lastIndex = (int) $indexes->last();
+
+            if (($lastIndex - $firstIndex + 1) !== $indexes->count()) {
+                return null;
+            }
+
+            return [
+                'startIndex' => $dynStartColIndex + $firstIndex,
+                'endIndex' => $dynStartColIndex + $lastIndex,
+                'startCol' => Coordinate::stringFromColumnIndex($dynStartColIndex + $firstIndex),
+                'endCol' => Coordinate::stringFromColumnIndex($dynStartColIndex + $lastIndex),
+            ];
+        };
+
+        $bloquesDinamicos = array_filter([
+            'satisfaccion' => $detectarBloqueDinamico('sed'),
+            'seguimiento' => $detectarBloqueDinamico('seg'),
+        ]);
 
         // QUERY INSCRITOS
 
@@ -1554,25 +1560,30 @@ class DownloadAttendanceController extends Controller
         $sheet->getStyle('D1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('D1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
-        if ($tieneEncuestaSeguimiento) {
-            $segHeaderRange = $segStartColIndex < $segEndColIndex
-                ? "{$segStartCol}1:{$segEndCol}1"
-                : "{$segStartCol}1";
-
-            if ($segStartColIndex < $segEndColIndex) {
-                $sheet->mergeCells($segHeaderRange);
-            }
-
-            $sheet->setCellValue("{$segStartCol}1", 'ENCUESTA DE SEGUIMIENTO');
-            $sheet->getStyle($segHeaderRange)->getFill()->setFillType(Fill::FILL_SOLID);
-            $sheet->getStyle($segHeaderRange)->getFill()->getStartColor()->setARGB('FF5E35B1');
-            $sheet->getStyle($segHeaderRange)->getFont()->setBold(true);
-            $sheet->getStyle($segHeaderRange)->getFont()->getColor()->setARGB('FFFFFFFF');
-            $sheet->getStyle($segHeaderRange)->getFont()->setSize(12);
-            $sheet->getStyle($segHeaderRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle($segHeaderRange)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-        } else {
+        if ($bloquesDinamicos === []) {
             $sheet->mergeCells('AR1:BI1');
+        } else {
+            foreach ($bloquesDinamicos as $tipo => $bloque) {
+                $headerRange = $bloque['startIndex'] < $bloque['endIndex']
+                    ? "{$bloque['startCol']}1:{$bloque['endCol']}1"
+                    : "{$bloque['startCol']}1";
+
+                if ($bloque['startIndex'] < $bloque['endIndex']) {
+                    $sheet->mergeCells($headerRange);
+                }
+
+                $titulo = $tipo === 'satisfaccion' ? 'PREGUNTAS DE SATISFACCIÓN' : 'ENCUESTA DE SEGUIMIENTO';
+                $color = $tipo === 'satisfaccion' ? 'FF1F3864' : 'FF5E35B1';
+
+                $sheet->setCellValue("{$bloque['startCol']}1", $titulo);
+                $sheet->getStyle($headerRange)->getFill()->setFillType(Fill::FILL_SOLID);
+                $sheet->getStyle($headerRange)->getFill()->getStartColor()->setARGB($color);
+                $sheet->getStyle($headerRange)->getFont()->setBold(true);
+                $sheet->getStyle($headerRange)->getFont()->getColor()->setARGB('FFFFFFFF');
+                $sheet->getStyle($headerRange)->getFont()->setSize(12);
+                $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle($headerRange)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+            }
         }
 
         $sheet->mergeCells('AM1:AQ1');
@@ -1609,16 +1620,18 @@ class DownloadAttendanceController extends Controller
             $sheet->getStyle("{$colLetter}2")->getAlignment()->setWrapText(true);
         }
 
-        if ($tieneEncuestaSeguimiento) {
-            $segHeaderRowRange = "{$segStartCol}2:{$segEndCol}2";
-            $sheet->getStyle($segHeaderRowRange)->getFill()->setFillType(Fill::FILL_SOLID);
-            $sheet->getStyle($segHeaderRowRange)->getFill()->getStartColor()->setARGB('FF5E35B1');
-            $sheet->getStyle($segHeaderRowRange)->getFont()->setBold(true);
-            $sheet->getStyle($segHeaderRowRange)->getFont()->getColor()->setARGB('FFFFFFFF');
-            $sheet->getStyle($segHeaderRowRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle($segHeaderRowRange)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-            $sheet->getStyle($segHeaderRowRange)->getAlignment()->setWrapText(true);
-            $sheet->getStyle($segHeaderRowRange)->getBorders()->getAllBorders()
+        foreach ($bloquesDinamicos as $tipo => $bloque) {
+            $headerRowRange = "{$bloque['startCol']}2:{$bloque['endCol']}2";
+            $color = $tipo === 'satisfaccion' ? 'FF1F3864' : 'FF5E35B1';
+
+            $sheet->getStyle($headerRowRange)->getFill()->setFillType(Fill::FILL_SOLID);
+            $sheet->getStyle($headerRowRange)->getFill()->getStartColor()->setARGB($color);
+            $sheet->getStyle($headerRowRange)->getFont()->setBold(true);
+            $sheet->getStyle($headerRowRange)->getFont()->getColor()->setARGB('FFFFFFFF');
+            $sheet->getStyle($headerRowRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle($headerRowRange)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+            $sheet->getStyle($headerRowRange)->getAlignment()->setWrapText(true);
+            $sheet->getStyle($headerRowRange)->getBorders()->getAllBorders()
                 ->setBorderStyle(Border::BORDER_THIN)
                 ->getColor()->setARGB('FF000000');
         }
@@ -1870,12 +1883,15 @@ class DownloadAttendanceController extends Controller
             }
         });
 
-        if ($tieneEncuestaSeguimiento && $row > 3) {
+        if ($bloquesDinamicos !== [] && $row > 3) {
             $lastDataRow = $row - 1;
-            $segDataRange = "{$segStartCol}3:{$segEndCol}{$lastDataRow}";
-            $sheet->getStyle($segDataRange)->getBorders()->getAllBorders()
-                ->setBorderStyle(Border::BORDER_THIN)
-                ->getColor()->setARGB('FF000000');
+
+            foreach ($bloquesDinamicos as $bloque) {
+                $dataRange = "{$bloque['startCol']}3:{$bloque['endCol']}{$lastDataRow}";
+                $sheet->getStyle($dataRange)->getBorders()->getAllBorders()
+                    ->setBorderStyle(Border::BORDER_THIN)
+                    ->getColor()->setARGB('FF000000');
+            }
         }
 
         // DESCARGA STREAMED RESPONSE
