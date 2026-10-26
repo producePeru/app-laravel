@@ -25,6 +25,8 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Settings;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -1495,7 +1497,30 @@ class DownloadAttendanceController extends Controller
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        // HEADERS FIJOS EN FILA 2 (AM â†’ AQ)
+        // BLOQUE DE SECCIÓN DIGITAFORO (FILA 1, AM → AQ)
+
+        if (in_array('D1:BI1', $sheet->getMergeCells(), true)) {
+            $sheet->unmergeCells('D1:BI1');
+        }
+
+        $sheet->mergeCells('D1:AL1');
+        $sheet->setCellValue('D1', 'SED');
+        $sheet->getStyle('D1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('D1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+
+        $sheet->mergeCells('AR1:BI1');
+
+        $sheet->mergeCells('AM1:AQ1');
+        $sheet->setCellValue('AM1', 'DIGITAFORO');
+        $sheet->getStyle('AM1:AQ1')->getFill()->setFillType(Fill::FILL_SOLID);
+        $sheet->getStyle('AM1:AQ1')->getFill()->getStartColor()->setARGB('FF351C75');
+        $sheet->getStyle('AM1:AQ1')->getFont()->setBold(true);
+        $sheet->getStyle('AM1:AQ1')->getFont()->getColor()->setARGB('FFFFFFFF');
+        $sheet->getStyle('AM1:AQ1')->getFont()->setSize(12);
+        $sheet->getStyle('AM1:AQ1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('AM1:AQ1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+
+        // HEADERS FIJOS EN FILA 2 (AM → AQ)
         // AM=39, AN=40, AO=41, AP=42, AQ=43
 
         $sheet->setCellValue('AM2', $questionsMap['question_1']['label']);
