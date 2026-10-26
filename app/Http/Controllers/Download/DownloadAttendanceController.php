@@ -1321,47 +1321,47 @@ class DownloadAttendanceController extends Controller
 
         $fixedQuestionsMap = [
             'question_1' => [
-                'label' => 'Â¿CÃ³mo planificas el crecimiento de tu negocio usando tecnologÃ­a?',
+                'label' => '¿Cómo planificas el crecimiento de tu negocio usando tecnología?',
                 'options' => [
-                    'sin_interes' => 'A. No tengo interÃ©s en la tecnologÃ­a; mi negocio depende solo de mi presencia fÃ­sica y el boca a boca.',
+                    'sin_interes' => 'A. No tengo interés en la tecnología; mi negocio depende solo de mi presencia física y el boca a boca.',
                     'redes_sociales' => 'B. Uso Facebook o WhatsApp porque otros lo hacen, pero no tengo un plan ni metas de ventas digitales.',
-                    'estrategia_digital' => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir quÃ© comprar o vender.',
-                    'plan_transformacion' => 'D. Tengo un Plan de TransformaciÃ³n Digital escrito y mi modelo de negocio se adapta rÃ¡pidamente a los cambios del mercado tecnolÃ³gico.',
+                    'estrategia_digital' => 'C. Tengo una estrategia digital clara y uso datos de mis ventas pasadas para decidir qué comprar o vender.',
+                    'plan_transformacion' => 'D. Tengo un Plan de Transformación Digital escrito y mi modelo de negocio se adapta rápidamente a los cambios del mercado tecnológico.',
                 ],
             ],
             'question_2' => [
-                'label' => 'Â¿CÃ³mo se involucra tu equipo o personal en el uso de herramientas digitales?',
+                'label' => '¿Cómo se involucra tu equipo o personal en el uso de herramientas digitales?',
                 'options' => [
                     'sin_interes' => 'A. Solo yo tomo las decisiones y no usamos herramientas digitales para coordinar el trabajo.',
-                    'redes_sociales' => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitaciÃ³n en herramientas de gestiÃ³n.',
-                    'capacitacion' => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema comÃºn para registrar pedidos y tareas.',
-                    'lideres_digitales' => 'D. Contamos con lÃ­deres digitales en el equipo, todos tienen altas competencias digitales y tomamos decisiones basadas en reportes de datos en tiempo real.',
+                    'redes_sociales' => 'B. Mis empleados usan sus WhatsApp personales para atender clientes, pero no han recibido capacitación en herramientas de gestión.',
+                    'capacitacion' => 'C. Capacito a mi equipo en el uso de herramientas digitales y todos usamos un sistema común para registrar pedidos y tareas.',
+                    'lideres_digitales' => 'D. Contamos con líderes digitales en el equipo, todos tienen altas competencias digitales y tomamos decisiones basadas en reportes de datos en tiempo real.',
                 ],
             ],
             'question_3' => [
-                'label' => 'Â¿Con quÃ© herramientas tecnolÃ³gicas y seguridad cuenta tu negocio para operar?',
+                'label' => '¿Con qué herramientas tecnológicas y seguridad cuenta tu negocio para operar?',
                 'options' => [
-                    'celular' => 'A. Solo tengo un celular bÃ¡sico para llamadas y no confÃ­o en los pagos digitales ni en internet.',
-                    'internet_basico' => 'B. Tengo internet bÃ¡sico y uso computadoras personales para tareas simples (Word/Excel bÃ¡sico) sin protocolos de seguridad.',
-                    'internet_alta_velocidad' => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi informaciÃ³n con contraseÃ±as y respaldos frecuentes.',
-                    'nube' => 'D. Uso servicios en la nube (Cloud), mi infraestructura estÃ¡ integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
+                    'celular' => 'A. Solo tengo un celular básico para llamadas y no confío en los pagos digitales ni en internet.',
+                    'internet_basico' => 'B. Tengo internet básico y uso computadoras personales para tareas simples (Word/Excel básico) sin protocolos de seguridad.',
+                    'internet_alta_velocidad' => 'C. Tengo internet de alta velocidad, uso software con licencia y protejo mi información con contraseñas y respaldos frecuentes.',
+                    'nube' => 'D. Uso servicios en la nube (Cloud), mi infraestructura está integrada y tengo sistemas de ciberseguridad para proteger los datos de mis clientes.',
                 ],
             ],
             'question_4' => [
-                'label' => 'Â¿CÃ³mo llevas el control de tus inventarios, producciÃ³n y contabilidad?',
+                'label' => '¿Cómo llevas el control de tus inventarios, producción y contabilidad?',
                 'options' => [
                     'anotado' => 'A. Todo lo anoto en cuadernos o lo tengo en la memoria; a veces pierdo el control de lo que falta.',
-                    'excel' => 'B. Registro mis ventas en Excel al final del dÃ­a, pero mi inventario y contabilidad los llevo por separado o en fÃ­sico.',
-                    'software' => 'C. Uso un software o App especÃ­fica para controlar mi stock, mis ventas y emitir comprobantes electrÃ³nicos de forma automÃ¡tica.',
-                    'integrado' => 'D. Mi sistema estÃ¡ totalmente integrado: me avisa automÃ¡ticamente cuando queda poco stock y genera reportes contables y de producciÃ³n sin errores.',
+                    'excel' => 'B. Registro mis ventas en Excel al final del día, pero mi inventario y contabilidad los llevo por separado o en físico.',
+                    'software' => 'C. Uso un software o App específica para controlar mi stock, mis ventas y emitir comprobantes electrónicos de forma automática.',
+                    'integrado' => 'D. Mi sistema está totalmente integrado: me avisa automáticamente cuando queda poco stock y genera reportes contables y de producción sin errores.',
                 ],
             ],
             'question_5' => [
-                'label' => 'Â¿CÃ³mo te encuentran los clientes nuevos?',
+                'label' => '¿Cómo te encuentran los clientes nuevos?',
                 'options' => [
                     'local' => 'A. Solo me encuentran si pasan por mi local; no guardo datos de contacto de quienes me compran.',
-                    'excel' => 'B. Respondo consultas por Facebook o WhatsApp, pero no tengo un catÃ¡logo digital ni analizo si los clientes estÃ¡n satisfechos.',
-                    'software' => 'C. Tengo presencia en Google Maps, uso catÃ¡logos digitales y acepto mÃºltiples pagos (Yape, Plin, POS). Mido la satisfacciÃ³n de mis clientes.',
+                    'excel' => 'B. Respondo consultas por Facebook o WhatsApp, pero no tengo un catálogo digital ni analizo si los clientes están satisfechos.',
+                    'software' => 'C. Tengo presencia en Google Maps, uso catálogos digitales y acepto múltiples pagos (Yape, Plin, POS). Mido la satisfacción de mis clientes.',
                     'integrado' => 'D. Tengo una tienda online o CRM donde el cliente compra directamente y utilizo sus datos para enviarles ofertas personalizadas.',
                 ],
             ],
@@ -1369,7 +1369,7 @@ class DownloadAttendanceController extends Controller
 
         $newYesNoOptions = [
             'si' => 'SI',
-            'sÃ­' => 'SI',
+            'sí' => 'SI',
             's' => 'SI',
             'no' => 'NO',
             'n' => 'NO',
@@ -1379,23 +1379,23 @@ class DownloadAttendanceController extends Controller
 
         $newQuestionsMap = [
             'question_1' => [
-                'label' => 'Â¿Usa redes sociales para su negocio?',
+                'label' => '¿Usa redes sociales para su negocio?',
                 'options' => $newYesNoOptions,
             ],
             'question_2' => [
-                'label' => 'Â¿Tiene pÃ¡gina web o tienda virtual?',
+                'label' => '¿Tiene página web o tienda virtual?',
                 'options' => $newYesNoOptions,
             ],
             'question_3' => [
-                'label' => 'Â¿Tu negocio usa pagos digitales (yape, plim, POS, etc.)?',
+                'label' => '¿Tu negocio usa pagos digitales (yape, plim, POS, etc.)?',
                 'options' => $newYesNoOptions,
             ],
             'question_4' => [
-                'label' => 'Â¿Usas software para contabilidad/inventario?',
+                'label' => '¿Usas software para contabilidad/inventario?',
                 'options' => $newYesNoOptions,
             ],
             'question_5' => [
-                'label' => 'Â¿QuÃ© espera aprender en esta capacitaciÃ³n?',
+                'label' => '¿Qué espera aprender en esta capacitación?',
                 'options' => [],
             ],
         ];
@@ -1928,7 +1928,7 @@ class DownloadAttendanceController extends Controller
 
     private function usaPreguntasNuevasSed(iterable $sedQuestions): bool
     {
-        $valoresNuevos = ['si', 'sÃ­', 's', 'no', 'n', 'personal', 'a nivel personal'];
+        $valoresNuevos = ['si', 'sí', 's', 'no', 'n', 'personal', 'a nivel personal'];
         $valoresAnteriores = [
             'sin_interes',
             'redes_sociales',
