@@ -23,9 +23,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Settings;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -1425,15 +1427,59 @@ class DownloadAttendanceController extends Controller
 
         // COLUMNAS DINÃMICAS
 
+        $resolveQuestion = function ($modelIdentifier) use ($questions) {
+            $normalized = preg_replace('/^questions_/', 'question_', $modelIdentifier);
+            $question = $questions->get($normalized);
+
+            if (! $question) {
+                $question = $questions->first(
+                    fn ($q) => trim((string) $q->label) === trim((string) $modelIdentifier)
+                );
+            }
+
+            return $question;
+        };
+
         $dynamicColumns = sedQuestionAnswer::where('slug_sed', $slug)
             ->distinct()
             ->pluck('question')
-            ->sortBy(function ($modelIdentifier) use ($questions) {
-                $normalized = preg_replace('/^questions_/', 'question_', $modelIdentifier);
+            ->sortBy(function ($modelIdentifier) use ($resolveQuestion) {
+                $question = $resolveQuestion($modelIdentifier);
+                $tableOrder = $question?->tableName === 'seg' ? 1 : 0;
+                $position = (int) ($question?->position ?? 9999);
 
-                return $questions->get($normalized)?->position ?? 9999;
+                return sprintf('%d-%06d', $tableOrder, $position);
             })
             ->values();
+
+        // BLOQUE DE ENCUESTA DE SEGUIMIENTO (PREGUNTAS CON tableName = "seg")
+
+        $dynStartColIndex = 44; // AR
+
+        $segIndexes = $dynamicColumns
+            ->map(fn ($modelIdentifier) => $resolveQuestion($modelIdentifier)?->tableName === 'seg')
+            ->filter()
+            ->keys()
+            ->values();
+
+        $tieneEncuestaSeguimiento = false;
+        $segStartColIndex = null;
+        $segEndColIndex = null;
+        $segStartCol = null;
+        $segEndCol = null;
+
+        if ($segIndexes->isNotEmpty()) {
+            $firstSegIndex = (int) $segIndexes->first();
+            $lastSegIndex = (int) $segIndexes->last();
+
+            if (($lastSegIndex - $firstSegIndex + 1) === $segIndexes->count()) {
+                $tieneEncuestaSeguimiento = true;
+                $segStartColIndex = $dynStartColIndex + $firstSegIndex;
+                $segEndColIndex = $dynStartColIndex + $lastSegIndex;
+                $segStartCol = Coordinate::stringFromColumnIndex($segStartColIndex);
+                $segEndCol = Coordinate::stringFromColumnIndex($segEndColIndex);
+            }
+        }
 
         // QUERY INSCRITOS
 
@@ -1508,7 +1554,26 @@ class DownloadAttendanceController extends Controller
         $sheet->getStyle('D1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('D1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
-        $sheet->mergeCells('AR1:BI1');
+        if ($tieneEncuestaSeguimiento) {
+            $segHeaderRange = $segStartColIndex < $segEndColIndex
+                ? "{$segStartCol}1:{$segEndCol}1"
+                : "{$segStartCol}1";
+
+            if ($segStartColIndex < $segEndColIndex) {
+                $sheet->mergeCells($segHeaderRange);
+            }
+
+            $sheet->setCellValue("{$segStartCol}1", 'ENCUESTA DE SEGUIMIENTO');
+            $sheet->getStyle($segHeaderRange)->getFill()->setFillType(Fill::FILL_SOLID);
+            $sheet->getStyle($segHeaderRange)->getFill()->getStartColor()->setARGB('FF351C75');
+            $sheet->getStyle($segHeaderRange)->getFont()->setBold(true);
+            $sheet->getStyle($segHeaderRange)->getFont()->getColor()->setARGB('FFFFFFFF');
+            $sheet->getStyle($segHeaderRange)->getFont()->setSize(12);
+            $sheet->getStyle($segHeaderRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle($segHeaderRange)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+        } else {
+            $sheet->mergeCells('AR1:BI1');
+        }
 
         $sheet->mergeCells('AM1:AQ1');
         $sheet->setCellValue('AM1', 'DIGITAFORO');
@@ -1535,14 +1600,27 @@ class DownloadAttendanceController extends Controller
 
         // HEADERS DINÃMICOS EN FILA 2 (desde AR = Ã­ndice 44)
 
-        $dynStartColIndex = 44; // AR
         foreach ($dynamicColumns as $i => $modelIdentifier) {
             $normalizedModel = preg_replace('/^questions_/', 'question_', $modelIdentifier);
             $question = $questions->get($normalizedModel);
             $headerLabel = $question?->label ?? $modelIdentifier;
-            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($dynStartColIndex + $i);
+            $colLetter = Coordinate::stringFromColumnIndex($dynStartColIndex + $i);
             $sheet->setCellValue("{$colLetter}2", $headerLabel);
             $sheet->getStyle("{$colLetter}2")->getAlignment()->setWrapText(true);
+        }
+
+        if ($tieneEncuestaSeguimiento) {
+            $segHeaderRowRange = "{$segStartCol}2:{$segEndCol}2";
+            $sheet->getStyle($segHeaderRowRange)->getFill()->setFillType(Fill::FILL_SOLID);
+            $sheet->getStyle($segHeaderRowRange)->getFill()->getStartColor()->setARGB('FF351C75');
+            $sheet->getStyle($segHeaderRowRange)->getFont()->setBold(true);
+            $sheet->getStyle($segHeaderRowRange)->getFont()->getColor()->setARGB('FFFFFFFF');
+            $sheet->getStyle($segHeaderRowRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle($segHeaderRowRange)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+            $sheet->getStyle($segHeaderRowRange)->getAlignment()->setWrapText(true);
+            $sheet->getStyle($segHeaderRowRange)->getBorders()->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN)
+                ->getColor()->setARGB('FF000000');
         }
 
         // CONTROL DE FILAS Y CHUNK PROCESAMIENTO
@@ -1791,6 +1869,14 @@ class DownloadAttendanceController extends Controller
                 $row++;
             }
         });
+
+        if ($tieneEncuestaSeguimiento && $row > 3) {
+            $lastDataRow = $row - 1;
+            $segDataRange = "{$segStartCol}3:{$segEndCol}{$lastDataRow}";
+            $sheet->getStyle($segDataRange)->getBorders()->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN)
+                ->getColor()->setARGB('FF000000');
+        }
 
         // DESCARGA STREAMED RESPONSE
 
