@@ -1565,7 +1565,7 @@ class DownloadAttendanceController extends Controller
 
             $sheet->setCellValue("{$segStartCol}1", 'ENCUESTA DE SEGUIMIENTO');
             $sheet->getStyle($segHeaderRange)->getFill()->setFillType(Fill::FILL_SOLID);
-            $sheet->getStyle($segHeaderRange)->getFill()->getStartColor()->setARGB('FF351C75');
+            $sheet->getStyle($segHeaderRange)->getFill()->getStartColor()->setARGB('FF5E35B1');
             $sheet->getStyle($segHeaderRange)->getFont()->setBold(true);
             $sheet->getStyle($segHeaderRange)->getFont()->getColor()->setARGB('FFFFFFFF');
             $sheet->getStyle($segHeaderRange)->getFont()->setSize(12);
@@ -1612,7 +1612,7 @@ class DownloadAttendanceController extends Controller
         if ($tieneEncuestaSeguimiento) {
             $segHeaderRowRange = "{$segStartCol}2:{$segEndCol}2";
             $sheet->getStyle($segHeaderRowRange)->getFill()->setFillType(Fill::FILL_SOLID);
-            $sheet->getStyle($segHeaderRowRange)->getFill()->getStartColor()->setARGB('FF351C75');
+            $sheet->getStyle($segHeaderRowRange)->getFill()->getStartColor()->setARGB('FF5E35B1');
             $sheet->getStyle($segHeaderRowRange)->getFont()->setBold(true);
             $sheet->getStyle($segHeaderRowRange)->getFont()->getColor()->setARGB('FFFFFFFF');
             $sheet->getStyle($segHeaderRowRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
