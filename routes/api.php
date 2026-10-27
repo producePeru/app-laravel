@@ -435,6 +435,8 @@ Route::group(['prefix' => 'download', 'namespace' => 'App\Http\Controllers', 'mi
     Route::post('export-todos-ratings', [DownloadAttendanceController::class, 'exportRatings']);
 
     Route::post('export-todos-inscritos-mujer-produce', [DownloadAttendanceController::class, 'exportInscritosMujerProduce']);
+
+    Route::post('export-todos-inscritos-sed', [DownloadAttendanceController::class, 'exportInscritosSed']);
 });
 
 // Route::group(['prefix' => 'import', 'namespace' => 'App\Http\Controllers', 'middleware' => 'auth:sanctum'], function () {

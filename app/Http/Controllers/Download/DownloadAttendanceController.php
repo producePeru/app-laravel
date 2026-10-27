@@ -3614,4 +3614,397 @@ class DownloadAttendanceController extends Controller
 
         return is_array($op) ? ($op['label'] ?? (string) $valor) : (string) $op;
     }
+
+    // SOLO PARA EL SED A PEDIDO DE LUCHITO EL COMUNICADOR
+
+    public function exportInscritosSed(Request $request)
+    {
+        try {
+            ini_set('memory_limit', '2G');
+            set_time_limit(600);
+
+            $user = Auth::user();
+
+            // Ã¢Å“â€¦ Solo rol 1 puede descargar
+            if ($user->rol != 1) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'No tienes permisos para descargar este reporte.',
+                ], 403);
+            }
+
+            // Ã¢Å“â€¦ Helper para limpiar saltos de lÃƒÂ­nea y tabs
+            $clean = fn ($value) => is_string($value)
+                ? str_replace(["\r\n", "\r", "\n", "\t"], ' ', trim($value))
+                : $value;
+
+            $filterDates = null;
+
+            if ($request->filled('rangeDate')) {
+                [$from, $to] = $request->input('rangeDate');
+
+                $current = Carbon::parse($from);
+                $end = Carbon::parse($to);
+
+                $filterDates = [];
+
+                while ($current->lte($end)) {
+                    $filterDates[] = $current->format('Y-m-d');
+                    $current->addDay();
+                }
+            }
+
+            $actividades = ActividadPnte::with([
+                'tipoActividad:id,name',
+                'nombreActividad:id,name',
+                'regionRel:id,name',
+                'provinciaRel:id,name',
+                'distritoRel:id,name',
+                'representante:id,name,lastname,middlename',
+                'modalidad:id,name',
+                'registradoPor:id,name,lastname,middlename',
+            ])
+                ->select([
+                    'id',
+                    'unidad',
+                    'slug',
+                    'fechas',
+                    'cantidad_dias',
+                    'tema',
+                    'lugar',
+                    'tipo_actividad_id',
+                    'nombre_actividad_id',
+                    'modalidad_id',
+                    'region',
+                    'provincia',
+                    'distrito',
+                    'representante_id',
+                    'entidad_organizadora',
+                    'entidad_aliada',
+                    'requiere_pasaje',
+                    'monto_gasto',
+                    'mypes_beneficiadas',
+                    'total_participantes',
+                    'total_asesorias',
+                    'total_formalizaciones',
+                    'cancelado',
+                    'reprogramado',
+                    'registrado_por_id',
+                    'created_at',
+                ])
+                ->addSelect([
+                    'inscritos' => EmpresarioActividad::selectRaw('COUNT(*)')
+                        ->whereColumn('empresario_actividad.slug', 'actividades_pnte.slug')
+                        ->when($filterDates, fn ($q) => $q->whereIn('fecha_seleccionada', $filterDates)),
+                ])
+
+                // Ã¢Å“â€¦ FILTRO UNIDAD
+                ->when(
+                    $request->filled('unidad'),
+                    fn ($q) => $q->where('unidad', $request->input('unidad'))
+                )
+
+                ->when($request->filled('name'), function ($q) use ($request) {
+                    $q->where('tema', 'LIKE', '%'.$request->input('name').'%');
+                })
+
+                ->when(
+                    $request->filled('year'),
+                    fn ($q) => $q->where('fechas', 'LIKE', "%{$request->input('year')}%")
+                )
+
+                // Ã¢Å“â€¦ Reutilizamos $filterDates en vez de recalcular el rango
+                ->when($filterDates, function ($q) use ($filterDates) {
+                    $q->where(function ($query) use ($filterDates) {
+                        foreach ($filterDates as $day) {
+                            $query->orWhere('fechas', 'LIKE', "%{$day}%");
+                        }
+                    });
+                })
+
+                ->when(
+                    $request->filled('city'),
+                    fn ($q) => $q->where('region', $request->input('city'))
+                )
+
+                ->when(
+                    $request->filled('tipo_actividad_id'),
+                    fn ($q) => $q->where(
+                        'tipo_actividad_id',
+                        $request->input('tipo_actividad_id')
+                    )
+                )
+
+                ->when(
+                    $request->filled('asesor'),
+                    fn ($q) => $q->where(
+                        'representante_id',
+                        $request->input('asesor')
+                    )
+                )
+
+                // Ã¢Å“â€¦ FILTRO: aprobar Ã¢â€ â€™ activo (0 = No aprobados, 1 = Aprobados)
+                ->when(
+                    $request->has('aprobar') && $request->input('aprobar') !== null && $request->input('aprobar') !== '',
+                    fn ($q) => $q->where('activo', (int) $request->input('aprobar'))
+                )
+
+                ->get()
+
+                ->sortByDesc(function ($a) {
+
+                    $fechas = is_array($a->fechas)
+                        ? $a->fechas
+                        : json_decode($a->fechas, true);
+
+                    return collect($fechas)->max();
+                })
+
+                ->values();
+
+            $slugs = $actividades->pluck('slug')->toArray();
+
+            $inscritosPorSlug = EmpresarioActividad::with([
+                'empresario:id,ruc,razon_social,apellido_paterno,apellido_materno,nombres,numero_dni,celular,correo_electronico,genero_id,discapacidad,sector_economico_id,rubro_id,region_id,provincia_id,distrito_id,pais_id,tipo_documento_id,academicdegree_id,cargo_empresa_id',
+                'empresario.genero:id,name',
+                'empresario.tipoDocumento:id,name',
+                'empresario.pais:id,name',
+                'empresario.region:id,name',
+                'empresario.provincia:id,name',
+                'empresario.distrito:id,name',
+                'empresario.sectorEconomico:id,name',
+                'empresario.rubro:id,name',
+                'empresario.gradoAcademico:id,name',
+                'empresario.cargoEmpresa:id,name',
+            ])
+                ->whereIn('slug', $slugs)
+
+                // Ã¢Å“â€¦ Si hay filtro de rango de fechas, solo traemos los inscritos
+                //    cuya fecha_seleccionada caiga dentro del rango solicitado
+                ->when($filterDates, fn ($q) => $q->whereIn('fecha_seleccionada', $filterDates))
+                ->orderBy('slug')
+                ->orderBy('id')
+                ->get()
+                ->groupBy('slug');
+
+            // Ã¢Å“â€¦ CSV en memoria con BOM UTF-8
+            $handle = fopen('php://temp', 'r+');
+
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($handle, [
+                'Nro.',
+                'UNIDAD',
+                'MES',
+                'FECHA DE INICIO',
+                'FECHA DE FIN',
+                'CANTIDAD DE DIAS DE LA ACTIVIDAD',
+                'TIPO DE ACTIVIDAD',
+                'NOMBRE DE ACTIVIDAD',
+                'TEMA',
+                'REGION DE LA ACTIVIDAD',
+                'PROVINCIA DE LA ACTIVIDAD',
+                'DISTRITO DE LA ACTIVIDAD',
+                'LUGAR DE LA ACTIVIDAD',
+                'NOMBRE DE ENTIDAD ORGANIZADORA',
+                'NOMBRE DE ENTIDAD O INSTITUCIÓN ALIADA / PARTICIPANTE',
+                'REPRESENTANTE DE PRODUCE QUE PARTICIPA (APELLIDOS Y NOMBRES)',
+                'MYPE Y/O EMPRENDEDORES BENEFICIADOS ESPERADOS',
+                'MODALIDAD   (VIRTUAL / PRESENCIAL)',
+                'TOTAL DE INSCRITOS',
+                'ESTADO',
+                'FECHA CREADA LA ACTIVIDAD',
+                'REGISTRADO POR',
+                'TIPO DE DOCUMENTO',
+                'NRO. DE DOCUMENTO',
+                'PAIS DE PROCEDENCIA',
+                'APELLIDOS',
+                'NOMBRES',
+                'GENERO',
+                'DISCAPACIDAD SI / NO',
+                'NIVEL EDUCATIVO',
+                'CARGO EN LA EMPRESA',
+                'RUC',
+                'REGIÓN_MYPE',
+                'PROVINCIA_MYPE',
+                'DISTRITO_MYPE',
+                'SECTOR (COMERCIO, SERVICIOS O INDUSTRIA)',
+                'RUBRO',
+                'CELULAR',
+                'CORREO',
+                'ASISTIÓ',
+            ], ',');
+
+            $globalIndex = 1;
+
+            $today = Carbon::today();
+
+            foreach ($actividades as $actividad) {
+
+                $fechas = is_array($actividad->fechas)
+                    ? $actividad->fechas
+                    : json_decode($actividad->fechas, true);
+
+                $fechasFiltradas = $filterDates
+                    ? array_values(array_intersect($fechas, $filterDates))
+                    : $fechas;
+
+                // Por seguridad, si por algÃƒÂºn motivo la intersecciÃƒÂ³n quedara vacÃƒÂ­a
+                // (no deberÃƒÂ­a pasar, ya que el WHERE ya garantiza al menos 1 coincidencia)
+                if (empty($fechasFiltradas)) {
+                    $fechasFiltradas = $fechas;
+                }
+
+                $fechaMin = collect($fechas)->min();
+                $fechaMax = collect($fechas)->max();
+
+                // Ã¢â€â‚¬Ã¢â€â‚¬ ESTADO Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+                if ($actividad->inscritos > 0) {
+
+                    $estado = '4. FINALIZADOS';
+                } elseif (Carbon::parse($fechaMax)->lt($today)) {
+
+                    $estado = '3. PENDIENTE DE RESULTADOS';
+                } elseif (Carbon::parse($actividad->created_at)->isToday()) {
+
+                    $estado = '1. PROGRAMACION DIARIA';
+                } else {
+
+                    $estado = '2. PROGRAMACION CONSOLIDADA';
+                }
+
+                $estadoActividad = $actividad->cancelado
+                    ? 'CANCELADO'
+                    : ($actividad->reprogramado ? 'REPROGRAMADO' : 'EN CURSO');
+
+                $representante = $actividad->representante
+                    ? strtoupper(
+                        $actividad->representante->lastname.' '.
+                            $actividad->representante->middlename.', '.
+                            $actividad->representante->name
+                    )
+                    : null;
+
+                $registradoPor = $actividad->registradoPor
+                    ? strtoupper(
+                        $actividad->registradoPor->name.' '.
+                            $actividad->registradoPor->lastname.' '.
+                            $actividad->registradoPor->middlename
+                    )
+                    : null;
+
+                // Ã¢Å“â€¦ TEXTO UNIDAD
+                $unidadTexto = match ((int) $actividad->unidad) {
+                    1 => 'UGO',
+                    2 => 'UGSE',
+                    3 => 'UGSE',
+                    default => 'SIN UNIDAD',
+                };
+
+                // Ã¢â€â‚¬Ã¢â€â‚¬ COLUMNAS FIJAS DE LA ACTIVIDAD Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+                $colsActividad = [
+                    $globalIndex,
+                    $unidadTexto,
+                    $clean(strtoupper(Carbon::parse($fechaMin)->translatedFormat('F'))),
+                    Carbon::parse($fechaMin)->format('d/m/Y'),
+                    Carbon::parse($fechaMax)->format('d/m/Y'),
+                    count($fechasFiltradas),
+                    $clean($actividad->tipoActividad->name ?? '-'),
+                    $clean($actividad->nombreActividad->name ?? '-'),
+                    $clean(strtoupper($actividad->tema ?? '-')),
+                    $clean($actividad->regionRel->name ?? null),
+                    $clean($actividad->provinciaRel->name ?? null),
+                    $clean($actividad->distritoRel->name ?? null),
+                    $clean($actividad->lugar ?? null),
+                    $clean(strtoupper($actividad->entidad_organizadora ?? '-')),
+                    $clean(strtoupper($actividad->entidad_aliada ?? '-')),
+                    $clean($representante),
+                    $actividad->mypes_beneficiadas ?? 0,
+                    $clean($actividad->modalidad->name ?? null),
+                    $actividad->inscritos ?? 0,
+                    $clean($estado),
+                    Carbon::parse($actividad->created_at)->format('d/m/Y'),
+                    $clean($registradoPor),
+                ];
+
+                $inscritos = $inscritosPorSlug->get(
+                    $actividad->slug,
+                    collect()
+                );
+
+                if ($inscritos->isEmpty()) {
+
+                    fputcsv(
+                        $handle,
+                        array_merge($colsActividad, array_fill(0, 18, null)),
+                        ','
+                    );
+                } else {
+
+                    foreach ($inscritos as $registro) {
+
+                        $emp = $registro->empresario;
+
+                        $apellidos = $emp
+                            ? strtoupper(
+                                trim(
+                                    $emp->apellido_paterno.' '.
+                                        $emp->apellido_materno
+                                )
+                            )
+                            : null;
+
+                        $colsParticipante = [
+                            $clean($emp?->tipoDocumento?->name ?? null),
+                            $clean($registro->numero_dni ?? null),
+                            $clean($emp?->pais?->name ?? null),
+                            $clean($apellidos),
+                            $clean(strtoupper($emp?->nombres ?? '')),
+                            $clean(strtoupper($emp?->genero?->name ?? '')),
+                            $emp?->discapacidad ? 'SI' : 'NO',
+                            $clean($emp?->gradoAcademico?->name ?? null),
+                            $clean($emp?->cargoEmpresa?->name ?? null),
+                            $clean($emp?->ruc ?? null),
+                            $clean($emp?->region?->name ?? null),
+                            $clean($emp?->provincia?->name ?? null),
+                            $clean($emp?->distrito?->name ?? null),
+                            $clean($emp?->sectorEconomico?->name ?? null),
+                            $clean($emp?->rubro?->name ?? null),
+                            $clean($emp?->celular ?? null),
+                            $clean($emp?->correo_electronico ?? null),
+                            ! empty($registro->fecha_asistencia) ? 'SI' : 'NO',
+                        ];
+
+                        fputcsv(
+                            $handle,
+                            array_merge($colsActividad, $colsParticipante),
+                            ','
+                        );
+                    }
+                }
+
+                $globalIndex++;
+            }
+
+            rewind($handle);
+
+            $csvContent = stream_get_contents($handle);
+
+            fclose($handle);
+
+            $filename = 'inscritos_ugo_'.now()->format('Ymd_His').'.csv';
+
+            return response($csvContent, 200, [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+                'Content-Length' => strlen($csvContent),
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => 'Error al generar el reporte.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
