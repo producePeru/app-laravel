@@ -620,6 +620,7 @@ class ActividadPnteController extends Controller
                 'empresario.genero',
                 'empresario.feriasPapa.image1',
                 'empresario.feriasPapa.image2',
+                'asistencias',
             ])
 
                 ->where('slug', $slug)
@@ -783,6 +784,15 @@ class ActividadPnteController extends Controller
                     'coop_rol' => $e?->coop_rol,
 
                     'nombre_mercado' => $e?->nombre_mercado,
+
+                    'asistencias' => (object) $item->asistencias
+                        ->filter(fn ($asistencia) => $asistencia->fecha)
+                        ->mapWithKeys(fn ($asistencia) => [
+                            $asistencia->fecha->format('Y-m-d') => $asistencia->fecha_hora
+                                ? $asistencia->fecha_hora->format('Y-m-d H:i:s')
+                                : null,
+                        ])
+                        ->all(),
                 ];
             });
 
@@ -1143,6 +1153,7 @@ class ActividadPnteController extends Controller
                 'numero_dni' => 'required|string',
                 'check' => 'required|boolean',
                 'date' => 'nullable|string',
+                'fecha' => 'nullable|date_format:Y-m-d',
             ]);
 
             $registro = EmpresarioActividad::where('slug', $request->slug)
@@ -1166,11 +1177,40 @@ class ActividadPnteController extends Controller
                 ], 403);
             }
 
-            $registro->update([
-                'fecha_asistencia' => $request->check
-                    ? $request->date
-                    : null,
-            ]);
+            if ($request->filled('fecha')) {
+
+                $fecha = $request->input('fecha');
+
+                if ($request->boolean('check')) {
+                    $registro->asistencias()->updateOrCreate(
+                        ['fecha' => $fecha],
+                        [
+                            'slug' => $registro->slug,
+                            'numero_dni' => $registro->numero_dni,
+                            'fecha_hora' => now(),
+                        ]
+                    );
+                } else {
+                    $registro->asistencias()->whereDate('fecha', $fecha)->delete();
+                }
+
+                $primera = $registro->asistencias()
+                    ->orderBy('fecha')
+                    ->orderBy('fecha_hora')
+                    ->first();
+
+                $registro->update([
+                    'fecha_asistencia' => $primera
+                        ? ($primera->fecha_hora ?? now())->format('d/m/Y h:i a')
+                        : null,
+                ]);
+            } else {
+                $registro->update([
+                    'fecha_asistencia' => $request->check
+                        ? $request->date
+                        : null,
+                ]);
+            }
 
             return response()->json([
                 'status' => 200,

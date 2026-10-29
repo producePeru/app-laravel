@@ -13,7 +13,7 @@
         .card-actividad { background-color: #f8fafc; border-left: 4px solid #00a6db; border-radius: 4px; padding: 20px; margin: 20px 0; }
         .card-title { font-size: 18px; font-weight: bold; color: #1e3a8a; margin: 0 0 10px; }
         .info-label { font-weight: 600; color: #475569; }
-        .btn-link { display: inline-block; background-color: #00a6db; color: #ffffff !important; text-decoration: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; margin-top: 12px; }
+        .btn-link { display: inline-block; background-color: #00a6db; color: #ffffff !important; text-decoration: none; padding: 16px 40px; font-weight: bold; border-radius: 5px; margin-top: 12px; font-size: 16px; }
         .link-text { font-size: 12px; color: #64748b; word-break: break-all; }
         .footer { background-color: #f1f5f9; text-align: center; padding: 20px; font-size: 12px; color: #64748b; }
     </style>
@@ -50,17 +50,14 @@
                 en el horario <strong>{{ $capacitacion['horario'] }}</strong>.
             </p>
 
-            @if(!empty($capacitacion['link']))
-                <p>Accede a la capacitación en el siguiente enlace:</p>
-                <p>
-                    <a href="{{ $capacitacion['link'] }}" target="_blank" class="btn-link">
-                        Ingresar a la capacitación
-                    </a>
-                </p>
-                <p class="link-text">{{ $capacitacion['link'] }}</p>
-            @else
-                <p>El enlace de acceso será compartido oportunamente.</p>
-            @endif
+            <p>
+                Ingresa a la plataforma para registrar tu asistencia. Desde allí podrás acceder a la sala:
+            </p>
+            <p>
+                <a href="{{ $capacitacion['asistencia_url'] }}" target="_blank" class="btn-link">
+                    Ingresar a la capacitación
+                </a>
+            </p>
 
             <p>
                 Cualquier consulta escribir a

@@ -1825,12 +1825,12 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($sq?->propagandaMedia?->name ?? '', 'UTF-8'));
                 $col++;
 
-                // HORA REGISTRO
-                $sheet->setCellValue(
-                    "{$col}{$row}",
-                    $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y H:i:s') : ''
-                );
-                $col++;
+                // // HORA REGISTRO
+                // $sheet->setCellValue(
+                //     "{$col}{$row}",
+                //     $item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y H:i:s') : ''
+                // );
+                // $col++;
 
                 // FECHA ASISTENCIA
                 $sheet->setCellValue("{$col}{$row}", $item->fecha_asistencia ?: 'x');
@@ -2565,6 +2565,9 @@ class DownloadAttendanceController extends Controller
             // Ã°Å¸â€Â¥ ESTOS FALTABAN
             'empresario.sectorEconomico:id,name',
             'empresario.rubro:id,name',
+
+            // ASISTENCIAS POR FECHA
+            'asistencias:id,empresario_actividad_id,slug,numero_dni,fecha,fecha_hora',
         ])
             ->where('slug', $slug)
 
@@ -2754,9 +2757,30 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->pais?->name ?? '', 'UTF-8'));
                 $col++;
 
-                // FECHA ASISTENCIA
-                $sheet->setCellValue("{$col}{$row}", $item->fecha_asistencia ?: 'x');
-                $col++;
+                // ASISTENCIA POR FECHA (una columna por cada fecha del evento)
+                foreach ($actividad->fechas ?? [] as $fecha) {
+                    $asistio = false;
+                    $asistencia = null;
+                    foreach (($item->asistencias ?? []) as $a) {
+                        try {
+                            $fa = $a->fecha ? $a->fecha->format('Y-m-d') : null;
+                            if ($fa === $fecha) {
+                                $asistencia = $a;
+                                $asistio = true;
+                                break;
+                            }
+                        } catch (\Exception $e) {
+                            continue;
+                        }
+                    }
+                    $sheet->setCellValue(
+                        "{$col}{$row}",
+                        $asistio ? ($asistencia->fecha_hora ? $asistencia->fecha_hora->format('d/m/Y H:i') : 'SI') : 'x'
+                    );
+                    // Cabecera de la columna de asistencia
+                    $sheet->setCellValue("{$col}2", Carbon::parse($fecha)->format('d/m/Y'));
+                    $col++;
+                }
 
                 $row++;
             }
@@ -2860,33 +2884,33 @@ class DownloadAttendanceController extends Controller
 
         // Mismas columnas y orden que la tabla del frontend (ferias-inscritos.vue)
         $headers = array_merge(
-            ['NÂ°', 'APROBADOS'],
+            ['N°', 'APROBADOS'],
             $esPapa ? ['LUGAR DE PRIORIDAD 1', 'LUGAR DE PRIORIDAD 2'] : [],
             [
-                'RUC', 'RAZÃ“N SOCIAL', 'NOMBRE COMERCIAL',
-                'SECTOR ECONÃ“MICO', 'RUBRO', 'ACTIVIDAD COMERCIAL',
-                'PAÃS NACIMIENTO', 'REGIÃ“N', 'PROVINCIA', 'DISTRITO', 'DIRECCIÃ“N',
-                'TIPO DE DOCUMENTO', 'NÃšMERO DE DOCUMENTO',
+                'RUC', 'RAZÓN SOCIAL', 'NOMBRE COMERCIAL',
+                'SECTOR ECONÓMICO', 'RUBRO', 'ACTIVIDAD COMERCIAL',
+                'PAÍS NACIMIENTO', 'REGIÓN', 'PROVINCIA', 'DISTRITO', 'DIRECCIÓN',
+                'TIPO DE DOCUMENTO', 'NÚMERO DE DOCUMENTO',
                 'APELLIDO PATERNO', 'APELLIDO MATERNO', 'NOMBRES',
-                'GÃ‰NERO', 'Â¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'CORREO',
+                'GÉNERO', '¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'CORREO', 'FECHA DE NACIMIENTO', 'EDAD',
                 'REDES SOCIALES',
                 // EMPRENDIMIENTO
                 'PERTENECE A GREMIO', 'NOMBRE GREMIO',
-                'CAP. PRODUCCIÃ“N MENSUAL',
+                'CAP. PRODUCCIÓN MENSUAL',
                 '% PROD. PLANTA PROPIA',
                 '% PROD. MAQUILA',
-                'TIENE PUNTOS DE VENTA', 'NÂ° PUNTOS DE VENTA',
-                'DESCRIPCIÃ“N DEL NEGOCIO',
+                'TIENE PUNTOS DE VENTA', 'NUM. PUNTOS DE VENTA',
+                'DESCRIPCIÓN DEL NEGOCIO',
                 'PAGOS POS',
                 'YAPE / PLIN',
                 'VENTAS ONLINE',
                 'NOMBRE TIENDA VIRTUAL',
                 'DELIVERY',
-                'FACTURA ELECTRÃ“NICA',
-                'PARTICIPÃ“ PRODUCE',
+                'FACTURA ELECTRÓNICA',
+                'PARTICIPÓ PRODUCE',
                 'NOMBRE SERVICIO',
-                'PARTICIPÃ“ FERIA',
-                'EVENTO EN QUE PARTICIPÃ“',
+                'PARTICIPÓ FERIA',
+                'EVENTO EN QUE PARTICIPÓ',
                 'FORMALIZADO TU EMPRESA',
                 'MARCA EN INDECOPI',
                 'LOGROS DE LA EMPRESA',
@@ -2995,6 +3019,8 @@ class DownloadAttendanceController extends Controller
                 $set(isset($e?->discapacidad) ? ($e->discapacidad ? 'SI' : 'NO') : null);
                 $set($e?->celular);
                 $set($e?->correo_electronico);
+                $set($e?->fecha_nacimiento ? \Carbon\Carbon::parse($e->fecha_nacimiento)->format('d/m/Y') : null);
+                $set($e->edad ?? null);
 
                 $set($this->redesSocialesTexto($emp?->redes_sociales));
 
@@ -3066,6 +3092,7 @@ class DownloadAttendanceController extends Controller
 
         // Bloque TIPO DE DOCUMENTO â†’ CORREO: ancho 15 y cabecera naranja oscuro al 70%
         $idxDoc = array_search('TIPO DE DOCUMENTO', $headers, true);
+        $idxCorreo = array_search('FECHA DE NACIMIENTO', $headers, true);
         $idxCorreo = array_search('CORREO', $headers, true);
         if ($idxDoc !== false && $idxCorreo !== false && $idxCorreo >= $idxDoc) {
             for ($c = $idxDoc + 1; $c <= $idxCorreo + 1; $c++) {
@@ -3083,15 +3110,23 @@ class DownloadAttendanceController extends Controller
             ]);
         }
 
+        // Columnas W y X: mismo fondo naranja que la columna V
+        $sheet->getStyle("W{$headerRow}:X{$headerRow}")->applyFromArray([
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'B2ED7D31'],
+            ],
+        ]);
+
         // Contenido centrado (solo datos, la cabecera ya estÃ¡ centrada)
         $centradas = [
-            'NÂ°', 'APROBADOS', 'RUC', 'SECTOR ECONÃ“MICO', 'PAÃS NACIMIENTO',
-            'TIPO DE DOCUMENTO', 'NÃšMERO DE DOCUMENTO', 'GÃ‰NERO',
-            'Â¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'PERTENECE A GREMIO',
-            'TIENE PUNTOS DE VENTA', 'NÂ° PUNTOS DE VENTA', 'PAGOS POS',
-            'YAPE / PLIN', 'VENTAS ONLINE', 'DELIVERY', 'FACTURA ELECTRÃ“NICA',
-            'PARTICIPÃ“ PRODUCE', 'PARTICIPÃ“ FERIA', 'FORMALIZADO TU EMPRESA',
-            'MARCA EN INDECOPI', 'FECHA Y HORA DE INSCRIPCIÃ“N',
+            'N°', 'APROBADOS', 'RUC', 'SECTOR ECONÓMICO', 'PAÍS NACIMIENTO',
+            'TIPO DE DOCUMENTO', 'NÚMERO DE DOCUMENTO', 'GÉNERO',
+            '¿TIENE ALGUNA DISCAPACIDAD?', 'CELULAR', 'FECHA DE NACIMIENTO', 'PERTENECE A GREMIO',
+            'TIENE PUNTOS DE VENTA', 'NUM. PUNTOS DE VENTA', 'PAGOS POS',
+            'YAPE / PLIN', 'VENTAS ONLINE', 'DELIVERY', 'FACTURA ELECTRÓNICA',
+            'PARTICIPÓ PRODUCE', 'PARTICIPÓ FERIA', 'FORMALIZADO TU EMPRESA',
+            'MARCA EN INDECOPI', 'FECHA Y HORA DE INSCRIPCIÓN',
         ];
         $ultimaFilaC = max(2, $sheet->getHighestRow());
         foreach ($centradas as $titulo) {

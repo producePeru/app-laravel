@@ -64,6 +64,15 @@ class EmpresarioActividad extends Model
         );
     }
 
+    public function asistencias()
+    {
+        return $this->hasMany(
+            EmpresarioActividadAsistencia::class,
+            'empresario_actividad_id',
+            'id'
+        );
+    }
+
     public function emprendimiento()
     {
         return $this->hasOne(

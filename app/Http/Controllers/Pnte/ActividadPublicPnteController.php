@@ -932,7 +932,23 @@ class ActividadPublicPnteController extends Controller
 
                 // Solo fechas de hoy en adelante (se descartan las pasadas)
                 $fechasProximas = collect($actividad->fechas ?? [])
+                    ->map(function ($fecha) {
+                        if (is_array($fecha)) {
+                            $fecha = $fecha['fecha'] ?? $fecha['date'] ?? null;
+                        }
+
+                        if (! is_string($fecha) || trim($fecha) === '') {
+                            return null;
+                        }
+
+                        try {
+                            return Carbon::parse($fecha)->toDateString();
+                        } catch (\Throwable $e) {
+                            return null;
+                        }
+                    })
                     ->filter()
+                    ->unique()
                     ->filter(fn ($fecha) => Carbon::parse($fecha)->gte($hoy))
                     ->sort()
                     ->values();
@@ -982,6 +998,209 @@ class ActividadPublicPnteController extends Controller
             'message' => 'Cursos de cooperativas UGSEco obtenidos correctamente.',
             'data' => $formatted,
         ]);
+    }
+
+    public function asistenciaInfoCooperativa(string $slug): JsonResponse
+    {
+        $actividad = ActividadPnte::with([
+            'modalidad:id,name',
+            'representante:id,name,lastname',
+        ])
+            ->where('slug', $slug)
+            ->first();
+
+        if (! $actividad) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'No se encontró la capacitación.',
+            ], 404);
+        }
+
+        $fechas = $this->normalizarFechasActividad($actividad->fechas);
+        $hoy = Carbon::today()->toDateString();
+        $primera = $fechas[0] ?? null;
+        $ultima = $fechas ? $fechas[count($fechas) - 1] : null;
+        $proxima = collect($fechas)->first(fn ($fecha) => $fecha >= $hoy);
+
+        if ($fechas === []) {
+            $estado = 'sin_fechas';
+        } elseif (in_array($hoy, $fechas, true)) {
+            $estado = 'disponible';
+        } elseif ($primera && $hoy < $primera) {
+            $estado = 'proximo';
+        } elseif ($ultima && $hoy > $ultima) {
+            $estado = 'finalizado';
+        } else {
+            $estado = 'proximo';
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Información de asistencia obtenida correctamente.',
+            'data' => [
+                'slug' => $actividad->slug,
+                'tema' => $actividad->tema,
+                'fechas' => $fechas,
+                'horario' => $actividad->horario,
+                'modalidad' => $actividad->modalidad->name ?? null,
+                'direccion' => $actividad->lugar,
+                'asesor' => $actividad->representante
+                    ? mb_strtoupper(
+                        trim("{$actividad->representante->name} {$actividad->representante->lastname}"),
+                        'UTF-8'
+                    )
+                    : null,
+                'link' => $actividad->link ?: $actividad->google_meet_uri,
+                'estado' => $estado,
+                'fecha_hoy' => $hoy,
+                'proxima_fecha' => $proxima ?: null,
+                'asistencias_habilitadas' => (bool) $actividad->switch_asistencias,
+            ],
+        ]);
+    }
+
+    public function validarInscripcionCooperativa(Request $request): JsonResponse
+    {
+        $request->validate([
+            'slug' => 'required|string',
+            'tipo_documento_id' => 'nullable|integer',
+            'numero_dni' => 'required|string|max:12',
+            'ruc' => 'required|size:11',
+        ]);
+
+        try {
+            $actividad = ActividadPnte::with('modalidad:id,name')
+                ->where('slug', $request->slug)
+                ->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'status' => 404,
+                    'reason' => 'event_not_found',
+                    'message' => 'No se encontró la capacitación.',
+                ], 404);
+            }
+
+            $fechas = $this->normalizarFechasActividad($actividad->fechas);
+            $hoy = Carbon::today()->toDateString();
+
+            if (! in_array($hoy, $fechas, true)) {
+                return response()->json([
+                    'status' => 422,
+                    'reason' => 'fecha_no_disponible',
+                    'message' => 'La asistencia solo está disponible en las fechas programadas del evento.',
+                    'data' => [
+                        'fecha_hoy' => $hoy,
+                        'fechas' => $fechas,
+                    ],
+                ], 422);
+            }
+
+            $inscripcion = EmpresarioActividad::query()
+                ->where('slug', $request->slug)
+                ->where('numero_dni', $request->numero_dni)
+                ->whereHas('empresario', function ($query) use ($request) {
+                    $query->where('ruc', $request->ruc)
+                        ->when($request->filled('tipo_documento_id'), function ($empresarioQuery) use ($request) {
+                            $empresarioQuery->where('tipo_documento_id', $request->input('tipo_documento_id'));
+                        });
+                })
+                ->with([
+                    'empresario:id,nombres,apellido_paterno,apellido_materno,ruc',
+                ])
+                ->first();
+
+            if (! $inscripcion) {
+                return response()->json([
+                    'status' => 404,
+                    'reason' => 'not_registered',
+                    'message' => 'No encontramos tu inscripción a esta capacitación. Te llevaremos al formulario de inscripción.',
+                    'redirect' => '/ugseco/inscripciones?slug='.urlencode($request->slug),
+                ], 404);
+            }
+
+            $asistenciaMarcada = false;
+            $asistencia = null;
+
+            if ($actividad->switch_asistencias) {
+                $asistencia = $inscripcion->asistencias()->firstOrCreate(
+                    ['fecha' => $hoy],
+                    [
+                        'slug' => $inscripcion->slug,
+                        'numero_dni' => $inscripcion->numero_dni,
+                        'fecha_hora' => now(),
+                    ]
+                );
+
+                $primeraAsistencia = $inscripcion->asistencias()
+                    ->orderBy('fecha')
+                    ->orderBy('fecha_hora')
+                    ->first();
+
+                $inscripcion->update([
+                    'fecha_asistencia' => $primeraAsistencia
+                        ? ($primeraAsistencia->fecha_hora ?? now())->format('d/m/Y h:i a')
+                        : null,
+                ]);
+
+                $asistenciaMarcada = true;
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Inscripción confirmada.',
+                'data' => [
+                    'slug' => $actividad->slug,
+                    'tema' => $actividad->tema,
+                    'fechas' => $fechas,
+                    'horario' => $actividad->horario,
+                    'modalidad' => $actividad->modalidad->name ?? null,
+                    'link' => $actividad->link ?: $actividad->google_meet_uri,
+                    'participante' => [
+                        'nombres' => $inscripcion->empresario?->nombres,
+                        'apellido_paterno' => $inscripcion->empresario?->apellido_paterno,
+                        'apellido_materno' => $inscripcion->empresario?->apellido_materno,
+                    ],
+                    'asistencia' => [
+                        'marcada' => $asistenciaMarcada,
+                        'habilitada' => (bool) $actividad->switch_asistencias,
+                        'fecha' => $hoy,
+                        'fecha_hora' => $asistencia?->fecha_hora?->toDateTimeString(),
+                    ],
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'No se pudo validar la inscripción.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function normalizarFechasActividad($fechas): array
+    {
+        return collect($fechas ?? [])
+            ->map(function ($fecha) {
+                if (is_array($fecha)) {
+                    $fecha = $fecha['fecha'] ?? $fecha['date'] ?? null;
+                }
+
+                if (! is_string($fecha) || trim($fecha) === '') {
+                    return null;
+                }
+
+                try {
+                    return Carbon::parse($fecha)->toDateString();
+                } catch (\Throwable $e) {
+                    return null;
+                }
+            })
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
     }
 
     // public cooperativas envio de correo
@@ -1105,6 +1324,7 @@ class ActividadPublicPnteController extends Controller
             'modalidad' => $modalidad ? ucfirst(strtolower($modalidad)) : 'Por confirmar',
             'direccion' => $esPresencial ? ($actividad->lugar ?: null) : null,
             'link' => $esVirtual ? ($link ?: null) : null,
+            'asistencia_url' => 'https://capacitaciones.soportepnte.com/ugseco/asistencia?slug='.urlencode((string) $actividad->slug),
         ];
     }
 

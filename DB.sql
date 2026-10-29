@@ -98,3 +98,51 @@ INSERT IGNORE INTO `ugseco_diag_opciones` (`id`, `pregunta_id`, `letra`, `texto`
 (18, 5, 'b', 'Tiene una forma de trabajo ordenada, pero no aplica medidas de seguridad y salud (equipos de protección, señalización, botiquín)', 2, NOW(), NOW()),
 (19, 5, 'c', 'Tiene procesos ordenados y medidas de seguridad, pero no mide sus resultados con indicadores (ventas, producción, mermas)', 3, NOW(), NOW()),
 (20, 5, 'd', 'Tiene procesos ordenados, medidas de seguridad y mide sus resultados con indicadores para mejorar', 4, NOW(), NOW());
+
+
+
+// NUEVO
+
+-- ============================================================
+-- Asistencia por día para actividades de varios días
+-- Permite registrar la asistencia de cada mype por cada fecha
+-- del evento (actividades_pnte.fechas).
+-- Ejecutar una sola vez sobre la base de datos del aplicativo.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS `empresario_actividad_asistencias` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `empresario_actividad_id` bigint(20) unsigned NOT NULL,
+  `slug` varchar(255) DEFAULT NULL,
+  `numero_dni` varchar(12) DEFAULT NULL,
+  `fecha` date NOT NULL,
+  `fecha_hora` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ea_asistencias_registro_fecha_unique` (`empresario_actividad_id`, `fecha`),
+  KEY `ea_asistencias_slug_index` (`slug`),
+  KEY `ea_asistencias_numero_dni_index` (`numero_dni`),
+  KEY `ea_asistencias_fecha_index` (`fecha`),
+  CONSTRAINT `ea_asistencias_registro_foreign` FOREIGN KEY (`empresario_actividad_id`)
+    REFERENCES `empresario_actividad` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Histórico: en eventos de un solo día la asistencia ya registrada se
+-- traslada a la única fecha del evento para no perder la información.
+INSERT IGNORE INTO `empresario_actividad_asistencias`
+  (`empresario_actividad_id`, `slug`, `numero_dni`, `fecha`, `fecha_hora`, `created_at`, `updated_at`)
+SELECT
+  ea.`id`,
+  ea.`slug`,
+  ea.`numero_dni`,
+  STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(ap.`fechas`, '$[0]')), '%Y-%m-%d'),
+  COALESCE(ea.`updated_at`, NOW()),
+  NOW(),
+  NOW()
+FROM `empresario_actividad` ea
+INNER JOIN `actividades_pnte` ap ON ap.`slug` = ea.`slug`
+WHERE ea.`fecha_asistencia` IS NOT NULL
+  AND JSON_LENGTH(ap.`fechas`) = 1
+  AND STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(ap.`fechas`, '$[0]')), '%Y-%m-%d') IS NOT NULL;
+

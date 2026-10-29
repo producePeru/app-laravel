@@ -99,6 +99,10 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
 
     Route::GET('cursos-cooperativas-ugseco', 'cursosCooperativasUgseco');
 
+    Route::GET('asistencia-info/{slug}', 'asistenciaInfoCooperativa');
+
+    Route::POST('validar-inscripcion-cooperativa', 'validarInscripcionCooperativa');
+
     Route::GET('email-participacion-cooperativas-ugseco', 'emailParticipacionCooperativasUgseco');
 
     Route::GET('diagnostico-preguntas', 'diagnosticoPreguntasUgseco');
