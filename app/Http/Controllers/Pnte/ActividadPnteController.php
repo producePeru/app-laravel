@@ -306,6 +306,7 @@ class ActividadPnteController extends Controller
             'unidad' => 'nullable|integer',
             'name' => 'nullable|string',
             'aprobar' => 'nullable|in:0,1',
+            'nombre_actividad_id' => 'nullable|integer|exists:nombre_actividad,id',
         ]);
 
         $pageSize = $request->input('pageSize', 10);
@@ -397,6 +398,11 @@ class ActividadPnteController extends Controller
             // ✅ FILTRO: tipo_actividad_id
             ->when($request->filled('tipo_actividad_id'), function ($q) use ($request) {
                 $q->where('tipo_actividad_id', $request->input('tipo_actividad_id'));
+            })
+
+            // ✅ FILTRO: nombre_actividad_id — solo se aplica cuando se envía
+            ->when($request->filled('nombre_actividad_id'), function ($q) use ($request) {
+                $q->where('nombre_actividad_id', $request->input('nombre_actividad_id'));
             })
 
             // ✅ FILTRO: year

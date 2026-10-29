@@ -110,23 +110,23 @@ INSERT IGNORE INTO `ugseco_diag_opciones` (`id`, `pregunta_id`, `letra`, `texto`
 -- Ejecutar una sola vez sobre la base de datos del aplicativo.
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS `empresario_actividad_asistencias` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `empresario_actividad_id` bigint(20) unsigned NOT NULL,
-  `slug` varchar(255) DEFAULT NULL,
-  `numero_dni` varchar(12) DEFAULT NULL,
-  `fecha` date NOT NULL,
-  `fecha_hora` datetime DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ea_asistencias_registro_fecha_unique` (`empresario_actividad_id`, `fecha`),
-  KEY `ea_asistencias_slug_index` (`slug`),
-  KEY `ea_asistencias_numero_dni_index` (`numero_dni`),
-  KEY `ea_asistencias_fecha_index` (`fecha`),
-  CONSTRAINT `ea_asistencias_registro_foreign` FOREIGN KEY (`empresario_actividad_id`)
-    REFERENCES `empresario_actividad` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS `empresario_actividad_asistencias` (
+--   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+--   `empresario_actividad_id` bigint(20) unsigned NOT NULL,
+--   `slug` varchar(255) DEFAULT NULL,
+--   `numero_dni` varchar(12) DEFAULT NULL,
+--   `fecha` date NOT NULL,
+--   `fecha_hora` datetime DEFAULT NULL,
+--   `created_at` timestamp NULL DEFAULT NULL,
+--   `updated_at` timestamp NULL DEFAULT NULL,
+--   PRIMARY KEY (`id`),
+--   UNIQUE KEY `ea_asistencias_registro_fecha_unique` (`empresario_actividad_id`, `fecha`),
+--   KEY `ea_asistencias_slug_index` (`slug`),
+--   KEY `ea_asistencias_numero_dni_index` (`numero_dni`),
+--   KEY `ea_asistencias_fecha_index` (`fecha`),
+--   CONSTRAINT `ea_asistencias_registro_foreign` FOREIGN KEY (`empresario_actividad_id`)
+--     REFERENCES `empresario_actividad` (`id`) ON DELETE CASCADE
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Histórico: en eventos de un solo día la asistencia ya registrada se
 -- traslada a la única fecha del evento para no perder la información.
