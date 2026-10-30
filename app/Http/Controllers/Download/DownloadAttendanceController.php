@@ -98,6 +98,9 @@ class DownloadAttendanceController extends Controller
                 ->when($request->filled('pnte'), function ($q) use ($request) {
                     $q->where('tipo_actividad_id', $request->input('pnte'));
                 })
+                ->when($request->filled('nombre_actividad_id'), function ($q) use ($request) {
+                    $q->where('nombre_actividad_id', $request->input('nombre_actividad_id'));
+                })
                 ->when($request->filled('asesor') && $user->rol == 1, function ($q) use ($request) {
                     $q->where('representante_id', $request->input('asesor'));
                 })

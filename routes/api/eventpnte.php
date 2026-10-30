@@ -66,6 +66,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::GET('reporte-tributario/{archivo}', 'descargarReporteTributario');
 
+    Route::GET('calendar-compras-my-peru', 'eventsCalendarComprasMyperu');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {

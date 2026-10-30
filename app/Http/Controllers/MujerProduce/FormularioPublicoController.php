@@ -1176,7 +1176,8 @@ class FormularioPublicoController extends Controller
         $today = Carbon::today()->toDateString();
 
         $items = MpEvent::query()
-            ->whereDate('date', '>=', $today) // solo futuros
+            ->where('startDate', '<=', $today)
+            ->where('endDate', '>=', $today)
             ->with([
                 'capacitador:id,name',
                 'modality:id,name',
