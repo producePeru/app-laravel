@@ -1048,7 +1048,7 @@ class ActividadPnteController extends Controller
 
             $deleted = EmpresarioActividad::where('slug', $request->slug)
                 ->whereIn('id', $request->ids)
-                ->delete();
+                ->update(['deleted_at' => now()]);
 
             $totalAsesorias = EmpresarioActividad::where('slug', $request->slug)
                 ->where('personal_asesoria', 1)

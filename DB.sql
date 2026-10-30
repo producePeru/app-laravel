@@ -146,3 +146,9 @@ WHERE ea.`fecha_asistencia` IS NOT NULL
   AND JSON_LENGTH(ap.`fechas`) = 1
   AND STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(ap.`fechas`, '$[0]')), '%Y-%m-%d') IS NOT NULL;
 
+
+
+
+
+-- ALTER TABLE empresario_actividad
+-- ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at;
