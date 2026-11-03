@@ -11,6 +11,7 @@ class EmailParticipacionCooperativasUgsecoMail extends Mailable
     use Queueable, SerializesModels;
 
     public $nombres;
+
     public $capacitacion;
 
     public function __construct(?string $nombres, array $capacitacion)

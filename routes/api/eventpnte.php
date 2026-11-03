@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ComprasMyPeru\ComprasPeruController;
 use App\Http\Controllers\Pnte\ActividadPnteController;
 use App\Http\Controllers\Pnte\ActividadPublicPnteController;
 use App\Http\Controllers\Pnte\PnteTestController;
@@ -128,6 +129,15 @@ Route::controller(PnteTestController::class)->group(function () {
     Route::POST('i-want-my-certificate', 'iWantMyCertificate');
 
     Route::POST('check-asistencia', 'checkAsistencia');
+});
+
+Route::controller(ComprasPeruController::class)->group(function () {
+    Route::GET('cursos-compras-myperu', 'cursos');
+
+    Route::GET('curso-detalle-compras-myperu/{slug}', 'detalle');
+
+    Route::GET('email-participacion-compras-myperu', 'emailParticipacionComprasperu');
+
 });
 
 // event-pnte-public 🌍
