@@ -1501,8 +1501,16 @@ class ActividadPnteController extends Controller
     public function deleteEvent($id)
     {
         try {
-
+            $user = Auth::user();
             $event = ActividadPnte::findOrFail($id);
+
+            // Solo rol 1 puede eliminar cualquier evento; los demás solo el que crearon
+            if ($user->rol !== 1 && $event->registrado_por_id !== $user->id) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'No tienes permisos para eliminar este evento.',
+                ], 403);
+            }
 
             $event->delete();
 
