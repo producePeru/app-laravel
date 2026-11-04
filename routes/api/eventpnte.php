@@ -69,6 +69,11 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::GET('calendar-compras-my-peru', 'eventsCalendarComprasMyperu');
 
+    // compras myperu
+    Route::POST('store-compras-myperu', 'comprasMyPeruStore');
+
+    Route::PUT('update-compras-myperu/{id}', 'comprasMyPeruUpdate');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {

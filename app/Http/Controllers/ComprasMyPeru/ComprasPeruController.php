@@ -34,32 +34,74 @@ class ComprasPeruController extends Controller
         $formatted = $actividades
             ->map(function ($actividad) use ($hoy) {
 
-                // Solo fechas de hoy en adelante (se descartan las pasadas)
-                $fechasProximas = collect($actividad->fechas ?? [])
+                // Obtener fechas desde campo fechas y desde horario
+                $fechasDesdeCampo = collect($actividad->fechas ?? [])
                     ->map(function ($fecha) {
                         if (is_array($fecha)) {
                             $fecha = $fecha['fecha'] ?? $fecha['date'] ?? null;
                         }
-
                         if (! is_string($fecha) || trim($fecha) === '') {
                             return null;
                         }
-
                         try {
                             return Carbon::parse($fecha)->toDateString();
                         } catch (\Throwable $e) {
                             return null;
                         }
                     })
-                    ->filter()
-                    ->unique()
-                    ->filter(fn ($fecha) => Carbon::parse($fecha)->gte($hoy))
+                    ->filter();
+
+                $fechasDesdeHorario = collect($actividad->horario ?? [])
+                    ->when(is_array($actividad->horario), function ($c) {
+                        return $c->map(function ($item) {
+                            if (! is_array($item)) return null;
+                            $f = $item['fecha'] ?? null;
+                            if (! $f) return null;
+                            try {
+                                return Carbon::parse($f)->toDateString();
+                            } catch (\Throwable $e) {
+                                return null;
+                            }
+                        })->filter();
+                    });
+
+                $todasFechas = $fechasDesdeCampo->merge($fechasDesdeHorario)->unique();
+
+                $fechasProximas = $todasFechas
+                    ->filter(function ($fecha) use ($hoy) {
+                        try {
+                            return Carbon::parse($fecha)->gte($hoy);
+                        } catch (\Throwable $e) {
+                            return false;
+                        }
+                    })
                     ->sort()
                     ->values();
 
                 // Si todas sus fechas ya pasaron, no se lista
                 if ($fechasProximas->isEmpty()) {
                     return null;
+                }
+
+                // Formatear horario a string legible
+                $horarioRaw = $actividad->horario;
+                $horarioFormateado = '';
+                if (is_array($horarioRaw)) {
+                    $partes = [];
+                    foreach ($horarioRaw as $item) {
+                        if (is_string($item)) {
+                            $partes[] = trim($item);
+                            continue;
+                        }
+                        if (! is_array($item)) continue;
+                        $inicio = $item['horaInicio'] ?? $item['hora_inicio'] ?? null;
+                        $fin = $item['horaFin'] ?? $item['hora_fin'] ?? null;
+                        $parte = trim(implode(' - ', array_filter([$inicio, $fin])));
+                        if ($parte !== '') $partes[] = $parte;
+                    }
+                    $horarioFormateado = implode(' / ', $partes);
+                } elseif (is_string($horarioRaw)) {
+                    $horarioFormateado = $horarioRaw;
                 }
 
                 return [
@@ -78,7 +120,7 @@ class ComprasPeruController extends Controller
                     'provincia' => $actividad->provinciaRel->name ?? $actividad->provincia,
                     'distrito' => $actividad->distritoRel->name ?? $actividad->distrito,
                     'direccion' => $actividad->lugar,
-                    'horario' => $actividad->horario,
+                    'horario' => $horarioFormateado,
                     'entidad_organizadora' => $actividad->entidad_organizadora,
                     'entidad_aliada' => $actividad->entidad_aliada,
                     'mypes_beneficiadas' => $actividad->mypes_beneficiadas,
@@ -131,7 +173,7 @@ class ComprasPeruController extends Controller
             ], 404);
         }
 
-        $fechasProximas = collect($actividad->fechas ?? [])
+        $fechasDesdeCampo = collect($actividad->fechas ?? [])
             ->map(function ($fecha) {
                 if (is_array($fecha)) {
                     $fecha = $fecha['fecha'] ?? $fecha['date'] ?? null;
@@ -145,11 +187,55 @@ class ComprasPeruController extends Controller
                     return null;
                 }
             })
-            ->filter()
-            ->unique()
-            ->filter(fn ($fecha) => Carbon::parse($fecha)->gte($hoy))
+            ->filter();
+
+        $fechasDesdeHorario = collect($actividad->horario ?? [])
+            ->when(is_array($actividad->horario), function ($c) {
+                return $c->map(function ($item) {
+                    if (! is_array($item)) return null;
+                    $f = $item['fecha'] ?? null;
+                    if (! $f) return null;
+                    try {
+                        return Carbon::parse($f)->toDateString();
+                    } catch (\Throwable $e) {
+                        return null;
+                    }
+                })->filter();
+            });
+
+        $todasFechas = $fechasDesdeCampo->merge($fechasDesdeHorario)->unique();
+
+        $fechasProximas = $todasFechas
+            ->filter(function ($fecha) use ($hoy) {
+                try {
+                    return Carbon::parse($fecha)->gte($hoy);
+                } catch (\Throwable $e) {
+                    return false;
+                }
+            })
             ->sort()
             ->values();
+
+        // Formatear horario
+        $horarioRaw = $actividad->horario;
+        $horarioFormateado = '';
+        if (is_array($horarioRaw)) {
+            $partes = [];
+            foreach ($horarioRaw as $item) {
+                if (is_string($item)) {
+                    $partes[] = trim($item);
+                    continue;
+                }
+                if (! is_array($item)) continue;
+                $inicio = $item['horaInicio'] ?? $item['hora_inicio'] ?? null;
+                $fin = $item['horaFin'] ?? $item['hora_fin'] ?? null;
+                $parte = trim(implode(' - ', array_filter([$inicio, $fin])));
+                if ($parte !== '') $partes[] = $parte;
+            }
+            $horarioFormateado = implode(' / ', $partes);
+        } elseif (is_string($horarioRaw)) {
+            $horarioFormateado = $horarioRaw;
+        }
 
         $data = [
             'id' => $actividad->id,
@@ -167,7 +253,7 @@ class ComprasPeruController extends Controller
             'provincia' => $actividad->provinciaRel->name ?? $actividad->provincia,
             'distrito' => $actividad->distritoRel->name ?? $actividad->distrito,
             'direccion' => $actividad->lugar,
-            'horario' => $actividad->horario,
+            'horario' => $horarioFormateado,
             'entidad_organizadora' => $actividad->entidad_organizadora,
             'entidad_aliada' => $actividad->entidad_aliada,
             'mypes_beneficiadas' => $actividad->mypes_beneficiadas,

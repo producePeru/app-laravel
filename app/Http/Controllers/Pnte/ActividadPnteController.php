@@ -2653,4 +2653,194 @@ class ActividadPnteController extends Controller
             ], 500);
         }
     }
+
+    public function comprasMyPeruStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'unidad' => 'required|integer|in:1,2,3,4,5',
+
+            'horario' => 'required|array|min:1',
+            'horario.*.id' => 'required',
+            'horario.*.fecha' => 'required|date_format:Y-m-d',
+            'horario.*.horaInicio' => 'required|string',
+            'horario.*.horaFin' => 'required|string',
+
+            'tipo_actividad_id' => 'required|exists:tipo_actividad,id',
+            'nombre_actividad_id' => 'required|exists:nombre_actividad,id',
+
+            'tema' => 'nullable|string',
+
+            'region' => 'required|exists:cities,id',
+            'provincia' => 'required|exists:provinces,id',
+            'distrito' => 'required|exists:districts,id',
+
+            'lugar' => 'nullable|string|max:255',
+
+            'entidad_organizadora' => 'nullable|string|max:255',
+            'entidad_aliada' => 'nullable|string|max:255',
+
+            'representante_id' => 'nullable|exists:users,id',
+
+            'requiere_pasaje' => 'required|boolean',
+            'monto_gasto' => 'nullable|max:255',
+
+            'mypes_beneficiadas' => 'nullable|integer|min:0',
+
+            'modalidad_id' => 'nullable|exists:modalities,id',
+            'link' => 'nullable|string',
+
+            'componente_id' => 'nullable',
+            'trainer_id' => 'nullable|exists:pp_capacitadores,id',
+        ]);
+
+        $validated['representante_id'] = $validated['representante_id'] ?? Auth::id();
+
+        $fechasExtraidas = collect($validated['horario'])->pluck('fecha')->unique()->toArray();
+        $validated['fechas'] = array_values($fechasExtraidas);
+
+        $fechaMinima = collect($validated['fechas'])
+            ->map(fn ($f) => Carbon::parse($f))
+            ->sortBy(fn ($d) => $d->timestamp)
+            ->first();
+
+        $validated['mes'] = (int) $fechaMinima->format('n');
+        $validated['cantidad_dias'] = count($validated['fechas']);
+
+        try {
+            $actividad = DB::transaction(function () use ($validated) {
+                $validated['slug'] = $this->generateUniqueSlug($validated);
+                $validated['registrado_por_id'] = Auth::id();
+
+                return ActividadPnte::create($validated);
+            });
+
+            $actividad->load('representante');
+
+            // Google Calendar ya no se usa para Compras MyPerú: el link es fijo y el horario se guarda tal cual
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Actividad registrada correctamente.',
+                'data' => $actividad->fresh()->load([
+                    'tipoActividad',
+                    'nombreActividad',
+                    'regionRel',
+                    'provinciaRel',
+                    'distritoRel',
+                    'representante',
+                    'modalidad',
+                ]),
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al registrar la actividad.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function comprasMyPeruUpdate(Request $request, int $id): JsonResponse
+    {
+        $actividad = ActividadPnte::findOrFail($id);
+        $user = Auth::user();
+
+        // ✅ SOLO EL ROL 1 PUEDE EDITAR EN CUALQUIER MOMENTO
+        if ($user->rol != 1) {
+            // límite hasta las 23:59 del día de creación
+            $limiteEdicion = Carbon::parse($actividad->created_at)->endOfDay();
+
+            if (Carbon::now()->gt($limiteEdicion)) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'No es posible editar esta actividad. El plazo de edición venció el '.
+                        Carbon::parse($actividad->created_at)->format('d/m/Y').
+                        ' a las 23:59. Por favor, contacte con su supervisor.',
+                ], 403);
+            }
+        }
+
+        // 🛠️ VALIDACIÓN CORREGIDA Y ACTUALIZADA - similar a Store
+        $validated = $request->validate([
+            'unidad' => 'required|integer|in:1,2,3,4,5',
+            'horario' => 'required|array|min:1',
+            'horario.*.id' => 'required',
+            'horario.*.fecha' => 'required|date_format:Y-m-d',
+            'horario.*.horaInicio' => 'required|string',
+            'horario.*.horaFin' => 'required|string',
+            'tipo_actividad_id' => 'required|exists:tipo_actividad,id',
+            'nombre_actividad_id' => 'required|exists:nombre_actividad,id',
+            'tema' => 'nullable|string',
+            'region' => 'required|exists:cities,id',
+            'provincia' => 'required|exists:provinces,id',
+            'distrito' => 'required|exists:districts,id',
+            'lugar' => 'nullable|string|max:255',
+            'entidad_organizadora' => 'nullable|string|max:255',
+            'entidad_aliada' => 'nullable|string|max:255',
+            'representante_id' => 'nullable|exists:users,id',
+            'requiere_pasaje' => 'required|boolean',
+            'monto_gasto' => 'nullable|max:255',
+            'mypes_beneficiadas' => 'nullable|integer|min:0',
+            'modalidad_id' => 'nullable|exists:modalities,id',
+            'total_participantes' => 'nullable|integer|min:0',
+            'total_asesorias' => 'nullable|integer|min:0',
+            'total_formalizaciones' => 'nullable|integer|min:0',
+            'link' => 'nullable|string|max:255',
+            'componente_id' => 'nullable|integer',
+            'trainer_id' => 'nullable|exists:pp_capacitadores,id',
+            'tipo_mercado' => 'nullable',
+            'tipo_gestion' => 'nullable',
+            'activo' => 'nullable|boolean',
+        ]);
+
+        if ((int) $validated['unidad'] === 3) {
+            $validated['activo'] = (int) ($validated['activo'] ?? $actividad->activo);
+        } else {
+            unset($validated['activo']);
+        }
+
+        // Extraer fechas únicas desde horario
+        $fechasExtraidas = collect($validated['horario'])->pluck('fecha')->unique()->toArray();
+        $validated['fechas'] = array_values($fechasExtraidas);
+
+        // ✅ Obtener mes de la fecha mínima de forma segura
+        $fechaMinima = collect($validated['fechas'])
+            ->map(fn ($f) => Carbon::parse($f))
+            ->sortBy(fn ($d) => $d->timestamp)
+            ->first();
+
+        $validated['mes'] = (int) $fechaMinima->format('n');
+        $validated['cantidad_dias'] = count($validated['fechas']);
+
+        try {
+            DB::transaction(function () use ($actividad, $validated) {
+                $validated['actualizado_por_id'] = Auth::id();
+
+                $actividad->update($validated);
+            });
+
+            // Google Calendar ya no se usa para Compras MyPerú: el link es fijo y el horario se guarda tal cual
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Actividad actualizada correctamente.',
+                'data' => $actividad->fresh()->load([
+                    'tipoActividad',
+                    'nombreActividad',
+                    'regionRel',
+                    'provinciaRel',
+                    'distritoRel',
+                    'representante',
+                    'modalidad',
+                ]),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500, // Homologado con tu estándar de respuestas
+                'success' => false,
+                'message' => 'Error al actualizar la actividad.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
