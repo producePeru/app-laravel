@@ -63,6 +63,8 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'AB' => 15,
             'AC' => 12,
             'AG' => 14,
+            'AH' => 18,
+            'AI' => 28,
         ];
     }
 
@@ -95,30 +97,30 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             ->setARGB('00B050');
 
         // Negro
-        $sheet->getStyle('AF1:AG1')
+        $sheet->getStyle('AF1:AI1')
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->setARGB('000000');
 
         // Texto blanco para todos los encabezados
-        $sheet->getStyle('A1:AG1')
+        $sheet->getStyle('A1:AI1')
             ->getFont()
             ->getColor()
             ->setARGB('FFFFFF');
 
         // Negrita
-        $sheet->getStyle('A1:AG1')
+        $sheet->getStyle('A1:AI1')
             ->getFont()
             ->setBold(true);
 
         // Ajuste de texto
-        $sheet->getStyle('A1:AG1')
+        $sheet->getStyle('A1:AI1')
             ->getAlignment()
             ->setWrapText(true);
 
         // Centrado vertical
-        $sheet->getStyle('A1:AG1')
+        $sheet->getStyle('A1:AI1')
             ->getAlignment()
             ->setVertical(
                 \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
@@ -209,7 +211,9 @@ class AsesoriasExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Tema',
 
             'Nro de Reserva / Observacion',
-            'Modalidad'
+            'Modalidad',
+            '¿PROVIENE DE SENAJU?',
+            '¿SE HIZO LA ENCUESTA EN ASESORÍA?'
         ];
     }
 }

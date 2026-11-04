@@ -32,6 +32,7 @@ class StoreFormalization20Request extends FormRequest
             'province_id' => 'required|integer|exists:provinces,id',
             'district_id' => 'required|integer|exists:districts,id',
             'modality_id' => 'required|integer|exists:modalities,id',
+            'is_senaju' => 'nullable|boolean',
 
 
             // 👇 AQUÍ EL CAMBIO: solo es obligatorio si regime_id ≠ 5

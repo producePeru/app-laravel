@@ -124,6 +124,8 @@ class DownloadFormalizationsController extends Controller
                         'theme' => isset($advisory->theme->name) ? strtoupper($advisory->theme->name) : null,
                         'observations' => $advisory->observations ? 'Z'.$advisory->observations : '-',
                         'modality' => $advisory->modality->name ?? null,
+                        '¿PROVIENE DE SENAJU?' => $advisory->is_senaju === 1 ? 'SI' : ($advisory->is_senaju === 0 ? 'NO' : '-'),
+                        '¿SE HIZO LA ENCUESTA EN ASESORÍA?' => $advisory->is_encuesta === 1 ? 'SI' : ($advisory->is_encuesta === 0 ? 'NO' : '-'),
                     ];
                 }
             });
@@ -235,6 +237,7 @@ class DownloadFormalizationsController extends Controller
                         'activity_comercial' => $f10->comercialactivity->name ?? null,
                         'detail_tramit' => $f10->detailprocedure->name ?? null,
                         'modality' => $f10->modality->name ?? null,
+                        '¿PROVIENE DE SENAJU?' => $f10->is_senaju === 1 ? 'SI' : ($f10->is_senaju === 0 ? 'NO' : '-'),
                     ];
                 }
             });
@@ -357,6 +360,7 @@ class DownloadFormalizationsController extends Controller
                         'type_aporte' => optional($f20->typecapital)->name,
                         'monto_capital' => $f20->montocapital,
                         'modality' => $f20->modality->name ?? null,
+                        '¿PROVIENE DE SENAJU?' => $f20->is_senaju === 1 ? 'SI' : ($f20->is_senaju === 0 ? 'NO' : '-'),
                     ];
                 }
             });
@@ -671,6 +675,8 @@ class DownloadFormalizationsController extends Controller
             'Región del negocio', 'Provincia del Negocio', 'Distrito del Negocio', 'N_RUC',
             'Sector Económico', 'Actividad Comercial Inicial', 'Componente', 'Tema',
             'Nro de Reserva / Observacion', 'Modalidad',
+            '¿PROVIENE DE SENAJU?',
+            '¿SE HIZO LA ENCUESTA EN ASESORÍA?',
         ];
 
         $fileName = 'asesorias_'.now()->format('Ymd_His').'.csv';
@@ -739,6 +745,8 @@ class DownloadFormalizationsController extends Controller
                         isset($advisory->theme->name) ? strtoupper($advisory->theme->name) : null,
                         $advisory->observations ? 'Z'.$advisory->observations : '-',
                         $advisory->modality->name ?? null,
+                        $advisory->is_senaju === 1 ? 'SI' : ($advisory->is_senaju === 0 ? 'NO' : '-'),
+                        $advisory->is_encuesta === 1 ? 'SI' : ($advisory->is_encuesta === 0 ? 'NO' : '-'),
                     ];
 
                     fputcsv($handle, $row, $delimiter);
@@ -818,6 +826,7 @@ class DownloadFormalizationsController extends Controller
             'Correo electrónico o "NO TIENE"', 'Tipo de Formalización', 'SUPERVISOR',
             'Región del negocio', 'Provincia del Negocio', 'Distrito del Negocio', 'Dirección', 'N_RUC',
             'Sector Económico', 'Actividad Comercial', 'Detalle del Trámite', 'Modalidad',
+            '¿PROVIENE DE SENAJU?',
         ];
 
         $fileName = 'formalizaciones10-pnte_'.now()->format('Ymd_His').'.csv';
@@ -892,6 +901,7 @@ class DownloadFormalizationsController extends Controller
                         $f10->comercialactivity->name ?? null,
                         $f10->detailprocedure->name ?? null,
                         $f10->modality->name ?? null,
+                        $f10->is_senaju === 1 ? 'SI' : ($f10->is_senaju === 0 ? 'NO' : '-'),
                     ];
 
                     fputcsv($handle, $row, $delimiter);
@@ -973,6 +983,7 @@ class DownloadFormalizationsController extends Controller
             'Sector Económico', 'Actividad Comercial',
             'Fecha de Recepción', 'Fecha de Trámite', 'Nombre MYPE', 'Tipo de Régimen', 'BIC', 'Nro de Solicitud',
             'Notaría', 'Tipo de Aporte', 'Monto de Capital', 'Modalidad',
+            '¿PROVIENE DE SENAJU?',
         ];
 
         $fileName = 'formalizaciones20-pnte_'.now()->format('Ymd_His').'.csv';
@@ -1057,6 +1068,7 @@ class DownloadFormalizationsController extends Controller
                         $f20->typecapital->name ?? null,
                         $f20->montocapital ?? null,
                         $f20->modality->name ?? null,
+                        $f20->is_senaju === 1 ? 'SI' : ($f20->is_senaju === 0 ? 'NO' : '-'),
                     ];
 
                     fputcsv($handle, $row, $delimiter);

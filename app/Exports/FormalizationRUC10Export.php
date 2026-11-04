@@ -69,7 +69,11 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             'AA' => 20,
             'AB' => 11,
             'AC' => 10,
-            'AD' => 15
+            'AD' => 15,
+            'AE' => 15,
+            'AF' => 15,
+            'AG' => 15,
+            'AH' => 18
         ];
     }
 
@@ -97,19 +101,19 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             ->setARGB('375623');
 
         // Negro
-        $sheet->getStyle('AF1:AG1')
+        $sheet->getStyle('AF1:AH1')
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->setARGB('000000');
 
         // Fuente blanca y negrita
-        $sheet->getStyle('A1:AG1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AG1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:AH1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AH1')->getFont()->getColor()->setARGB('FFFFFF');
 
         // Ajuste de texto y centrado vertical
-        $sheet->getStyle('A1:AG1')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A1:AG1')->getAlignment()->setVertical(
+        $sheet->getStyle('A1:AH1')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:AH1')->getAlignment()->setVertical(
             \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
         );
     }
@@ -153,7 +157,8 @@ class FormalizationRUC10Export implements FromCollection, WithHeadings, WithTitl
             'Atividad comercial',
 
             'Detalle del trámite',
-            'MODALIDAD DE ATENCION'
+            'MODALIDAD DE ATENCION',
+            '¿PROVIENE DE SENAJU?'
         ];
     }
 }

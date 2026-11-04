@@ -76,7 +76,11 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'AI' => 12,
             'AJ' => 22,
             'AK' => 12,
-            'AL' => 12
+            'AL' => 12,
+            'AM' => 12,
+            'AN' => 12,
+            'AO' => 12,
+            'AP' => 18
         ];
     }
 
@@ -113,22 +117,22 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             ->getStartColor()
             ->setARGB('C00000'); // Rojo
 
-        $sheet->getStyle('AN1:AO1')
+        $sheet->getStyle('AN1:AP1')
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->setARGB('000000'); // Negro
 
         // Fuente
-        $sheet->getStyle('A1:AO1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AO1')->getFont()->getColor()->setARGB('FFFFFF');
+        $sheet->getStyle('A1:AP1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AP1')->getFont()->getColor()->setARGB('FFFFFF');
 
         // Alineación
-        $sheet->getStyle('A1:AL1')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A1:AL1')->getAlignment()->setVertical(
+        $sheet->getStyle('A1:AP1')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:AP1')->getAlignment()->setVertical(
             \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
         );
-        $sheet->getStyle('A1:AL1')->getAlignment()->setHorizontal(
+        $sheet->getStyle('A1:AP1')->getAlignment()->setHorizontal(
             \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER
         );
 
@@ -185,7 +189,8 @@ class FormalizationRUC20Export implements FromCollection, WithHeadings, WithTitl
             'Notaria',
             'Tipo de aporte de capital: Monetario/Monetario con declaración jurada/Bienes/Mixto',
             'Monto de capital social',
-            'MODALIDAD DE ATENCION'
+            'MODALIDAD DE ATENCION',
+            '¿PROVIENE DE SENAJU?'
         ];
     }
 }

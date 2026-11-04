@@ -36,6 +36,9 @@ class StoreAdvisoryRequest extends FormRequest
             'province_id' => 'required|integer|exists:provinces,id',
             'district_id' => 'required|integer|exists:districts,id',
             'cde_id' => 'nullable|integer|exists:cdes,id',
+            'is_senaju' => 'nullable|boolean',
+            'is_encuesta' => 'nullable|boolean',
+            'is_cooperativa' => 'nullable|boolean',
         ];
     }
 

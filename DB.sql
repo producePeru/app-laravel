@@ -152,3 +152,16 @@ WHERE ea.`fecha_asistencia` IS NOT NULL
 
 -- ALTER TABLE empresario_actividad
 -- ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at;
+
+-- ALTER TABLE `advisories`
+-- ADD COLUMN `is_senaju` TINYINT(1) NULL DEFAULT NULL AFTER `updated_by`;
+
+-- ALTER TABLE `formalizations10`
+-- ADD COLUMN `is_senaju` TINYINT(1) NULL DEFAULT NULL AFTER `updated_by`;
+
+-- ALTER TABLE `formalizations20`
+-- ADD COLUMN `is_senaju` TINYINT(1) NULL DEFAULT NULL AFTER `montocapital`;
+
+-- ALTER TABLE advisories 
+-- ADD COLUMN is_encuesta TINYINT(1) NULL DEFAULT NULL AFTER `updated_by`;
+
