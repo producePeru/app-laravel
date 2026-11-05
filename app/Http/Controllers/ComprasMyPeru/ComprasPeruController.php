@@ -5,9 +5,11 @@ namespace App\Http\Controllers\ComprasMyPeru;
 use App\Http\Controllers\Controller;
 use App\Mail\EmailParticipacionComprasMyPeruMail;
 use App\Models\ActividadPnte;
+use App\Models\PntTest;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -54,9 +56,13 @@ class ComprasPeruController extends Controller
                 $fechasDesdeHorario = collect($actividad->horario ?? [])
                     ->when(is_array($actividad->horario), function ($c) {
                         return $c->map(function ($item) {
-                            if (! is_array($item)) return null;
+                            if (! is_array($item)) {
+                                return null;
+                            }
                             $f = $item['fecha'] ?? null;
-                            if (! $f) return null;
+                            if (! $f) {
+                                return null;
+                            }
                             try {
                                 return Carbon::parse($f)->toDateString();
                             } catch (\Throwable $e) {
@@ -91,13 +97,18 @@ class ComprasPeruController extends Controller
                     foreach ($horarioRaw as $item) {
                         if (is_string($item)) {
                             $partes[] = trim($item);
+
                             continue;
                         }
-                        if (! is_array($item)) continue;
+                        if (! is_array($item)) {
+                            continue;
+                        }
                         $inicio = $item['horaInicio'] ?? $item['hora_inicio'] ?? null;
                         $fin = $item['horaFin'] ?? $item['hora_fin'] ?? null;
                         $parte = trim(implode(' - ', array_filter([$inicio, $fin])));
-                        if ($parte !== '') $partes[] = $parte;
+                        if ($parte !== '') {
+                            $partes[] = $parte;
+                        }
                     }
                     $horarioFormateado = implode(' / ', $partes);
                 } elseif (is_string($horarioRaw)) {
@@ -192,9 +203,13 @@ class ComprasPeruController extends Controller
         $fechasDesdeHorario = collect($actividad->horario ?? [])
             ->when(is_array($actividad->horario), function ($c) {
                 return $c->map(function ($item) {
-                    if (! is_array($item)) return null;
+                    if (! is_array($item)) {
+                        return null;
+                    }
                     $f = $item['fecha'] ?? null;
-                    if (! $f) return null;
+                    if (! $f) {
+                        return null;
+                    }
                     try {
                         return Carbon::parse($f)->toDateString();
                     } catch (\Throwable $e) {
@@ -224,13 +239,18 @@ class ComprasPeruController extends Controller
             foreach ($horarioRaw as $item) {
                 if (is_string($item)) {
                     $partes[] = trim($item);
+
                     continue;
                 }
-                if (! is_array($item)) continue;
+                if (! is_array($item)) {
+                    continue;
+                }
                 $inicio = $item['horaInicio'] ?? $item['hora_inicio'] ?? null;
                 $fin = $item['horaFin'] ?? $item['hora_fin'] ?? null;
                 $parte = trim(implode(' - ', array_filter([$inicio, $fin])));
-                if ($parte !== '') $partes[] = $parte;
+                if ($parte !== '') {
+                    $partes[] = $parte;
+                }
             }
             $horarioFormateado = implode(' / ', $partes);
         } elseif (is_string($horarioRaw)) {
@@ -393,5 +413,110 @@ class ComprasPeruController extends Controller
             'link' => $esVirtual ? ($link ?: null) : null,
             'asistencia_url' => 'https://capacitaciones.soportepnte.com/ugseco/asistencia?slug='.urlencode((string) $actividad->slug),
         ];
+    }
+
+    public function getTestEntrada($slug)
+    {
+        try {
+
+            $keyGroq = env('KEY_GROQ');
+
+            $test = PntTest::where('slug', $slug)->first();
+
+            if (! $test) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => "No existe un test con el slug '{$slug}'.",
+                    'x' => $keyGroq,
+                ]);
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Test obtenido correctamente.',
+                'data' => [
+                    'test_entrada' => $test->test_entrada,
+                    'test_salida' => $test->test_salida,
+                ],
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error inesperado.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function saveTest(Request $request)
+    {
+        $request->validate([
+            'slug' => 'required|string|max:255',
+            'test_entrada' => 'nullable|array',
+            'test_salida' => 'nullable|array',
+            'preguntas_rating' => 'nullable|array',
+            'caso_practico' => 'nullable|string',
+        ]);
+
+        try {
+
+            DB::beginTransaction();
+
+            // Buscar por slug o crear un registro vacío
+            $test = PntTest::firstOrCreate(
+                ['slug' => $request->slug],
+                [
+                    'test_entrada' => null,
+                    'test_salida' => null,
+                    'caso_practico' => null,
+                ]
+            );
+
+            $data = [];
+
+            // Solo actualizar los campos enviados
+            if ($request->has('test_entrada')) {
+                $data['test_entrada'] = $request->test_entrada;
+            }
+
+            if ($request->has('preguntas_rating')) {
+                $data['test_salida'] = $request->preguntas_rating;
+            } elseif ($request->has('test_salida')) {
+                $data['test_salida'] = $request->test_salida;
+            }
+
+            if ($request->has('caso_practico')) {
+                $data['caso_practico'] = $request->caso_practico;
+            }
+
+            if (! empty($data)) {
+                $test->update($data);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 200,
+                'message' => $test->wasRecentlyCreated
+                    ? 'Test creado correctamente.'
+                    : 'Test actualizado correctamente.',
+                'data' => [
+                    'id' => $test->id,
+                    'slug' => $test->slug,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            Log::error('saveTest: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error inesperado.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

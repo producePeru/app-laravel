@@ -111,6 +111,8 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
 
     Route::POST('validar-inscripcion-cooperativa', 'validarInscripcionCooperativa');
 
+    Route::POST('marcar-asistencia-usuario-cooperativa', 'marcarAsistenciaUsuarioCooperativa');
+
     Route::GET('email-participacion-cooperativas-ugseco', 'emailParticipacionCooperativasUgseco');
 
     Route::GET('diagnostico-preguntas', 'diagnosticoPreguntasUgseco');
@@ -142,6 +144,10 @@ Route::controller(ComprasPeruController::class)->group(function () {
     Route::GET('curso-detalle-compras-myperu/{slug}', 'detalle');
 
     Route::GET('email-participacion-compras-myperu', 'emailParticipacionComprasperu');
+
+    Route::GET('compras-myperu-get-test/{slug}', 'getTestEntrada');
+
+    Route::PUT('compras-myperu-save-test', 'saveTest');  // guardar las preguntas desde el Admin
 
 });
 

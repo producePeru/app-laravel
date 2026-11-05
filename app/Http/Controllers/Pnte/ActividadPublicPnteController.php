@@ -1178,6 +1178,117 @@ class ActividadPublicPnteController extends Controller
         }
     }
 
+    public function marcarAsistenciaUsuarioCooperativa(Request $request): JsonResponse
+    {
+        $request->validate([
+            'slug' => 'required|string',
+            'numero_dni' => 'required|string|max:12',
+        ]);
+
+        try {
+            $actividad = ActividadPnte::with('modalidad:id,name')
+                ->where('slug', $request->slug)
+                ->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'status' => 404,
+                    'reason' => 'event_not_found',
+                    'message' => 'No se encontró la capacitación.',
+                ], 404);
+            }
+
+            $fechas = $this->normalizarFechasActividad($actividad->fechas);
+            $hoy = Carbon::today()->toDateString();
+
+            if (! in_array($hoy, $fechas, true)) {
+                return response()->json([
+                    'status' => 422,
+                    'reason' => 'fecha_no_disponible',
+                    'message' => 'La asistencia solo está disponible en las fechas programadas del evento.',
+                    'data' => [
+                        'fecha_hoy' => $hoy,
+                        'fechas' => $fechas,
+                    ],
+                ], 422);
+            }
+
+            $inscripcion = EmpresarioActividad::query()
+                ->where('slug', $request->slug)
+                ->where('numero_dni', $request->numero_dni)
+                ->with([
+                    'empresario:id,nombres,apellido_paterno,apellido_materno,ruc',
+                ])
+                ->first();
+
+            if (! $inscripcion) {
+                return response()->json([
+                    'status' => 404,
+                    'reason' => 'not_registered',
+                    'message' => 'No encontramos tu inscripción a esta capacitación. Te llevaremos al formulario de inscripción.',
+                    'redirect' => '/ugseco/inscripciones?slug='.urlencode($request->slug),
+                ], 404);
+            }
+
+            $asistenciaMarcada = false;
+            $asistencia = null;
+
+            if ($actividad->switch_asistencias) {
+                $asistencia = $inscripcion->asistencias()->firstOrCreate(
+                    ['fecha' => $hoy],
+                    [
+                        'slug' => $inscripcion->slug,
+                        'numero_dni' => $inscripcion->numero_dni,
+                        'fecha_hora' => now(),
+                    ]
+                );
+
+                $primeraAsistencia = $inscripcion->asistencias()
+                    ->orderBy('fecha')
+                    ->orderBy('fecha_hora')
+                    ->first();
+
+                $inscripcion->update([
+                    'fecha_asistencia' => $primeraAsistencia
+                        ? ($primeraAsistencia->fecha_hora ?? now())->format('d/m/Y h:i a')
+                        : null,
+                ]);
+
+                $asistenciaMarcada = true;
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Inscripción confirmada.',
+                'data' => [
+                    'slug' => $actividad->slug,
+                    'tema' => $actividad->tema,
+                    'fechas' => $fechas,
+                    'horario' => $actividad->horario,
+                    'modalidad' => $actividad->modalidad->name ?? null,
+                    'link' => $actividad->link ?: $actividad->google_meet_uri,
+                    'participante' => [
+                        'nombres' => $inscripcion->empresario?->nombres,
+                        'apellido_paterno' => $inscripcion->empresario?->apellido_paterno,
+                        'apellido_materno' => $inscripcion->empresario?->apellido_materno,
+                    ],
+                    'asistencia' => [
+                        'marcada' => $asistenciaMarcada,
+                        'habilitada' => (bool) $actividad->switch_asistencias,
+                        'fecha' => $hoy,
+                        'fecha_hora' => $asistencia?->fecha_hora?->toDateTimeString(),
+                    ],
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'No se pudo validar la inscripción.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     private function normalizarFechasActividad($fechas): array
     {
         return collect($fechas ?? [])
