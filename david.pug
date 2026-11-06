@@ -2,3 +2,22 @@ ROLES
 
 
 supervisor_id = 4 (retroalimentacion Nelly)
+
+
+**********
+EN: C:\Users\tuempresa_temp367\Downloads\db.sql 
+EXISTE UNA BASE DE DATOS CARGALA EN XAMPP EN LA TABLA tu_empresa_2
+POR CMD / powershell
+
+cd C:\xampp\mysql\bin
+mysql -u root -p tu_empresa_2 < "C:\Users\tuempresa_temp367\Downloads\db.sql"
+
+Esto modifica directamente db.sql, reemplazando todas las apariciones de:
+
+utf8mb4_uca1400_ai_ci
+
+Por:
+
+utf8mb4_unicode_ci
+
+Después vuelve a importar:

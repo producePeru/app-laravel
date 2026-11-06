@@ -7,6 +7,7 @@ use App\Mail\EmailParticipacionCooperativasUgsecoMail;
 use App\Models\ActividadPnte;
 use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
+use App\Models\EmpresarioActividadAsistencia;
 use App\Models\UgsecoDiagnostico;
 use App\Models\UgsecoDiagnosticoPregunta;
 use Carbon\Carbon;
@@ -1570,6 +1571,36 @@ class ActividadPublicPnteController extends Controller
             return response()->json([
                 'status' => 500,
                 'message' => 'No se pudo registrar el diagnostico.',
+            ], 500);
+        }
+    }
+
+    public function dataEventCountCooperativa($slug)
+    {
+        try {
+            $inscritos = EmpresarioActividad::where('slug', $slug)->count();
+
+            $presentes = EmpresarioActividadAsistencia::where('slug', $slug)
+                ->whereNotNull('fecha_hora')
+                ->count();
+
+            $faltan = $inscritos - $presentes;
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Conteo de asistencia obtenido correctamente.',
+                'data' => [
+                    'slug' => $slug,
+                    'inscritos' => $inscritos,
+                    'presentes' => $presentes,
+                    'faltan' => $faltan,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al obtener el conteo.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

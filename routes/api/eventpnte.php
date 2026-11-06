@@ -119,6 +119,8 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
 
     Route::POST('diagnostico', 'storeDiagnosticoUgseco');
 
+    Route::GET('data-event-count/{slug}', 'dataEventCountCooperativa');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {
