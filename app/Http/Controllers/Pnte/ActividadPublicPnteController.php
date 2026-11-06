@@ -858,6 +858,11 @@ class ActividadPublicPnteController extends Controller
             $actividad = ActividadPnte::where('slug', $request->slug)
                 ->firstOrFail();
 
+            // Determinar si la inscripción es el mismo día del evento
+            $fechasNormalizadas = $this->normalizarFechasActividad($actividad->fechas);
+            $hoy = Carbon::today()->toDateString();
+            $isSameDay = in_array($hoy, $fechasNormalizadas, true);
+
             /**
              * 3. VALIDAR SI YA ESTÁ REGISTRADO EN ACTIVIDAD
              */
@@ -878,13 +883,36 @@ class ActividadPublicPnteController extends Controller
             /**
              * 4. REGISTRAR RELACIÓN
              */
-            EmpresarioActividad::create([
+            $inscripcion = EmpresarioActividad::create([
                 'actividad_id' => $actividad->id,
                 'slug' => $request->slug,
                 'empresario_id' => $empresario->id,
                 'numero_dni' => $request->numero_dni,
                 'fecha_asistencia' => null,
             ]);
+
+            // Marcar asistencia si el registro es el mismo día del evento
+            if ($isSameDay && $actividad->switch_asistencias) {
+                $asistencia = $inscripcion->asistencias()->firstOrCreate(
+                    ['fecha' => $hoy],
+                    [
+                        'slug' => $inscripcion->slug,
+                        'numero_dni' => $inscripcion->numero_dni,
+                        'fecha_hora' => now(),
+                    ]
+                );
+
+                $primeraAsistencia = $inscripcion->asistencias()
+                    ->orderBy('fecha')
+                    ->orderBy('fecha_hora')
+                    ->first();
+
+                $inscripcion->update([
+                    'fecha_asistencia' => $primeraAsistencia
+                        ? ($primeraAsistencia->fecha_hora ?? now())->format('d/m/Y h:i a')
+                        : null,
+                ]);
+            }
 
             /**
              * 5. CONTADOR
@@ -897,6 +925,7 @@ class ActividadPublicPnteController extends Controller
                 'status' => 200,
                 'message' => 'Registro procesado correctamente.',
                 'empresario_id' => $empresario->id,
+                'is_same_day' => $isSameDay,
             ]);
         } catch (\Exception $e) {
 
@@ -1338,6 +1367,16 @@ class ActividadPublicPnteController extends Controller
             ], 404);
         }
 
+        // No enviar correo si el evento es hoy
+        $fechasNormalizadas = $this->normalizarFechasActividad($actividad->fechas);
+        $hoy = Carbon::today()->toDateString();
+        if (in_array($hoy, $fechasNormalizadas, true)) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Correo omitido por registro mismo día.',
+            ]);
+        }
+
         try {
             $this->enviarEmailParticipacionCooperativasUgseco($actividad, $correo, $nombres);
 
@@ -1603,5 +1642,137 @@ class ActividadPublicPnteController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function detalleCursosCooperativasUgseco(string $slug)
+    {
+        $hoy = Carbon::today();
+
+        $actividad = ActividadPnte::with([
+            'tipoActividad:id,name',
+            'nombreActividad:id,name',
+            'regionRel:id,name',
+            'provinciaRel:id,name',
+            'distritoRel:id,name',
+            'representante:id,name,lastname',
+            'modalidad:id,name',
+        ])
+            ->where('unidad', 3)
+            ->where('slug', $slug)
+            ->first();
+
+        if (! $actividad) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Evento no encontrado.',
+                'data' => null,
+            ], 404);
+        }
+
+        $fechasDesdeCampo = collect($actividad->fechas ?? [])
+            ->map(function ($fecha) {
+                if (is_array($fecha)) {
+                    $fecha = $fecha['fecha'] ?? $fecha['date'] ?? null;
+                }
+                if (! is_string($fecha) || trim($fecha) === '') {
+                    return null;
+                }
+                try {
+                    return Carbon::parse($fecha)->toDateString();
+                } catch (\Throwable $e) {
+                    return null;
+                }
+            })
+            ->filter();
+
+        $fechasDesdeHorario = collect($actividad->horario ?? [])
+            ->when(is_array($actividad->horario), function ($c) {
+                return $c->map(function ($item) {
+                    if (! is_array($item)) {
+                        return null;
+                    }
+                    $f = $item['fecha'] ?? null;
+                    if (! $f) {
+                        return null;
+                    }
+                    try {
+                        return Carbon::parse($f)->toDateString();
+                    } catch (\Throwable $e) {
+                        return null;
+                    }
+                })->filter();
+            });
+
+        $todasFechas = $fechasDesdeCampo->merge($fechasDesdeHorario)->unique();
+
+        $fechasProximas = $todasFechas
+            ->filter(function ($fecha) use ($hoy) {
+                try {
+                    return Carbon::parse($fecha)->gte($hoy);
+                } catch (\Throwable $e) {
+                    return false;
+                }
+            })
+            ->sort()
+            ->values();
+
+        // Formatear horario
+        $horarioRaw = $actividad->horario;
+        $horarioFormateado = '';
+        if (is_array($horarioRaw)) {
+            $partes = [];
+            foreach ($horarioRaw as $item) {
+                if (is_string($item)) {
+                    $partes[] = trim($item);
+
+                    continue;
+                }
+                if (! is_array($item)) {
+                    continue;
+                }
+                $inicio = $item['horaInicio'] ?? $item['hora_inicio'] ?? null;
+                $fin = $item['horaFin'] ?? $item['hora_fin'] ?? null;
+                $parte = trim(implode(' - ', array_filter([$inicio, $fin])));
+                if ($parte !== '') {
+                    $partes[] = $parte;
+                }
+            }
+            $horarioFormateado = implode(' / ', $partes);
+        } elseif (is_string($horarioRaw)) {
+            $horarioFormateado = $horarioRaw;
+        }
+
+        $data = [
+            'id' => $actividad->id,
+            'slug' => $actividad->slug,
+            'activo' => (int) $actividad->activo,
+            'fechas' => $fechasProximas->all(),
+            'cantidad_dias' => $actividad->cantidad_dias,
+            'tipo_actividad' => $actividad->tipoActividad->name ?? null,
+            'nombre_actividad' => $actividad->nombreActividad->name ?? null,
+            'title' => $actividad->tema,
+            'tema' => $actividad->tema,
+            'modalidad' => $actividad->modalidad->name ?? null,
+            'descripcion' => $actividad->descripcion,
+            'region' => $actividad->regionRel->name ?? $actividad->region,
+            'provincia' => $actividad->provinciaRel->name ?? $actividad->provincia,
+            'distrito' => $actividad->distritoRel->name ?? $actividad->distrito,
+            'direccion' => $actividad->lugar,
+            'horario' => $horarioFormateado,
+            'entidad_organizadora' => $actividad->entidad_organizadora,
+            'entidad_aliada' => $actividad->entidad_aliada,
+            'mypes_beneficiadas' => $actividad->mypes_beneficiadas,
+            'total_participantes' => $actividad->total_participantes,
+            'link' => $actividad->link,
+            'asesor' => $actividad->representante
+                ? mb_strtoupper(trim("{$actividad->representante->name} {$actividad->representante->lastname}"), 'UTF-8')
+                : null,
+        ];
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Detalle de Compras MYPErú obtenido correctamente.',
+            'data' => $data,
+        ]);
     }
 }
