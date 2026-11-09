@@ -1669,7 +1669,16 @@ class ActividadPublicPnteController extends Controller
             ], 404);
         }
 
-        $fechasDesdeCampo = collect($actividad->fechas ?? [])
+        $fechasRaw = $actividad->fechas;
+        if (is_string($fechasRaw)) {
+            $decoded = json_decode($fechasRaw, true);
+            $fechasRaw = is_array($decoded) ? $decoded : [];
+        }
+        if (!is_array($fechasRaw)) {
+            $fechasRaw = [];
+        }
+
+        $fechasDesdeCampo = collect($fechasRaw)
             ->map(function ($fecha) {
                 if (is_array($fecha)) {
                     $fecha = $fecha['fecha'] ?? $fecha['date'] ?? null;
@@ -1685,8 +1694,14 @@ class ActividadPublicPnteController extends Controller
             })
             ->filter();
 
-        $fechasDesdeHorario = collect($actividad->horario ?? [])
-            ->when(is_array($actividad->horario), function ($c) {
+        $horarioRawForDates = $actividad->horario;
+        if (is_string($horarioRawForDates)) {
+            $decodedHorario = json_decode($horarioRawForDates, true);
+            $horarioRawForDates = is_array($decodedHorario) ? $decodedHorario : [];
+        }
+
+        $fechasDesdeHorario = collect($horarioRawForDates ?? [])
+            ->when(is_array($horarioRawForDates), function ($c) {
                 return $c->map(function ($item) {
                     if (! is_array($item)) {
                         return null;
@@ -1703,7 +1718,7 @@ class ActividadPublicPnteController extends Controller
                 })->filter();
             });
 
-        $todasFechas = $fechasDesdeCampo->merge($fechasDesdeHorario)->unique();
+        $todasFechas = $fechasDesdeCampo->merge($fechasDesdeHorario)->unique()->sort()->values();
 
         $fechasProximas = $todasFechas
             ->filter(function ($fecha) use ($hoy) {
@@ -1713,7 +1728,6 @@ class ActividadPublicPnteController extends Controller
                     return false;
                 }
             })
-            ->sort()
             ->values();
 
         // Formatear horario
@@ -1746,7 +1760,7 @@ class ActividadPublicPnteController extends Controller
             'id' => $actividad->id,
             'slug' => $actividad->slug,
             'activo' => (int) $actividad->activo,
-            'fechas' => $fechasProximas->all(),
+            'fechas' => $todasFechas->all(),
             'cantidad_dias' => $actividad->cantidad_dias,
             'tipo_actividad' => $actividad->tipoActividad->name ?? null,
             'nombre_actividad' => $actividad->nombreActividad->name ?? null,

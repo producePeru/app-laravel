@@ -5,6 +5,7 @@ namespace App\Http\Controllers\ComprasMyPeru;
 use App\Http\Controllers\Controller;
 use App\Mail\EmailParticipacionComprasMyPeruMail;
 use App\Models\ActividadPnte;
+use App\Models\EmpresarioActividad;
 use App\Models\PntTest;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -511,6 +512,101 @@ class ComprasPeruController extends Controller
             DB::rollBack();
 
             Log::error('saveTest: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error inesperado.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function comprasMyPeruTestEnd(Request $request, $slug)
+    {
+        try {
+
+            $test = PntTest::where('slug', $slug)->first();
+
+            if (! $test) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No existe un test para el slug indicado.',
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Test obtenido correctamente.',
+                'data' => [
+                    'test_entrada' => $test->test_entrada,
+                    'test_salida' => $test->test_salida,
+                    'caso_practico' => $test->caso_practico,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error inesperado.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function comprasMyPeruTestEndResponses(Request $request)
+    {
+        $request->validate([
+            'slug' => 'required|string',
+            'numero_dni' => 'required|string|max:12',
+            'empresario_id' => 'nullable|integer',
+
+            'test_salida' => 'nullable|array',
+            'ratings' => 'nullable|array',
+        ]);
+
+        try {
+            $query = EmpresarioActividad::where('slug', $request->slug)
+                ->where('numero_dni', $request->numero_dni);
+
+            if ($request->filled('empresario_id')) {
+                $query->where('empresario_id', $request->empresario_id);
+            }
+
+            $registro = $query->first();
+
+            if (! $registro) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontró el registro del participante.',
+                ], 404);
+            }
+
+            // solo salida
+            // salida
+            if (! empty($registro->test_salida)) {
+                return response()->json([
+                    'status' => 409,
+                    'message' => 'El test de salida ya fue registrado anteriormente.',
+                ], 409);
+            }
+
+            $registro->update([
+                'test_salida' => $request->test_salida,
+                'ratings' => $request->ratings,
+                'fecha_ts' => now(),
+            ]);
+
+            $realizoTestEntrada = ! empty($registro->test_entrada);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Test de salida registrado correctamente.',
+                'test_entrada_realizado' => $realizoTestEntrada,
+                'mensaje_test_entrada' => $realizoTestEntrada ? 'si_realizo' : 'no_realizo',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('comprasMyPeruTestEndResponses: '.$e->getMessage(), $request->all());
 
             return response()->json([
                 'status' => 500,

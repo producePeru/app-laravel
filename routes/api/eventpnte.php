@@ -153,6 +153,9 @@ Route::controller(ComprasPeruController::class)->group(function () {
 
     Route::PUT('compras-myperu-save-test', 'saveTest');  // guardar las preguntas desde el Admin
 
+    Route::GET('compras-myperu-test-end/{slug}', 'comprasMyPeruTestEnd');
+
+    Route::POST('compras-myperu-test-end-responses', 'comprasMyPeruTestEndResponses');
 });
 
 // event-pnte-public 🌍
