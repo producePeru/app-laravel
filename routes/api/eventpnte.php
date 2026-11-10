@@ -143,6 +143,8 @@ Route::controller(PnteTestController::class)->group(function () {
 });
 
 Route::controller(ComprasPeruController::class)->group(function () {
+    Route::POST('registro-empresario-compras-myperu', 'storeEmpresarioComprasMyPeru');
+
     Route::GET('cursos-compras-myperu', 'cursos');
 
     Route::GET('curso-detalle-compras-myperu/{slug}', 'detalle');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\ComprasMyPeru;
 use App\Http\Controllers\Controller;
 use App\Mail\EmailParticipacionComprasMyPeruMail;
 use App\Models\ActividadPnte;
+use App\Models\Empresario;
 use App\Models\EmpresarioActividad;
 use App\Models\PntTest;
 use Carbon\Carbon;
@@ -614,5 +615,177 @@ class ComprasPeruController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function storeEmpresarioComprasMyPeru(Request $request)
+    {
+        $request->validate([
+            'slug' => 'required|string',
+            'ruc' => 'nullable|size:11',
+            'numero_dni' => 'required|string|max:12',
+            'discapacidad' => 'required|in:0,1',
+            'fecha_seleccionada' => 'nullable|date',
+        ]);
+
+        try {
+
+            DB::beginTransaction();
+
+            $empresario = Empresario::firstOrCreate(
+                [
+                    'ruc' => $request->ruc,
+                    'numero_dni' => $request->numero_dni,
+
+                    'razon_social' => $request->razon_social,
+                    'nombre_comercial' => $request->nombre_comercial,
+
+                    'sector_economico_id' => $request->sector_economico_id,
+                    'rubro_id' => $request->rubro_id,
+                    'actividad_comercial_id' => $request->actividad_comercial_id,
+
+                    'region_id' => $request->region_id,
+                    'provincia_id' => $request->provincia_id,
+                    'distrito_id' => $request->distrito_id,
+                    'direccion' => $request->direccion,
+
+                    'pais_id' => $request->pais_id,
+                    'tipo_documento_id' => $request->tipo_documento_id,
+
+                    'apellido_paterno' => $request->apellido_paterno,
+                    'apellido_materno' => $request->apellido_materno,
+                    'nombres' => $request->nombres,
+
+                    'genero_id' => $request->genero_id,
+                    'discapacidad' => $request->discapacidad,
+                    'celular' => $request->celular,
+                    'correo_electronico' => $request->correo_electronico,
+
+                    'cargo_empresa_id' => $request->cargo_empresa_id,
+                    'fecha_nacimiento' => $request->fecha_nacimiento,
+                    'edad' => $request->edad,
+
+                    'actividad_comercial_nombre' => $request->actividad_comercial_nombre,
+                    'tipo_empresa_id' => $request->tipo_empresa_id,
+                    'f_inicio_act' => $request->f_inicio_act,
+                    'venta_anual' => $request->venta_anual,
+                    'medio_entero' => $request->medio_entero,
+
+                    'coop_ruc' => $request->coop_ruc,
+                    'coop_razon_social' => $request->coop_razon_social,
+                    'coop_rol' => $request->coop_rol,
+                ]
+            );
+
+            /**
+             * 2. ACTIVIDAD
+             */
+            $actividad = ActividadPnte::where('slug', $request->slug)
+                ->firstOrFail();
+
+            // Determinar si la inscripción es el mismo día del evento
+            $fechasNormalizadas = $this->normalizarFechasActividad($actividad->fechas);
+            $hoy = Carbon::today()->toDateString();
+            $isSameDay = in_array($hoy, $fechasNormalizadas, true);
+
+            /**
+             * 3. VALIDAR SI YA ESTÁ REGISTRADO EN ACTIVIDAD
+             */
+            $existsActividad = EmpresarioActividad::where('actividad_id', $actividad->id)
+                ->where('empresario_id', $empresario->id)
+                ->exists();
+
+            if ($existsActividad) {
+
+                DB::rollBack();
+
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'El participante ya está registrado en esta actividad.',
+                ]);
+            }
+
+            /**
+             * 4. REGISTRAR RELACIÓN
+             */
+            $inscripcion = EmpresarioActividad::create([
+                'actividad_id' => $actividad->id,
+                'slug' => $request->slug,
+                'empresario_id' => $empresario->id,
+                'numero_dni' => $request->numero_dni,
+                'fecha_asistencia' => null,
+                'fecha_seleccionada' => $request->fecha_seleccionada,
+            ]);
+
+            // Marcar asistencia si el registro es el mismo día del evento
+            if ($isSameDay && $actividad->switch_asistencias) {
+                $asistencia = $inscripcion->asistencias()->firstOrCreate(
+                    ['fecha' => $hoy],
+                    [
+                        'slug' => $inscripcion->slug,
+                        'numero_dni' => $inscripcion->numero_dni,
+                        'fecha_hora' => now(),
+                    ]
+                );
+
+                $primeraAsistencia = $inscripcion->asistencias()
+                    ->orderBy('fecha')
+                    ->orderBy('fecha_hora')
+                    ->first();
+
+                $inscripcion->update([
+                    'fecha_asistencia' => $primeraAsistencia
+                        ? ($primeraAsistencia->fecha_hora ?? now())->format('d/m/Y h:i a')
+                        : null,
+                ]);
+            }
+
+            /**
+             * 5. CONTADOR
+             */
+            $actividad->increment('total_participantes');
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Registro procesado correctamente.',
+                'empresario_id' => $empresario->id,
+                'is_same_day' => $isSameDay,
+            ]);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error en el servidor',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function normalizarFechasActividad($fechas): array
+    {
+        return collect($fechas ?? [])
+            ->map(function ($fecha) {
+                if (is_array($fecha)) {
+                    $fecha = $fecha['fecha'] ?? $fecha['date'] ?? null;
+                }
+
+                if (! is_string($fecha) || trim($fecha) === '') {
+                    return null;
+                }
+
+                try {
+                    return Carbon::parse($fecha)->toDateString();
+                } catch (\Throwable $e) {
+                    return null;
+                }
+            })
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
     }
 }
