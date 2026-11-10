@@ -67,6 +67,8 @@ class ActividadPnteController extends Controller
             'tipo_gestion' => 'nullable',
 
             'activo' => 'nullable|boolean',
+
+            'especial' => 'nullable',
         ]);
 
         if ((int) $validated['unidad'] === 3) {
@@ -207,6 +209,7 @@ class ActividadPnteController extends Controller
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
 
             'activo' => 'nullable|boolean',
+            'especial' => 'nullable',
         ]);
 
         if ((int) $validated['unidad'] === 3) {
@@ -363,6 +366,7 @@ class ActividadPnteController extends Controller
                 'tipo_gestion',
                 'eliminar',
                 'prendido',
+                'especial',
                 'created_at',
             ])
 
@@ -465,6 +469,9 @@ class ActividadPnteController extends Controller
         $actividades->getCollection()->transform(function ($actividad) {
             $actividad->eliminar = $actividad->eliminar === 1;
             $actividad->formulario_registro = $actividad->prendido == 1;
+
+            $test = \App\Models\PntTest::where('slug', $actividad->slug)->first();
+            $actividad->hasTest = ! empty($test?->test_salida);
 
             return $actividad;
         });
