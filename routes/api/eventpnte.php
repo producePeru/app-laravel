@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ComprasMyPeru\ComprasPeruController;
+use App\Http\Controllers\ComprasMyPeru\ReactivaSectorTextilController;
 use App\Http\Controllers\Pnte\ActividadPnteController;
 use App\Http\Controllers\Pnte\ActividadPublicPnteController;
 use App\Http\Controllers\Pnte\PnteTestController;
@@ -85,6 +86,11 @@ Route::controller(PnteTestController::class)->group(function () {
     Route::GET('pp093-get-test-salida/{slug}', 'getTestSalida');
 
     Route::POST('pp093-check-asistencia', 'checkAsistencia');
+});
+
+Route::controller(ReactivaSectorTextilController::class)->group(function () {
+    Route::GET('calendar-reactiva-sectores', 'eventsCalendarReactivaSectores');
+    
 });
 
 // event-pnte 🔒

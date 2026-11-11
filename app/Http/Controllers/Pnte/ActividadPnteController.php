@@ -310,9 +310,30 @@ class ActividadPnteController extends Controller
             'name' => 'nullable|string',
             'aprobar' => 'nullable|in:0,1',
             'nombre_actividad_id' => 'nullable|integer|exists:nombre_actividad,id',
+            'nombre_actividades' => 'nullable|array',
+            'nombre_actividades.*' => 'integer|exists:nombre_actividad,id',
         ]);
 
         $pageSize = $request->input('pageSize', 10);
+
+        // Registrar filtros recibidos para depuración
+        Log::info('ActividadPnteController@index filtros recibidos', [
+            'page' => $request->input('page'),
+            'pageSize' => $pageSize,
+            'year' => $request->input('year'),
+            'unidad' => $request->input('unidad'),
+            'nombre_actividad_id' => $request->input('nombre_actividad_id'),
+            'nombre_actividades' => $request->input('nombre_actividades'),
+        ]);
+
+        $filtersReceived = [
+            'page' => $request->input('page'),
+            'pageSize' => $pageSize,
+            'year' => $request->input('year'),
+            'unidad' => $request->input('unidad'),
+            'nombre_actividad_id' => $request->input('nombre_actividad_id'),
+            'nombre_actividades' => $request->input('nombre_actividades'),
+        ];
 
         $user = auth()->user();
 
@@ -409,6 +430,11 @@ class ActividadPnteController extends Controller
                 $q->where('nombre_actividad_id', $request->input('nombre_actividad_id'));
             })
 
+            // ✅ FILTRO: nombre_actividades — array múltiple
+            ->when($request->filled('nombre_actividades') && is_array($request->input('nombre_actividades')), function ($q) use ($request) {
+                $q->whereIn('nombre_actividad_id', $request->input('nombre_actividades'));
+            })
+
             // ✅ FILTRO: year
             ->when($request->filled('year'), function ($q) use ($request) {
                 $year = $request->input('year');
@@ -479,6 +505,7 @@ class ActividadPnteController extends Controller
         return response()->json([
             'status' => 200,
             'message' => 'Actividades obtenidas correctamente.',
+            'filters_received' => $filtersReceived,
             'data' => [
                 'current_page' => $actividades->currentPage(),
                 'data' => $actividades->items(),
