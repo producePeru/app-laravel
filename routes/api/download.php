@@ -72,6 +72,9 @@ Route::controller(DownloadAttendanceController::class)->group(function () {
 
     Route::POST('export-inscritos-certificados-pp093', 'exportarInscritosParaCertificados');
 
+    Route::POST('export-inscritos-por-slug-compras/{slug}', 'exportInscritosPorSlugCompras');   // compras + test + satisfaccion
+
+
 });
 
 Route::controller(DownloadConvenioController::class)->group(function () {
