@@ -1826,7 +1826,7 @@ class ActividadPublicPnteController extends Controller
 
         $items = EmpresarioActividad::query()
             ->with([
-                'empresario:id,razon_social,nombre_comercial,logo,region_id,provincia_id',
+                'empresario:id,razon_social,nombre_comercial,logo,region_id,provincia_id,numero_dni',
                 'empresario.region:id,name',
                 'empresario.provincia:id,name',
             ])
@@ -1846,6 +1846,7 @@ class ActividadPublicPnteController extends Controller
                 'fecha_asistencia' => true,
                 'razon_social' => $item->empresario?->razon_social,
                 'nombre_comercial' => $item->empresario?->nombre_comercial,
+                'numero_dni' => $item->empresario?->numero_dni,
                 'logo' => $item->empresario?->logo,
                 'socials' => $item->emprendimiento?->redes_sociales ?? [],
                 'descripcion' => $item->emprendimiento?->desc_negocio,
