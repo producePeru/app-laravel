@@ -2819,8 +2819,6 @@ class DownloadAttendanceController extends Controller
         ini_set('memory_limit', '1024M');
 
         $search = trim($request->input('name', ''));
-        $page = max(1, (int) $request->input('page', 1));
-        $pageSize = max(1, min((int) $request->input('pageSize', 50), 1000));
         $soloAprobados = $request->boolean('fecha_asistencia');
 
         // EVENTO (para encabezado informativo, opcional)
@@ -2890,8 +2888,7 @@ class DownloadAttendanceController extends Controller
                     ", ["%{$search}%"]);
                 });
             })
-            ->orderByDesc('created_at')
-            ->forPage($page, $pageSize);
+            ->orderByDesc('created_at');
 
         // SPREADSHEET DESDE CERO
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
