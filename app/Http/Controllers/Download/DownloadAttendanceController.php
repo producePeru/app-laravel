@@ -2819,6 +2819,9 @@ class DownloadAttendanceController extends Controller
         ini_set('memory_limit', '1024M');
 
         $search = trim($request->input('name', ''));
+        $page = max(1, (int) $request->input('page', 1));
+        $pageSize = max(1, min((int) $request->input('pageSize', 50), 1000));
+        $soloAprobados = $request->boolean('fecha_asistencia');
 
         // EVENTO (para encabezado informativo, opcional)
         $event = ActividadPnte::select('id', 'slug', 'tema', 'fechas', 'nombre_actividad_id', 'descripcion')
@@ -2853,6 +2856,10 @@ class DownloadAttendanceController extends Controller
             'empresario.feriasPapa.image2',
         ])
             ->where('slug', $slug)
+            ->when($soloAprobados, function ($q) {
+                $q->whereNotNull('fecha_asistencia')
+                    ->where('fecha_asistencia', '<>', '');
+            })
             ->when($request->filled('prioridad'), function ($q) use ($request, $event) {
                 $prioridad = $request->input('prioridad');
                 $q->whereHas('empresario.feriasPapa', function ($pq) use ($event, $prioridad) {
@@ -2883,7 +2890,8 @@ class DownloadAttendanceController extends Controller
                     ", ["%{$search}%"]);
                 });
             })
-            ->orderByDesc('created_at');
+            ->orderByDesc('created_at')
+            ->forPage($page, $pageSize);
 
         // SPREADSHEET DESDE CERO
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -2967,9 +2975,9 @@ class DownloadAttendanceController extends Controller
         $row = 2;
         $index = 1;
 
-        $query->chunk(1000, function ($items) use (&$row, &$index, $sheet, $esPapa) {
+        $items = $query->get();
 
-            foreach ($items as $item) {
+        foreach ($items as $item) {
 
                 $e = $item->empresario;
                 $emp = $item->emprendimiento;
@@ -3061,7 +3069,6 @@ class DownloadAttendanceController extends Controller
 
                 $row++;
             }
-        });
 
         // Todas las columnas en ancho 15; Lugar de prioridad 1 y 2 en ancho 26
         $anchos26 = ['LUGAR DE PRIORIDAD 1', 'LUGAR DE PRIORIDAD 2'];
