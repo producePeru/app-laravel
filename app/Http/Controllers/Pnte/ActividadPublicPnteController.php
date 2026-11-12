@@ -1806,6 +1806,16 @@ class ActividadPublicPnteController extends Controller
             ->whereNotNull('fecha_asistencia')
             ->where('fecha_asistencia', '<>', '');
 
+        $search = trim((string) $request->input('search', ''));
+
+        if ($search !== '') {
+            $baseQuery->whereHas('empresario', function ($query) use ($search) {
+                $query->where('nombre_comercial', 'like', "%{$search}%")
+                    ->orWhere('razon_social', 'like', "%{$search}%")
+                    ->orWhere('numero_dni', 'like', "%{$search}%");
+            });
+        }
+
         $totalRegistros = (clone $baseQuery)->count();
 
         $seed = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $request->input('seed', ''));
@@ -1813,7 +1823,9 @@ class ActividadPublicPnteController extends Controller
             $seed = Str::random(12);
         }
 
-        $cacheKey = "pnte:feria:inscritos:shuffle:{$slug}:{$totalRegistros}:{$seed}";
+        $searchKey = preg_replace('/[^A-Za-z0-9_-]/', '', $search) ?: 'all';
+
+        $cacheKey = "pnte:feria:inscritos:shuffle:{$slug}:{$searchKey}:{$totalRegistros}:{$seed}";
 
         $ids = Cache::remember($cacheKey, now()->addMinutes(15), function () use ($baseQuery) {
             return (clone $baseQuery)->inRandomOrder()->pluck('id')->all();
@@ -1863,6 +1875,7 @@ class ActividadPublicPnteController extends Controller
                 'last_page' => $lastPage,
                 'total' => $total,
                 'per_page' => $perPage,
+                'search' => $search,
             ],
             'event' => $event,
         ]);
