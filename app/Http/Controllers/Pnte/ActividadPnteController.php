@@ -2557,11 +2557,13 @@ class ActividadPnteController extends Controller
                         ? ($e->discapacidad ? 'SI' : 'NO')
                         : null,
 
-                    'celular' => $e?->celular,
+                     'celular' => $e?->celular,
 
-                    'correo_electronico' => $e?->correo_electronico,
+                     'correo_electronico' => $e?->correo_electronico,
 
-                    'cargo_empresa_id' => $e?->cargo_empresa_id,
+                    'logo' => $e?->logo,
+
+                     'cargo_empresa_id' => $e?->cargo_empresa_id,
 
                     'fecha_nacimiento' => $e?->fecha_nacimiento,
 
