@@ -13,6 +13,7 @@ use App\Models\UgsecoDiagnosticoPregunta;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -1793,12 +1794,31 @@ class ActividadPublicPnteController extends Controller
     public function inscritosFeriaPage(Request $request, $slug)
     {
         $perPage = max(1, min((int) $request->input('pageSize', 10), 100));
+        $page = max(1, (int) $request->input('page', 1));
 
         $event = ActividadPnte::select('id', 'slug', 'tema')
             ->where('slug', $slug)
             ->first();
 
-        $data = EmpresarioActividad::query()
+        $baseQuery = EmpresarioActividad::query()
+            ->where('slug', $slug)
+            ->whereNotNull('fecha_asistencia')
+            ->where('fecha_asistencia', '<>', '');
+
+        $totalRegistros = (clone $baseQuery)->count();
+
+        $cacheKey = "pnte:feria:inscritos:shuffle:{$slug}:{$totalRegistros}";
+
+        $ids = Cache::remember($cacheKey, now()->addMinutes(15), function () use ($baseQuery) {
+            return (clone $baseQuery)->inRandomOrder()->pluck('id')->all();
+        });
+
+        $total = count($ids);
+        $lastPage = max(1, (int) ceil($total / $perPage));
+        $page = min($page, $lastPage);
+        $pageIds = array_slice($ids, ($page - 1) * $perPage, $perPage);
+
+        $items = EmpresarioActividad::query()
             ->with([
                 'empresario:id,razon_social,nombre_comercial,logo,region_id,provincia_id',
                 'empresario.region:id,name',
@@ -1807,13 +1827,12 @@ class ActividadPublicPnteController extends Controller
             ->with(['emprendimiento' => function ($query) {
                 $query->select('empresario_id', 'actividad_id', 'redes_sociales', 'desc_negocio');
             }])
-            ->where('slug', $slug)
-            ->whereNotNull('fecha_asistencia')
-            ->where('fecha_asistencia', '<>', '')
-            ->orderByDesc('created_at')
-            ->paginate($perPage);
+            ->whereIn('id', $pageIds)
+            ->get()
+            ->sortBy(fn ($item) => array_search($item->id, $pageIds, true))
+            ->values();
 
-        $data->getCollection()->transform(function ($item) {
+        $data = $items->map(function ($item) {
             return [
                 'id' => $item->id,
                 'actividad_id' => $item->actividad_id,
@@ -1831,7 +1850,13 @@ class ActividadPublicPnteController extends Controller
 
         return response()->json([
             'status' => 200,
-            'data' => $data,
+            'data' => [
+                'data' => $data,
+                'current_page' => $page,
+                'last_page' => $lastPage,
+                'total' => $total,
+                'per_page' => $perPage,
+            ],
             'event' => $event,
         ]);
     }
