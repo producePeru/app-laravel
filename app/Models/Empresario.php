@@ -52,7 +52,8 @@ class Empresario extends Model
 
         'coop_ruc',
         'coop_razon_social',
-        'coop_rol'
+        'coop_rol',
+        'logo'
     ];
 
     // ─── RELACIONES ───────────────────────────────────────────────

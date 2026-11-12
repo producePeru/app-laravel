@@ -75,6 +75,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::PUT('update-compras-myperu/{id}', 'comprasMyPeruUpdate');
 
+    Route::PUT('empresa-logo/{id}', 'empresaLogo');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {
@@ -128,6 +130,8 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
     Route::POST('diagnostico', 'storeDiagnosticoUgseco');
 
     Route::GET('data-event-count/{slug}', 'dataEventCountCooperativa');
+
+    Route::GET('inscritos-feria-page/{slug}', 'inscritosFeriaPage');
 
 });
 

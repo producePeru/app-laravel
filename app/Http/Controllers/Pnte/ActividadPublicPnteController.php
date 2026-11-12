@@ -1789,4 +1789,14 @@ class ActividadPublicPnteController extends Controller
             'data' => $data,
         ]);
     }
+
+    public function inscritosFeriaPage(Request $request, $slug)
+    {
+        $request->merge([
+            'fecha_asistencia' => true,
+        ]);
+
+        return app(ActividadPnteController::class)
+            ->inscritosFeriaPorSlug($request, $slug);
+    }
 }

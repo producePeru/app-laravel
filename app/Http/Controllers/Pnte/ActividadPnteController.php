@@ -920,7 +920,9 @@ class ActividadPnteController extends Controller
 
                     'celular' => $e?->celular,
 
-                    'correo_electronico' => $e?->correo_electronico,
+                     'correo_electronico' => $e?->correo_electronico,
+
+                    'agregar_logo' => $e?->logo,
 
                     'cargo_empresa_id' => $e?->cargo_empresa_id,
 
@@ -2398,6 +2400,11 @@ class ActividadPnteController extends Controller
 
                 ->where('slug', $slug)
 
+                ->when($request->boolean('fecha_asistencia'), function ($q) {
+                    $q->whereNotNull('fecha_asistencia')
+                        ->where('fecha_asistencia', '<>', '');
+                })
+
                 // 🔥 FILTRO POR PRIORIDAD (feria papa: prioridad_1 o prioridad_2)
                 ->when($request->filled('prioridad'), function ($q) use ($request, $event) {
                     $prioridad = $request->input('prioridad');
@@ -2876,5 +2883,30 @@ class ActividadPnteController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function empresaLogo(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'logo' => 'nullable|url|max:2048',
+        ]);
+
+        $inscripcion = EmpresarioActividad::with('empresario')->find($id);
+
+        if (! $inscripcion?->empresario) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Inscripción o empresario no encontrado.',
+            ], 404);
+        }
+
+        $inscripcion->empresario->logo = $validated['logo'] ?? null;
+        $inscripcion->empresario->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Logo actualizado correctamente.',
+            'logo' => $inscripcion->empresario->logo,
+        ]);
     }
 }
