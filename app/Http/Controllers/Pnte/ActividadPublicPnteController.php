@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class ActividadPublicPnteController extends Controller
 {
@@ -1807,7 +1808,12 @@ class ActividadPublicPnteController extends Controller
 
         $totalRegistros = (clone $baseQuery)->count();
 
-        $cacheKey = "pnte:feria:inscritos:shuffle:{$slug}:{$totalRegistros}";
+        $seed = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $request->input('seed', ''));
+        if ($seed === '') {
+            $seed = Str::random(12);
+        }
+
+        $cacheKey = "pnte:feria:inscritos:shuffle:{$slug}:{$totalRegistros}:{$seed}";
 
         $ids = Cache::remember($cacheKey, now()->addMinutes(15), function () use ($baseQuery) {
             return (clone $baseQuery)->inRandomOrder()->pluck('id')->all();
