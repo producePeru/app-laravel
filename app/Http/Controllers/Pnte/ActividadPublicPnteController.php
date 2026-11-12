@@ -1792,11 +1792,47 @@ class ActividadPublicPnteController extends Controller
 
     public function inscritosFeriaPage(Request $request, $slug)
     {
-        $request->merge([
-            'fecha_asistencia' => true,
-        ]);
+        $perPage = max(1, min((int) $request->input('pageSize', 10), 100));
 
-        return app(ActividadPnteController::class)
-            ->inscritosFeriaPorSlug($request, $slug);
+        $event = ActividadPnte::select('id', 'slug', 'tema')
+            ->where('slug', $slug)
+            ->first();
+
+        $data = EmpresarioActividad::query()
+            ->with([
+                'empresario:id,razon_social,nombre_comercial,logo,region_id,provincia_id',
+                'empresario.region:id,name',
+                'empresario.provincia:id,name',
+            ])
+            ->with(['emprendimiento' => function ($query) {
+                $query->select('empresario_id', 'actividad_id', 'redes_sociales', 'desc_negocio');
+            }])
+            ->where('slug', $slug)
+            ->whereNotNull('fecha_asistencia')
+            ->where('fecha_asistencia', '<>', '')
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+
+        $data->getCollection()->transform(function ($item) {
+            return [
+                'id' => $item->id,
+                'actividad_id' => $item->actividad_id,
+                'slug' => $item->slug,
+                'fecha_asistencia' => true,
+                'razon_social' => $item->empresario?->razon_social,
+                'nombre_comercial' => $item->empresario?->nombre_comercial,
+                'logo' => $item->empresario?->logo,
+                'socials' => $item->emprendimiento?->redes_sociales ?? [],
+                'descripcion' => $item->emprendimiento?->desc_negocio,
+                'region' => $item->empresario?->region?->name,
+                'provincia' => $item->empresario?->provincia?->name,
+            ];
+        });
+
+        return response()->json([
+            'status' => 200,
+            'data' => $data,
+            'event' => $event,
+        ]);
     }
 }
