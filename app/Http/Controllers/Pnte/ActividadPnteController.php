@@ -2911,4 +2911,72 @@ class ActividadPnteController extends Controller
             'logo' => $inscripcion->empresario->logo,
         ]);
     }
+
+    public function empresaEditarInfo(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'redes_sociales' => 'nullable|array',
+            'redes_sociales.*.name' => 'nullable|string|max:60',
+            'redes_sociales.*.link' => 'nullable|string|max:500',
+            'desc_negocio' => 'nullable|string|max:5000',
+        ]);
+
+        $inscripcion = EmpresarioActividad::with('empresario')->find($id);
+
+        if (! $inscripcion?->empresario) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Inscripción o empresario no encontrado.',
+            ], 404);
+        }
+
+        $emprendimiento = EmpresarioEmprendimiento::where('empresario_id', $inscripcion->empresario_id)
+            ->where('actividad_id', $inscripcion->actividad_id)
+            ->latest('created_at')
+            ->first();
+
+        if (! $emprendimiento) {
+            $emprendimiento = new EmpresarioEmprendimiento([
+                'empresario_id' => $inscripcion->empresario_id,
+                'actividad_id' => $inscripcion->actividad_id,
+            ]);
+        }
+
+        if (array_key_exists('redes_sociales', $validated)) {
+            $redes = [];
+
+            foreach ($validated['redes_sociales'] ?? [] as $red) {
+                $link = trim((string) ($red['link'] ?? ''));
+
+                if ($link === '') {
+                    continue;
+                }
+
+                $redes[] = [
+                    'name' => trim((string) ($red['name'] ?? '')) ?: 'Web',
+                    'link' => $link,
+                ];
+            }
+
+            $emprendimiento->redes_sociales = $redes;
+        }
+
+        if (array_key_exists('desc_negocio', $validated)) {
+            $descripcion = trim((string) ($validated['desc_negocio'] ?? ''));
+
+            $emprendimiento->desc_negocio = $descripcion === '' ? null : $descripcion;
+        }
+
+        $emprendimiento->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Datos actualizados correctamente.',
+            'data' => [
+                'id' => $inscripcion->id,
+                'redes_sociales' => $emprendimiento->redes_sociales ?? [],
+                'desc_negocio' => $emprendimiento->desc_negocio,
+            ],
+        ]);
+    }
 }

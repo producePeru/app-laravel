@@ -77,6 +77,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::PUT('empresa-logo/{id}', 'empresaLogo');
 
+    Route::PUT('empresa-editar-info/{id}', 'empresaEditarInfo');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {
