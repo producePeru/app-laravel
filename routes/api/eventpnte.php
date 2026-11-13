@@ -172,4 +172,9 @@ Route::controller(ComprasPeruController::class)->group(function () {
     Route::POST('compras-myperu-test-end-responses', 'comprasMyPeruTestEndResponses');
 });
 
+Route::controller(ReactivaSectorTextilController::class)->group(function () {
+    Route::GET('calendar-reactiva-sectores-public', 'eventsCalendarReactivaSectoresPublic');
+    
+});
+
 // event-pnte-public 🌍

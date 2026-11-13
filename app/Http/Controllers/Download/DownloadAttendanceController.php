@@ -3816,7 +3816,7 @@ class DownloadAttendanceController extends Controller
             $slugs = $actividades->pluck('slug')->toArray();
 
             $inscritosPorSlug = EmpresarioActividad::with([
-                'empresario:id,ruc,razon_social,apellido_paterno,apellido_materno,nombres,numero_dni,celular,correo_electronico,genero_id,discapacidad,sector_economico_id,rubro_id,region_id,provincia_id,distrito_id,pais_id,tipo_documento_id,academicdegree_id,cargo_empresa_id',
+                'empresario:id,ruc,razon_social,nombre_comercial,apellido_paterno,apellido_materno,nombres,numero_dni,celular,correo_electronico,genero_id,discapacidad,sector_economico_id,rubro_id,actividad_comercial_id,actividad_comercial_nombre,region_id,provincia_id,distrito_id,pais_id,tipo_documento_id,academicdegree_id,cargo_empresa_id,direccion,fecha_nacimiento,edad,venta_anual,medio_entero',
                 'empresario.genero:id,name',
                 'empresario.tipoDocumento:id,name',
                 'empresario.pais:id,name',
@@ -3827,6 +3827,7 @@ class DownloadAttendanceController extends Controller
                 'empresario.rubro:id,name',
                 'empresario.gradoAcademico:id,name',
                 'empresario.cargoEmpresa:id,name',
+                'empresario.actividadComercial:id,name',
             ])
                 ->whereIn('slug', $slugs)
 
@@ -3843,7 +3844,7 @@ class DownloadAttendanceController extends Controller
 
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            fputcsv($handle, [
+            $headers = [
                 'Nro.',
                 'UNIDAD',
                 'MES',
@@ -3884,7 +3885,93 @@ class DownloadAttendanceController extends Controller
                 'CELULAR',
                 'CORREO',
                 'ASISTIÓ',
-            ], ',');
+            ];
+
+            $sedQuestionsByKey = SedQuestion::with('propagandaMedia:id,name')
+                ->whereIn('slug', $slugs)
+                ->get()
+                ->keyBy(fn ($item) => $item->slug.'|'.$item->documentnumber);
+
+            $sedAnswersByKey = sedQuestionAnswer::whereIn('slug_sed', $slugs)
+                ->get()
+                ->groupBy(fn ($item) => $item->slug_sed.'|'.$item->dni)
+                ->map(fn ($answers) => $answers->keyBy('question'));
+
+            $sedQuestionCatalog = Question::with(['options' => fn ($q) => $q->orderBy('position')])
+                ->orderBy('position')
+                ->get()
+                ->keyBy('model');
+            $sedQuestionCatalog->put('question_0', new Question([
+                'tableName' => 'sed', 'label' => 'Número de trabajadores', 'type' => 'text',
+                'model' => 'question_0', 'position' => 999999999,
+            ]));
+
+            $resolveSedQuestion = function ($identifier) use ($sedQuestionCatalog) {
+                $normalized = preg_replace('/^questions_/', 'question_', $identifier);
+                $question = $sedQuestionCatalog->get($normalized);
+
+                return $question ?: $sedQuestionCatalog->first(
+                    fn ($item) => trim((string) $item->label) === trim((string) $identifier)
+                );
+            };
+
+            $dynamicSedColumns = sedQuestionAnswer::whereIn('slug_sed', $slugs)
+                ->distinct()
+                ->pluck('question')
+                ->sortBy(function ($identifier) use ($resolveSedQuestion) {
+                    $question = $resolveSedQuestion($identifier);
+
+                    return sprintf('%d-%06d', $question?->tableName === 'seg' ? 1 : 0, (int) ($question?->position ?? 9999));
+                })
+                ->values();
+
+            $question0Options = [
+                '1-5' => '1-5', '6-10' => '6-10', '11-20' => '11-20',
+                '+ de 20' => 'Más de 20', 'más de 20' => 'Más de 20', 'mas de 20' => 'Más de 20',
+            ];
+
+            $pntTestsBySlug = PntTest::whereIn('slug', $slugs)->get()->keyBy('slug');
+            $testOutputColumns = [];
+            $testRatingColumns = [];
+            foreach ($actividades as $actividadTest) {
+                $pntTest = $pntTestsBySlug->get($actividadTest->slug);
+                foreach (($pntTest?->test_entrada ?? []) as $questionIndex => $pregunta) {
+                    $key = $actividadTest->slug.'|salida|'.$questionIndex;
+                    $testOutputColumns[$key] = '[SALIDA] '.($actividadTest->tema ?? $actividadTest->slug).' - '.($pregunta['texto'] ?? 'Pregunta '.($questionIndex + 1));
+                }
+                foreach (($pntTest?->test_salida ?? []) as $questionIndex => $pregunta) {
+                    $key = $actividadTest->slug.'|rating|'.$questionIndex;
+                    $testRatingColumns[$key] = '[CALIFICACIÓN] '.($actividadTest->tema ?? $actividadTest->slug).' - '.($pregunta['texto'] ?? 'Pregunta '.($questionIndex + 1));
+                }
+            }
+
+            $headers = array_merge(
+                $headers,
+                [
+                    'ACTIVIDAD COMERCIAL',
+                    'DIRECCIÓN',
+                    'FECHA DE NACIMIENTO',
+                    'EDAD',
+                    'VENTA ANUAL',
+                    'MEDIO POR EL QUE SE ENTERÓ',
+                    'FECHA SELECCIONADA',
+                    'SED - PREGUNTA 1',
+                    'SED - PREGUNTA 2',
+                    'SED - PREGUNTA 3',
+                    'SED - PREGUNTA 4',
+                    'SED - PREGUNTA 5',
+                ],
+                $dynamicSedColumns->map(function ($identifier) use ($resolveSedQuestion) {
+                    $question = $resolveSedQuestion($identifier);
+                    $prefix = $question?->tableName === 'seg' ? 'SEGUIMIENTO' : 'SATISFACCIÓN';
+
+                    return $prefix.' - '.($question?->label ?? $identifier);
+                })->all(),
+                array_values($testOutputColumns),
+                array_values($testRatingColumns)
+            );
+
+            fputcsv($handle, $headers, ',');
 
             $globalIndex = 1;
 
@@ -3987,7 +4074,7 @@ class DownloadAttendanceController extends Controller
 
                     fputcsv(
                         $handle,
-                        array_merge($colsActividad, array_fill(0, 18, null)),
+                        array_merge($colsActividad, array_fill(0, count($headers) - count($colsActividad), null)),
                         ','
                     );
                 } else {
@@ -4026,9 +4113,102 @@ class DownloadAttendanceController extends Controller
                             ! empty($registro->fecha_asistencia) ? 'SI' : 'NO',
                         ];
 
+                        $actividadComercial = $emp?->actividadComercial?->name ?: $emp?->actividad_comercial_nombre;
+                        $ventaAnual = match ((int) ($emp?->venta_anual ?? 0)) {
+                            1 => 'S/ 54,601.00 hasta S/ 100,000.00',
+                            2 => 'S/ 100,001.00 hasta S/ 300,000.00',
+                            3 => 'S/ 300,001.00 hasta S/ 645,000.00',
+                            4 => 'Más de S/ 645,000.00',
+                            default => '',
+                        };
+                        $medioEntero = match ((int) ($emp?->medio_entero ?? 0)) {
+                            1 => 'SMS - mensajes al celular',
+                            2 => 'Mailing - correo publicitario de convocatoria',
+                            3 => 'Redes sociales - Facebook, Instagram, Telegram, TikTok, otros',
+                            default => '',
+                        };
+                        $colsAdicionales = [
+                            $clean(mb_strtoupper($actividadComercial ?? '', 'UTF-8')),
+                            $clean(mb_strtoupper($emp?->direccion ?? '', 'UTF-8')),
+                            $emp?->fecha_nacimiento ? Carbon::parse($emp->fecha_nacimiento)->format('d/m/Y') : '',
+                            $emp?->edad ?? '',
+                            $clean(mb_strtoupper($ventaAnual, 'UTF-8')),
+                            $clean(mb_strtoupper($medioEntero, 'UTF-8')),
+                            $registro->fecha_seleccionada
+                                ? Carbon::parse($registro->fecha_seleccionada)->format('d/m/Y')
+                                : '',
+                        ];
+
+                        $sedQuestion = $sedQuestionsByKey->get($actividad->slug.'|'.$emp?->numero_dni);
+                        foreach (['question_1', 'question_2', 'question_3', 'question_4', 'question_5'] as $field) {
+                            $value = $sedQuestion?->{$field};
+                            $colsAdicionales[] = $clean(is_string($value) ? mb_strtoupper($value, 'UTF-8') : $value);
+                        }
+
+                        $answersIndexed = $sedAnswersByKey->get($actividad->slug.'|'.$emp?->numero_dni, collect());
+                        foreach ($dynamicSedColumns as $identifier) {
+                            $answer = $answersIndexed->get($identifier);
+                            $rawValue = $answer?->answer;
+                            $question = $resolveSedQuestion($identifier);
+
+                            if ($rawValue === null || $rawValue === '') {
+                                $answerValue = '';
+                            } elseif (preg_replace('/^questions_/', 'question_', $identifier) === 'question_0') {
+                                $answerValue = $question0Options[Str::lower(trim((string) $rawValue))] ?? $rawValue;
+                            } elseif ($question && in_array($question->type, ['radio', 'checkbox-multiple', 'select'], true)) {
+                                $decoded = json_decode($rawValue, true);
+                                $selected = json_last_error() === JSON_ERROR_NONE && is_array($decoded)
+                                    ? array_map('strval', $decoded)
+                                    : [(string) $rawValue];
+                                $options = $question->options->mapWithKeys(
+                                    fn ($option) => [(string) $option->value => $option->label]
+                                );
+                                $answerValue = implode("\n", array_map(
+                                    fn ($selectedValue) => '- '.($options->get($selectedValue) ?? $selectedValue),
+                                    $selected
+                                ));
+                            } else {
+                                $answerValue = $rawValue;
+                            }
+
+                            $colsAdicionales[] = $clean($answerValue);
+                        }
+
+                        $pntTest = $pntTestsBySlug->get($actividad->slug);
+                        $testOutputValues = array_fill_keys(array_keys($testOutputColumns), '');
+                        $testRatingValues = array_fill_keys(array_keys($testRatingColumns), '');
+                        $testSalidaValues = $registro->test_salida ?? [];
+                        foreach (($pntTest?->test_entrada ?? []) as $questionIndex => $pregunta) {
+                            $key = $actividad->slug.'|salida|'.$questionIndex;
+                            $responseId = $testSalidaValues['pregunta_'.($questionIndex + 1)] ?? null;
+                            $responseText = $responseId;
+                            foreach (($pregunta['opciones'] ?? []) as $option) {
+                                if (($option['id'] ?? null) == $responseId) {
+                                    $responseText = $option['texto'] ?? $option['label'] ?? $responseId;
+                                    break;
+                                }
+                            }
+                            $testOutputValues[$key] = $responseText;
+                        }
+
+                        $ratings = $registro->ratings ?? [];
+                        foreach (($pntTest?->test_salida ?? []) as $questionIndex => $pregunta) {
+                            $key = $actividad->slug.'|rating|'.$questionIndex;
+                            $rating = $ratings['rating_'.($questionIndex + 1)] ?? null;
+                            $testRatingValues[$key] = $rating !== null
+                                ? ($pregunta['opciones'][$rating - 1]['label'] ?? $pregunta['opciones'][$rating - 1]['texto'] ?? $rating)
+                                : '';
+                        }
+
+                        $colsAdicionales = array_merge(
+                            $colsAdicionales,
+                            array_values(array_replace(array_fill_keys(array_keys($testOutputColumns), ''), $testOutputValues)),
+                            array_values(array_replace(array_fill_keys(array_keys($testRatingColumns), ''), $testRatingValues))
+                        );
+
                         fputcsv(
                             $handle,
-                            array_merge($colsActividad, $colsParticipante),
+                            array_merge($colsActividad, $colsParticipante, $colsAdicionales),
                             ','
                         );
                     }
