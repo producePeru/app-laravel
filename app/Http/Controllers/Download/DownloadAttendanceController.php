@@ -4138,11 +4138,9 @@ class DownloadAttendanceController extends Controller
         ])
             ->where('slug', $slug)
 
-            // Filtrar por registros de asistencia de la fecha seleccionada.
+            // Filtrar por la fecha seleccionada del registro.
             ->when($request->filled('dateEvent'), function ($q) use ($request) {
-                $q->whereHas('asistencias', function ($asistencia) use ($request) {
-                    $asistencia->whereDate('fecha', $request->input('dateEvent'));
-                });
+                $q->whereDate('fecha_seleccionada', $request->input('dateEvent'));
             })
 
             ->orderByDesc('created_at');
@@ -4165,6 +4163,9 @@ class DownloadAttendanceController extends Controller
 
         $row = 3;
         $index = 1;
+        $fechasAsistencia = $request->filled('dateEvent')
+            ? [$request->input('dateEvent')]
+            : ($actividad->fechas ?? []);
 
         $roles = [
             'dir' => 'DIRIGENTE',
@@ -4177,6 +4178,7 @@ class DownloadAttendanceController extends Controller
             &$index,
             $sheet,
             $actividad,
+            $fechasAsistencia,
             $roles,
             $slug
         ) {
@@ -4187,7 +4189,7 @@ class DownloadAttendanceController extends Controller
             $sheet->setCellValue('AH2', 'FECHA DE NACIMIENTO');
             $headerColumnIndex = Coordinate::columnIndexFromString('AI');
 
-            foreach ($actividad->fechas ?? [] as $fechaHeader) {
+            foreach ($fechasAsistencia as $fechaHeader) {
                 $headerColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($headerColumnIndex);
                 $sheet->setCellValue("{$headerColumn}2", Carbon::parse($fechaHeader)->format('d/m/Y'));
                 $sheet->duplicateStyle($sheet->getStyle($headerStyleSource), "{$headerColumn}2");
@@ -4376,7 +4378,7 @@ class DownloadAttendanceController extends Controller
                 $col++;
 
                 // ASISTENCIA POR FECHA (una columna por cada fecha del evento)
-                foreach ($actividad->fechas ?? [] as $fecha) {
+                foreach ($fechasAsistencia as $fecha) {
                     $asistio = false;
                     $asistencia = null;
                     foreach (($item->asistencias ?? []) as $a) {
@@ -4454,6 +4456,9 @@ class DownloadAttendanceController extends Controller
                 $row++;
             }
         });
+
+        // Eliminar la fila superior de la plantilla en el archivo exportado.
+        $sheet->removeRow(1);
 
         // DOWNLOAD
 
