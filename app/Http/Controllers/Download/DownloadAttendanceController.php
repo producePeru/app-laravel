@@ -4204,11 +4204,22 @@ class DownloadAttendanceController extends Controller
                 $headerColumnIndex++;
             }
 
+            $ratingStartColumnIndex = $headerColumnIndex;
+            $averageColumnIndex = null;
+
             foreach ($preguntasRatings as $indexPregunta => $pregunta) {
                 $headerColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($headerColumnIndex);
                 $texto = $pregunta['texto'] ?? 'Rating '.($indexPregunta + 1);
                 $sheet->setCellValue("{$headerColumn}1", mb_strtoupper($texto, 'UTF-8'));
                 $sheet->duplicateStyle($sheet->getStyle($headerStyleSource), "{$headerColumn}1");
+                $headerColumnIndex++;
+            }
+
+            if (count($preguntasRatings) > 0) {
+                $averageColumnIndex = $headerColumnIndex;
+                $averageHeaderColumn = Coordinate::stringFromColumnIndex($averageColumnIndex);
+                $sheet->setCellValue("{$averageHeaderColumn}1", 'PROMEDIO CALIFICACIÓN');
+                $sheet->duplicateStyle($sheet->getStyle($headerStyleSource), "{$averageHeaderColumn}1");
                 $headerColumnIndex++;
             }
 
@@ -4219,6 +4230,15 @@ class DownloadAttendanceController extends Controller
                     ->getStartColor()->setARGB('FF245216');
                 $sheet->getStyle("AI1:{$lastHeaderColumn}1")->getFont()
                     ->getColor()->setARGB('FFFFFFFF');
+
+                if ($averageColumnIndex !== null) {
+                    $ratingStartColumn = Coordinate::stringFromColumnIndex($ratingStartColumnIndex);
+                    $sheet->getStyle("{$ratingStartColumn}1:{$lastHeaderColumn}1")->getFill()
+                        ->setFillType(Fill::FILL_SOLID)
+                        ->getStartColor()->setARGB('FF7030A0');
+                    $sheet->getStyle("{$ratingStartColumn}1:{$lastHeaderColumn}1")->getFont()
+                        ->getColor()->setARGB('FFFFFFFF');
+                }
             }
 
             foreach ($items as $item) {
@@ -4434,6 +4454,7 @@ class DownloadAttendanceController extends Controller
 
                 // RATINGS
                 $ratings = $item->ratings ?? [];
+                $ratingValues = [];
                 foreach ($preguntasRatings as $indexPregunta => $pregunta) {
                     $valor = $ratings['rating_'.($indexPregunta + 1)] ?? null;
                     $respuestaRating = null;
@@ -4444,10 +4465,30 @@ class DownloadAttendanceController extends Controller
                             ?? null;
                     }
 
+                    if (is_numeric($valor)) {
+                        $ratingValues[] = (float) $valor;
+                    }
+
                     $sheet->setCellValue(
                         "{$col}{$row}",
                         mb_strtoupper((string) ($respuestaRating ?? $valor ?? ''), 'UTF-8')
                     );
+                    $sheet->getStyle("{$col}{$row}")->getFill()
+                        ->setFillType(Fill::FILL_SOLID)
+                        ->getStartColor()->setARGB('FFE4DFEC');
+                    $sheet->getStyle("{$col}{$row}")->getBorders()->getAllBorders()
+                        ->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB('FF000000');
+                    $col++;
+                }
+
+                if ($averageColumnIndex !== null) {
+                    $promedio = count($ratingValues) > 0
+                        ? round(array_sum($ratingValues) / count($ratingValues), 2)
+                        : '';
+                    $sheet->setCellValue("{$col}{$row}", $promedio);
+                    $sheet->getStyle("{$col}{$row}")->getFill()
+                        ->setFillType(Fill::FILL_SOLID)
+                        ->getStartColor()->setARGB('FFD9C2E9');
                     $sheet->getStyle("{$col}{$row}")->getBorders()->getAllBorders()
                         ->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB('FF000000');
                     $col++;
