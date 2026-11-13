@@ -4161,7 +4161,7 @@ class DownloadAttendanceController extends Controller
 
         // START
 
-        $row = 3;
+        $row = 2;
         $index = 1;
         $fechasAsistencia = $request->filled('dateEvent')
             ? [$request->input('dateEvent')]
@@ -4185,39 +4185,39 @@ class DownloadAttendanceController extends Controller
             $pntTest = PntTest::where('slug', $slug)->first();
             $preguntasTestSalida = $pntTest?->test_entrada ?? [];
             $preguntasRatings = $pntTest?->test_salida ?? [];
-            $headerStyleSource = 'AK2';
-            $sheet->setCellValue('AH2', 'FECHA DE NACIMIENTO');
+            $headerStyleSource = 'AK1';
+            $sheet->setCellValue('AH1', 'FECHA DE NACIMIENTO');
             $headerColumnIndex = Coordinate::columnIndexFromString('AI');
 
             foreach ($fechasAsistencia as $fechaHeader) {
                 $headerColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($headerColumnIndex);
-                $sheet->setCellValue("{$headerColumn}2", Carbon::parse($fechaHeader)->format('d/m/Y'));
-                $sheet->duplicateStyle($sheet->getStyle($headerStyleSource), "{$headerColumn}2");
+                $sheet->setCellValue("{$headerColumn}1", Carbon::parse($fechaHeader)->format('d/m/Y'));
+                $sheet->duplicateStyle($sheet->getStyle($headerStyleSource), "{$headerColumn}1");
                 $headerColumnIndex++;
             }
 
             foreach ($preguntasTestSalida as $indexPregunta => $pregunta) {
                 $headerColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($headerColumnIndex);
                 $texto = $pregunta['texto'] ?? 'Pregunta '.($indexPregunta + 1);
-                $sheet->setCellValue("{$headerColumn}2", '[SALIDA] '.mb_strtoupper($texto, 'UTF-8'));
-                $sheet->duplicateStyle($sheet->getStyle($headerStyleSource), "{$headerColumn}2");
+                $sheet->setCellValue("{$headerColumn}1", '[SALIDA] '.mb_strtoupper($texto, 'UTF-8'));
+                $sheet->duplicateStyle($sheet->getStyle($headerStyleSource), "{$headerColumn}1");
                 $headerColumnIndex++;
             }
 
             foreach ($preguntasRatings as $indexPregunta => $pregunta) {
                 $headerColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($headerColumnIndex);
                 $texto = $pregunta['texto'] ?? 'Rating '.($indexPregunta + 1);
-                $sheet->setCellValue("{$headerColumn}2", mb_strtoupper($texto, 'UTF-8'));
-                $sheet->duplicateStyle($sheet->getStyle($headerStyleSource), "{$headerColumn}2");
+                $sheet->setCellValue("{$headerColumn}1", mb_strtoupper($texto, 'UTF-8'));
+                $sheet->duplicateStyle($sheet->getStyle($headerStyleSource), "{$headerColumn}1");
                 $headerColumnIndex++;
             }
 
             if ($headerColumnIndex > Coordinate::columnIndexFromString('AH')) {
                 $lastHeaderColumn = Coordinate::stringFromColumnIndex($headerColumnIndex - 1);
-                $sheet->getStyle("AI2:{$lastHeaderColumn}2")->getFill()
+                $sheet->getStyle("AI1:{$lastHeaderColumn}1")->getFill()
                     ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()->setARGB('FF245216');
-                $sheet->getStyle("AI2:{$lastHeaderColumn}2")->getFont()
+                $sheet->getStyle("AI1:{$lastHeaderColumn}1")->getFont()
                     ->getColor()->setARGB('FFFFFFFF');
             }
 
@@ -4456,9 +4456,6 @@ class DownloadAttendanceController extends Controller
                 $row++;
             }
         });
-
-        // Eliminar la fila superior de la plantilla en el archivo exportado.
-        $sheet->removeRow(1);
 
         // DOWNLOAD
 
