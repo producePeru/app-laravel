@@ -2557,6 +2557,7 @@ class DownloadAttendanceController extends Controller
                     'discapacidad',
                     'celular',
                     'correo_electronico',
+                    'fecha_nacimiento',
 
                     // NUEVOS
                     'coop_ruc',
@@ -2581,7 +2582,7 @@ class DownloadAttendanceController extends Controller
         ])
             ->where('slug', $slug)
 
-            // Ã¢Å“â€¦ FILTRO POR FECHA SELECCIONADA (CORREGIDO)
+            // FILTRO POR FECHA SELECCIONADA
             ->when($request->filled('dateEvent'), function ($q) use ($request) {
                 $q->where('fecha_seleccionada', $request->input('dateEvent'));
             })
@@ -2708,7 +2709,10 @@ class DownloadAttendanceController extends Controller
                 $col++;
 
                 // ACTIVIDAD COMERCIAL
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->actividadComercial?->name ?? '', 'UTF-8'));
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->actividadComercial?->name ?? $e->actividad_comercial_nombre ?? '', 'UTF-8')
+                );
                 $col++;
 
                 // REGION (empresario)
@@ -4114,6 +4118,7 @@ class DownloadAttendanceController extends Controller
                     'coop_ruc',
                     'coop_razon_social',
                     'coop_rol',
+                    'fecha_nacimiento',
                 ]);
             },
 
@@ -4133,16 +4138,18 @@ class DownloadAttendanceController extends Controller
         ])
             ->where('slug', $slug)
 
-            // Ã¢Å“â€¦ FILTRO POR FECHA SELECCIONADA (CORREGIDO)
+            // Filtrar por registros de asistencia de la fecha seleccionada.
             ->when($request->filled('dateEvent'), function ($q) use ($request) {
-                $q->where('fecha_seleccionada', $request->input('dateEvent'));
+                $q->whereHas('asistencias', function ($asistencia) use ($request) {
+                    $asistencia->whereDate('fecha', $request->input('dateEvent'));
+                });
             })
 
             ->orderByDesc('created_at');
 
         // TEMPLATE
 
-        $templatePath = storage_path('app/plantillas/plantilla_ugsc_download.xlsx');
+        $templatePath = storage_path('app/plantillas/plantilla_compras_download.xlsx');
 
         if (! file_exists($templatePath)) {
             return response()->json([
@@ -4177,7 +4184,8 @@ class DownloadAttendanceController extends Controller
             $preguntasTestSalida = $pntTest?->test_entrada ?? [];
             $preguntasRatings = $pntTest?->test_salida ?? [];
             $headerStyleSource = 'AK2';
-            $headerColumnIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString('AK');
+            $sheet->setCellValue('AH2', 'FECHA DE NACIMIENTO');
+            $headerColumnIndex = Coordinate::columnIndexFromString('AI');
 
             foreach ($actividad->fechas ?? [] as $fechaHeader) {
                 $headerColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($headerColumnIndex);
@@ -4200,6 +4208,15 @@ class DownloadAttendanceController extends Controller
                 $sheet->setCellValue("{$headerColumn}2", mb_strtoupper($texto, 'UTF-8'));
                 $sheet->duplicateStyle($sheet->getStyle($headerStyleSource), "{$headerColumn}2");
                 $headerColumnIndex++;
+            }
+
+            if ($headerColumnIndex > Coordinate::columnIndexFromString('AH')) {
+                $lastHeaderColumn = Coordinate::stringFromColumnIndex($headerColumnIndex - 1);
+                $sheet->getStyle("AI2:{$lastHeaderColumn}2")->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FF245216');
+                $sheet->getStyle("AI2:{$lastHeaderColumn}2")->getFont()
+                    ->getColor()->setARGB('FFFFFFFF');
             }
 
             foreach ($items as $item) {
@@ -4256,17 +4273,17 @@ class DownloadAttendanceController extends Controller
                 );
                 $col++;
 
-                // COOP RUC (AC)
-                $sheet->setCellValue("{$col}{$row}", $e->coop_ruc);
-                $col++;
+                // // COOP RUC (AC)
+                // $sheet->setCellValue("{$col}{$row}", $e->coop_ruc);
+                // $col++;
 
-                // COOP RAZON SOCIAL (AD)
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->coop_razon_social ?? '', 'UTF-8'));
-                $col++;
+                // // COOP RAZON SOCIAL (AD)
+                // $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->coop_razon_social ?? '', 'UTF-8'));
+                // $col++;
 
-                // COOP ROL (AE)
-                $sheet->setCellValue("{$col}{$row}", $roles[$e->coop_rol] ?? '');
-                $col++;
+                // // COOP ROL (AE)
+                // $sheet->setCellValue("{$col}{$row}", $roles[$e->coop_rol] ?? '');
+                // $col++;
 
                 // RUC
                 $sheet->setCellValue("{$col}{$row}", $e->ruc);
@@ -4289,7 +4306,10 @@ class DownloadAttendanceController extends Controller
                 $col++;
 
                 // ACTIVIDAD COMERCIAL
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->actividadComercial?->name ?? '', 'UTF-8'));
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($e->actividadComercial?->name ?? $e->actividad_comercial_nombre ?? '', 'UTF-8')
+                );
                 $col++;
 
                 // REGION (empresario)
@@ -4346,6 +4366,13 @@ class DownloadAttendanceController extends Controller
 
                 // PAIS
                 $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->pais?->name ?? '', 'UTF-8'));
+                $col++;
+
+                // FECHA DE NACIMIENTO
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $e->fecha_nacimiento ? Carbon::parse($e->fecha_nacimiento)->format('d/m/Y') : ''
+                );
                 $col++;
 
                 // ASISTENCIA POR FECHA (una columna por cada fecha del evento)

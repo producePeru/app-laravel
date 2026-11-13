@@ -780,6 +780,12 @@ class ActividadPnteController extends Controller
 
                 ->where('slug', $slug)
 
+                ->when($request->filled('dateEvent'), function ($q) use ($request) {
+                    $q->whereHas('asistencias', function ($asistencia) use ($request) {
+                        $asistencia->whereDate('fecha', $request->input('dateEvent'));
+                    });
+                })
+
                 // 🔥 BUSCADOR
                 ->when($search, function ($q) use ($search) {
 
