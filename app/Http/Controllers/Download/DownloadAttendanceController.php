@@ -61,8 +61,8 @@ class DownloadAttendanceController extends Controller
                     'entidad_organizadora', 'entidad_aliada', 'representante_id',
                     'requiere_pasaje', 'monto_gasto', 'mypes_beneficiadas',
                     'modalidad_id', 'total_participantes', 'total_asesorias',
-                     'total_formalizaciones', 'slug', 'cancelado', 'reprogramado',
-                     'registrado_por_id', 'tipo_mercado', 'tipo_gestion', 'especial', 'created_at',
+                    'total_formalizaciones', 'slug', 'cancelado', 'reprogramado',
+                    'registrado_por_id', 'tipo_mercado', 'tipo_gestion', 'especial', 'created_at',
                 ])
                 ->addSelect([
                     'inscritos' => EmpresarioActividad::selectRaw('COUNT(*)')
@@ -199,15 +199,15 @@ class DownloadAttendanceController extends Controller
                     Carbon::parse($item->created_at)->format('d/m/Y'),
                     'https://reporte.soportepnte.com/admin/actividades-ugo/eventos-inscritos/'.$item->slug,
                     'https://soportepnte.com/actividades-ugo/'.$item->slug,
-                     $registradoPor,
-                     $estadoActividad,
-                     $item->especial === 'FEN SI' ? 'FEN SI' : null,
-                 ];
-             }
+                    $registradoPor,
+                    $estadoActividad,
+                    $item->especial === 'FEN SI' ? 'FEN SI' : null,
+                ];
+            }
 
-             $sheet->setCellValue('AG1', 'FEN');
-             $sheet->duplicateStyle($sheet->getStyle('AF1'), 'AG1');
-             $sheet->fromArray($rows, null, 'A'.$startRow);
+            $sheet->setCellValue('AG1', 'FEN');
+            $sheet->duplicateStyle($sheet->getStyle('AF1'), 'AG1');
+            $sheet->fromArray($rows, null, 'A'.$startRow);
 
             unset($actividades, $rows);
 
@@ -2932,7 +2932,7 @@ class DownloadAttendanceController extends Controller
                 'MARCA EN INDECOPI',
                 'LOGROS DE LA EMPRESA',
                 'REPORTE TRIBUTARIO',
-                // 'FECHA Y HORA DE INSCRIPCIÃ“N',
+                'FECHA Y HORA DE INSCRIPCIÓN',
             ]
         );
 
@@ -2980,96 +2980,96 @@ class DownloadAttendanceController extends Controller
 
         foreach ($items as $item) {
 
-                $e = $item->empresario;
-                $emp = $item->emprendimiento;
+            $e = $item->empresario;
+            $emp = $item->emprendimiento;
 
-                $col = 1;
-                $set = function ($value) use (&$col, $sheet, &$row) {
-                    $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
-                    $v = $this->excelSafe($value);
-                    // Valores no seteados (null o vacÃ­o) llevan guion
-                    if ($v === null || (is_string($v) && trim($v) === '')) {
-                        $v = '-';
-                    }
-                    $sheet->setCellValue("{$letter}{$row}", $v);
-                    $col++;
-                };
-
-                $set($index++);
-                $set($item->fecha_asistencia ? 'SI' : 'NO');
-
-                // PAPA: prioridades y fotos (solo ferias feria_papa)
-                if ($esPapa) {
-                    $papa = $e?->feriasPapa?->firstWhere('actividad_id', $item->actividad_id);
-                    $set($papa?->prioridad_1 ? $this->feriaNombre($papa->prioridad_1) : null);
-                    $set($papa?->prioridad_2 ? $this->feriaNombre($papa->prioridad_2) : null);
-                    // $set($papa?->image1?->name);
-                    // $set($papa?->image2?->name);
+            $col = 1;
+            $set = function ($value) use (&$col, $sheet, &$row) {
+                $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+                $v = $this->excelSafe($value);
+                // Valores no seteados (null o vacÃ­o) llevan guion
+                if ($v === null || (is_string($v) && trim($v) === '')) {
+                    $v = '-';
                 }
+                $sheet->setCellValue("{$letter}{$row}", $v);
+                $col++;
+            };
 
-                $set($e?->ruc);
-                $set($e?->razon_social ? mb_strtoupper($e->razon_social, 'UTF-8') : null);
-                $set($e?->nombre_comercial ? mb_strtoupper($e->nombre_comercial, 'UTF-8') : null);
+            $set($index++);
+            $set($item->fecha_asistencia ? 'SI' : 'NO');
 
-                $set($e?->sectorEconomico?->name ? mb_strtoupper($e->sectorEconomico->name, 'UTF-8') : null);
-                $set($e?->rubro?->name ? mb_strtoupper($e->rubro->name, 'UTF-8') : null);
-                $set(
-                    $e?->actividadComercial?->name
-                        ? mb_strtoupper($e->actividadComercial->name, 'UTF-8')
-                        : ($e?->actividad_comercial_nombre ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8') : null)
-                );
-
-                $set($e?->pais?->name);
-                $set($e?->region?->name);
-                $set($e?->provincia?->name);
-                $set($e?->distrito?->name);
-                $set($e?->direccion ? mb_strtoupper($e->direccion, 'UTF-8') : null);
-
-                $set($e?->tipoDocumento?->avr);
-                $set($e?->numero_dni);
-
-                $set($e?->apellido_paterno ? mb_strtoupper($e->apellido_paterno, 'UTF-8') : null);
-                $set($e?->apellido_materno ? mb_strtoupper($e->apellido_materno, 'UTF-8') : null);
-                $set($e?->nombres ? mb_strtoupper($e->nombres, 'UTF-8') : null);
-
-                $set($e?->genero?->avr);
-                $set(isset($e?->discapacidad) ? ($e->discapacidad ? 'SI' : 'NO') : null);
-                $set($e?->celular);
-                $set($e?->correo_electronico);
-                $set($e?->fecha_nacimiento ? \Carbon\Carbon::parse($e->fecha_nacimiento)->format('d/m/Y') : null);
-                $set($e->edad ?? null);
-
-                $set($this->redesSocialesTexto($emp?->redes_sociales));
-
-                // EMPRENDIMIENTO
-                $set($this->sino($emp?->pertenece_gremio));
-                $set($emp?->nombre_gremio);
-                $set($emp?->cap_prod_mensual);
-                $set($emp?->porc_prod_planta);
-                $set($emp?->porc_prod_maquila);
-                $set($this->sino($emp?->tiene_puntos_venta));
-                $set($emp?->num_puntos_ventas);
-                $set($emp?->desc_negocio);
-                $set($this->sino($emp?->pos));
-                $set($this->sino($emp?->yape_plim));
-                $set($this->sino($emp?->tiene_tiendas));
-                $set($emp?->nombre_tienda);
-                $set($this->sino($emp?->tiene_delivery));
-                $set($this->sino($emp?->factura_electronica));
-                $set($this->sino($emp?->participado_produce));
-                $set($emp?->nombre_servicio);
-                $set($this->sino($emp?->participado_feria));
-                $set($emp?->nombre_feria);
-                $set($this->sino($emp?->formalizado_produce));
-                $set($this->sino($emp?->indecopi));
-                $set($emp?->logros_empresa);
-
-                $set($e?->archivosFerias?->sortByDesc('id')->first()?->archivo?->nombre_original);
-
-                // $set($item->created_at?->format('d/m/Y h:i a'));
-
-                $row++;
+            // PAPA: prioridades y fotos (solo ferias feria_papa)
+            if ($esPapa) {
+                $papa = $e?->feriasPapa?->firstWhere('actividad_id', $item->actividad_id);
+                $set($papa?->prioridad_1 ? $this->feriaNombre($papa->prioridad_1) : null);
+                $set($papa?->prioridad_2 ? $this->feriaNombre($papa->prioridad_2) : null);
+                // $set($papa?->image1?->name);
+                // $set($papa?->image2?->name);
             }
+
+            $set($e?->ruc);
+            $set($e?->razon_social ? mb_strtoupper($e->razon_social, 'UTF-8') : null);
+            $set($e?->nombre_comercial ? mb_strtoupper($e->nombre_comercial, 'UTF-8') : null);
+
+            $set($e?->sectorEconomico?->name ? mb_strtoupper($e->sectorEconomico->name, 'UTF-8') : null);
+            $set($e?->rubro?->name ? mb_strtoupper($e->rubro->name, 'UTF-8') : null);
+            $set(
+                $e?->actividadComercial?->name
+                    ? mb_strtoupper($e->actividadComercial->name, 'UTF-8')
+                    : ($e?->actividad_comercial_nombre ? mb_strtoupper($e->actividad_comercial_nombre, 'UTF-8') : null)
+            );
+
+            $set($e?->pais?->name);
+            $set($e?->region?->name);
+            $set($e?->provincia?->name);
+            $set($e?->distrito?->name);
+            $set($e?->direccion ? mb_strtoupper($e->direccion, 'UTF-8') : null);
+
+            $set($e?->tipoDocumento?->avr);
+            $set($e?->numero_dni);
+
+            $set($e?->apellido_paterno ? mb_strtoupper($e->apellido_paterno, 'UTF-8') : null);
+            $set($e?->apellido_materno ? mb_strtoupper($e->apellido_materno, 'UTF-8') : null);
+            $set($e?->nombres ? mb_strtoupper($e->nombres, 'UTF-8') : null);
+
+            $set($e?->genero?->avr);
+            $set(isset($e?->discapacidad) ? ($e->discapacidad ? 'SI' : 'NO') : null);
+            $set($e?->celular);
+            $set($e?->correo_electronico);
+            $set($e?->fecha_nacimiento ? \Carbon\Carbon::parse($e->fecha_nacimiento)->format('d/m/Y') : null);
+            $set($e->edad ?? null);
+
+            $set($this->redesSocialesTexto($emp?->redes_sociales));
+
+            // EMPRENDIMIENTO
+            $set($this->sino($emp?->pertenece_gremio));
+            $set($emp?->nombre_gremio);
+            $set($emp?->cap_prod_mensual);
+            $set($emp?->porc_prod_planta);
+            $set($emp?->porc_prod_maquila);
+            $set($this->sino($emp?->tiene_puntos_venta));
+            $set($emp?->num_puntos_ventas);
+            $set($emp?->desc_negocio);
+            $set($this->sino($emp?->pos));
+            $set($this->sino($emp?->yape_plim));
+            $set($this->sino($emp?->tiene_tiendas));
+            $set($emp?->nombre_tienda);
+            $set($this->sino($emp?->tiene_delivery));
+            $set($this->sino($emp?->factura_electronica));
+            $set($this->sino($emp?->participado_produce));
+            $set($emp?->nombre_servicio);
+            $set($this->sino($emp?->participado_feria));
+            $set($emp?->nombre_feria);
+            $set($this->sino($emp?->formalizado_produce));
+            $set($this->sino($emp?->indecopi));
+            $set($emp?->logros_empresa);
+
+            $set($e?->archivosFerias?->sortByDesc('id')->first()?->archivo?->nombre_original);
+
+            $set($item->created_at?->format('d/m/Y h:i a'));
+
+            $row++;
+        }
 
         // Todas las columnas en ancho 15; Lugar de prioridad 1 y 2 en ancho 26
         $anchos26 = ['LUGAR DE PRIORIDAD 1', 'LUGAR DE PRIORIDAD 2'];
@@ -4239,7 +4239,6 @@ class DownloadAttendanceController extends Controller
         }
     }
 
-
     // COMPRAS MYPERU
 
     public function exportInscritosPorSlugCompras(Request $request, $slug)
@@ -4359,7 +4358,6 @@ class DownloadAttendanceController extends Controller
             $sheet,
             $actividad,
             $fechasAsistencia,
-            $roles,
             $slug
         ) {
             $pntTest = PntTest::where('slug', $slug)->first();

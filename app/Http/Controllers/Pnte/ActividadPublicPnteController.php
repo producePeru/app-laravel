@@ -274,6 +274,21 @@ class ActividadPublicPnteController extends Controller
     {
         $yearMonth = $request->input('year_month'); // YYYY-MM
         $cityId = $request->input('city_id'); // opcional
+        $offices = $request->input('office', []);
+        $hasOfficeFilter = $request->has('office');
+
+        $unidadMap = [
+            'UGO' => 1,
+            'UGSE' => 2,
+            'UGSECO' => 3,
+            'UGSC' => 3,
+        ];
+        $unidadIds = collect($offices)
+            ->map(fn ($office) => $unidadMap[strtoupper(trim($office))] ?? null)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
         if (! $yearMonth) {
             return response()->json([
@@ -291,6 +306,10 @@ class ActividadPublicPnteController extends Controller
         // filtro opcional por ciudad
         if (! empty($cityId)) {
             $query->where('city_id', $cityId);
+        }
+
+        if ($hasOfficeFilter) {
+            $query->whereIn('unidad', $unidadIds);
         }
 
         $events = $query->get([
@@ -378,6 +397,7 @@ class ActividadPublicPnteController extends Controller
     {
         $dateSelected = $request->input('dateSelected'); // "2026-05-28"
         $offices = $request->input('office', []);
+        $hasOfficeFilter = $request->has('office');
         $city = $request->input('city_id');
 
         if (! $dateSelected) {
@@ -391,6 +411,7 @@ class ActividadPublicPnteController extends Controller
         $unidadMap = [
             'UGO' => 1,
             'UGSE' => 2,
+            'UGSECO' => 3,
             'UGSC' => 3,
         ];
 
@@ -411,7 +432,7 @@ class ActividadPublicPnteController extends Controller
             ->where('activo', 1) // 🔥 SOLO ACTIVOS
             ->whereJsonContains('fechas', $dateSelected)
             ->when(! empty($city), fn ($q) => $q->where('region', $city))
-            ->when(! empty($unidadIds), fn ($q) => $q->whereIn('unidad', $unidadIds))
+            ->when($hasOfficeFilter, fn ($q) => $q->whereIn('unidad', $unidadIds))
             ->get();
 
         $formatted = $actividades->map(function ($actividad) use ($dateSelected) {
@@ -421,7 +442,7 @@ class ActividadPublicPnteController extends Controller
             $tipo = match ($unidad) {
                 1 => 'UGO',
                 2 => 'UGSE',
-                3 => 'UGSC',
+                3 => 'UGSECO',
                 default => 'OTRO'
             };
 
