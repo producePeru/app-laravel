@@ -1034,6 +1034,7 @@ class ActividadPublicPnteController extends Controller
 
     public function asistenciaInfoCooperativa(string $slug): JsonResponse
     {
+
         $actividad = ActividadPnte::with([
             'modalidad:id,name',
             'representante:id,name,lastname',
@@ -1676,7 +1677,7 @@ class ActividadPublicPnteController extends Controller
             $decoded = json_decode($fechasRaw, true);
             $fechasRaw = is_array($decoded) ? $decoded : [];
         }
-        if (!is_array($fechasRaw)) {
+        if (! is_array($fechasRaw)) {
             $fechasRaw = [];
         }
 

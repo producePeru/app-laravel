@@ -173,8 +173,8 @@ class ComprasPeruController extends Controller
             'modalidad:id,name',
         ])
             ->where('unidad', 1)
-            ->where('tipo_actividad_id', 1)
-            ->where('nombre_actividad_id', 6)
+            // ->where('tipo_actividad_id', 1)
+            // ->where('nombre_actividad_id', 6)
             ->where('slug', $slug)
             ->first();
 
@@ -298,11 +298,13 @@ class ComprasPeruController extends Controller
         $slug = $request->input('slug');
         $correo = $request->input('correo') ?? $request->input('correo_electronico');
         $nombres = $request->input('nombres');
+        $pagina = $request->input('pagina');
 
-        if (! $slug || ! $correo || ! filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+        if (! $slug || ! $correo || ! filter_var($correo, FILTER_VALIDATE_EMAIL)
+            || ($pagina !== null && ! preg_match('/^[a-z0-9-]+$/i', $pagina))) {
             return response()->json([
                 'status' => 422,
-                'message' => 'Los parámetros slug y correo son obligatorios y el correo debe ser válido.',
+                'message' => 'Los parámetros slug y correo son obligatorios, el correo debe ser válido y pagina debe ser válida.',
             ], 422);
         }
 
@@ -316,7 +318,7 @@ class ComprasPeruController extends Controller
         }
 
         try {
-            $this->enviarEmailParticipacionCooperativasUgseco($actividad, $correo, $nombres);
+            $this->enviarEmailParticipacionCooperativasUgseco($actividad, $correo, $nombres, $pagina);
 
             return response()->json([
                 'status' => 200,
@@ -338,7 +340,8 @@ class ComprasPeruController extends Controller
     private function enviarEmailParticipacionCooperativasUgseco(
         ActividadPnte $actividad,
         ?string $correo,
-        ?string $nombres = null
+        ?string $nombres = null,
+        ?string $pagina = null
     ): void {
         if (! $correo || ! filter_var($correo, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('El correo del participante no es válido.');
@@ -348,11 +351,11 @@ class ComprasPeruController extends Controller
             ->to($correo)
             ->send(new EmailParticipacionComprasMyPeruMail(
                 $nombres ?: null,
-                $this->datosCorreoCapacitacionCooperativas($actividad)
+                $this->datosCorreoCapacitacionCooperativas($actividad, $pagina)
             ));
     }
 
-    private function datosCorreoCapacitacionCooperativas(ActividadPnte $actividad): array
+    private function datosCorreoCapacitacionCooperativas(ActividadPnte $actividad, ?string $pagina = null): array
     {
         $fechas = collect($actividad->fechas ?? [])
             ->filter()
@@ -413,7 +416,10 @@ class ComprasPeruController extends Controller
             'modalidad' => $modalidad ? ucfirst(strtolower($modalidad)) : 'Por confirmar',
             'direccion' => $esPresencial ? ($actividad->lugar ?: null) : null,
             'link' => $esVirtual ? ($link ?: null) : null,
-            'asistencia_url' => 'https://capacitaciones.soportepnte.com/ugseco/asistencia?slug='.urlencode((string) $actividad->slug),
+            'asistencia_url' => 'https://capacitaciones.soportepnte.com/ugseco/asistencia?'.http_build_query(array_filter([
+                'slug' => $actividad->slug,
+                'pagina' => $pagina,
+            ], static fn ($valor) => $valor !== null && $valor !== '')),
         ];
     }
 
