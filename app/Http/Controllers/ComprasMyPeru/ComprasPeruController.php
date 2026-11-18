@@ -637,77 +637,94 @@ class ComprasPeruController extends Controller
 
             DB::beginTransaction();
 
-            $empresario = Empresario::firstOrCreate(
-                [
-                    'ruc' => $request->ruc,
-                    'numero_dni' => $request->numero_dni,
-
-                    'razon_social' => $request->razon_social,
-                    'nombre_comercial' => $request->nombre_comercial,
-
-                    'sector_economico_id' => $request->sector_economico_id,
-                    'rubro_id' => $request->rubro_id,
-                    'actividad_comercial_id' => $request->actividad_comercial_id,
-
-                    'region_id' => $request->region_id,
-                    'provincia_id' => $request->provincia_id,
-                    'distrito_id' => $request->distrito_id,
-                    'direccion' => $request->direccion,
-
-                    'pais_id' => $request->pais_id,
-                    'tipo_documento_id' => $request->tipo_documento_id,
-
-                    'apellido_paterno' => $request->apellido_paterno,
-                    'apellido_materno' => $request->apellido_materno,
-                    'nombres' => $request->nombres,
-
-                    'genero_id' => $request->genero_id,
-                    'discapacidad' => $request->discapacidad,
-                    'celular' => $request->celular,
-                    'correo_electronico' => $request->correo_electronico,
-
-                    'cargo_empresa_id' => $request->cargo_empresa_id,
-                    'fecha_nacimiento' => $request->fecha_nacimiento,
-                    'edad' => $request->edad,
-
-                    'actividad_comercial_nombre' => $request->actividad_comercial_nombre,
-                    'tipo_empresa_id' => $request->tipo_empresa_id,
-                    'f_inicio_act' => $request->f_inicio_act,
-                    'venta_anual' => $request->venta_anual,
-                    'medio_entero' => $request->medio_entero,
-
-                    'coop_ruc' => $request->coop_ruc,
-                    'coop_razon_social' => $request->coop_razon_social,
-                    'coop_rol' => $request->coop_rol,
-                ]
-            );
-
-            /**
-             * 2. ACTIVIDAD
-             */
             $actividad = ActividadPnte::where('slug', $request->slug)
                 ->firstOrFail();
 
-            // Determinar si la inscripción es el mismo día del evento
             $fechasNormalizadas = $this->normalizarFechasActividad($actividad->fechas);
             $hoy = Carbon::today()->toDateString();
-            $isSameDay = in_array($hoy, $fechasNormalizadas, true);
+            $fechaSeleccionada = $request->filled('fecha_seleccionada')
+                ? Carbon::parse($request->input('fecha_seleccionada'))->toDateString()
+                : (in_array($hoy, $fechasNormalizadas, true)
+                    ? $hoy
+                    : (collect($fechasNormalizadas)->first(fn ($fecha) => $fecha >= $hoy)
+                        ?? ($fechasNormalizadas[0] ?? null)));
+
+            if (! $fechaSeleccionada || ! in_array($fechaSeleccionada, $fechasNormalizadas, true)) {
+                DB::rollBack();
+
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'Selecciona una fecha válida para esta actividad.',
+                ], 422);
+            }
+
+            $isSameDay = $fechaSeleccionada === $hoy
+                && in_array($hoy, $fechasNormalizadas, true);
+
+            $datosEmpresario = [
+                'ruc' => $request->ruc,
+                'numero_dni' => $request->numero_dni,
+                'razon_social' => $request->razon_social,
+                'nombre_comercial' => $request->nombre_comercial,
+                'sector_economico_id' => $request->sector_economico_id,
+                'rubro_id' => $request->rubro_id,
+                'actividad_comercial_id' => $request->actividad_comercial_id,
+                'region_id' => $request->region_id,
+                'provincia_id' => $request->provincia_id,
+                'distrito_id' => $request->distrito_id,
+                'direccion' => $request->direccion,
+                'pais_id' => $request->pais_id,
+                'tipo_documento_id' => $request->tipo_documento_id,
+                'apellido_paterno' => $request->apellido_paterno,
+                'apellido_materno' => $request->apellido_materno,
+                'nombres' => $request->nombres,
+                'genero_id' => $request->genero_id,
+                'discapacidad' => $request->discapacidad,
+                'celular' => $request->celular,
+                'correo_electronico' => $request->correo_electronico,
+                'cargo_empresa_id' => $request->cargo_empresa_id,
+                'fecha_nacimiento' => $request->fecha_nacimiento,
+                'edad' => $request->edad,
+                'actividad_comercial_nombre' => $request->actividad_comercial_nombre,
+                'tipo_empresa_id' => $request->tipo_empresa_id,
+                'f_inicio_act' => $request->f_inicio_act,
+                'venta_anual' => $request->venta_anual,
+                'medio_entero' => $request->medio_entero,
+                'coop_ruc' => $request->coop_ruc,
+                'coop_razon_social' => $request->coop_razon_social,
+                'coop_rol' => $request->coop_rol,
+            ];
+
+            $empresario = Empresario::firstOrCreate(
+                [
+                    'tipo_documento_id' => $request->tipo_documento_id,
+                    'numero_dni' => $request->numero_dni,
+                ],
+                $datosEmpresario
+            );
+
+            // Serializar inscripciones concurrentes del mismo participante.
+            $empresario = Empresario::whereKey($empresario->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
             /**
-             * 3. VALIDAR SI YA ESTÁ REGISTRADO EN ACTIVIDAD
+             * 2. VALIDAR INSCRIPCIÓN DUPLICADA EN LA MISMA FECHA
              */
-            $existsActividad = EmpresarioActividad::where('actividad_id', $actividad->id)
+            $inscripcionExistente = EmpresarioActividad::where('actividad_id', $actividad->id)
                 ->where('empresario_id', $empresario->id)
-                ->exists();
+                ->whereDate('fecha_seleccionada', $fechaSeleccionada)
+                ->lockForUpdate()
+                ->first();
 
-            if ($existsActividad) {
+            if ($inscripcionExistente) {
 
                 DB::rollBack();
 
                 return response()->json([
                     'status' => 422,
-                    'message' => 'El participante ya está registrado en esta actividad.',
-                ]);
+                    'message' => 'El participante ya está registrado en esta fecha de la actividad.',
+                ], 422);
             }
 
             /**
@@ -719,7 +736,7 @@ class ComprasPeruController extends Controller
                 'empresario_id' => $empresario->id,
                 'numero_dni' => $request->numero_dni,
                 'fecha_asistencia' => null,
-                'fecha_seleccionada' => $request->fecha_seleccionada,
+                'fecha_seleccionada' => $fechaSeleccionada,
             ]);
 
             // Marcar asistencia si el registro es el mismo día del evento

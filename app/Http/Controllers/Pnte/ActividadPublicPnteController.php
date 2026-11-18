@@ -71,7 +71,7 @@ class ActividadPublicPnteController extends Controller
                 'pais_id',
                 'role_company_id',
                 'academicdegree_id',
-
+                'fecha_nacimiento',
                 'venta_anual',
             ])
             ->latest()
