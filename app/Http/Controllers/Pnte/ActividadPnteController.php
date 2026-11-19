@@ -68,7 +68,7 @@ class ActividadPnteController extends Controller
 
             'activo' => 'nullable|boolean',
 
-            'especial' => 'nullable',
+            'especial' => 'nullable|boolean',
         ]);
 
         if ((int) $validated['unidad'] === 3) {
@@ -209,7 +209,7 @@ class ActividadPnteController extends Controller
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
 
             'activo' => 'nullable|boolean',
-            'especial' => 'nullable',
+            'especial' => 'nullable|boolean',
         ]);
 
         if ((int) $validated['unidad'] === 3) {
@@ -754,6 +754,7 @@ class ActividadPnteController extends Controller
                 'slug',
                 'tema',
                 'fechas',
+                'horario',
                 'nombre_actividad_id',
                 'descripcion',
                 'switch_asistencias',
@@ -1472,7 +1473,49 @@ class ActividadPnteController extends Controller
         }
     }
 
-    public function attendanceSummaryBySlugCompras(Request $request, $slug) {}
+    public function attendanceSummaryBySlugCompras(Request $request, $slug)
+    {
+        try {
+            $baseQuery = EmpresarioActividad::where('slug', $slug)
+                ->when($request->filled('dateEvent'), function ($query) use ($request) {
+                    $query->whereDate('fecha_seleccionada', $request->input('dateEvent'));
+                });
+
+            $totalInscritos = (clone $baseQuery)->count();
+
+            $totalAsistentes = (clone $baseQuery)
+                ->when(
+                    $request->filled('dateEvent'),
+                    fn ($query) => $query->whereHas('asistencias', fn ($asistencias) =>
+                        $asistencias->whereDate('fecha', $request->input('dateEvent'))
+                    ),
+                    fn ($query) => $query->whereNotNull('fecha_asistencia')
+                )
+                ->count();
+
+            $totalPruebaSalida = (clone $baseQuery)
+                ->whereRaw('JSON_LENGTH(test_salida) > 0')
+                ->count();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Resumen de asistencia Compras MYPErú obtenido correctamente.',
+                'data' => [
+                    'slug' => $slug,
+                    'total_inscritos' => $totalInscritos,
+                    'total_asistentes' => $totalAsistentes,
+                    'total_prueba_salida' => $totalPruebaSalida,
+                    'total_sin_prueba_salida' => max(0, $totalInscritos - $totalPruebaSalida),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al obtener el resumen de asistencia Compras MYPErú.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     public function inscritosPorRegionSlug(Request $request, $slug)
     {

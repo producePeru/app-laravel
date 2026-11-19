@@ -163,6 +163,8 @@ Route::controller(ComprasPeruController::class)->group(function () {
 
     Route::GET('curso-detalle-compras-myperu/{slug}', 'detalle');
 
+    Route::GET('curso-detalle-general/{slug}', 'detalleGeneral');
+
     Route::GET('email-participacion-compras-myperu', 'emailParticipacionComprasperu');
 
     Route::GET('compras-myperu-get-test/{slug}', 'getTestEntrada');

@@ -811,4 +811,65 @@ class ComprasPeruController extends Controller
             ->values()
             ->all();
     }
+
+    public function detalleGeneral($slug): JsonResponse
+    {
+        $actividad = ActividadPnte::with([
+            'modalidad:id,name',
+            'representante:id,name,lastname,middlename',
+        ])
+            ->where('slug', $slug)
+            ->first();
+
+        if (! $actividad) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Actividad no encontrada.',
+                'data' => null,
+            ], 404);
+        }
+
+        $fechas = $this->normalizarFechasActividad($actividad->fechas);
+        $hoy = Carbon::today()->toDateString();
+        $tieneFechaVigente = collect($fechas)->contains(fn ($fecha) => $fecha >= $hoy);
+        $formularioDisponible = empty($fechas) || $tieneFechaVigente;
+
+        $data = [
+            'slug' => $actividad->slug,
+            'tema' => $actividad->tema,
+            'fechas' => $fechas,
+            'horario' => $actividad->horario,
+            'modalidad_id' => $actividad->modalidad_id,
+            'modalidad' => $actividad->modalidad?->name,
+            'representante_id' => $actividad->representante_id,
+            'representante' => $actividad->representante ? [
+                'id' => $actividad->representante->id,
+                'name' => $actividad->representante->name,
+                'lastname' => $actividad->representante->lastname,
+                'middlename' => $actividad->representante->middlename,
+            ] : null,
+            'asesor' => $actividad->representante
+                ? mb_strtoupper(trim(implode(' ', array_filter([
+                    $actividad->representante->name,
+                    $actividad->representante->lastname,
+                    $actividad->representante->middlename,
+                ]))), 'UTF-8')
+                : null,
+            'formulario_disponible' => $formularioDisponible,
+        ];
+
+        if (! $formularioDisponible) {
+            return response()->json([
+                'status' => 410,
+                'message' => 'El formulario de inscripción ya no está disponible.',
+                'data' => $data,
+            ], 410);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Información de la actividad obtenida correctamente.',
+            'data' => $data,
+        ]);
+    }
 }
