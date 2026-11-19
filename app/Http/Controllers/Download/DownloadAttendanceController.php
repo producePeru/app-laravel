@@ -101,6 +101,21 @@ class DownloadAttendanceController extends Controller
                 ->when($request->filled('nombre_actividad_id'), function ($q) use ($request) {
                     $q->where('nombre_actividad_id', $request->input('nombre_actividad_id'));
                 })
+                ->when($request->filled('nombre_actividades'), function ($q) use ($request) {
+                    $nombreActividades = $request->input('nombre_actividades');
+
+                    if (is_string($nombreActividades)) {
+                        $nombreActividades = explode(',', $nombreActividades);
+                    }
+
+                    $nombreActividades = array_values(array_filter((array) $nombreActividades, static function ($id) {
+                        return $id !== null && $id !== '';
+                    }));
+
+                    if ($nombreActividades) {
+                        $q->whereIn('nombre_actividad_id', $nombreActividades);
+                    }
+                })
                 ->when($request->filled('name'), function ($q) use ($request) {
                     $name = trim($request->input('name'));
                     $q->where('tema', 'LIKE', "%{$name}%");

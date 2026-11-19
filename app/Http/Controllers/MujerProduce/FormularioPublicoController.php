@@ -320,83 +320,32 @@ class FormularioPublicoController extends Controller
             }
 
             // =======================================================
-            // 3. LÓGICA DE PARTICIPANTE (REGLAS DE NEGOCIO)
+            // 3. LÓGICA DE PARTICIPANTE: RUC + DOCUMENTO IDENTIFICAN
+            //    UNA FILA; CADA VALOR PUEDE REPETIRSE POR SEPARADO.
             // =======================================================
-            $action = 'updated';
+            $participantQuery = MPParticipant::where('doc_number', $request->doc_number);
 
-            // Buscar por doc_number
-            $participant = MPParticipant::where('doc_number', $request->doc_number)->first();
+            if ($request->filled('ruc')) {
+                $participantQuery->where('ruc', $request->ruc);
+            } else {
+                $participantQuery->whereNull('ruc');
+            }
+
+            $participant = $participantQuery->first();
+            $action = $participant ? 'updated' : 'created';
 
             if ($participant) {
+                // Reutilizar la fila de la combinación exacta y no borrar
+                // información existente con campos nulos del formulario.
+                $data = collect($request->except('slug'))
+                    ->filter(fn ($value) => ! is_null($value))
+                    ->toArray();
 
-                /*
-                |------------------------------------------------------
-                | CASO 1:
-                | doc_number EXISTE
-                |------------------------------------------------------
-                */
-
-                // Si el RUC en BD es NULL → se puede completar / modificar
-                if (is_null($participant->ruc)) {
-
-                    // Validar que el nuevo RUC no esté en otra fila
-                    if ($request->filled('ruc')) {
-                        $existsRuc = MPParticipant::where('ruc', $request->ruc)
-                            ->where('id', '!=', $participant->id)
-                            ->exists();
-
-                        // if ($existsRuc) {
-                        //     return response()->json([
-                        //         'status'  => 409,
-                        //         'message' => 'El RUC ya se encuentra registrado en otro participante'
-                        //     ], 409);
-                        // }
-                    }
-
-                    $participant->update($request->except('slug'));
-                } else {
-
-                    /*
-                    |--------------------------------------------------
-                    | CASO 2:
-                    | doc_number y ruc YA EXISTEN
-                    |--------------------------------------------------
-                    | → NO sobreescribir datos existentes con NULL
-                    */
-
-                    $data = collect($request->except('slug'))
-                        ->filter(fn ($value) => ! is_null($value))
-                        ->toArray();
-
-                    $participant->update($data);
-                }
+                $participant->update($data);
             } else {
-
-                /*
-                |------------------------------------------------------
-                | CASO 3:
-                | doc_number NO EXISTE
-                |------------------------------------------------------
-                */
-
-                // Validar que el RUC no exista si viene informado
-                if ($request->filled('ruc')) {
-                    $existsRuc = MPParticipant::where('ruc', $request->ruc)->exists();
-
-                    if ($existsRuc) {
-                        return response()->json([
-                            'status' => 409,
-                            'message' => 'El RUC ya se encuentra registrado',
-                        ], 409);
-                    }
-                }
-
-                // Crear nuevo participante
-                $participant = MPParticipant::create(
-                    $request->except('slug')
-                );
-
-                $action = 'created';
+                // El mismo RUC con otro documento, o el mismo documento
+                // con otro RUC, corresponde a una fila distinta.
+                $participant = MPParticipant::create($request->except('slug'));
             }
 
             // =======================================================

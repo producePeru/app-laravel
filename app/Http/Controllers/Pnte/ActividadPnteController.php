@@ -924,7 +924,7 @@ class ActividadPnteController extends Controller
 
                     'celular' => $e?->celular,
 
-                     'correo_electronico' => $e?->correo_electronico,
+                    'correo_electronico' => $e?->correo_electronico,
 
                     'agregar_logo' => $e?->logo,
 
@@ -1471,6 +1471,8 @@ class ActividadPnteController extends Controller
             ], 500);
         }
     }
+
+    public function attendanceSummaryBySlugCompras(Request $request, $slug) {}
 
     public function inscritosPorRegionSlug(Request $request, $slug)
     {
@@ -2561,13 +2563,13 @@ class ActividadPnteController extends Controller
                         ? ($e->discapacidad ? 'SI' : 'NO')
                         : null,
 
-                     'celular' => $e?->celular,
+                    'celular' => $e?->celular,
 
-                     'correo_electronico' => $e?->correo_electronico,
+                    'correo_electronico' => $e?->correo_electronico,
 
                     'logo' => $e?->logo,
 
-                     'cargo_empresa_id' => $e?->cargo_empresa_id,
+                    'cargo_empresa_id' => $e?->cargo_empresa_id,
 
                     'fecha_nacimiento' => $e?->fecha_nacimiento,
 

@@ -50,6 +50,8 @@ Route::controller(ActividadPnteController::class)->group(function () {
 
     Route::GET('attendance-summary-slug/{slug}', 'attendanceSummaryBySlug');
 
+    Route::GET('attendance-summary-slug-compras/{slug}', 'attendanceSummaryBySlugCompras');
+
     Route::GET('inscritos-por-region/{slug}', 'inscritosPorRegionSlug');
 
     Route::PUT('permission-to-delete/{slug}', 'permissionToDelete');
@@ -94,7 +96,7 @@ Route::controller(PnteTestController::class)->group(function () {
 
 Route::controller(ReactivaSectorTextilController::class)->group(function () {
     Route::GET('calendar-reactiva-sectores', 'eventsCalendarReactivaSectores');
-    
+
 });
 
 // event-pnte 🔒
@@ -174,7 +176,7 @@ Route::controller(ComprasPeruController::class)->group(function () {
 
 Route::controller(ReactivaSectorTextilController::class)->group(function () {
     Route::GET('calendar-reactiva-sectores-public', 'eventsCalendarReactivaSectoresPublic');
-    
+
 });
 
 // event-pnte-public 🌍
