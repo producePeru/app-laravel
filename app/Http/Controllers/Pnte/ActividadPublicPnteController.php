@@ -1902,4 +1902,105 @@ class ActividadPublicPnteController extends Controller
             'event' => $event,
         ]);
     }
+
+    public function marcarMiAsistencia(Request $request, $slug): JsonResponse
+    {
+        $validated = $request->validate([
+            'numero_dni' => 'required|string|max:12',
+        ]);
+
+        try {
+            $actividad = ActividadPnte::where('slug', $slug)->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'status' => 404,
+                    'reason' => 'event_not_found',
+                    'message' => 'No se encontró la actividad.',
+                ], 404);
+            }
+
+            $fechaHoy = Carbon::today()->toDateString();
+            $fechasActividad = $this->normalizarFechasActividad($actividad->fechas);
+
+            if (! in_array($fechaHoy, $fechasActividad, true)) {
+                return response()->json([
+                    'status' => 422,
+                    'reason' => 'date_without_event',
+                    'message' => 'Hoy no hay una capacitación programada, por lo que no se tomará asistencia. Puedes revisar otras capacitaciones disponibles.',
+                    'data' => [
+                        'fecha_hoy' => $fechaHoy,
+                        'fechas' => $fechasActividad,
+                    ],
+                ], 422);
+            }
+
+            if (! $actividad->switch_asistencias) {
+                return response()->json([
+                    'status' => 403,
+                    'reason' => 'attendance_disabled',
+                    'message' => 'La marcación de asistencias está desactivada.',
+                ], 403);
+            }
+
+            $registro = EmpresarioActividad::with([
+                'empresario:id,nombres,apellido_paterno,apellido_materno',
+            ])
+                ->where('slug', $slug)
+                ->where('numero_dni', $validated['numero_dni'])
+                ->first();
+
+            if (! $registro) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontró una inscripción para esos datos.',
+                ], 404);
+            }
+
+            $asistencia = $registro->asistencias()->updateOrCreate(
+                ['fecha' => $fechaHoy],
+                [
+                    'slug' => $registro->slug,
+                    'numero_dni' => $registro->numero_dni,
+                    'fecha_hora' => now(),
+                ]
+            );
+
+            $primeraAsistencia = $registro->asistencias()
+                ->orderBy('fecha')
+                ->orderBy('fecha_hora')
+                ->first();
+            $fechaAsistencia = ($asistencia->fecha_hora ?? now())->format('d/m/Y h:i a');
+
+            $registro->update([
+                'fecha_asistencia' => $primeraAsistencia?->fecha_hora
+                    ? $primeraAsistencia->fecha_hora->format('d/m/Y h:i a')
+                    : $fechaAsistencia,
+            ]);
+
+            $nombre = trim(implode(' ', array_filter([
+                $registro->empresario?->nombres,
+                $registro->empresario?->apellido_paterno,
+                $registro->empresario?->apellido_materno,
+            ])));
+            $registro->setAttribute('nombre', $nombre);
+            $registro->setAttribute('fecha_asistencia_marcada', $fechaAsistencia);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Asistencia marcada correctamente.',
+                'data' => $registro,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error al marcar mi asistencia: '.$e->getMessage(), [
+                'slug' => $slug,
+                'numero_dni' => $validated['numero_dni'],
+            ]);
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'No se pudo marcar la asistencia. Inténtalo nuevamente.',
+            ], 500);
+        }
+    }
 }

@@ -137,6 +137,8 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
 
     Route::GET('inscritos-feria-page/{slug}', 'inscritosFeriaPage');
 
+    Route::POST('marcar-mi-asistencia/{slug}', 'marcarMiAsistencia');
+
 });
 
 Route::controller(PnteTestController::class)->group(function () {
