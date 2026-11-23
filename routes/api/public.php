@@ -26,6 +26,8 @@ Route::controller(PublicEventsController::class)->group(function () {
 
     Route::post('ferias-empresariales', 'fairRegisterMype');
 
+    Route::PUT('editar-datos-feriante', 'editarDatosFeriante');
+
 });
 
 Route::controller(FairController::class)->group(function () {

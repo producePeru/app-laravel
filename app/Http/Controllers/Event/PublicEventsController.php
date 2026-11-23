@@ -13,10 +13,10 @@ use App\Models\ArchivoFeria;
 use App\Models\Attendance;
 use App\Models\AttendanceList;
 use App\Models\Empresario;
-use App\Models\Image;
 use App\Models\EmpresarioActividad;
 use App\Models\EmpresarioEmprendimiento;
 use App\Models\Fair;
+use App\Models\Image;
 use App\Models\Mype;
 use App\Models\People;
 use App\Models\SedQuestion;
@@ -29,12 +29,14 @@ use Endroid\QrCode\Writer\PngWriter;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail; // Alias para DomPDF (probablemente registrado en config/app.php como 'PDF')
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 use PDF;
 
 class PublicEventsController extends Controller
@@ -781,6 +783,288 @@ class PublicEventsController extends Controller
                 'error' => $e->getMessage(),
                 'status' => 500,
             ], 500);
+        }
+    }
+
+    public function editarDatosFeriante(Request $request)
+    {
+        $normalizados = [];
+        foreach (['redes_sociales'] as $campo) {
+            if (is_string($request->input($campo))) {
+                $decoded = json_decode($request->input($campo), true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $normalizados[$campo] = $decoded;
+                }
+            }
+        }
+
+        $respuestas = [
+            'discapacidad', 'pertenece_gremio', 'tiene_puntos_venta', 'pos', 'yape_plim',
+            'tiene_tiendas', 'tiene_delivery', 'factura_electronica', 'participado_produce',
+            'participado_feria', 'formalizado_produce', 'indecopi', 'terminos_condiciones',
+        ];
+        foreach ($respuestas as $campo) {
+            if ($request->exists($campo)) {
+                $original = $request->input($campo);
+                if ($original === null || is_array($original) || is_object($original)) {
+                    continue;
+                }
+                $valor = is_bool($original) ? ($original ? '1' : '0') : mb_strtoupper(trim((string) $original), 'UTF-8');
+                $normalizados[$campo] = match ($valor) {
+                    '1', 'SI', 'SÍ', 'TRUE' => 1,
+                    '0', 'NO', 'FALSE' => 0,
+                    '' => null,
+                    '3', 'OTRO' => 3,
+                    default => $original,
+                };
+            }
+        }
+
+        if ($request->exists('pais_nacimiento_id') && ! $request->exists('pais_id')) {
+            $normalizados['pais_id'] = $request->input('pais_nacimiento_id');
+        }
+        $fecha = $request->input('fecha_nacimiento');
+        if (is_string($fecha) && preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $fecha, $partes)
+            && checkdate((int) $partes[2], (int) $partes[1], (int) $partes[3])) {
+            $normalizados['fecha_nacimiento'] = "{$partes[3]}-{$partes[2]}-{$partes[1]}";
+        }
+        $request->merge($normalizados);
+
+        $rules = [
+            'id' => 'required|integer|min:1',
+            'slug' => 'required|string|max:255',
+            'actividad_id' => 'sometimes|nullable|integer|min:1',
+            'empresario_id' => 'sometimes|nullable|integer|min:1',
+            'ruc' => ['sometimes', 'required', 'regex:/^(10|15|17|20)\d{9}$/'],
+            'razon_social' => 'sometimes|required|string|max:255',
+            'nombre_comercial' => 'sometimes|required|string|max:255',
+            'direccion' => 'sometimes|required|string|max:500',
+            'numero_dni' => 'sometimes|required|string|max:12|alpha_num:ascii',
+            'apellido_paterno' => 'sometimes|required|string|max:255',
+            'apellido_materno' => 'sometimes|required|string|max:255',
+            'nombres' => 'sometimes|required|string|max:255',
+            'discapacidad' => 'sometimes|required|boolean',
+            'celular' => ['sometimes', 'required', 'regex:/^9\d{8}$/'],
+            'correo_electronico' => 'sometimes|required|email|max:255',
+            'fecha_nacimiento' => 'sometimes|required|date_format:Y-m-d|before_or_equal:today',
+            'redes_sociales' => 'sometimes|nullable|array',
+            'redes_sociales.*.name' => 'required|string|max:100',
+            'redes_sociales.*.link' => 'required|string|max:2048',
+            'nombre_gremio' => 'sometimes|nullable|string|max:255',
+            'cap_prod_mensual' => 'sometimes|nullable|string|max:255',
+            'porc_prod_planta' => 'sometimes|nullable|string|max:255',
+            'porc_prod_maquila' => 'sometimes|nullable|string|max:255',
+            'num_puntos_ventas' => 'sometimes|nullable|integer|min:0',
+            'desc_negocio' => 'sometimes|nullable|string',
+            'nombre_tienda' => 'sometimes|nullable|string|max:255',
+            'nombre_servicio' => 'sometimes|nullable|string|max:255',
+            'nombre_feria' => 'sometimes|nullable|string|max:255',
+            'logros_empresa' => 'sometimes|nullable|string',
+            'feria_principal' => ['sometimes', 'nullable', 'integer', Rule::in([1, 2, 3, 4])],
+            'feria_opcional' => ['sometimes', 'nullable', 'integer', Rule::in([1, 2, 3, 4])],
+            'reporte_tributario' => 'sometimes|nullable|file|mimes:pdf|max:10240',
+            'imagenes_papa' => 'sometimes|array|max:2',
+            'imagenes_papa.*' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+        ];
+        foreach ([
+            'sector_economico_id' => \App\Models\EconomicSector::class,
+            'rubro_id' => \App\Models\Category::class,
+            'actividad_comercial_id' => \App\Models\Activity::class,
+            'region_id' => \App\Models\City::class,
+            'provincia_id' => \App\Models\Province::class,
+            'distrito_id' => \App\Models\District::class,
+            'tipo_documento_id' => \App\Models\Typedocument::class,
+            'genero_id' => \App\Models\Gender::class,
+            'cargo_empresa_id' => \App\Models\RoleCompany::class,
+            'pais_id' => \App\Models\Country::class,
+        ] as $campo => $modelo) {
+            $rules[$campo] = ['sometimes', 'nullable', 'integer', Rule::exists($modelo, 'id')];
+        }
+        foreach (array_diff($respuestas, ['discapacidad']) as $campo) {
+            $rules[$campo] = ['sometimes', 'nullable', 'integer', Rule::in(
+                in_array($campo, ['tiene_tiendas', 'participado_produce', 'participado_feria'], true) ? [0, 1, 3] : [0, 1]
+            )];
+        }
+        $data = $request->validate($rules, [
+            'fecha_nacimiento.date_format' => 'Ingresa una fecha de nacimiento válida (AAAA-MM-DD o DD/MM/AAAA).',
+            'reporte_tributario.mimes' => 'El reporte tributario debe ser un archivo PDF válido.',
+            'reporte_tributario.max' => 'El reporte tributario no debe superar los 10 MB.',
+            'imagenes_papa.max' => 'Puedes adjuntar como máximo 2 imágenes.',
+            'imagenes_papa.*.max' => 'Cada imagen debe pesar como máximo 5 MB.',
+        ]);
+
+        $archivosGuardados = [];
+        try {
+            $resultado = DB::transaction(function () use ($request, $data, &$archivosGuardados) {
+                // El ID es el de la inscripción, no el del empresario ni un DNI editable.
+                $registro = EmpresarioActividad::whereKey($data['id'])
+                    ->where('slug', $data['slug'])
+                    ->when(isset($data['actividad_id']), fn ($query) => $query->where('actividad_id', $data['actividad_id']))
+                    ->when(isset($data['empresario_id']), fn ($query) => $query->where('empresario_id', $data['empresario_id']))
+                    ->lockForUpdate()->firstOrFail();
+                $empresario = Empresario::whereKey($registro->empresario_id)->lockForUpdate()->firstOrFail();
+                $actividad = ActividadPnte::whereKey($registro->actividad_id)->where('slug', $registro->slug)->firstOrFail();
+                $emprendimiento = EmpresarioEmprendimiento::where('empresario_id', $empresario->id)
+                    ->where('actividad_id', $actividad->id)->lockForUpdate()->first();
+                $papa = ActividadPntePapa::where('empresario_id', $empresario->id)
+                    ->where('actividad_id', $actividad->id)->lockForUpdate()->first();
+
+                $datosEmpresario = Arr::only($data, [
+                    'ruc', 'razon_social', 'nombre_comercial', 'sector_economico_id', 'rubro_id',
+                    'actividad_comercial_id', 'region_id', 'provincia_id', 'distrito_id', 'direccion',
+                    'pais_id', 'tipo_documento_id', 'numero_dni', 'apellido_paterno', 'apellido_materno',
+                    'nombres', 'genero_id', 'discapacidad', 'celular', 'correo_electronico',
+                    'cargo_empresa_id', 'fecha_nacimiento',
+                ]);
+                if (isset($datosEmpresario['numero_dni'])) {
+                    $numero = $datosEmpresario['numero_dni'];
+                    if ((int) ($datosEmpresario['tipo_documento_id'] ?? $empresario->tipo_documento_id) === 1
+                        && ! preg_match('/^\d{8}$/', $numero)) {
+                        throw ValidationException::withMessages(['numero_dni' => 'El DNI debe tener exactamente 8 dígitos.']);
+                    }
+                    if ($numero !== (string) $empresario->numero_dni
+                        && Empresario::where('numero_dni', $numero)->whereKeyNot($empresario->id)->exists()) {
+                        throw ValidationException::withMessages(['numero_dni' => 'Ya existe otro participante con ese número de documento.']);
+                    }
+                }
+                if (isset($datosEmpresario['fecha_nacimiento'])) {
+                    $edad = Carbon::parse($datosEmpresario['fecha_nacimiento'])->age;
+                    if ($edad < 18 || $edad > 100) {
+                        throw ValidationException::withMessages(['fecha_nacimiento' => 'La edad debe estar entre 18 y 100 años.']);
+                    }
+                    $datosEmpresario['edad'] = $edad;
+                }
+
+                $datosEmprendimiento = Arr::only($data, [
+                    'redes_sociales', 'pertenece_gremio', 'nombre_gremio', 'cap_prod_mensual',
+                    'porc_prod_planta', 'porc_prod_maquila', 'tiene_puntos_venta', 'num_puntos_ventas',
+                    'desc_negocio', 'pos', 'yape_plim', 'tiene_tiendas', 'nombre_tienda', 'tiene_delivery',
+                    'factura_electronica', 'participado_produce', 'nombre_servicio', 'participado_feria',
+                    'nombre_feria', 'formalizado_produce', 'indecopi', 'logros_empresa', 'terminos_condiciones',
+                ]);
+                foreach ([
+                    ['pertenece_gremio', 1, 'nombre_gremio'], ['tiene_puntos_venta', 1, 'num_puntos_ventas'],
+                    ['tiene_tiendas', 3, 'nombre_tienda'], ['participado_produce', 3, 'nombre_servicio'],
+                    ['participado_feria', 3, 'nombre_feria'],
+                ] as [$padre, $valor, $detalle]) {
+                    if (! array_key_exists($padre, $datosEmprendimiento) && ! array_key_exists($detalle, $datosEmprendimiento)) {
+                        continue;
+                    }
+                    $seleccion = array_key_exists($padre, $datosEmprendimiento)
+                        ? $datosEmprendimiento[$padre] : $emprendimiento?->getRawOriginal($padre);
+                    if ((int) $seleccion !== $valor) {
+                        $datosEmprendimiento[$detalle] = null;
+                    } else {
+                        $contenido = array_key_exists($detalle, $datosEmprendimiento)
+                            ? $datosEmprendimiento[$detalle] : $emprendimiento?->getRawOriginal($detalle);
+                        if ($contenido === null || trim((string) $contenido) === '' || ($detalle === 'num_puntos_ventas' && (int) $contenido < 1)) {
+                            throw ValidationException::withMessages([$detalle => 'Completa la información correspondiente a la opción seleccionada.']);
+                        }
+                    }
+                }
+
+                $datosPapa = [];
+                if (array_key_exists('feria_principal', $data) || array_key_exists('feria_opcional', $data) || $request->hasFile('imagenes_papa')) {
+                    if (! $papa && $actividad->especial !== 'feria_papa' && $actividad->descripcion !== 'feria_papa') {
+                        throw ValidationException::withMessages(['feria_principal' => 'Esta actividad no corresponde a una feria Papa.']);
+                    }
+                    $primera = array_key_exists('feria_principal', $data) ? $data['feria_principal'] : $papa?->prioridad_1;
+                    $segunda = array_key_exists('feria_opcional', $data) ? $data['feria_opcional'] : $papa?->prioridad_2;
+                    if (! $primera || ($segunda !== null && (int) $primera === (int) $segunda)) {
+                        throw ValidationException::withMessages(['feria_principal' => 'Selecciona una primera prioridad válida y diferente a la segunda.']);
+                    }
+                    $datosPapa = ['prioridad_1' => $primera, 'prioridad_2' => $segunda];
+                }
+
+                $empresario->origen = 'F';
+                $empresario->fill($datosEmpresario)->save();
+                if (array_key_exists('numero_dni', $datosEmpresario)) {
+                    // El documento se repite en sus inscripciones; se conserva el mismo empresario.
+                    EmpresarioActividad::withTrashed()->where('empresario_id', $empresario->id)
+                        ->where(fn ($query) => $query->where('numero_dni', '<>', $empresario->numero_dni)->orWhereNull('numero_dni'))
+                        ->update(['numero_dni' => $empresario->numero_dni]);
+                }
+                if ($datosEmprendimiento !== []) {
+                    $emprendimiento = EmpresarioEmprendimiento::updateOrCreate(
+                        ['empresario_id' => $empresario->id, 'actividad_id' => $actividad->id],
+                        $datosEmprendimiento
+                    );
+                }
+
+                if ($request->hasFile('reporte_tributario')) {
+                    $file = $request->file('reporte_tributario');
+                    $filename = 'reporte_'.$empresario->id.'_'.Str::uuid().'.pdf';
+                    $path = $file->storeAs('reportes_tributarios', $filename, 'public');
+                    if (! $path) {
+                        throw new \RuntimeException('No se pudo guardar el reporte tributario.');
+                    }
+                    $archivosGuardados[] = $path;
+                    $archivo = Archivo::create([
+                        'nombre_original' => $file->getClientOriginalName(), 'nombre_archivo' => $filename,
+                        'extension' => 'pdf', 'mime_type' => $file->getMimeType(), 'ruta' => $path,
+                        'tamanio' => $file->getSize(), 'descripcion' => 'Reporte tributario actualizado en feria ('.$registro->slug.')',
+                        'usuario_id' => null,
+                    ]);
+                    ArchivoFeria::create(['archivo_id' => $archivo->id, 'empresario_id' => $empresario->id]);
+                }
+
+                if ($request->hasFile('imagenes_papa')) {
+                    $datosPapa['id_image_1'] = null;
+                    $datosPapa['id_image_2'] = null;
+                    foreach (array_values($request->file('imagenes_papa')) as $index => $imageFile) {
+                        $filename = 'papa_'.$empresario->id.'_'.Str::uuid().'.'.$imageFile->extension();
+                        $path = $imageFile->storeAs('imagenes_papa', $filename, 'public');
+                        if (! $path) {
+                            throw new \RuntimeException('No se pudo guardar una imagen de la feria.');
+                        }
+                        $archivosGuardados[] = $path;
+                        $image = Image::create([
+                            'name' => $imageFile->getClientOriginalName(), 'url' => $path,
+                            'mime_type' => $imageFile->getMimeType(), 'size' => $imageFile->getSize(),
+                            'from_origin' => 'feria_papa', 'id_origin' => $empresario->id,
+                        ]);
+                        $datosPapa['id_image_'.($index + 1)] = $image->id;
+                    }
+                }
+                if ($datosPapa !== []) {
+                    $papa = ActividadPntePapa::updateOrCreate(
+                        ['empresario_id' => $empresario->id, 'actividad_id' => $actividad->id], $datosPapa
+                    );
+                }
+
+                $archivo = $empresario->archivosFerias()->with('archivo')->orderByDesc('id')->first()?->archivo;
+                $datosNegocio = $emprendimiento?->toArray();
+                if ($emprendimiento) {
+                    foreach (['tiene_tiendas', 'participado_produce', 'participado_feria'] as $campo) {
+                        $valor = $emprendimiento->getRawOriginal($campo);
+                        $datosNegocio[$campo] = $valor === null ? null : (int) $valor;
+                    }
+                }
+                return [
+                    'id' => $registro->id, 'actividad_id' => $actividad->id, 'slug' => $registro->slug,
+                    'empresario_id' => $empresario->id, 'empresario' => $empresario, 'emprendimiento' => $datosNegocio,
+                    'archivo' => $archivo ? ['archivo_id' => $archivo->id, 'nombre_original' => $archivo->nombre_original] : null,
+                    'feria_papa' => $papa ? [
+                        'prioridad_1' => $papa->prioridad_1, 'prioridad_2' => $papa->prioridad_2,
+                        'imagenes' => collect([$papa->image1, $papa->image2])->filter()
+                            ->map(fn ($image) => ['id' => $image->id, 'nombre' => $image->name])->values()->all(),
+                    ] : null,
+                ];
+            });
+
+            return response()->json(['status' => 200, 'message' => 'Datos del feriante actualizados correctamente.', 'data' => $resultado]);
+        } catch (\Throwable $e) {
+            foreach ($archivosGuardados as $path) {
+                Storage::disk('public')->delete($path);
+            }
+            if ($e instanceof ValidationException) {
+                throw $e;
+            }
+            if ($e instanceof ModelNotFoundException) {
+                return response()->json(['status' => 404, 'message' => 'No se encontró la inscripción del feriante para esta actividad.'], 404);
+            }
+            Log::error('editarDatosFeriante: '.$e->getMessage(), ['inscripcion_id' => $data['id']]);
+            return response()->json(['status' => 500, 'message' => 'No se pudieron actualizar los datos del feriante.'], 500);
         }
     }
 }

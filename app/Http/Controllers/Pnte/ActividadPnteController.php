@@ -2432,7 +2432,7 @@ class ActividadPnteController extends Controller
                 ->first();
 
             $query = EmpresarioActividad::with([
-                'emprendimiento',
+                'emprendimiento' => fn ($query) => $query->where('actividad_id', $event?->id),
                 'empresario',
                 'empresario.pais',
                 'empresario.region',
@@ -2663,13 +2663,13 @@ class ActividadPnteController extends Controller
                         'desc_negocio' => $emp->desc_negocio,
                         'pos' => $this->sino($emp->pos),
                         'yape_plim' => $this->sino($emp->yape_plim),
-                        'tiene_tiendas' => $this->sino($emp->tiene_tiendas),
+                        'tiene_tiendas' => $this->sino($emp->getRawOriginal('tiene_tiendas')),
                         'nombre_tienda' => $emp->nombre_tienda,
                         'tiene_delivery' => $this->sino($emp->tiene_delivery),
                         'factura_electronica' => $this->sino($emp->factura_electronica),
-                        'participado_produce' => $this->sino($emp->participado_produce),
+                        'participado_produce' => $this->sino($emp->getRawOriginal('participado_produce')),
                         'nombre_servicio' => $emp->nombre_servicio,
-                        'participado_feria' => $this->sino($emp->participado_feria),
+                        'participado_feria' => $this->sino($emp->getRawOriginal('participado_feria')),
                         'nombre_feria' => $emp->nombre_feria,
                         'formalizado_produce' => $this->sino($emp->formalizado_produce),
                         'indecopi' => $this->sino($emp->indecopi),
@@ -2698,6 +2698,10 @@ class ActividadPnteController extends Controller
     {
         if (is_null($value)) {
             return null;
+        }
+
+        if ((string) $value === '3') {
+            return 'OTRO';
         }
 
         return $value ? 'SI' : 'NO';
