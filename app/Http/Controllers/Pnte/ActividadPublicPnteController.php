@@ -1109,6 +1109,7 @@ class ActividadPublicPnteController extends Controller
                 'fecha_hoy' => $hoy,
                 'proxima_fecha' => $proxima ?: null,
                 'asistencias_habilitadas' => (bool) $actividad->switch_asistencias,
+                'switch_test' => $actividad->switch_test === null ? null : (int) $actividad->switch_test,
             ],
         ]);
     }
@@ -1120,6 +1121,7 @@ class ActividadPublicPnteController extends Controller
             'tipo_documento_id' => 'nullable|integer',
             'numero_dni' => 'required|string|max:12',
             'ruc' => 'required|size:11',
+            'finalidad' => 'nullable|in:test_salida',
         ]);
 
         try {
@@ -1138,7 +1140,17 @@ class ActividadPublicPnteController extends Controller
             $fechas = $this->normalizarFechasActividad($actividad->fechas);
             $hoy = Carbon::today()->toDateString();
 
-            if (! in_array($hoy, $fechas, true)) {
+            $esTestSalida = $request->input('finalidad') === 'test_salida';
+
+            if ($esTestSalida && (int) $actividad->switch_test !== 1) {
+                return response()->json([
+                    'status' => 403,
+                    'reason' => 'test_desactivado',
+                    'message' => 'El registro de la prueba de salida está desactivado. Espera a que el asesor lo habilite.',
+                ], 403);
+            }
+
+            if (! $esTestSalida && ! in_array($hoy, $fechas, true)) {
                 return response()->json([
                     'status' => 422,
                     'reason' => 'fecha_no_disponible',
@@ -1176,7 +1188,7 @@ class ActividadPublicPnteController extends Controller
             $asistenciaMarcada = false;
             $asistencia = null;
 
-            if ($actividad->switch_asistencias) {
+            if (! $esTestSalida && $actividad->switch_asistencias) {
                 $asistencia = $inscripcion->asistencias()->firstOrCreate(
                     ['fecha' => $hoy],
                     [

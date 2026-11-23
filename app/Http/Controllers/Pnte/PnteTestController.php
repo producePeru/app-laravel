@@ -842,4 +842,20 @@ class PnteTestController extends Controller
         // 4. Fallback global (compatibilidad)
         return $actividad->link;
     }
+
+    public function switchTestOnOff($slug)
+    {
+        $actividad = ActividadPnte::where('slug', $slug)->firstOrFail();
+
+        $actividad->switch_test = (int) $actividad->switch_test === 1 ? null : 1;
+        $actividad->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => $actividad->switch_test === 1
+                ? 'Test de salida activado correctamente.'
+                : 'Test de salida desactivado correctamente.',
+            'switch_test' => $actividad->switch_test,
+        ]);
+    }
 }

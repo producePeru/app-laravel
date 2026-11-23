@@ -532,6 +532,19 @@ class ComprasPeruController extends Controller
     {
         try {
 
+            $actividad = ActividadPnte::where('slug', $slug)->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontró la capacitación.',
+                ], 404);
+            }
+
+            if ($error = $this->validarDisponibilidadTestSalida($actividad)) {
+                return $error;
+            }
+
             $test = PntTest::where('slug', $slug)->first();
 
             if (! $test) {
@@ -573,6 +586,19 @@ class ComprasPeruController extends Controller
         ]);
 
         try {
+            $actividad = ActividadPnte::where('slug', $request->slug)->first();
+
+            if (! $actividad) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontró la capacitación.',
+                ], 404);
+            }
+
+            if ($error = $this->validarDisponibilidadTestSalida($actividad)) {
+                return $error;
+            }
+
             $query = EmpresarioActividad::where('slug', $request->slug)
                 ->where('numero_dni', $request->numero_dni);
 
@@ -785,6 +811,19 @@ class ComprasPeruController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function validarDisponibilidadTestSalida(ActividadPnte $actividad): ?JsonResponse
+    {
+        if ((int) $actividad->switch_test !== 1) {
+            return response()->json([
+                'status' => 403,
+                'reason' => 'test_desactivado',
+                'message' => 'El registro de la prueba de salida está desactivado. Espera a que el asesor lo habilite.',
+            ], 403);
+        }
+
+        return null;
     }
 
     private function normalizarFechasActividad($fechas): array

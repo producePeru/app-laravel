@@ -92,6 +92,8 @@ Route::controller(PnteTestController::class)->group(function () {
     Route::GET('pp093-get-test-salida/{slug}', 'getTestSalida');
 
     Route::POST('pp093-check-asistencia', 'checkAsistencia');
+
+    Route::PUT('switch-test-salida/{slug}', 'switchTestOnOff');
 });
 
 Route::controller(ReactivaSectorTextilController::class)->group(function () {

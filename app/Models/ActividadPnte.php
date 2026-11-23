@@ -60,6 +60,7 @@ class ActividadPnte extends Model
         'eliminar',
         'prendido',
         'switch_asistencias',
+        'switch_test',
     ];
 
     protected $casts = [

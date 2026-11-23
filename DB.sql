@@ -165,3 +165,9 @@ WHERE ea.`fecha_asistencia` IS NOT NULL
 -- ALTER TABLE advisories 
 -- ADD COLUMN is_encuesta TINYINT(1) NULL DEFAULT NULL AFTER `updated_by`;
 
+
+
+
+ALTER TABLE actividades_pnte
+ADD COLUMN switch_test TINYINT(1) NULL DEFAULT NULL
+AFTER switch_asistencias;
