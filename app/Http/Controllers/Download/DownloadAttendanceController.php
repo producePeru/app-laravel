@@ -4292,6 +4292,7 @@ class DownloadAttendanceController extends Controller
                     'nombre_comercial',
                     'sector_economico_id',
                     'rubro_id',
+                    'actividad_comercial_id',
                     'actividad_comercial_nombre',
                     'region_id',
                     'provincia_id',
@@ -4326,6 +4327,7 @@ class DownloadAttendanceController extends Controller
             // Ã°Å¸â€Â¥ ESTOS FALTABAN
             'empresario.sectorEconomico:id,name',
             'empresario.rubro:id,name',
+            'empresario.actividadComercial:id,name',
 
             // ASISTENCIAS POR FECHA
             'asistencias:id,empresario_actividad_id,slug,numero_dni,fecha,fecha_hora',

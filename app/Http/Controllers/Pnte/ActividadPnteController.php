@@ -68,7 +68,7 @@ class ActividadPnteController extends Controller
 
             'activo' => 'nullable|boolean',
 
-            'especial' => 'nullable|boolean',
+            'especial' => 'nullable',
         ]);
 
         if ((int) $validated['unidad'] === 3) {
@@ -1487,8 +1487,7 @@ class ActividadPnteController extends Controller
             $totalAsistentes = (clone $baseQuery)
                 ->when(
                     $request->filled('dateEvent'),
-                    fn ($query) => $query->whereHas('asistencias', fn ($asistencias) =>
-                        $asistencias->whereDate('fecha', $request->input('dateEvent'))
+                    fn ($query) => $query->whereHas('asistencias', fn ($asistencias) => $asistencias->whereDate('fecha', $request->input('dateEvent'))
                     ),
                     fn ($query) => $query->whereNotNull('fecha_asistencia')
                 )
