@@ -276,6 +276,7 @@ class ComprasPeruController extends Controller
             'distrito' => $actividad->distritoRel->name ?? $actividad->distrito,
             'direccion' => $actividad->lugar,
             'horario' => $horarioFormateado,
+            'horario_sesiones' => is_array($horarioRaw) ? $horarioRaw : null,
             'entidad_organizadora' => $actividad->entidad_organizadora,
             'entidad_aliada' => $actividad->entidad_aliada,
             'mypes_beneficiadas' => $actividad->mypes_beneficiadas,
@@ -721,13 +722,17 @@ class ComprasPeruController extends Controller
                 'coop_rol' => $request->coop_rol,
             ];
 
-            $empresario = Empresario::firstOrCreate(
-                [
-                    'tipo_documento_id' => $request->tipo_documento_id,
-                    'numero_dni' => $request->numero_dni,
-                ],
-                $datosEmpresario
-            );
+            $identidad = [
+                'tipo_documento_id' => $request->tipo_documento_id,
+                'numero_dni' => $request->numero_dni,
+            ];
+            $empresario = Empresario::where($identidad)->first();
+            if (! $empresario) {
+                // Completar también el tipo de documento de un registro que aún no lo tiene.
+                $empresario = Empresario::where('numero_dni', $request->numero_dni)
+                    ->whereNull('tipo_documento_id')->first()
+                    ?? Empresario::firstOrCreate($identidad, $datosEmpresario);
+            }
 
             // Serializar inscripciones concurrentes del mismo participante.
             $empresario = Empresario::whereKey($empresario->id)
@@ -751,6 +756,16 @@ class ComprasPeruController extends Controller
                     'status' => 422,
                     'message' => 'El participante ya está registrado en esta fecha de la actividad.',
                 ], 422);
+            }
+
+            // Usar el payload únicamente para completar datos que todavía estén vacíos.
+            foreach ($datosEmpresario as $campo => $valor) {
+                if (blank($empresario->getAttribute($campo)) && filled($valor)) {
+                    $empresario->setAttribute($campo, $valor);
+                }
+            }
+            if ($empresario->isDirty()) {
+                $empresario->save();
             }
 
             /**
