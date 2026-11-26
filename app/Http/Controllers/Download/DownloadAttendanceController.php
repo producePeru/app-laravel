@@ -721,7 +721,7 @@ class DownloadAttendanceController extends Controller
             $user = Auth::user();
 
             // Ã¢Å“â€¦ Solo rol 1 puede descargar
-            if ($user->rol != 1) {
+            if ($user?->rol != 1) {
                 return response()->json([
                     'status' => 403,
                     'message' => 'No tienes permisos para descargar este reporte.',
@@ -748,6 +748,8 @@ class DownloadAttendanceController extends Controller
                     $current->addDay();
                 }
             }
+
+            $dateEvent = $request->input('dateEvent');
 
             $actividades = ActividadPnte::with([
                 'tipoActividad:id,name',
@@ -785,11 +787,16 @@ class DownloadAttendanceController extends Controller
                     'cancelado',
                     'reprogramado',
                     'registrado_por_id',
+                    'tipo_mercado',
+                    'tipo_gestion',
+                    'especial',
+                    'horario',
                     'created_at',
                 ])
                 ->addSelect([
                     'inscritos' => EmpresarioActividad::selectRaw('COUNT(*)')
                         ->whereColumn('empresario_actividad.slug', 'actividades_pnte.slug')
+                        ->when($dateEvent, fn ($q) => $q->whereDate('fecha_seleccionada', $dateEvent))
                         ->when($filterDates, fn ($q) => $q->whereIn('fecha_seleccionada', $filterDates)),
                 ])
 
@@ -837,6 +844,16 @@ class DownloadAttendanceController extends Controller
                         $request->input('asesor')
                     )
                 )
+                ->when($dateEvent, fn ($q) => $q->where('fechas', 'LIKE', '%'.$dateEvent.'%'))
+                ->when($request->filled('pnte'), fn ($q) => $q->where('tipo_actividad_id', $request->input('pnte')))
+                ->when($request->filled('nombre_actividad_id'), fn ($q) => $q->where('nombre_actividad_id', $request->input('nombre_actividad_id')))
+                ->when($request->filled('nombre_actividades'), function ($q) use ($request) {
+                    $ids = $request->input('nombre_actividades');
+                    $ids = array_filter(is_array($ids) ? $ids : explode(',', $ids), fn ($id) => $id !== null && $id !== '');
+                    if ($ids) {
+                        $q->whereIn('nombre_actividad_id', $ids);
+                    }
+                })
 
                 // Ã¢Å“â€¦ FILTRO: aprobar Ã¢â€ â€™ activo (0 = No aprobados, 1 = Aprobados)
                 ->when(
@@ -857,10 +874,12 @@ class DownloadAttendanceController extends Controller
 
                 ->values();
 
-            $slugs = $actividades->pluck('slug')->toArray();
+            $tests = $actividades->pluck('slug')->unique()->chunk(500)->flatMap(
+                fn ($slugs) => PntTest::whereIn('slug', $slugs->all())->get(['id', 'slug', 'test_entrada', 'test_salida', 'caso_practico'])
+            )->keyBy('slug');
 
-            $inscritosPorSlug = EmpresarioActividad::with([
-                'empresario:id,ruc,razon_social,apellido_paterno,apellido_materno,nombres,numero_dni,celular,correo_electronico,genero_id,discapacidad,sector_economico_id,rubro_id,region_id,provincia_id,distrito_id,pais_id,tipo_documento_id,academicdegree_id,cargo_empresa_id',
+            $consultaInscritos = EmpresarioActividad::with([
+                'empresario:id,ruc,razon_social,nombre_comercial,apellido_paterno,apellido_materno,nombres,numero_dni,celular,correo_electronico,genero_id,discapacidad,sector_economico_id,rubro_id,region_id,provincia_id,distrito_id,pais_id,tipo_documento_id,academicdegree_id,cargo_empresa_id,actividad_comercial_id,actividad_comercial_nombre,direccion,tipo_empresa_id,fecha_nacimiento,venta_anual,medio_entero,coop_nombre_institucion,coop_rol_institucion',
                 'empresario.genero:id,name',
                 'empresario.tipoDocumento:id,name',
                 'empresario.pais:id,name',
@@ -871,24 +890,34 @@ class DownloadAttendanceController extends Controller
                 'empresario.rubro:id,name',
                 'empresario.gradoAcademico:id,name',
                 'empresario.cargoEmpresa:id,name',
+                'empresario.actividadComercial:id,name',
+                'asistencias:id,empresario_actividad_id,fecha,fecha_hora',
             ])
-                ->whereIn('slug', $slugs)
+                ->when($dateEvent, fn ($q) => $q->whereDate('fecha_seleccionada', $dateEvent))
 
                 // Ã¢Å“â€¦ Si hay filtro de rango de fechas, solo traemos los inscritos
                 //    cuya fecha_seleccionada caiga dentro del rango solicitado
-                ->when($filterDates, fn ($q) => $q->whereIn('fecha_seleccionada', $filterDates))
-                ->orderBy('slug')
-                ->orderBy('id')
-                ->get()
-                ->groupBy('slug');
+                ->when($filterDates, fn ($q) => $q->whereIn('fecha_seleccionada', $filterDates));
+
+            $eventHeaders = ['SLUG', 'FECHAS PROGRAMADAS', 'HORARIO', 'TIPO DE MERCADO', 'TIPO DE GESTIÓN', 'FEN'];
+            $participantHeaders = [
+                'RAZÓN SOCIAL', 'NOMBRE COMERCIAL', 'TIPO DE EMPRESA', 'ACTIVIDAD COMERCIAL', 'DIRECCIÓN DEL PARTICIPANTE',
+                'FECHA DE NACIMIENTO', 'VENTA ANUAL', 'MEDIO DE CONVOCATORIA', 'NOMBRE DE LA COOPERATIVA / INSTITUCIÓN', 'CARGO EN LA INSTITUCIÓN',
+                'FECHA SELECCIONADA', 'FECHA DE ASISTENCIA', 'ASISTENCIAS POR FECHA', 'FECHA PRUEBA DE ENTRADA', 'PRUEBA DE ENTRADA',
+                'NOTA DE ENTRADA (0-20)', 'FECHA PRUEBA DE SALIDA', 'PRUEBA DE SALIDA', 'NOTA DE SALIDA (0-20)',
+                'ENUNCIADO DEL CASO PRÁCTICO', 'RESPUESTA DEL CASO PRÁCTICO', 'EVALUACIÓN DE SATISFACCIÓN', 'SUGERENCIAS',
+            ];
 
             // Ã¢Å“â€¦ CSV en memoria con BOM UTF-8
-            $handle = fopen('php://temp', 'r+');
+            $handle = tmpfile();
+            if ($handle === false) {
+                throw new \RuntimeException('No se pudo crear el archivo temporal del reporte.');
+            }
 
-            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+            fwrite($handle, "\xEF\xBB\xBF");
 
             // Ã¢Å“â€¦ Cabecera
-            fputcsv($handle, [
+            fputcsv($handle, array_merge([
                 'Nro.',
                 'UNIDAD',
                 'MES   (autollenado)',
@@ -938,7 +967,7 @@ class DownloadAttendanceController extends Controller
                 'CORREO',
                 'Ã‚Â¿SE BRINDÃƒâ€œ ASESORÃƒÂA AL USUARIO DURANTE LA ACTIVIDAD?  SI / NO',
                 'Ã‚Â¿SE FORMALIZO AL USUARIO DURANTE LA ACTIVIDAD?  SI / NO',
-            ], ',');
+            ], $eventHeaders, $participantHeaders), ',', '"', '');
 
             $globalIndex = 1;
 
@@ -967,7 +996,7 @@ class DownloadAttendanceController extends Controller
                 if ($actividad->inscritos > 0) {
 
                     $estado = '4. FINALIZADOS';
-                } elseif (Carbon::parse($fechaMax)->lt($today)) {
+                } elseif ($fechaMax && Carbon::parse($fechaMax)->lt($today)) {
 
                     $estado = '3. PENDIENTE DE RESULTADOS';
                 } elseif (Carbon::parse($actividad->created_at)->isToday()) {
@@ -1002,7 +1031,7 @@ class DownloadAttendanceController extends Controller
                 $unidadTexto = match ((int) $actividad->unidad) {
                     1 => 'UGO',
                     2 => 'UGSE',
-                    3 => 'UGSE',
+                    3 => 'UGSECO',
                     default => 'SIN UNIDAD',
                 };
 
@@ -1010,11 +1039,11 @@ class DownloadAttendanceController extends Controller
                 $colsActividad = [
                     $globalIndex,
                     $unidadTexto,
-                    $clean(strtoupper(Carbon::parse($fechaMin)->translatedFormat('F'))),
-                    Carbon::parse($fechaMin)->format('d/m/Y'),
-                    Carbon::parse($fechaMax)->format('d/m/Y'),
+                    $fechaMin ? mb_strtoupper(Carbon::parse($fechaMin)->translatedFormat('F'), 'UTF-8') : null,
+                    $fechaMin ? Carbon::parse($fechaMin)->format('d/m/Y') : null,
+                    $fechaMax ? Carbon::parse($fechaMax)->format('d/m/Y') : null,
                     // $actividad->cantidad_dias,
-                    count($fechasFiltradas),
+                    count($fechasFiltradas ?? []),
                     $clean($actividad->tipoActividad->name ?? '-'),
                     $clean($actividad->nombreActividad->name ?? '-'),
                     $clean(strtoupper($actividad->tema ?? '-')),
@@ -1041,20 +1070,27 @@ class DownloadAttendanceController extends Controller
                     $clean($estadoActividad),
                 ];
 
-                $inscritos = $inscritosPorSlug->get(
+                $horario = $actividad->horario;
+                $colsDetalleEvento = [
                     $actividad->slug,
-                    collect()
-                );
+                    implode(' | ', $fechas ?? []),
+                    is_array($horario) ? json_encode($horario, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) : $horario,
+                    $actividad->tipo_mercado === null ? null : ($actividad->tipo_mercado == 1 ? 'MAYORISTA' : 'MINORISTA'),
+                    $actividad->tipo_gestion === null ? null : ($actividad->tipo_gestion == 1 ? 'MUNICIPAL' : 'PRIVADA'),
+                    $actividad->especial === 'FEN SI' ? 'FEN SI' : null,
+                ];
 
-                if ($inscritos->isEmpty()) {
+                if (! $actividad->inscritos) {
 
                     fputcsv(
                         $handle,
-                        array_merge($colsActividad, array_fill(0, 19, null)),
-                        ','
+                        array_merge($colsActividad, array_fill(0, 19, null), $colsDetalleEvento, array_fill(0, count($participantHeaders), null)),
+                        ',', '"', ''
                     );
                 } else {
 
+                    $test = $tests->get($actividad->slug);
+                    $inscritos = (clone $consultaInscritos)->where('slug', $actividad->slug)->lazyById(500);
                     foreach ($inscritos as $registro) {
 
                         $emp = $registro->empresario;
@@ -1092,8 +1128,8 @@ class DownloadAttendanceController extends Controller
 
                         fputcsv(
                             $handle,
-                            array_merge($colsActividad, $colsParticipante),
-                            ','
+                            array_map($clean, array_merge($colsActividad, $colsParticipante, $colsDetalleEvento, $this->detalleInscritoParaExportacion($registro, $test))),
+                            ',', '"', ''
                         );
                     }
                 }
@@ -1103,16 +1139,18 @@ class DownloadAttendanceController extends Controller
 
             rewind($handle);
 
-            $csvContent = stream_get_contents($handle);
-
-            fclose($handle);
-
             $filename = 'inscritos_ugo_'.now()->format('Ymd_His').'.csv';
 
-            return response($csvContent, 200, [
+            return response()->stream(function () use ($handle) {
+                try {
+                    fpassthru($handle);
+                } finally {
+                    fclose($handle);
+                }
+            }, 200, [
                 'Content-Type' => 'text/csv; charset=UTF-8',
                 'Content-Disposition' => 'attachment; filename="'.$filename.'"',
-                'Content-Length' => strlen($csvContent),
+                'Content-Length' => fstat($handle)['size'],
             ]);
         } catch (\Exception $e) {
 
@@ -1121,6 +1159,120 @@ class DownloadAttendanceController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function detalleInscritoParaExportacion(EmpresarioActividad $registro, ?PntTest $test): array
+    {
+        $emp = $registro->empresario;
+        $banco = array_values($test?->test_entrada ?? []);
+        [$entrada, $notaEntrada] = $this->respuestasPruebaParaExportacion($registro->test_entrada ?? [], $banco);
+        [$salida, $notaSalida] = $this->respuestasPruebaParaExportacion($registro->test_salida ?? [], $banco);
+        $ratings = $registro->ratings ?? [];
+        $satisfaccion = [];
+
+        foreach (array_values($test?->test_salida ?? []) as $index => $pregunta) {
+            $numero = $index + 1;
+            $id = preg_replace('/^id_/', '', (string) ($pregunta['id'] ?? $numero));
+            $keys = ["rating_id_{$id}", "rating_{$id}", "id_{$id}", $id];
+            foreach ($keys as $key) {
+                $valor = $ratings[$key] ?? null;
+                if ($valor !== null && $valor !== '') {
+                    $satisfaccion[] = ($pregunta['texto'] ?? "Pregunta {$numero}").': '.$this->ratingLabel($valor, $pregunta['opciones'] ?? []);
+                    foreach ($keys as $matched) {
+                        unset($ratings[$matched]);
+                    }
+                    break;
+                }
+            }
+        }
+
+        foreach ($ratings as $key => $valor) {
+            if (is_scalar($valor) && $valor !== '') {
+                $satisfaccion[] = $key.': '.$valor;
+            }
+        }
+
+        $asistencias = $registro->asistencias->sortBy('fecha')->map(
+            fn ($asistencia) => $asistencia->fecha_hora?->format('d/m/Y H:i:s') ?? $asistencia->fecha?->format('d/m/Y')
+        )->filter()->implode(' | ');
+
+        $tipoEmpresa = match ((int) $emp?->tipo_empresa_id) {
+            1 => 'EIRL', 2 => 'SAC', 3 => 'SRL', 4 => 'PERSONA NATURAL CON NEGOCIO', default => null,
+        };
+        $ventaAnual = match ((int) $emp?->venta_anual) {
+            1 => 'S/ 54,601.00 hasta S/ 100,000.00',
+            2 => 'S/ 100,001.00 hasta S/ 300,000.00',
+            3 => 'S/ 300,001.00 hasta S/ 645,000.00',
+            4 => 'Más de S/ 645,000.00',
+            default => null,
+        };
+        $medioEntero = match ((int) $emp?->medio_entero) {
+            1 => 'SMS - mensajes al celular',
+            2 => 'Mailing - correo publicitario de convocatoria',
+            3 => 'Redes sociales - Facebook, Instagram, Telegram, TikTok, otros',
+            default => null,
+        };
+
+        return [
+            $emp?->razon_social,
+            $emp?->nombre_comercial,
+            $tipoEmpresa,
+            $emp?->actividadComercial?->name ?? $emp?->actividad_comercial_nombre,
+            $emp?->direccion,
+            $emp?->fecha_nacimiento,
+            $ventaAnual,
+            $medioEntero,
+            $emp?->coop_nombre_institucion,
+            $emp?->coop_rol_institucion,
+            $registro->fecha_seleccionada,
+            $registro->fecha_asistencia,
+            $asistencias,
+            $registro->fecha_te?->format('d/m/Y H:i:s'),
+            $entrada,
+            $notaEntrada,
+            $registro->fecha_ts?->format('d/m/Y H:i:s'),
+            $salida,
+            $notaSalida,
+            $test?->caso_practico,
+            $registro->caso_practico,
+            implode(' | ', $satisfaccion),
+            $registro->sugerencias,
+        ];
+    }
+
+    private function respuestasPruebaParaExportacion(array $respuestas, array $banco): array
+    {
+        $detalle = [];
+        $correctas = 0;
+        $respondidas = 0;
+
+        foreach ($respuestas as $key => $respuestaId) {
+            if (! is_scalar($respuestaId) || $respuestaId === '') {
+                continue;
+            }
+
+            $numero = filter_var(str_replace('pregunta_', '', (string) $key), FILTER_VALIDATE_INT);
+            $pregunta = $numero > 0 ? ($banco[$numero - 1] ?? null) : null;
+            $texto = $respuestaId;
+
+            foreach ($pregunta['opciones'] ?? [] as $opcion) {
+                if (isset($opcion['id']) && (string) $opcion['id'] === (string) $respuestaId) {
+                    $texto = $opcion['texto'] ?? $respuestaId;
+                    break;
+                }
+            }
+
+            if ($pregunta !== null) {
+                $respondidas++;
+                if (isset($pregunta['correctaId']) && (string) $pregunta['correctaId'] === (string) $respuestaId) {
+                    $correctas++;
+                }
+            }
+
+            $detalle[] = ($pregunta['texto'] ?? ($numero > 0 ? "Pregunta {$numero}" : $key)).': '.$texto;
+        }
+
+        return [implode(' | ', $detalle), $respondidas > 0 ? round($correctas / $respondidas * 20, 2) : null];
     }
 
     // todos los inscritos de mujer produce
