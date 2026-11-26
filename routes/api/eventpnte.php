@@ -141,6 +141,7 @@ Route::controller(ActividadPublicPnteController::class)->group(function () {
 
     Route::POST('marcar-mi-asistencia/{slug}', 'marcarMiAsistencia');
 
+    Route::GET('inscritos-ugseco', 'inscritosPorSlugPublicUgseco');
 });
 
 Route::controller(PnteTestController::class)->group(function () {
@@ -158,6 +159,7 @@ Route::controller(PnteTestController::class)->group(function () {
     Route::POST('i-want-my-certificate', 'iWantMyCertificate');
 
     Route::POST('check-asistencia', 'checkAsistencia');
+
 });
 
 Route::controller(ComprasPeruController::class)->group(function () {
