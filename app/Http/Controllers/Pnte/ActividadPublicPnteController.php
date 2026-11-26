@@ -1796,6 +1796,7 @@ class ActividadPublicPnteController extends Controller
             'id' => $actividad->id,
             'slug' => $actividad->slug,
             'activo' => (int) $actividad->activo,
+            'switch_institucion' => (int) $actividad->switch_institucion,
             'fechas' => $todasFechas->all(),
             'cantidad_dias' => $actividad->cantidad_dias,
             'tipo_actividad' => $actividad->tipoActividad->name ?? null,
