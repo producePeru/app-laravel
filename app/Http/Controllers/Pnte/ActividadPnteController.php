@@ -393,6 +393,7 @@ class ActividadPnteController extends Controller
                 'eliminar',
                 'prendido',
                 'switch_test',
+                'switch_institucion',
                 'especial',
                 'created_at',
             ])
