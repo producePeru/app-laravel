@@ -720,6 +720,7 @@ class ComprasPeruController extends Controller
                 'coop_ruc' => $request->coop_ruc,
                 'coop_razon_social' => $request->coop_razon_social,
                 'coop_rol' => $request->coop_rol,
+                'coop_nombre_institucion' => $request->coop_nombre_institucion,
             ];
 
             $identidad = [
@@ -910,6 +911,7 @@ class ComprasPeruController extends Controller
                 ]))), 'UTF-8')
                 : null,
             'formulario_disponible' => $formularioDisponible,
+            'switch_institucion' => (int) $actividad->switch_institucion,
         ];
 
         if (! $formularioDisponible) {

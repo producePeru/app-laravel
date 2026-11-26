@@ -168,6 +168,11 @@ WHERE ea.`fecha_asistencia` IS NOT NULL
 
 
 
+ALTER TABLE empresarios
+ADD COLUMN coop_nombre_institucion VARCHAR(255) NULL AFTER coop_rol,
+ADD COLUMN coop_rol_institucion VARCHAR(255) NULL AFTER coop_nombre_institucion;
+
+
 ALTER TABLE actividades_pnte
-ADD COLUMN switch_test TINYINT(1) NULL DEFAULT NULL
-AFTER switch_asistencias;
+ADD COLUMN switch_institucion TINYINT(1) NOT NULL DEFAULT 0
+AFTER switch_test;

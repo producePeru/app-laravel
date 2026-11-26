@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class ActividadPnteController extends Controller
@@ -69,6 +70,8 @@ class ActividadPnteController extends Controller
             'activo' => 'nullable|boolean',
 
             'especial' => 'nullable',
+
+            'switch_institucion' => 'nullable',
         ]);
 
         if ((int) $validated['unidad'] === 3) {
@@ -208,8 +211,10 @@ class ActividadPnteController extends Controller
             'componente_id' => 'nullable|integer',
             'trainer_id' => 'nullable|exists:pp_capacitadores,id',
 
-            'activo' => 'nullable|boolean',
-            'especial' => 'nullable|boolean',
+            'activo' => 'nullable',
+            'especial' => ['nullable', Rule::in([0, 1, true, false, 'FEN SI', 'FEN DS'])],
+
+            'switch_institucion' => 'nullable',
         ]);
 
         if ((int) $validated['unidad'] === 3) {
