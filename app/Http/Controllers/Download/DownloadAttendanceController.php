@@ -2521,12 +2521,377 @@ class DownloadAttendanceController extends Controller
 
     // UGSECO
 
+    // public function exportInscritosPorSlugUgsc(Request $request, $slug)
+    // {
+    //     set_time_limit(0);
+    //     ini_set('memory_limit', '1024M');
+
+    //     // EVENTO
+
+    //     $actividad = ActividadPnte::with([
+    //         'tipoActividad:id,name',
+    //         'nombreActividad:id,name',
+    //         'regionRel:id,name',
+    //         'provinciaRel:id,name',
+    //         'distritoRel:id,name',
+    //         'representante:id,name,lastname,middlename',
+    //     ])
+    //         ->where('slug', $slug)
+    //         ->first();
+
+    //     if (! $actividad) {
+    //         return response()->json([
+    //             'status' => 404,
+    //             'message' => 'Actividad no encontrada',
+    //         ], 404);
+    //     }
+
+    //     // QUERY INSCRITOS
+
+    //     $query = EmpresarioActividad::with([
+    //         'empresario' => function ($q) {
+    //             $q->select([
+    //                 'id',
+    //                 'ruc',
+    //                 'razon_social',
+    //                 'nombre_comercial',
+    //                 'sector_economico_id',
+    //                 'rubro_id',
+    //                 'actividad_comercial_nombre',
+    //                 'region_id',
+    //                 'provincia_id',
+    //                 'distrito_id',
+    //                 'direccion',
+    //                 'pais_id',
+    //                 'tipo_documento_id',
+    //                 'numero_dni',
+    //                 'apellido_paterno',
+    //                 'apellido_materno',
+    //                 'nombres',
+    //                 'genero_id',
+    //                 'discapacidad',
+    //                 'celular',
+    //                 'correo_electronico',
+    //                 'fecha_nacimiento',
+    //                 'coop_ruc',
+    //                 'coop_razon_social',
+    //                 'coop_rol',
+    //                 'coop_nombre_institucion',
+    //                 'cargo_empresa_id',
+    //             ]);
+    //         },
+
+    //         'empresario.tipoDocumento:id,avr',
+    //         'empresario.pais:id,name',
+    //         'empresario.genero:id,avr',
+    //         'empresario.region:id,name',
+    //         'empresario.provincia:id,name',
+    //         'empresario.distrito:id,name',
+
+    //         // ǟ���.��ǽ�'��?�'�� ESTOS FALTABAN
+    //         'empresario.sectorEconomico:id,name',
+    //         'empresario.rubro:id,name',
+    //         'empresario.cargoEmpresa:id,name',
+
+    //         // ASISTENCIAS POR FECHA
+    //         'asistencias:id,empresario_actividad_id,slug,numero_dni,fecha,fecha_hora',
+    //     ])
+    //         ->where('slug', $slug)
+
+    //         // FILTRO POR FECHA SELECCIONADA
+    //         ->when($request->filled('dateEvent'), function ($q) use ($request) {
+    //             $q->where('fecha_seleccionada', $request->input('dateEvent'));
+    //         })
+
+    //         ->orderByDesc('created_at');
+
+    //     // TEMPLATE
+
+    //     $templatePath = storage_path('app/plantillas/plantilla_ugsc_download.xlsx');
+
+    //     if (! file_exists($templatePath)) {
+    //         return response()->json([
+    //             'status' => 404,
+    //             'message' => 'Plantilla no encontrada',
+    //         ], 404);
+    //     }
+
+    //     $spreadsheet = IOFactory::load($templatePath);
+    //     $sheet = $spreadsheet->getActiveSheet();
+
+    //     // START
+
+    //     $row = 3;
+    //     $index = 1;
+
+    //     $roles = [
+    //         'dir' => 'DIRIGENTE',
+    //         'soc' => 'SOCIO',
+    //         'mie' => 'MIEMBRO',
+    //     ];
+
+    //     // COLUMNAS NUEVAS AL FINAL: INSTITUCION Y CARGO
+    //     // Se ubican justo después de las columnas de asistencia (D..AJ fijas + una por fecha)
+    //     $columnasFijas = 33; // D..AJ
+    //     $inicioAsistencia = Coordinate::columnIndexFromString('D') + $columnasFijas;
+    //     $columnaInstitucion = Coordinate::stringFromColumnIndex(
+    //         $inicioAsistencia + count($actividad->fechas ?? [])
+    //     );
+    //     $columnaCargo = Coordinate::stringFromColumnIndex(
+    //         $inicioAsistencia + count($actividad->fechas ?? []) + 1
+    //     );
+
+    //     $headerRow = 2;
+    //     $sheet->setCellValue(
+    //         "{$columnaInstitucion}{$headerRow}",
+    //         'NOMBRE DE LA COOPERATIVA / INSTITUCIÓN'
+    //     );
+    //     $sheet->setCellValue(
+    //         "{$columnaCargo}{$headerRow}",
+    //         'CARGO EN LA INSTITUCIÓN'
+    //     );
+
+    //     $headerInstitucionRango = "{$columnaInstitucion}{$headerRow}";
+    //     $headerCargoRango = "{$columnaCargo}{$headerRow}";
+    //     $nuevosHeadersRango = "{$columnaInstitucion}{$headerRow}:{$columnaCargo}{$headerRow}";
+
+    //     $sheet->duplicateStyle(
+    //         $sheet->getStyle('AK'.$headerRow),
+    //         $headerInstitucionRango.':'.$headerCargoRango
+    //     );
+
+    //     $sheet->getStyle($nuevosHeadersRango)->getFill()
+    //         ->setFillType(Fill::FILL_SOLID)
+    //         ->getStartColor()->setARGB('FFED7D31');
+
+    //     $sheet->getStyle($nuevosHeadersRango)->getFont()
+    //         ->getColor()->setARGB('FFFFFFFF');
+
+    //     $sheet->getStyle($nuevosHeadersRango)->getFont()->setBold(true);
+
+    //     // Celda de título (fila 1) para las columnas nuevas
+    //     $sheet->setCellValue(
+    //         "{$columnaInstitucion}1",
+    //         'DATOS DE LA INSTITUCIÓN'
+    //     );
+    //     $sheet->duplicateStyle($sheet->getStyle('AK1'), "{$columnaInstitucion}1:{$columnaCargo}1");
+    //     $sheet->getStyle("{$columnaInstitucion}1:{$columnaCargo}1")->getFill()
+    //         ->setFillType(Fill::FILL_SOLID)
+    //         ->getStartColor()->setARGB('FFED7D31');
+    //     $sheet->getStyle("{$columnaInstitucion}1:{$columnaCargo}1")->getFont()
+    //         ->getColor()->setARGB('FFFFFFFF');
+
+    //     $query->chunk(1000, function ($items) use (
+    //         &$row,
+    //         &$index,
+    //         $sheet,
+    //         $actividad,
+    //         $roles,
+    //         $columnaInstitucion,
+    //         $columnaCargo
+    //     ) {
+
+    //         foreach ($items as $item) {
+
+    //             $e = $item->empresario;
+
+    //             $col = 'D';
+
+    //             // NRO
+    //             $sheet->setCellValue("{$col}{$row}", $index++);
+    //             $col++;
+
+    //             // FECHAS
+    //             $sheet->setCellValue(
+    //                 "{$col}{$row}",
+    //                 collect($actividad->fechas ?? [])
+    //                     ->map(fn ($f) => Carbon::parse($f)->format('d/m/Y'))
+    //                     ->implode(' - ')
+    //             );
+    //             $col++;
+
+    //             // TIPO ACTIVIDAD
+    //             $sheet->setCellValue("{$col}{$row}", $actividad->tipoActividad?->name);
+    //             $col++;
+
+    //             // NOMBRE ACTIVIDAD
+    //             $sheet->setCellValue("{$col}{$row}", $actividad->nombreActividad?->name);
+    //             $col++;
+
+    //             // TEMA
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($actividad->tema ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // REGION
+    //             $sheet->setCellValue("{$col}{$row}", $actividad->regionRel?->name);
+    //             $col++;
+
+    //             // PROVINCIA
+    //             $sheet->setCellValue("{$col}{$row}", $actividad->provinciaRel?->name);
+    //             $col++;
+
+    //             // DISTRITO
+    //             $sheet->setCellValue("{$col}{$row}", $actividad->distritoRel?->name);
+    //             $col++;
+
+    //             // LUGAR
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($actividad->lugar ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // REPRESENTANTE
+    //             $sheet->setCellValue(
+    //                 "{$col}{$row}",
+    //                 mb_strtoupper(trim(($actividad->representante?->name ?? '').' '.($actividad->representante?->lastname ?? '').' '.($actividad->representante?->middlename ?? '')), 'UTF-8')
+    //             );
+    //             $col++;
+
+    //             // COOP RUC (AC)
+    //             $sheet->setCellValue("{$col}{$row}", $e->coop_ruc);
+    //             $col++;
+
+    //             // COOP RAZON SOCIAL (AD)
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->coop_razon_social ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // COOP ROL (AE)
+    //             $sheet->setCellValue("{$col}{$row}", $roles[$e->coop_rol] ?? '');
+    //             $col++;
+
+    //             // RUC
+    //             $sheet->setCellValue("{$col}{$row}", $e->ruc);
+    //             $col++;
+
+    //             // RAZÃƒâ€œN SOCIAL
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->razon_social ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // NOMBRE COMERCIAL
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombre_comercial ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // SECTOR ECONÃƒâ€œMICO
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // RUBRO
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->rubro?->name ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // ACTIVIDAD COMERCIAL
+    //             $sheet->setCellValue(
+    //                 "{$col}{$row}",
+    //                 mb_strtoupper($e->actividadComercial?->name ?? $e->actividad_comercial_nombre ?? '', 'UTF-8')
+    //             );
+    //             $col++;
+
+    //             // REGION (empresario)
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->region?->name ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // PROVINCIA (empresario)
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->provincia?->name ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // DISTRITO (empresario)
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->distrito?->name ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // DIRECCIÃƒâ€œN
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->direccion ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // TIPO DOCUMENTO
+    //             $sheet->setCellValue("{$col}{$row}", $e->tipoDocumento?->avr);
+    //             $col++;
+
+    //             // NRO DOCUMENTO
+    //             $sheet->setCellValue("{$col}{$row}", $e->numero_dni);
+    //             $col++;
+
+    //             // APELLIDO PATERNO
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim($e->apellido_paterno ?? ''), 'UTF-8'));
+    //             $col++;
+
+    //             // APELLIDO MATERNO
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim($e->apellido_materno ?? ''), 'UTF-8'));
+    //             $col++;
+
+    //             // NOMBRES
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombres ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // GÃƒâ€°NERO
+    //             $sheet->setCellValue("{$col}{$row}", $e->genero?->avr);
+    //             $col++;
+
+    //             // DISCAPACIDAD
+    //             $sheet->setCellValue("{$col}{$row}", $e->discapacidad ? 'SI' : 'NO');
+    //             $col++;
+
+    //             // CELULAR
+    //             $sheet->setCellValue("{$col}{$row}", $e->celular);
+    //             $col++;
+
+    //             // CORREO
+    //             $sheet->setCellValue("{$col}{$row}", $e->correo_electronico);
+    //             $col++;
+
+    //             // PAIS
+    //             $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->pais?->name ?? '', 'UTF-8'));
+    //             $col++;
+
+    //             // ASISTENCIA POR FECHA (una columna por cada fecha del evento) UGSC
+    //             foreach ($actividad->fechas ?? [] as $fecha) {
+    //                 $asistio = false;
+    //                 $asistencia = null;
+    //                 foreach (($item->asistencias ?? []) as $a) {
+    //                     try {
+    //                         $fa = $a->fecha ? $a->fecha->format('Y-m-d') : null;
+    //                         if ($fa === $fecha) {
+    //                             $asistencia = $a;
+    //                             $asistio = true;
+    //                             break;
+    //                         }
+    //                     } catch (\Exception $e) {
+    //                         continue;
+    //                     }
+    //                 }
+    //                 $sheet->setCellValue(
+    //                     "{$col}{$row}",
+    //                     $asistio ? ($asistencia->fecha_hora ? $asistencia->fecha_hora->format('d/m/Y H:i') : 'SI') : 'x'
+    //                 );
+    //                 $col++;
+    //             }
+
+    //             $row++;
+    //         }
+    //     });
+
+    //     // DOWNLOAD
+
+    //     return new StreamedResponse(function () use ($spreadsheet) {
+
+    //         $writer = new Xlsx($spreadsheet);
+
+    //         // Ã°Å¸â€Â¥ mejora rendimiento
+    //         $writer->setPreCalculateFormulas(false);
+
+    //         $writer->save('php://output');
+    //     }, 200, [
+    //         'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    //         'Content-Disposition' => 'attachment; filename="lista-inscritos-ugo.xlsx"',
+    //         'Cache-Control' => 'max-age=0',
+    //     ]);
+    // }
+
     public function exportInscritosPorSlugUgsc(Request $request, $slug)
     {
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
 
+        // ==========================================
         // EVENTO
+        // ==========================================
 
         $actividad = ActividadPnte::with([
             'tipoActividad:id,name',
@@ -2546,9 +2911,15 @@ class DownloadAttendanceController extends Controller
             ], 404);
         }
 
+        // Fechas del evento
+        $fechasEvento = collect($actividad->fechas ?? [])->values();
+
+        // ==========================================
         // QUERY INSCRITOS
+        // ==========================================
 
         $query = EmpresarioActividad::with([
+
             'empresario' => function ($q) {
                 $q->select([
                     'id',
@@ -2573,27 +2944,32 @@ class DownloadAttendanceController extends Controller
                     'celular',
                     'correo_electronico',
                     'fecha_nacimiento',
-
-                    // NUEVOS
                     'coop_ruc',
                     'coop_razon_social',
                     'coop_rol',
+                    'coop_nombre_institucion',
+                    'cargo_empresa_id',
                 ]);
             },
 
+            // Relaciones del empresario
             'empresario.tipoDocumento:id,avr',
             'empresario.pais:id,name',
             'empresario.genero:id,avr',
+
             'empresario.region:id,name',
             'empresario.provincia:id,name',
             'empresario.distrito:id,name',
 
-            // Ã°Å¸â€Â¥ ESTOS FALTABAN
             'empresario.sectorEconomico:id,name',
             'empresario.rubro:id,name',
+            'empresario.cargoEmpresa:id,name',
 
-            // ASISTENCIAS POR FECHA
+            'empresario.actividadComercial:id,name',
+
+            // Asistencias por fecha
             'asistencias:id,empresario_actividad_id,slug,numero_dni,fecha,fecha_hora',
+
         ])
             ->where('slug', $slug)
 
@@ -2604,9 +2980,13 @@ class DownloadAttendanceController extends Controller
 
             ->orderByDesc('created_at');
 
-        // TEMPLATE
+        // ==========================================
+        // TEMPLATE EXCEL
+        // ==========================================
 
-        $templatePath = storage_path('app/plantillas/plantilla_ugsc_download.xlsx');
+        $templatePath = storage_path(
+            'app/plantillas/plantilla_ugsc_download.xlsx'
+        );
 
         if (! file_exists($templatePath)) {
             return response()->json([
@@ -2618,7 +2998,9 @@ class DownloadAttendanceController extends Controller
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        // START
+        // ==========================================
+        // CONFIGURACIÓN INICIAL
+        // ==========================================
 
         $row = 3;
         $index = 1;
@@ -2629,204 +3011,584 @@ class DownloadAttendanceController extends Controller
             'mie' => 'MIEMBRO',
         ];
 
+        // ==========================================
+        // COLUMNAS
+        // ==========================================
+
+        // Columnas fijas desde D hasta AJ
+        $columnasFijas = 33;
+
+        // Inicio de asistencias: AK
+        $inicioAsistencia = Coordinate::columnIndexFromString('D')
+            + $columnasFijas;
+
+        // Columna institución después de todas las asistencias
+        $columnaInstitucion = Coordinate::stringFromColumnIndex(
+            $inicioAsistencia + $fechasEvento->count()
+        );
+
+        // Columna cargo
+        $columnaCargo = Coordinate::stringFromColumnIndex(
+            $inicioAsistencia + $fechasEvento->count() + 1
+        );
+
+        // ==========================================
+        // ENCABEZADOS NUEVOS
+        // ==========================================
+
+        $headerRow = 2;
+
+        $sheet->setCellValue(
+            "{$columnaInstitucion}{$headerRow}",
+            'NOMBRE DE LA COOPERATIVA / INSTITUCIÓN'
+        );
+
+        $sheet->setCellValue(
+            "{$columnaCargo}{$headerRow}",
+            'CARGO EN LA INSTITUCIÓN'
+        );
+
+        $nuevosHeadersRango = "{$columnaInstitucion}{$headerRow}:{$columnaCargo}{$headerRow}";
+
+        // Copiar estilo de encabezado existente
+        $sheet->duplicateStyle(
+            $sheet->getStyle('AK'.$headerRow),
+            $nuevosHeadersRango
+        );
+
+        // Fondo naranja
+        $sheet->getStyle($nuevosHeadersRango)
+            ->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('FFED7D31');
+
+        // Texto blanco
+        $sheet->getStyle($nuevosHeadersRango)
+            ->getFont()
+            ->getColor()
+            ->setARGB('FFFFFFFF');
+
+        // Negrita
+        $sheet->getStyle($nuevosHeadersRango)
+            ->getFont()
+            ->setBold(true);
+
+        // ==========================================
+        // TÍTULO DE LAS NUEVAS COLUMNAS
+        // ==========================================
+
+        $sheet->setCellValue(
+            "{$columnaInstitucion}1",
+            'DATOS DE LA INSTITUCIÓN'
+        );
+
+        $rangoTitulo = "{$columnaInstitucion}1:{$columnaCargo}1";
+
+        $sheet->duplicateStyle(
+            $sheet->getStyle('AK1'),
+            $rangoTitulo
+        );
+
+        $sheet->getStyle($rangoTitulo)
+            ->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('FFED7D31');
+
+        $sheet->getStyle($rangoTitulo)
+            ->getFont()
+            ->getColor()
+            ->setARGB('FFFFFFFF');
+
+        // ==========================================
+        // EXPORTACIÓN POR BLOQUES
+        // ==========================================
+
         $query->chunk(1000, function ($items) use (
             &$row,
             &$index,
             $sheet,
             $actividad,
-            $roles
+            $roles,
+            $fechasEvento,
+            $columnaInstitucion,
+            $columnaCargo
         ) {
 
             foreach ($items as $item) {
 
-                $e = $item->empresario;
+                $empresario = $item->empresario;
 
                 $col = 'D';
 
+                // ==========================================
                 // NRO
-                $sheet->setCellValue("{$col}{$row}", $index++);
-                $col++;
+                // ==========================================
 
-                // FECHAS
                 $sheet->setCellValue(
                     "{$col}{$row}",
-                    collect($actividad->fechas ?? [])
+                    $index++
+                );
+
+                $col++;
+
+                // ==========================================
+                // FECHAS DEL EVENTO
+                // ==========================================
+
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $fechasEvento
                         ->map(fn ($f) => Carbon::parse($f)->format('d/m/Y'))
                         ->implode(' - ')
                 );
+
                 $col++;
 
+                // ==========================================
                 // TIPO ACTIVIDAD
-                $sheet->setCellValue("{$col}{$row}", $actividad->tipoActividad?->name);
-                $col++;
+                // ==========================================
 
-                // NOMBRE ACTIVIDAD
-                $sheet->setCellValue("{$col}{$row}", $actividad->nombreActividad?->name);
-                $col++;
-
-                // TEMA
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($actividad->tema ?? '', 'UTF-8'));
-                $col++;
-
-                // REGION
-                $sheet->setCellValue("{$col}{$row}", $actividad->regionRel?->name);
-                $col++;
-
-                // PROVINCIA
-                $sheet->setCellValue("{$col}{$row}", $actividad->provinciaRel?->name);
-                $col++;
-
-                // DISTRITO
-                $sheet->setCellValue("{$col}{$row}", $actividad->distritoRel?->name);
-                $col++;
-
-                // LUGAR
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($actividad->lugar ?? '', 'UTF-8'));
-                $col++;
-
-                // REPRESENTANTE
                 $sheet->setCellValue(
                     "{$col}{$row}",
-                    mb_strtoupper(trim(($actividad->representante?->name ?? '').' '.($actividad->representante?->lastname ?? '').' '.($actividad->representante?->middlename ?? '')), 'UTF-8')
+                    $actividad->tipoActividad?->name
                 );
+
                 $col++;
 
-                // COOP RUC (AC)
-                $sheet->setCellValue("{$col}{$row}", $e->coop_ruc);
+                // ==========================================
+                // NOMBRE ACTIVIDAD
+                // ==========================================
+
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->nombreActividad?->name
+                );
+
                 $col++;
 
-                // COOP RAZON SOCIAL (AD)
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->coop_razon_social ?? '', 'UTF-8'));
+                // ==========================================
+                // TEMA
+                // ==========================================
+
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($actividad->tema ?? '', 'UTF-8')
+                );
+
                 $col++;
 
-                // COOP ROL (AE)
-                $sheet->setCellValue("{$col}{$row}", $roles[$e->coop_rol] ?? '');
+                // ==========================================
+                // UBICACIÓN DEL EVENTO
+                // ==========================================
+
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->regionRel?->name
+                );
+
                 $col++;
+
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->provinciaRel?->name
+                );
+
+                $col++;
+
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $actividad->distritoRel?->name
+                );
+
+                $col++;
+
+                // ==========================================
+                // LUGAR
+                // ==========================================
+
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper($actividad->lugar ?? '', 'UTF-8')
+                );
+
+                $col++;
+
+                // ==========================================
+                // REPRESENTANTE
+                // ==========================================
+
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        trim(
+                            ($actividad->representante?->name ?? '').' '.
+                            ($actividad->representante?->lastname ?? '').' '.
+                            ($actividad->representante?->middlename ?? '')
+                        ),
+                        'UTF-8'
+                    )
+                );
+
+                $col++;
+
+                // ==========================================
+                // COOPERATIVA
+                // ==========================================
+
+                // COOP RUC
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $empresario?->coop_ruc
+                );
+
+                $col++;
+
+                // COOP RAZÓN SOCIAL
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->coop_razon_social ?? '',
+                        'UTF-8'
+                    )
+                );
+
+                $col++;
+
+                // COOP ROL
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $roles[$empresario?->coop_rol] ?? ''
+                );
+
+                $col++;
+
+                // ==========================================
+                // DATOS DE LA EMPRESA
+                // ==========================================
 
                 // RUC
-                $sheet->setCellValue("{$col}{$row}", $e->ruc);
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $empresario?->ruc
+                );
+
                 $col++;
 
-                // RAZÃƒâ€œN SOCIAL
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->razon_social ?? '', 'UTF-8'));
+                // RAZÓN SOCIAL
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->razon_social ?? '',
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
                 // NOMBRE COMERCIAL
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombre_comercial ?? '', 'UTF-8'));
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->nombre_comercial ?? '',
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
-                // SECTOR ECONÃƒâ€œMICO
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->sectorEconomico?->name ?? '', 'UTF-8'));
+                // SECTOR ECONÓMICO
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->sectorEconomico?->name ?? '',
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
                 // RUBRO
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->rubro?->name ?? '', 'UTF-8'));
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->rubro?->name ?? '',
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
                 // ACTIVIDAD COMERCIAL
                 $sheet->setCellValue(
                     "{$col}{$row}",
-                    mb_strtoupper($e->actividadComercial?->name ?? $e->actividad_comercial_nombre ?? '', 'UTF-8')
+                    mb_strtoupper(
+                        $empresario?->actividadComercial?->name
+                            ?? $empresario?->actividad_comercial_nombre
+                            ?? '',
+                        'UTF-8'
+                    )
                 );
+
                 $col++;
 
-                // REGION (empresario)
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->region?->name ?? '', 'UTF-8'));
+                // ==========================================
+                // UBICACIÓN DEL EMPRESARIO
+                // ==========================================
+
+                // REGIÓN
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->region?->name ?? '',
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
-                // PROVINCIA (empresario)
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->provincia?->name ?? '', 'UTF-8'));
+                // PROVINCIA
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->provincia?->name ?? '',
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
-                // DISTRITO (empresario)
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->distrito?->name ?? '', 'UTF-8'));
+                // DISTRITO
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->distrito?->name ?? '',
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
-                // DIRECCIÃƒâ€œN
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->direccion ?? '', 'UTF-8'));
+                // DIRECCIÓN
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->direccion ?? '',
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
+
+                // ==========================================
+                // DATOS PERSONALES
+                // ==========================================
 
                 // TIPO DOCUMENTO
-                $sheet->setCellValue("{$col}{$row}", $e->tipoDocumento?->avr);
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $empresario?->tipoDocumento?->avr
+                );
+
                 $col++;
 
                 // NRO DOCUMENTO
-                $sheet->setCellValue("{$col}{$row}", $e->numero_dni);
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $empresario?->numero_dni
+                );
+
                 $col++;
 
                 // APELLIDO PATERNO
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim($e->apellido_paterno ?? ''), 'UTF-8'));
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        trim($empresario?->apellido_paterno ?? ''),
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
                 // APELLIDO MATERNO
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper(trim($e->apellido_materno ?? ''), 'UTF-8'));
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        trim($empresario?->apellido_materno ?? ''),
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
                 // NOMBRES
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->nombres ?? '', 'UTF-8'));
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->nombres ?? '',
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
-                // GÃƒâ€°NERO
-                $sheet->setCellValue("{$col}{$row}", $e->genero?->avr);
+                // GÉNERO
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $empresario?->genero?->avr
+                );
+
                 $col++;
 
                 // DISCAPACIDAD
-                $sheet->setCellValue("{$col}{$row}", $e->discapacidad ? 'SI' : 'NO');
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $empresario?->discapacidad ? 'SI' : 'NO'
+                );
+
                 $col++;
 
                 // CELULAR
-                $sheet->setCellValue("{$col}{$row}", $e->celular);
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $empresario?->celular
+                );
+
                 $col++;
 
                 // CORREO
-                $sheet->setCellValue("{$col}{$row}", $e->correo_electronico);
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    $empresario?->correo_electronico
+                );
+
                 $col++;
 
-                // PAIS
-                $sheet->setCellValue("{$col}{$row}", mb_strtoupper($e->pais?->name ?? '', 'UTF-8'));
+                // PAÍS
+                $sheet->setCellValue(
+                    "{$col}{$row}",
+                    mb_strtoupper(
+                        $empresario?->pais?->name ?? '',
+                        'UTF-8'
+                    )
+                );
+
                 $col++;
 
-                // ASISTENCIA POR FECHA (una columna por cada fecha del evento) UGSC
-                foreach ($actividad->fechas ?? [] as $fecha) {
-                    $asistio = false;
-                    $asistencia = null;
-                    foreach (($item->asistencias ?? []) as $a) {
-                        try {
-                            $fa = $a->fecha ? $a->fecha->format('Y-m-d') : null;
-                            if ($fa === $fecha) {
-                                $asistencia = $a;
-                                $asistio = true;
-                                break;
-                            }
-                        } catch (\Exception $e) {
+                // ==========================================
+                // ASISTENCIA POR FECHA (UGSC)
+                // ==========================================
+
+                // Indexar asistencias por fecha para evitar
+                // recorrerlas nuevamente por cada fecha del evento.
+
+                $asistenciasPorFecha = [];
+
+                foreach (($item->asistencias ?? []) as $registro) {
+
+                    try {
+
+                        if (! $registro->fecha) {
                             continue;
                         }
+
+                        $fechaAsistencia = Carbon::parse(
+                            $registro->fecha
+                        )->format('Y-m-d');
+
+                        // Conservar el primer registro de cada fecha
+                        if (! isset($asistenciasPorFecha[$fechaAsistencia])) {
+                            $asistenciasPorFecha[$fechaAsistencia] = $registro;
+                        }
+
+                    } catch (\Throwable $exception) {
+
+                        continue;
+
                     }
+                }
+
+                // Recorrer fechas del evento
+                foreach ($fechasEvento as $fecha) {
+
+                    $fechaObjetivo = Carbon::parse($fecha)
+                        ->format('Y-m-d');
+
+                    $asistencia = $asistenciasPorFecha[$fechaObjetivo] ?? null;
+
+                    if ($asistencia) {
+
+                        $valorAsistencia = $asistencia->fecha_hora
+                            ? Carbon::parse($asistencia->fecha_hora)->format('d/m/Y H:i')
+                            : 'SI';
+
+                    } else {
+
+                        $valorAsistencia = 'x';
+
+                    }
+
                     $sheet->setCellValue(
                         "{$col}{$row}",
-                        $asistio ? ($asistencia->fecha_hora ? $asistencia->fecha_hora->format('d/m/Y H:i') : 'SI') : 'x'
+                        $valorAsistencia
                     );
+
                     $col++;
                 }
+
+                // ==========================================
+                // NUEVAS COLUMNAS: INSTITUCIÓN Y CARGO
+                // ==========================================
+
+                // NOMBRE DE LA COOPERATIVA / INSTITUCIÓN
+                $sheet->setCellValue(
+                    "{$columnaInstitucion}{$row}",
+                    mb_strtoupper(
+                        $empresario?->coop_nombre_institucion ?? '',
+                        'UTF-8'
+                    )
+                );
+
+                // CARGO EN LA INSTITUCIÓN
+                $sheet->setCellValue(
+                    "{$columnaCargo}{$row}",
+                    mb_strtoupper(
+                        $empresario?->cargoEmpresa?->name ?? '',
+                        'UTF-8'
+                    )
+                );
+
+                // ==========================================
+                // SIGUIENTE FILA
+                // ==========================================
 
                 $row++;
             }
         });
 
-        // DOWNLOAD
+        // ==========================================
+        // DESCARGA EXCEL
+        // ==========================================
 
         return new StreamedResponse(function () use ($spreadsheet) {
 
             $writer = new Xlsx($spreadsheet);
 
-            // Ã°Å¸â€Â¥ mejora rendimiento
+            // Mejora de rendimiento
             $writer->setPreCalculateFormulas(false);
 
             $writer->save('php://output');
+
         }, 200, [
+
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="lista-inscritos-ugo.xlsx"',
+
+            'Content-Disposition' => 'attachment; filename="lista-inscritos-ugsc.xlsx"',
+
             'Cache-Control' => 'max-age=0',
+
         ]);
     }
 

@@ -956,6 +956,7 @@ class ActividadPnteController extends Controller
                     'coop_rol' => $e?->coop_rol,
 
                     'coop_nombre_institucion' => $e?->coop_nombre_institucion,
+                    'coop_rol_institucion' => $e?->coop_rol_institucion,
 
                     'nombre_mercado' => $e?->nombre_mercado,
 

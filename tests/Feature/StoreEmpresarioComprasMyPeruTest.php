@@ -162,4 +162,22 @@ class StoreEmpresarioComprasMyPeruTest extends TestCase
         $this->assertSame(1, Empresario::count());
         $this->assertSame(1, EmpresarioActividad::count());
     }
+
+    public function test_guarda_el_cargo_institucional_personalizado_como_texto(): void
+    {
+        $this->register(['coop_rol_institucion' => 'Coordinadora de educación'])->assertOk();
+
+        $this->assertDatabaseHas('empresarios', [
+            'numero_dni' => '12345678',
+            'coop_rol_institucion' => 'Coordinadora de educación',
+            'cargo_empresa_id' => null,
+        ]);
+    }
+
+    public function test_rechaza_un_cargo_institucional_mayor_a_255_caracteres(): void
+    {
+        $this->register(['coop_rol_institucion' => str_repeat('a', 256)])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('coop_rol_institucion');
+    }
 }

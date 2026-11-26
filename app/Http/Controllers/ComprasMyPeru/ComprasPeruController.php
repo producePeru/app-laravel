@@ -652,12 +652,13 @@ class ComprasPeruController extends Controller
 
     public function storeEmpresarioComprasMyPeru(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'slug' => 'required|string',
             'ruc' => 'nullable|size:11',
             'numero_dni' => 'required|string|max:12',
             'discapacidad' => 'required|in:0,1',
             'fecha_seleccionada' => 'nullable|date',
+            // 'coop_rol_institucion' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -722,6 +723,10 @@ class ComprasPeruController extends Controller
                 'coop_rol' => $request->coop_rol,
                 'coop_nombre_institucion' => $request->coop_nombre_institucion,
             ];
+
+            // if (isset($validated['coop_rol_institucion'])) {
+            //     $datosEmpresario['coop_rol_institucion'] = $validated['coop_rol_institucion'];
+            // }
 
             $identidad = [
                 'tipo_documento_id' => $request->tipo_documento_id,
