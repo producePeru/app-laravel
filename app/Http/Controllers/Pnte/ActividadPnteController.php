@@ -780,6 +780,7 @@ class ActividadPnteController extends Controller
                 'empresario.rubro',
                 'empresario.tipoDocumento',
                 'empresario.genero',
+                'empresario.cargoEmpresa',
                 'empresario.feriasPapa.image1',
                 'empresario.feriasPapa.image2',
                 'asistencias',
@@ -937,6 +938,8 @@ class ActividadPnteController extends Controller
 
                     'cargo_empresa_id' => $e?->cargo_empresa_id,
 
+                    'cargo_empresa_nombre' => $e?->cargoEmpresa?->name,
+
                     'fecha_nacimiento' => $e?->fecha_nacimiento,
 
                     'edad' => $e?->edad,
@@ -950,6 +953,8 @@ class ActividadPnteController extends Controller
                     'coop_ruc' => $e?->coop_ruc,
                     'coop_razon_social' => $e?->coop_razon_social,
                     'coop_rol' => $e?->coop_rol,
+
+                    'coop_nombre_institucion' => $e?->coop_nombre_institucion,
 
                     'nombre_mercado' => $e?->nombre_mercado,
 
