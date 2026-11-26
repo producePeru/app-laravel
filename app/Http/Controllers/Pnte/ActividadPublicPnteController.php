@@ -2024,7 +2024,7 @@ class ActividadPublicPnteController extends Controller
             $perPage = $request->input('pageSize', 50);
             $search = trim($request->input('name', ''));
             $asistencia = $request->input('asistencia');
-            $slug = 'act-1-2026-12-31-gwc01f';
+            $slug = 'act-4-2026-12-14-ooc9ye';
 
             $event = ActividadPnte::select(
                 'id',
